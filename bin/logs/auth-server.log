@@ -1,0 +1,14 @@
+[06:47:44.662] Auth: Authentication Server Initializing...
+[06:47:44.704] Auth: Network configured to bind on tcp://0.0.0.0:5055 with a pool of 10 threads.
+[06:47:44.704] Auth: Passwords are stored in plain text! This is not recommended!
+[06:47:44.704] Auth: Logging is enabled.
+[06:47:44.704] Auth: Failed logins exceeding 600 tries every 3 seconds will be banned for 10 seconds.
+[06:47:44.704] Auth: Done reading 14 configurations in '../config/auth-server.yaml'.
+[06:49:39.563] Auth: Server shutting down...
+[06:51:50.548] Auth: Authentication Server Initializing...
+[06:51:50.556] Auth: Network configured to bind on tcp://0.0.0.0:5055 with a pool of 10 threads.
+[06:51:50.556] Auth: Passwords are stored in plain text! This is not recommended!
+[06:51:50.556] Auth: Logging is enabled.
+[06:51:50.556] Auth: Failed logins exceeding 600 tries every 3 seconds will be banned for 10 seconds.
+[06:51:50.556] Auth: Done reading 14 configurations in '../config/auth-server.yaml'.
+[06:51:55.346] Auth: Server shutting down...

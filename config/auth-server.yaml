@@ -1,0 +1,89 @@
+###################################################
+#       _   _            _                        #
+#      | | | |          (_)                       #
+#      | |_| | ___  _ __ _ _______  _ __          #
+#      |  _  |/ _ \| '__| |_  / _ \| '_ \         #
+#      | | | | (_) | |  | |/ / (_) | | | |        #
+#      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
+###################################################
+#    Authentication Server Configuration File     #
+###################################################
+
+###################################################
+# IP & Port Settings
+###################################################
+BindIP: "0.0.0.0"
+AuthPort: 5055
+
+###################################################
+# network_threads
+# Description: Number of threads for network.
+# Default:        1 - (Recommended 1 thread per 1000 connections)
+# Note: Cannot be less than 1.
+###################################################
+Network.Threads: 10
+
+###################################################
+# MD5 Password Hashing
+# 0 = disabled
+# 1 = MD5 (client sent)
+# 2 = Bcrypt (Advanced hashing)
+###################################################
+pass_hash_method: 0
+
+###################################################
+# Auth Server Database Settings
+###################################################
+database:
+    hostname: "localhost"
+    port: 3306
+    database: "ragnarok"
+    username: "ragnarok"
+    password: "ragnarok"
+    connection_threads: 20
+
+
+###################################################
+# Credential Length Limits
+# Default: [ 4, 32 ]  -- [ lower, upper ]
+###################################################
+username_length: [ 4, 32 ]
+password_length: [ 4, 32 ]
+
+###################################################
+# Log all requests to the login server
+#
+# Required for dynamic password failure ban.
+###################################################
+log: true
+login_max_tries: 3             # Limit of failed logins before a ban is issued.
+login_fail_ban_time: 10        # Time in seconds to ban an account on crossing the limit.
+login_fail_check_time: 600     # Time in seconds to hold failure information.
+
+###################################################
+# Date format used to send time information to the client.
+###################################################
+date_format: "%Y-%m-%d %H:%M:%S"
+
+###################################################
+# Check the client's version before allowing a connection.
+# Default: 0 (disabled)
+###################################################
+client_version: 0
+
+###################################################
+# DNS Blacklist Blocking
+# If enabled, each incoming connection will be tested against
+# the blacklists on the specified servers.
+###################################################
+dns_blacklist:
+    enabled: true
+    servers:
+        # Here are some free DNS Blacklist Services: http://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists
+        - bl.blocklist.de        # IP-Addresses who attack other servers/honeypots over SSH, FTP, IMAP, etc.
+        # - ircbl.ahbl.org        # AHBL (open proxies, compromised machines, comment spammers)
+        # - safe.dnsbl.sorbs.net  # All zones in dnsbl.sorbs.net except "recent" and "escalations"
+        # - sbl-xbl.spamhaus.org  # Spamhaus blacklist (spammers, open proxies)
+        - socks.dnsbl.sorbs.net  # Open SOCKS proxy servers
+        # - tor.ahbl.org          # Current tor relay and exit nodes
+
