@@ -36,7 +36,7 @@ one:cmake:
     - cd build
     - rm -rf ./*
     - cmake ../
-    - make install
+    - make install -j 4
     - cd ../bin
     - ./auth --test-run
     - ./char --test-run
