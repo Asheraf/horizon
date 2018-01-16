@@ -12,13 +12,13 @@
 #include <stdint.h>
 
 #include "Core/Networking/Buffer/ByteBuffer.hpp"
-
+#pragma pack(push, 1)
 struct Packet
 {
 	Packet(uint16_t id) : op_code(id) { }
 	uint16_t op_code;
-} __attribute__((packed));
-
+};
+#pragma pack(pop)
 class PacketBuffer : public ByteBuffer
 {
 public:
