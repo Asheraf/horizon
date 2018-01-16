@@ -6,12 +6,12 @@
 //  Copyright © 2017 Horizon. All rights reserved.
 //
 
-#ifndef Packets_h
-#define Packets_h
+#ifndef PACKET_H
+#define PACKET_H
 
 #include <stdint.h>
-
 #include "Core/Networking/Buffer/ByteBuffer.hpp"
+
 #pragma pack(push, 1)
 struct Packet
 {
@@ -19,6 +19,7 @@ struct Packet
 	uint16_t op_code;
 };
 #pragma pack(pop)
+
 class PacketBuffer : public ByteBuffer
 {
 public:
@@ -36,7 +37,7 @@ public:
 	{
 	}
 
-	PacketBuffer(PacketBuffer&& packet) : ByteBuffer(std::move(packet)), op_code(packet.op_code)
+	PacketBuffer(PacketBuffer &&packet) : ByteBuffer(std::move(packet)), op_code(packet.op_code)
 	{
 	}
 
@@ -44,7 +45,7 @@ public:
 	{
 	}
 
-	PacketBuffer &operator=(PacketBuffer const &right)
+	PacketBuffer & operator = (PacketBuffer const &right)
 	{
 		if (this != &right) {
 			op_code = right.op_code;
@@ -54,7 +55,7 @@ public:
 		return *this;
 	}
 
-	PacketBuffer& operator=(PacketBuffer &&right)
+	PacketBuffer & operator = (PacketBuffer &&right)
 	{
 		if (this != &right) {
 			op_code = right.op_code;
@@ -79,4 +80,4 @@ protected:
 };
 
 
-#endif /* Packets_h */
+#endif /* PACKET_H */

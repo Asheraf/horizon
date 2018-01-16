@@ -268,8 +268,17 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
  */
 int main(int argc, const char * argv[])
 {
+	bool minimal = false;
+
 	/* Header */
 	AuthServer->PrintHeader();
+
+	if (argc >= 2) {
+		if (strcmp(argv[1], "--test-run") == 0) {
+			AuthLog->info("Test run initiated.");
+			minimal = true;
+		}
+	}
 
 	/*
 	 * Read Configuration Settings for
@@ -292,7 +301,8 @@ int main(int argc, const char * argv[])
 	 * I/O Run Loop
 	 * @brief Main loop for I/O Service.
 	 */
-	io_service->run();
+	if (!minimal)
+		io_service->run();
 
 	/*
 	 * Core Cleanup

@@ -1,0 +1,42 @@
+stages:
+  - primary
+  - secondary
+  - platforms
+  - extras
+
+variables: &base_vars
+  # Configure mysql service (https://hub.docker.com/_/mysql/)
+  MYSQL_DATABASE: 'horizon'
+  MYSQL_USER: 'horizon'
+  MYSQL_PASSWORD: 'horizon'
+  MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+  GIT_DEPTH: '3'
+  DEBIAN_COMMON_PACKAGES: cmake mysql libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev
+
+.prerequisites: &prerequisites
+  before_script:
+    - echo "Building $CI_BUILD_NAME"
+    - uname -a
+ # services:
+ #   - mysql:latest
+
+# Compilers
+
+one:cmake:
+  <<: *prerequisites
+  stage: primary
+  image: gcc
+  variables:
+    <<: *base_vars
+  before_script:
+    - apt-get update --yes
+    - apt-get install --yes cmake libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+  script:
+    - mkdir build
+    - cd build
+    - rm -rf ./*
+    - cmake ../
+    - make install -j 4
+    - cd ../bin
+    - ./auth --test-run
+    - ./char --test-run
