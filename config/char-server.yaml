@@ -1,0 +1,50 @@
+###################################################
+#       _   _            _                        #
+#      | | | |          (_)                       #
+#      | |_| | ___  _ __ _ _______  _ __          #
+#      |  _  |/ _ \| '__| |_  / _ \| '_  \        #
+#      | | | | (_) | |  | |/ / (_) | | | |        #
+#      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
+###################################################
+#    Character Server Configuration File          #
+###################################################
+
+###################################################
+# IP & Port Settings
+###################################################
+BindIP: "0.0.0.0"
+AuthPort: 6900
+
+###################################################
+# network_threads
+# Description: Number of threads for network.
+# Default:        1 - (Recommended 1 thread per 1000 connections)
+# Note: Cannot be less than 1.
+###################################################
+Network.Threads: 10
+
+###################################################
+# Char Server Database Settings
+###################################################
+database:
+    hostname: "localhost"
+    port: 3306
+    database: "ragnarok"
+    username: "ragnarok"
+    password: "ragnarok"
+    connection_threads: 20
+
+
+###################################################
+# Credential Length Limits
+# Default: [ 4, 32 ]  -- [ lower, upper ]
+###################################################
+username_length: [ 4, 32 ]
+password_length: [ 4, 32 ]
+
+###################################################
+# Log all requests to the character server
+#
+# Required for dynamic password failure ban.
+###################################################
+log: true

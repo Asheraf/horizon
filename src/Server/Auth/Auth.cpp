@@ -60,15 +60,15 @@ bool AuthMain::ReadConfig()
 	 * @brief Definitions of the authentication server networking configuration.
 	 */
 	if (config["BindIP"])
-		netconf.auth_listen_ip = config["BindIP"].as<std::string>();
+		netconf.listen_ip = config["BindIP"].as<std::string>();
 
 	if (config["AuthPort"])
-		netconf.auth_listen_port = config["AuthPort"].as<uint16_t>();
+		netconf.listen_port = config["AuthPort"].as<uint16_t>();
 
 	if (config["Network.Threads"])
 		netconf.network_threads = config["Network.Threads"].as<uint32_t>();
 
-	AuthLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.", netconf.auth_listen_ip, netconf.auth_listen_port, netconf.network_threads);
+	AuthLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.", netconf.listen_ip, netconf.listen_port, netconf.network_threads);
 
 	/**
 	 * Additional Configuration
@@ -282,7 +282,7 @@ int main(int argc, const char * argv[])
 
 	// Start Auth Network
 	sAuthSocketMgr.StartNetwork(*io_service,
-		AuthServer->getNetConf().auth_listen_ip, AuthServer->getNetConf().auth_listen_port, AuthServer->getNetConf().network_threads);
+		AuthServer->getNetConf().listen_ip, AuthServer->getNetConf().listen_port, AuthServer->getNetConf().network_threads);
 
 	boost::asio::signal_set signals(*io_service, SIGINT, SIGTERM);
 

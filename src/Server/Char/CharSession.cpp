@@ -1,45 +1,41 @@
 //
-//  AuthSession.cpp
-//  Horizon
-//
-//  Created by SagunKho on 18/06/2017.
-//  Copyright © 2017 Horizon. All rights reserved.
+// Created by SagunKho on 16/01/2018.
 //
 
-#include "AuthSession.hpp"
+#include "CharSession.h"
 
-#include "AuthHandle.h"
+#include "CharHandle.h"
 
 #include "Core/Logging/Logger.hpp"
 
-AuthSession::AuthSession(tcp::socket &&socket)
-: Socket(std::move(socket)), _handle(new AuthHandle())
+CharSession::CharSession(tcp::socket &&socket)
+  : Socket(std::move(socket)), _handle(new CharHandle())
 {
 	// Constructor
 }
 
-void AuthSession::Start()
+void CharSession::Start()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
-	AuthLog->info("Established connection from {}.", ip_address);
+	CharLog->info("Established connection from {}.", ip_address);
 
 	AsyncRead();
 }
 
-void AuthSession::OnClose()
+void CharSession::OnClose()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
-	AuthLog->info("Closed connection from {}.", ip_address);
+	CharLog->info("Closed connection from {}.", ip_address);
 }
 
-bool AuthSession::Update()
+bool CharSession::Update()
 {
-	return AuthSocket::Update();
+	return CharSocket::Update();
 }
 
-void AuthSession::SendPacket(ByteBuffer &packet)
+void CharSession::SendPacket(ByteBuffer &packet)
 {
 	if (!IsOpen())
 		return;
@@ -51,7 +47,7 @@ void AuthSession::SendPacket(ByteBuffer &packet)
 	}
 }
 
-void AuthSession::ReadHandler()
+void CharSession::ReadHandler()
 {
 	uint16_t op_code;
 

@@ -14,18 +14,14 @@ public:
 	Logger(std::string name, std::string path, uint8_t level, size_t file_size, uint32_t max_files)
 	: path(path), _logger(spdlog::get(name))
 	{
-		//size_t q_size = 4096; //queue size must be power of 2
-
-		//spdlog::set_async_mode(q_size);
-
 		if (_logger == nullptr) {
 			std::vector<spdlog::sink_ptr> sinks;
 			auto stdout_sink = spdlog::sinks::stdout_sink_mt::instance();
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-			sinks.push_back(std::make_shared<spdlog::sinks::wincolor_sink>(stdout_sink));
+			sinks.push_back(std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>());
 #else
-			sinks.push_back(std::make_shared<spdlog::sinks::ansicolor_sink>(stdout_sink));
+			sinks.push_back(std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>());
 #endif
 			sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(path, file_size, max_files));
 
@@ -46,10 +42,12 @@ private:
 };
 
 static Logger AuthLog("Auth", "logs/auth-server.log", 0, 1024, 1);
+static Logger CharLog("Char", "logs/char-server.log", 0, 1024, 1);
 static Logger CoreLog("Core", "logs/core.log", 0, 1024, 1);
 static Logger DatabaseLog("Database", "logs/database.log", 0, 1024, 1);
 
 #define AuthLog (AuthLog.get())
+#define CharLog (CharLog.get())
 #define CoreLog (CoreLog.get())
 #define DBLog (DatabaseLog.get())
 

@@ -6,6 +6,7 @@
 #include "AuthSession.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "Utilities/Tokenizer.h"
+#include "MySqlConnection.h"
 
 AuthHandle::AuthHandle()
 {
@@ -27,9 +28,9 @@ bool AuthHandle::HandleIncomingPacket(AuthSession *session, PacketBuffer &packet
 		return false;
 	}
 
-	func = handlers[opCode];
-
-	(this->*func)(packet);
+	/* Call the function handling */
+	if ((func = handlers[opCode]) != nullptr)
+		(this->*func)(packet);
 
 	return true;
 }

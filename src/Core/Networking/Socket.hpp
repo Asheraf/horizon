@@ -19,14 +19,10 @@ using boost::asio::ip::tcp;
 
 #define READ_BLOCK_SIZE 4096
 
-#ifdef BOOST_ASIO_HAS_IOCP
-	#define XYZ_SOCKET_USE_IOCP
-#endif
-
 struct network_configuration {
-	std::string auth_listen_ip = "localhost";   ///< Default listening IP address.
-	uint16_t auth_listen_port  = 3306;          ///< Default listening Port.
-	uint32_t network_threads   = 1;             ///< Default Threads (Cannot be less than 1)
+	std::string listen_ip       = "localhost";        ///< Default listening IP address.
+	uint16_t listen_port        = 3306;               ///< Default listening Port.
+	uint32_t network_threads    = 1;                  ///< Default Threads (Cannot be less than 1)
 };
 
 template <class T>

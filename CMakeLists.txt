@@ -29,7 +29,7 @@ include(CheckPlatform)
 include(GroupSources)
 include(AutoCollect)
 include(FindMySQL)
-include(FindMySQLconnector)
+include(FindMySQLConnector)
 include(FindOpenSSL)
 
 # print out the results before continuing
