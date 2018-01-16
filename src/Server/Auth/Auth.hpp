@@ -75,6 +75,7 @@ protected:
 		uint8_t min_password_length =  4;                                 ///< Min Password Length Limit
 		uint8_t max_password_length = 32;                                 ///< Max Password Length Limit
 	} credentials;
+
 	std::vector<std::string> dns_blacklist;
 };
 

@@ -15,6 +15,7 @@ target_link_libraries(char
 	PUBLIC
         boost
         networking
+	-lpthread
         ${YAMLCPP_LIBRARY}
 )
 

@@ -13,11 +13,13 @@
 
 #include "Core/Networking/Buffer/ByteBuffer.hpp"
 
+#pragma pack(push, 1)
 struct Packet
 {
 	Packet(uint16_t id) : op_code(id) { }
 	uint16_t op_code;
-} __attribute__((packed));
+};
+#pragma pack(pop)
 
 class PacketBuffer : public ByteBuffer
 {
@@ -36,7 +38,7 @@ public:
 	{
 	}
 
-	PacketBuffer(PacketBuffer&& packet) : ByteBuffer(std::move(packet)), op_code(packet.op_code)
+	PacketBuffer(PacketBuffer &&packet) : ByteBuffer(std::move(packet)), op_code(packet.op_code)
 	{
 	}
 
@@ -44,7 +46,7 @@ public:
 	{
 	}
 
-	PacketBuffer &operator=(PacketBuffer const &right)
+	PacketBuffer & operator = (PacketBuffer const &right)
 	{
 		if (this != &right) {
 			op_code = right.op_code;
@@ -54,7 +56,7 @@ public:
 		return *this;
 	}
 
-	PacketBuffer& operator=(PacketBuffer &&right)
+	PacketBuffer & operator = (PacketBuffer &&right)
 	{
 		if (this != &right) {
 			op_code = right.op_code;

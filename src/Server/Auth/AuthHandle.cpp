@@ -6,7 +6,6 @@
 #include "AuthSession.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "Utilities/Tokenizer.h"
-#include "MySqlConnection.h"
 
 AuthHandle::AuthHandle()
 {

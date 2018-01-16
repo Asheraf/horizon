@@ -59,7 +59,7 @@ enum class login_error_codes {
 /**
  * Client-Server Packets
  */
-#pragma
+#pragma pack(push, 1)
 struct PACKET_CA_LOGIN : public Packet
 {
 	PACKET_CA_LOGIN() : Packet(CA_LOGIN) { }
@@ -68,8 +68,8 @@ struct PACKET_CA_LOGIN : public Packet
 	char username[24];    ///< Username
 	char password[24];    ///< Password
 	uint8_t client_type;  ///< Client Type
-} __attribute__((packed));
-
+};
+#pragma pack(pop)
 /**
  * Server-Client Packets
  */
