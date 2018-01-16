@@ -35,14 +35,4 @@ set_target_properties(networking
         FOLDER
         "Networking")
 
-if (BUILD_SHARED_LIBS)
-    if (UNIX)
-        install(TARGETS networking
-                LIBRARY
-                DESTINATION lib)
-    elseif (WIN32)
-        install(TARGETS networking
-                RUNTIME
-                DESTINATION "${CMAKE_INSTALL_PREFIX}")
-    endif()
-endif()
+install(TARGETS networking DESTINATION libs)

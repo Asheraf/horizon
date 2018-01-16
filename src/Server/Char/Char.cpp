@@ -163,15 +163,13 @@ bool CharMain::ReadConfig()
 
 int main(int argc, const char * argv[])
 {
-	bool minimal = false;
-
 	/* Header */
 	CharServer->PrintHeader();
 
-	if (argc >= 2) {
+	if (argc = 2) {
 		if (strcmp(argv[1], "--test-run") == 0) {
 			CharLog->info("Test run initiated.");
-			minimal = true;
+			CharServer->setTestRun();
 		}
 	}
 
@@ -197,7 +195,7 @@ int main(int argc, const char * argv[])
 	 * I/O Run Loop
 	 * @brief Main loop for I/O Service.
 	 */
-	if (!minimal)
+	if (!CharServer->isTestRun())
 		io_service->run();
 
 	/*

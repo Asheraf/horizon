@@ -1,24 +1,30 @@
 stages:
   - primary
-  - secondary
-  - platforms
-  - extras
 
 variables: &base_vars
   # Configure mysql service (https://hub.docker.com/_/mysql/)
-  MYSQL_DATABASE: 'horizon'
-  MYSQL_USER: 'horizon'
-  MYSQL_PASSWORD: 'horizon'
-  MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-  GIT_DEPTH: '3'
+  MYSQL_DATABASE: 'ragnarok'
+  MYSQL_USER: 'ragnarok'
+  MYSQL_ROOT_PASSWORD: 'ragnarok'
+  MYSQL_PASSWORD: 'ragnarok'
+  MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+  GIT_DEPTH: '1'
   DEBIAN_COMMON_PACKAGES: cmake mysql libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev
 
 .prerequisites: &prerequisites
   before_script:
     - echo "Building $CI_BUILD_NAME"
     - uname -a
- # services:
- #   - mysql:latest
+    - apt-get update --yes
+    - apt-get install --yes cmake libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev mysql-server mysql-client
+    - mysql --version
+    - service mysql start
+    - echo "CREATE USER '${MYSQL_USER}'@'mysql' IDENTIFIED BY '${MYSQL_PASSWORD}';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
+    - echo "CREATE DATABASE ${MYSQL_DATABASE};"
+    - echo "GRANT ALL ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'mysql';"
+    - echo "USE ${MYSQL_DATABASE}; SELECT 'OK'" | mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --host=mysql
+  services:
+    - mysql:latest
 
 # Compilers
 
@@ -28,9 +34,6 @@ one:cmake:
   image: gcc
   variables:
     <<: *base_vars
-  before_script:
-    - apt-get update --yes
-    - apt-get install --yes cmake libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
   script:
     - mkdir build
     - cd build

@@ -12,60 +12,64 @@
 #include <exception>
 #include <string>
 
-using boost::shared_ptr;
-
-struct ConnectionUnavailable : std::exception {
-
-	char const* what() const throw() {
-
+struct ConnectionUnavailable : std::exception
+{
+	char const *what() const throw()
+	{
 		return "Unable to allocate connection";
 	};
 };
 
 
-class Connection {
-
+class Connection
+{
 public:
-	Connection(){};
-	virtual ~Connection(){};
+	Connection()
+	{
+		//
+	};
+
+	virtual ~Connection()
+	{
+		//
+	};
 
 };
 
-class ConnectionFactory {
-
+class ConnectionFactory
+{
 public:
-	virtual shared_ptr<Connection> create()=0;
+	virtual boost::shared_ptr<Connection> create() = 0;
 };
 
-struct ConnectionPoolStats {
-
+struct ConnectionPoolStats
+{
 	size_t pool_size;
 	size_t borrowed_size;
-
 };
 
 template<class T>
-class ConnectionPool {
-
+class ConnectionPool
+{
 public:
 	ConnectionPoolStats get_stats()
 	{
 		// Lock
 		boost::mutex::scoped_lock lock(this->io_mutex);
-
 		// Get stats
 		ConnectionPoolStats stats;
-		stats.pool_size=this->pool.size();
-		stats.borrowed_size=this->borrowed.size();
-
+		stats.pool_size = this->pool.size();
+		stats.borrowed_size = this->borrowed.size();
 		return stats;
 	};
 
-	ConnectionPool(size_t pool_size, std::shared_ptr<ConnectionFactory> factory)
+	ConnectionPool(size_t pool_size, boost::shared_ptr<ConnectionFactory> factory)
 	{
 		// Setup
-		this->pool_size=pool_size;
+		this->pool_size = pool_size;
 		this->factory = factory;
+
+		DBLog->info("Initializing MySQL Connection pool.");
 
 		// Fill the pool
 		while (this->pool.size() < this->pool_size) {
@@ -75,35 +79,43 @@ public:
 
 	~ConnectionPool()
 	{
-		// Destruct
+		// Destructor.
 	};
 
 	/**
-	 * Borrow
-	 *
 	 * Borrow a connection for temporary use
 	 *
-	 * When done, either (a) call unborrow() to return it, or (b) (if it's bad) just let it go out of scope.  This will cause it to automatically be replaced.
+	 * When done, either
+	 * (a) call unborrow() to return it, or
+	 * (b) (if it's bad) just let it go out of scope.
+	 * This will cause it to automatically be replaced.
 	 * @retval a shared_ptr to the connection object
 	 */
-	std::shared_ptr<T> borrow() {
-
+	boost::shared_ptr<T> borrow()
+	{
 		// Lock
 		boost::mutex::scoped_lock lock(this->io_mutex);
 
 		// Check for a free connection
-		if (this->pool.size()==0) {
+		if (this->pool.size() == 0) {
 			// Are there any crashed connections listed as "borrowed"?
-			for (std::set<shared_ptr<Connection> >::iterator it = this->borrowed.begin(); it!=this->borrowed.end(); ++it) {
+			for (auto it = this->borrowed.begin(); it != this->borrowed.end(); ++it){
+
 				if ((*it).unique()) {
 					// This connection has been abandoned! Destroy it and create a new connection
 					try {
 						// If we are able to create a new connection, return it
-						std::shared_ptr<Connection> conn = this->factory->create();
+						DBLog->info("Creating new connection to replace discarded connection.");
+
+						boost::shared_ptr<Connection> conn = this->factory->create();
+
 						this->borrowed.erase(it);
 						this->borrowed.insert(conn);
+
 						return boost::static_pointer_cast<T>(conn);
-					} catch(std::exception& e) {
+
+					} catch(std::exception &e) {
+						DBLog->error("Unable to connect.");
 						// Error creating a replacement connection
 						throw ConnectionUnavailable();
 					}
@@ -115,7 +127,8 @@ public:
 		}
 
 		// Take one off the front
-		std::shared_ptr<Connection> conn = this->pool.front();
+		boost::shared_ptr<Connection>conn = this->pool.front();
+
 		this->pool.pop_front();
 
 		// Add it to the borrowed list
@@ -130,7 +143,7 @@ public:
 	 * Only call this if you are returning a working connection.  If the connection was bad, just let it go out of scope (so the connection manager can replace it).
 	 * @param the connection
 	 */
-	void unborrow(shared_ptr<T> conn)
+	void unborrow(boost::shared_ptr<T> conn)
 	{
 		// Lock
 		boost::mutex::scoped_lock lock(this->io_mutex);
@@ -138,14 +151,17 @@ public:
 		this->pool.push_back(boost::static_pointer_cast<Connection>(conn));
 		// Unborrow
 		this->borrowed.erase(conn);
+
 	};
 
+
 protected:
-	std::shared_ptr<ConnectionFactory> factory;
+	boost::shared_ptr<ConnectionFactory> factory;
 	size_t pool_size;
-	std::deque<shared_ptr<Connection>> pool;
-	std::set<shared_ptr<Connection>> borrowed;
+	std::deque<boost::shared_ptr<Connection>> pool;
+	std::set<boost::shared_ptr<Connection>> borrowed;
 	boost::mutex io_mutex;
+
 };
 
 #endif //HORIZON_CONNECTIONPOOL_H

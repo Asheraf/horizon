@@ -4,6 +4,7 @@
 
 #include "AuthHandle.h"
 #include "AuthSession.hpp"
+#include "Core/Database/MySqlConnection.h"
 #include "Core/Logging/Logger.hpp"
 #include "Utilities/Tokenizer.h"
 
@@ -45,8 +46,6 @@ void AuthHandle::HandleLoginRequest(PacketBuffer &packet)
 	packet >> pkt.client_type;
 
 	AuthLog->info("Authentication of account {} requested.", pkt.username);
-
-	// Check MySQL Stuff here.
 }
 
 void AuthHandle::InitHandlers()

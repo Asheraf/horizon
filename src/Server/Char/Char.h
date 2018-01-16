@@ -35,6 +35,11 @@ public:
 	std::string getConfigFileName() { return config_file_name; }
 	bool isLoggingEnabled() { return log.enabled; }
 
+	// Test Run
+	void setTestRun() { minimal = true; }
+	bool isTestRun() { return minimal; }
+
+
 protected:
 	/* Configuration */
 	struct network_configuration netconf;                            ///< Network Configuration information.
@@ -43,6 +48,7 @@ protected:
 	struct {
 		bool enabled = true;                                         ///< Login logging is enabled.
 	} log;
+	bool minimal;
 };
 
 #define CharServer CharMain::getInstance()

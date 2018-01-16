@@ -14,6 +14,8 @@
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
 #include <iostream>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 using namespace std;
 
@@ -94,10 +96,15 @@ bool AuthMain::ReadConfig()
 		switch (n.Type())
 		{
 		case YAML::NodeType::Map:
-			if (!n["hostname"] || !n["hostname"].IsScalar()) {
-				AuthLog->warn("Hostname not provided or invalid. Defaulting to '{}'...", hostname);
+		{
+			if (!AuthServer->isTestRun()) {
+				if (!n["hostname"] || !n["hostname"].IsScalar()) {
+					AuthLog->warn("Hostname not provided or invalid. Defaulting to '{}'...", hostname);
+				} else {
+					hostname = n["hostname"].as<std::string>();
+				}
 			} else {
-				hostname = n["hostname"].as<std::string>();
+				hostname = "mysql";
 			}
 
 			if (!n["port"] || !n["port"].IsScalar()) {
@@ -148,6 +155,15 @@ bool AuthMain::ReadConfig()
 				}
 			}
 
+			AuthServer->setDBHost(hostname);
+			AuthServer->setDBDatabase(database);
+			AuthServer->setDBUsername(username);
+			AuthServer->setDBPassword(password);
+
+			// Create a pool of 5 MySQL connections
+			mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(hostname, database, username, password);
+			mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(connection_threads, mysql_connection_factory);
+		}
 			break;
 		default:
 			AuthLog->error("Unsupported node type in element {} for '{}'.", n.as<std::string>());
@@ -268,15 +284,13 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
  */
 int main(int argc, const char * argv[])
 {
-	bool minimal = false;
-
 	/* Header */
 	AuthServer->PrintHeader();
 
-	if (argc >= 2) {
+	if (argc > 1) {
 		if (strcmp(argv[1], "--test-run") == 0) {
 			AuthLog->info("Test run initiated.");
-			minimal = true;
+			AuthServer->setTestRun();
 		}
 	}
 
@@ -301,7 +315,7 @@ int main(int argc, const char * argv[])
 	 * I/O Run Loop
 	 * @brief Main loop for I/O Service.
 	 */
-	if (!minimal)
+	if (!AuthServer->isTestRun())
 		io_service->run();
 
 	/*

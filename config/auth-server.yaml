@@ -40,7 +40,7 @@ database:
     database: "ragnarok"
     username: "ragnarok"
     password: "ragnarok"
-    connection_threads: 20
+    connection_threads: 5
 
 
 ###################################################

@@ -10,6 +10,7 @@
 enum AuthPackets {
 	MIN_AUTH_PACKETS        = 0x0064,
 	CA_LOGIN                = 0x0064,
+	CA_REQ_HASH             = 0x01db,
 	CA_LOGIN2               = 0x01dd,
 	CA_LOGIN3               = 0x01fa,
 	CA_CONNECT_INFO_CHANGED = 0x0200,
@@ -18,10 +19,9 @@ enum AuthPackets {
 	CA_LOGIN4               = 0x027c,
 	CA_LOGIN_HAN            = 0x02b0,
 	CA_SSO_LOGIN_REQ        = 0x0825,
-	CA_REQ_HASH             = 0x01db,
 	//PACKET_ID_CA_SSO_LOGIN_REQa       = 0x825a, /* unused */
 	// (Auth to Client)
-	  AC_ACCEPT_LOGIN         = 0x0069,
+	AC_ACCEPT_LOGIN         = 0x0069,
 	AC_REFUSE_LOGIN         = 0x006a,
 	AC_NOTIFY_BAN           = 0x0081,
 	AC_ACK_HASH             = 0x01dc,
