@@ -12,14 +12,19 @@
 
 class AuthSession;
 
+typedef void (AuthHandle::*AuthPacketHandler) (PacketBuffer &packet);
+
 class AuthHandle
 {
 public:
 	AuthHandle();
 	~AuthHandle();
 	bool HandleIncomingPacket(AuthSession *session, PacketBuffer &packet);
-	bool HandleLoginRequest(AuthSession *session, PACKET_CA_LOGIN *pkt);
+	void HandleLoginRequest(PacketBuffer &packet);
+	void InitHandlers();
 
+private:
+	std::unordered_map<uint16_t, AuthPacketHandler> handlers;
 };
 
 

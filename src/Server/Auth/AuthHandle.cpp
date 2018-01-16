@@ -7,10 +7,9 @@
 #include "Core/Logging/Logger.hpp"
 #include "Utilities/Tokenizer.h"
 
-
 AuthHandle::AuthHandle()
 {
-
+	InitHandlers();
 }
 
 AuthHandle::~AuthHandle()
@@ -20,39 +19,39 @@ AuthHandle::~AuthHandle()
 
 bool AuthHandle::HandleIncomingPacket(AuthSession *session, PacketBuffer &packet)
 {
-	switch ((enum AuthPackets) packet.getOpCode())
-	{
-	case CA_LOGIN:
-		{
-			PACKET_CA_LOGIN pkt;
+	uint16_t opCode = packet.getOpCode();
+	AuthPacketHandler func = nullptr;
 
-			packet >> pkt.op_code;
-			packet >> pkt.version;
-			packet.read(reinterpret_cast<uint8_t *>(pkt.username), sizeof(pkt.username));
-			packet.read(reinterpret_cast<uint8_t *>(pkt.password), sizeof(pkt.password));
-			packet >> pkt.client_type;
-
-			AuthLog->info("Authentication of account {} requested.", pkt.username);
-
-			if (!HandleLoginRequest(session, &pkt)) {
-				AuthLog->warn("Login request could not be handled!");
-				return false;
-			}
-		}
-		break;
-	default: // well we don't handle this, lets just trace and ignore it.
-		AuthLog->trace("Unknown packet with ID received: {0:x}", packet.getOpCode());
+	if (opCode < MIN_AUTH_PACKETS || opCode > MAX_AUTH_PACKETS) {
+		AuthLog->trace("Unknown packet with ID received: {0:x}", opCode);
 		return false;
 	}
 
+	func = handlers[opCode];
+
+	(this->*func)(packet);
+
 	return true;
 }
 
-bool AuthHandle::HandleLoginRequest(AuthSession *session, PACKET_CA_LOGIN *pkt)
+void AuthHandle::HandleLoginRequest(PacketBuffer &packet)
 {
-	PACKET_AC_REFUSE_LOGIN_R2 refuse; // For refusal
-	std::string username = pkt->username;
+	PACKET_CA_LOGIN pkt;
 
+	packet >> pkt.op_code;
+	packet >> pkt.version;
+	packet.read(reinterpret_cast<uint8_t *>(pkt.username), sizeof(pkt.username));
+	packet.read(reinterpret_cast<uint8_t *>(pkt.password), sizeof(pkt.password));
+	packet >> pkt.client_type;
 
-	return true;
+	AuthLog->info("Authentication of account {} requested.", pkt.username);
+
+	// Check MySQL Stuff here.
 }
+
+void AuthHandle::InitHandlers()
+{
+	handlers.insert(std::make_pair(CA_LOGIN, &AuthHandle::HandleLoginRequest));
+}
+
+
