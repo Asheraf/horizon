@@ -21,7 +21,7 @@ CharPort: 6900
 # Default:        1 - (Recommended 1 thread per 1000 connections)
 # Note: Cannot be less than 1.
 ###################################################
-Network.Threads: 10
+Network.Threads: 5
 
 ###################################################
 # Char Server Database Settings
@@ -29,18 +29,10 @@ Network.Threads: 10
 database:
     hostname: "localhost"
     port: 3306
-    database: "ragnarok"
+    database: "horizon"
     username: "ragnarok"
     password: "ragnarok"
-    connection_threads: 20
-
-
-###################################################
-# Credential Length Limits
-# Default: [ 4, 32 ]  -- [ lower, upper ]
-###################################################
-username_length: [ 4, 32 ]
-password_length: [ 4, 32 ]
+    connection_threads: 5
 
 ###################################################
 # Log all requests to the character server

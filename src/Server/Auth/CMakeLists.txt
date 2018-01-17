@@ -10,8 +10,13 @@ add_executable(auth
     ../Packet.hpp
     ../Server.hpp
     ../Server.cpp
-    ../../Core/Database/ConnectionPool.h
-    ../../Core/Database/MySqlConnection.h)
+    ../Common/Models/GameAccount.hpp
+    ../Common/Models/SessionData.hpp
+    ../Common/Definitions.hpp
+    ../Common/Horizon.hpp
+    ../../Core/Database/ConnectionPool.hpp
+    ../../Core/Database/MySqlConnection.hpp
+    ../../Core/Logging/Logger.hpp)
 
 target_link_libraries(auth
 	PUBLIC

@@ -9,7 +9,7 @@
 #include "Auth.hpp"
 #include "AuthSocketMgr.hpp"
 
-#include "../Packet.hpp"
+#include "Server/Packet.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
@@ -17,16 +17,15 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 
-using namespace std;
-
 using boost::asio::ip::udp;
 
 /* Create Socket Connection */
 boost::asio::io_service *io_service;
 
-AuthMain::AuthMain() : Server("Auth", "../config/")
+AuthMain::AuthMain()
+: Server("Auth", "../config/", "auth-server.yaml")
 {
-	auth_file_name = "auth-server.yaml";
+	account_online_list = std::make_shared<OnlineListType>();
 }
 
 AuthMain::~AuthMain()
@@ -48,7 +47,7 @@ void AuthMain::PrintHeader()
 bool AuthMain::ReadConfig()
 {
 	YAML::Node config;
-	std::string filepath = Server::config_file_path + auth_file_name;
+	std::string filepath = this->general_config.config_file_path + this->general_config.config_file_name;
 
 	try {
 		config = YAML::LoadFile(filepath);
@@ -62,25 +61,26 @@ bool AuthMain::ReadConfig()
 	 * @brief Definitions of the authentication server networking configuration.
 	 */
 	if (config["BindIP"])
-		netconf.listen_ip = config["BindIP"].as<std::string>();
+		this->general_config.network.listen_ip = config["BindIP"].as<std::string>();
 
 	if (config["AuthPort"])
-		netconf.listen_port = config["AuthPort"].as<uint16_t>();
+		this->general_config.network.listen_port = config["AuthPort"].as<uint16_t>();
 
 	if (config["Network.Threads"])
-		netconf.network_threads = config["Network.Threads"].as<uint32_t>();
+		this->general_config.network.max_threads = config["Network.Threads"].as<uint32_t>();
 
-	AuthLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.", netconf.listen_ip, netconf.listen_port, netconf.network_threads);
+	AuthLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.",
+	              this->general_config.network.listen_ip, this->general_config.network.listen_port, this->general_config.network.max_threads);
 
 	/**
 	 * Additional Configuration
 	 * @brief
 	 */
     if (config["pass_hash_method"]) {
-		pass_hash_method = static_cast<HashingMethods>(config["pass_hash_method"].as<int>());
+		this->auth_config.pass_hash_method = static_cast<HashingMethods>(config["pass_hash_method"].as<int>());
 	}
 
-	if (pass_hash_method == PASS_HASH_NONE)
+	if (this->auth_config.pass_hash_method == PASS_HASH_NONE)
 		AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
 
 	/**
@@ -160,7 +160,7 @@ bool AuthMain::ReadConfig()
 			AuthServer->setDBUsername(username);
 			AuthServer->setDBPassword(password);
 
-			// Create a pool of 5 MySQL connections
+			// Create a pool of MySQL connections
 			mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(hostname, database, username, password);
 			mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(connection_threads, mysql_connection_factory);
 		}
@@ -175,73 +175,24 @@ bool AuthMain::ReadConfig()
 	}
 
 	/**
-	 * Credential length limit.
-	 * @brief
-	 */
-	if (config["username_length"]) {
-		YAML::Node n = config["username_length"];
-		if (!n || n.Type() != YAML::NodeType::Sequence) {
-			AuthLog->error("Invalid format provided for 'username_length' configuration. Defaulting to {} and {}",
-						   credentials.min_username_length, credentials.max_username_length);
-		} else {
-			uint8_t min = (uint8_t) n[0].as<int>(), max = (uint8_t) n[1].as<int>();
-
-			if (min < credentials.min_username_length) {
-				AuthLog->error("Minimum required username length cannot be less than {}. Defaulting...", credentials.min_username_length);
-			} else {
-				credentials.min_username_length = min;
-			}
-
-			if (max > credentials.max_username_length) {
-				AuthLog->error("Maximum username length cannot exceed {}. Defaulting...", credentials.max_username_length);
-			} else {
-				credentials.max_username_length = max;
-			}
-		}
-	}
-
-	if (config["password_length"]) {
-		YAML::Node n = config["password_length"];
-		if (!n || n.Type() != YAML::NodeType::Sequence) {
-			AuthLog->error("Invalid format provided for 'password_length' configuration. Defaulting to {} and {}",
-						   credentials.min_password_length, credentials.max_password_length);
-		} else {
-			uint8_t min = (uint8_t) n[0].as<int>(), max = (uint8_t) n[1].as<int>();
-
-			if (min < credentials.min_password_length) {
-				AuthLog->error("Minimum required password length cannot be less than {}. Defaulting...", credentials.min_password_length);
-			} else {
-				credentials.min_password_length = min;
-			}
-
-			if (max > credentials.max_password_length) {
-				AuthLog->error("Maximum password length cannot exceed {}. Defaulting...", credentials.max_password_length);
-			} else {
-				credentials.max_password_length = max;
-			}
-		}
-	}
-
-	/**
 	 * Logging Configuration
-	 * @brief
 	 */
 	if (config["log"])
-		log.enabled = config["log"].as<bool>();
+		this->auth_config.logs.enabled = config["log"].as<bool>();
 
 	if (config["login_max_tries"])
-		log.login_max_tries = config[ "login_max_tries" ].as<uint32_t>();
+		this->auth_config.logs.login_max_tries = config[ "login_max_tries" ].as<uint32_t>();
 
 	if (config["login_fail_ban_time"])
-		log.login_fail_ban_time = config["login_fail_ban_time"].as<time_t>();
+		this->auth_config.logs.login_fail_ban_time = config["login_fail_ban_time"].as<time_t>();
 
 	if (config["login_fail_check_time"])
-		log.login_fail_check_time = config["login_fail_check_time"].as<time_t>();
+		this->auth_config.logs.login_fail_check_time = config["login_fail_check_time"].as<time_t>();
 
-	if (log.enabled) {
-		AuthLog->info("Logging is {}.", log.enabled ? "enabled" : "disabled", filepath);
+	if (this->auth_config.logs.enabled) {
+		AuthLog->info("Logging is {}.", this->auth_config.logs.enabled ? "enabled" : "disabled", filepath);
 		AuthLog->info("Failed logins exceeding {} tries every {} seconds will be banned for {} seconds.",
-					  log.login_fail_check_time, log.login_max_tries, log.login_fail_ban_time);
+		              this->auth_config.logs.login_fail_check_time, this->auth_config.logs.login_max_tries, this->auth_config.logs.login_fail_ban_time);
 	}
 
 	/**
@@ -249,25 +200,19 @@ bool AuthMain::ReadConfig()
 	 * @brief
 	 */
 	if (config["date_format"])
-		date_format = config["date_format"].as<std::string>();
+		this->auth_config.date_format = config["date_format"].as<std::string>();
 
 	if (config["client_version"])
-		client_version = config["client_version"].as<uint32_t>();
+		this->auth_config.client_version = config["client_version"].as<uint32_t>();
 
-	if (config["dns_blacklist"]["enabled"]) {
-		YAML::Node n = config["dns_blacklist"]["servers"];
-
-		if (!n || n.Type() != YAML::NodeType::Sequence) {
-			AuthLog->error("DNS blacklisting has been enabled, but no servers are listed! Disabling...");
-		} else {
-			for (size_t i = 0; i < n.size(); i++)
-				dns_blacklist.push_back(n[i].as<std::string>());
-		}
-	}
-
-	AuthLog->info("Done reading {} configurations in '{}'.", config.size(), config_file_path + auth_file_name);
+	AuthLog->info("Done reading {} configurations in '{}'.", config.size(), this->general_config.config_file_path + this->general_config.config_file_name);
 
 	return true;
+}
+
+std::shared_ptr<OnlineListType> AuthMain::getAccountOnlineList() const
+{
+	return account_online_list;
 }
 
 void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
@@ -287,12 +232,8 @@ int main(int argc, const char * argv[])
 	/* Header */
 	AuthServer->PrintHeader();
 
-	if (argc > 1) {
-		if (strcmp(argv[1], "--test-run") == 0) {
-			AuthLog->info("Test run initiated.");
-			AuthServer->setTestRun();
-		}
-	}
+	if (argc > 1)
+		AuthServer->ParseRuntimeArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -305,7 +246,7 @@ int main(int argc, const char * argv[])
 
 	// Start Auth Network
 	sAuthSocketMgr.StartNetwork(*io_service,
-		AuthServer->getNetConf().listen_ip, AuthServer->getNetConf().listen_port, AuthServer->getNetConf().network_threads);
+		AuthServer->getNetConf().listen_ip, AuthServer->getNetConf().listen_port, AuthServer->getNetConf().max_threads);
 
 	boost::asio::signal_set signals(*io_service, SIGINT, SIGTERM);
 

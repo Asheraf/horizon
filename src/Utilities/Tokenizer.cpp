@@ -2,7 +2,7 @@
 // Created by SagunKho on 22/06/2017.
 //
 
-#include "Tokenizer.h"
+#include "Tokenizer.hpp"
 
 Tokenizer::Tokenizer(const std::string &src, const char sep, uint32_t vectorReserve /*= 0*/, bool keepEmptyStrings /*= true*/)
 {

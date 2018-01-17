@@ -3,5 +3,5 @@
 cmake-build-debug/
 
 build/
-version.h
+version.hpp
 bin

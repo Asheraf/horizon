@@ -53,10 +53,10 @@ else()
 endif()
 
 # Create the actual version.h file from the above params
-if(NOT "${rev_hash_cached}" MATCHES "${rev_hash}" OR NOT "${rev_branch_cached}" MATCHES "${rev_branch}" OR NOT EXISTS "${PROJECT_SOURCE_DIR}/src/version.h")
+if(NOT "${rev_hash_cached}" MATCHES "${rev_hash}" OR NOT "${rev_branch_cached}" MATCHES "${rev_branch}" OR NOT EXISTS "${PROJECT_SOURCE_DIR}/src/version.hpp")
   configure_file(
     "${CMAKE_SOURCE_DIR}/cmake/genversion/version.h.in.cmake"
-    "${PROJECT_SOURCE_DIR}/src/version.h"
+    "${PROJECT_SOURCE_DIR}/src/version.hpp"
     @ONLY
   )
   set(rev_hash_cached "${rev_hash}" CACHE INTERNAL "Cached commit-hash")

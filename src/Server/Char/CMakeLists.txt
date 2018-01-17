@@ -9,7 +9,14 @@ add_executable(char
 	${PRIVATE_SOURCES}
     ../Packet.hpp
     ../Server.hpp
-    ../Server.cpp)
+    ../Server.cpp
+    ../Common/Models/GameAccount.hpp
+    ../Common/Models/SessionData.hpp
+    ../Common/Definitions.hpp
+    ../Common/Horizon.hpp
+    ../../Core/Database/ConnectionPool.hpp
+    ../../Core/Database/MySqlConnection.hpp
+    ../../Core/Logging/Logger.hpp)
 
 target_link_libraries(char
 	PUBLIC
@@ -17,6 +24,7 @@ target_link_libraries(char
         networking
 	-lpthread
         ${YAMLCPP_LIBRARY}
+        ${MYSQL_CONNECTOR_LIBRARIES}
 )
 
 set(INCLUDE_DIRS
@@ -32,6 +40,7 @@ target_include_directories(char
 	PUBLIC
 		${PUBLIC_INCLUDES}
         ${YAMLCPP_INCLUDE_DIR}
+        ${MYSQL_CONNECTOR_INCLUDE_DIRS}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

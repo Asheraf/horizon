@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "ConnectionPool.h"
+#include "ConnectionPool.hpp"
 #include <string>
 #include <mysql_connection.h>
 #include <cppconn/driver.h>

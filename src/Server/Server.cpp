@@ -9,10 +9,10 @@
 #include "Server.hpp"
 #include <iostream>
 
-#include "version.h"
+#include "version.hpp"
 
 /* Public */
-Server::Server(std::string name, std::string config_file_path)
+Server::Server(std::string name, std::string config_file_path, std::string config_file_name)
 {
 	std::cout << "   _   _            _                  " << std::endl;
 	std::cout << "  | | | |          (_)                 " << std::endl;
@@ -28,9 +28,17 @@ Server::Server(std::string name, std::string config_file_path)
 	CoreLog->info("Boost Version: v{}.{}.{}", (BOOST_VERSION / 100000), (BOOST_VERSION / 100 % 1000),(BOOST_VERSION % 100));
 	CoreLog->info("Compiled On: ", _DATE);
 
-	this->config_file_path = config_file_path;
+	this->general_config.config_file_path = config_file_path;
+	this->general_config.config_file_name = config_file_name;
 }
 
 Server::~Server()
 {
+}
+void Server::ParseRuntimeArguments(const char *argv[], int argc)
+{
+	if (strcmp(argv[1], "--test-run") == 0) {
+		CoreLog->info("Test run initiated.");
+		this->setTestRun();
+	}
 }
