@@ -3,7 +3,7 @@ stages:
 
 variables: &base_vars
   # Configure mysql service (https://hub.docker.com/_/mysql/)
-  MYSQL_DATABASE: 'ragnarok'
+  MYSQL_DATABASE: 'horizon'
   MYSQL_USER: 'ragnarok'
   MYSQL_ROOT_PASSWORD: 'ragnarok'
   MYSQL_PASSWORD: 'ragnarok'

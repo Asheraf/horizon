@@ -1,10 +1,18 @@
-//
-//  Packets.h
-//  Horizon
-//
-//  Created by SagunKho on 18/06/2017.
-//  Copyright © 2017 Horizon. All rights reserved.
-//
+/**           _   _            _
+ *          | | | |          (_)
+ *          | |_| | ___  _ __ _ _______  _ __
+ *          |  _  |/ _ \| '__| |_  / _ \| '_ \
+ *          | | | | (_) | |  | |/ / (_) | | | |
+ *          \_| |_/\___/|_|  |_/___\___/|_| |_|
+ *
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ ****************************************************/
 
 #ifndef PACKET_H
 #define PACKET_H
@@ -62,6 +70,31 @@ public:
 			ByteBuffer::operator=(std::move(right));
 		}
 
+		return *this;
+	}
+
+	template<class PACKET_TYPE>
+	PacketBuffer & operator << (PACKET_TYPE &pkt)
+	{
+		append<PACKET_TYPE>(&pkt, 1);
+		return *this;
+	}
+
+	template <class PACKET_TYPE>
+	void read(PACKET_TYPE *dest, size_t len)
+	{
+		if (_rpos  + len > size())
+			throw ByteBufferPositionException(false, _rpos, len, size());
+
+		std::memcpy(dest, &_storage[_rpos], len);
+
+		_rpos += len;
+	}
+
+	template <class PACKET_TYPE>
+	PacketBuffer & operator >> (PACKET_TYPE &pkt)
+	{
+		read(&pkt, sizeof(PACKET_TYPE));
 		return *this;
 	}
 

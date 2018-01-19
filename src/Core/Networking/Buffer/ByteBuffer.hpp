@@ -173,8 +173,8 @@ public:
 	ByteBuffer &operator<<(const char *str)
 	{
 		if (size_t len = (str ? strlen(str) : 0))
-			append((uint8_t const*)str, len);
-		append((uint8_t)0);
+			append((uint8_t const *) str, len);
+		append((uint8_t) 0);
 		return *this;
 	}
 
@@ -391,6 +391,7 @@ public:
 	}
 
 	size_t size() const { return _storage.size(); }
+	size_t buf_len() const { return _rpos; }
 	bool empty() const { return _storage.empty(); }
 
 	void resize(size_t newsize)

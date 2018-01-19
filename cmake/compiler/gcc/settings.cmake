@@ -7,8 +7,8 @@ if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_EXPECTED_VERSION)
   message(FATAL_ERROR "GCC: TrinityCore requires version ${GCC_EXPECTED_VERSION} to build but found ${CMAKE_CXX_COMPILER_VERSION}")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-message(STATUS "GCC: Enabled c++11 support")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+message(STATUS "GCC: Enabled c++17 support")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 message(STATUS "GCC: Enabled C99 support")
@@ -33,16 +33,4 @@ if( WITH_COREDEBUG )
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
   message(STATUS "GCC: Debug-flags set (-g3)")
-endif()
-
-if (BUILD_SHARED_LIBS)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -fvisibility=hidden -Wno-attributes")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fvisibility=hidden -Wno-attributes")
-
-  # Should break the build when there are TRINITY_*_API macros missing
-  # but it complains about missing references in precompiled headers.
-  # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,--no-undefined")
-  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-undefined")
-
-  message(STATUS "GCC: Enabled shared linking")
 endif()

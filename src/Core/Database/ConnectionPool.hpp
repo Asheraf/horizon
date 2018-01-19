@@ -79,7 +79,6 @@ public:
 
 	~ConnectionPool()
 	{
-		// Destructor.
 	};
 
 	/**

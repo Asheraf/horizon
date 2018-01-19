@@ -5,7 +5,7 @@
 #ifndef HORIZON_SOCKET_HPP
 #define HORIZON_SOCKET_HPP
 
-#include "../Logging/Logger.hpp"
+#include "Core/Logging/Logger.hpp"
 #include "Buffer/MessageBuffer.hpp"
 
 #include <atomic>
@@ -18,12 +18,6 @@
 using boost::asio::ip::tcp;
 
 #define READ_BLOCK_SIZE 4096
-
-struct network_configuration {
-	std::string listen_ip       = "localhost";        ///< Default listening IP address.
-	uint16_t listen_port        = 3306;               ///< Default listening Port.
-	uint32_t network_threads    = 1;                  ///< Default Threads (Cannot be less than 1)
-};
 
 template <class T>
 class Socket : public std::enable_shared_from_this<T>
@@ -52,13 +46,11 @@ public:
 		if (_closed)
 			return false;
 
-#ifndef XYZ_SOCKET_USE_IOCP
 		if (_isWritingAsync || (_writeQueue.empty() && !_closing))
 			return true;
 
 		for (; HandleQueue();)
 			;
-#endif
 		return true;
 	}
 
@@ -98,9 +90,7 @@ public:
 	{
 		_writeQueue.push(std::move(buffer));
 
-#ifndef XYZ_SOCKET_USE_IOCP
 		AsyncProcessQueue();
-#endif
 	}
 
 	bool IsOpen() const { return !_closed && !_closing; }
@@ -135,14 +125,8 @@ protected:
 
 		_isWritingAsync = true;
 
-#ifdef XYZ_SOCKET_USE_IOCP
-		MessageBuffer &buffer = _writeQueue.front();
-		_socket.async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), std::bind(&Socket<T>::WriteHandler,
-				this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
-#else
 		_socket.async_write_some(boost::asio::null_buffers(), std::bind(&Socket<T>::WriteHandlerWrapper,
 				this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
-#endif
 
 		return false;
 	}
@@ -168,24 +152,6 @@ private:
 		ReadHandler();
 	}
 
-#ifdef TC_SOCKET_USE_IOCP
-	void WriteHandler(boost::system::error_code error, std::size_t transferedBytes)
-	{
-		if (!error) {
-			_isWritingAsync = false;
-			_writeQueue.front().ReadCompleted(transferedBytes);
-			if (!_writeQueue.front().GetActiveSize())
-				_writeQueue.pop();
-
-			if (!_writeQueue.empty())
-				AsyncProcessQueue();
-			else if (_closing)
-				CloseSocket();
-		} else {
-			CloseSocket();
-		}
-	}
-#else
 	void WriteHandlerWrapper(boost::system::error_code /*error*/, std::size_t /*transferedBytes*/)
 	{
 		_isWritingAsync = false;
@@ -229,7 +195,6 @@ private:
 
 		return !_writeQueue.empty();
 	}
-#endif
 
 	tcp::socket _socket;
 	boost::asio::ip::address _remoteAddress;
