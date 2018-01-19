@@ -18,7 +18,7 @@
 CREATE TABLE IF NOT EXISTS `game_account` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(23) NOT NULL DEFAULT '',
-  `password` varchar(32) NOT NULL DEFAULT '',
+  `password` varchar(64) NOT NULL DEFAULT '',
   `gender` enum('M','F','S') NOT NULL DEFAULT 'M',
   `email` varchar(39) NOT NULL DEFAULT '',
   `group_id` tinyint(3) NOT NULL DEFAULT 0,

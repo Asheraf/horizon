@@ -10,8 +10,9 @@
 
 #include "MySqlConnection.hpp"
 #include "Auth.hpp"
+
 #include <random>
-#include <algorithm>
+#include <Libraries/BCrypt/BCrypt.hpp>
 
 AuthSession::AuthSession(tcp::socket &&socket)
 : Socket(std::move(socket))
@@ -95,13 +96,35 @@ bool AuthSession::HandleIncomingPacket(PacketBuffer &packet)
 void AuthSession::Handle_CA_LOGIN(PacketBuffer &packet)
 {
 	PACKET_CA_LOGIN pkt;
+	bool authenticated = false;
 
 	packet >> pkt;
 
-	AuthLog->info("Authentication of account '{'{}' requested.", pkt.op_code, pkt.username, pkt.username);
+	AuthLog->info("Authentication of account '{}' requested.", pkt.username);
 
-	if (!VerifyCredentials(pkt.username, pkt.password))
-		return;
+	switch (AuthServer->getAuthConfig().pass_hash_method)
+	{
+	case PASS_HASH_NONE:
+	case PASS_HASH_MD5:
+		authenticated = VerifyCredentialsPlainText(pkt.username, pkt.password);
+		break;
+	case PASS_HASH_BCRYPT:
+		authenticated = VerifyCredentialsBCrypt(pkt.username, pkt.password);
+		break;
+	}
+
+	if (authenticated) {
+		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
+
+		if (CheckIfAlreadyConnected(this->game_account->getId())) {
+			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
+			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
+		} else {
+			ProcessAuthentication();
+		}
+	} else {
+		AuthLog->info("Rejected unknown account '{}' or incorrect password.", pkt.username);
+	}
 }
 
 void AuthSession::ProcessAuthentication()
@@ -110,15 +133,44 @@ void AuthSession::ProcessAuthentication()
 	this->game_account->setLastLogin((int) time(NULL));
 
 	Respond_AC_ACCEPT_LOGIN();
-
-	AuthLog->info("Authenticated.");
 }
 
-bool AuthSession::VerifyCredentials(std::string username, std::string password)
+bool AuthSession::VerifyCredentialsBCrypt(std::string username, std::string password)
+{
+	std::string query = "SELECT * FROM game_account WHERE username = ?";
+	auto sql = AuthServer->MySQLBorrow();
+	bool ret = false;
+
+	try {
+		sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
+		pstmt->setString(1, username);
+		sql::ResultSet *res = pstmt->executeQuery();
+
+		if (res != nullptr && res->next()
+			&& BCrypt::validatePassword(password, res->getString("password"))) {
+			/**
+			 * Create Game Account Data
+			 */
+			this->game_account = std::make_unique<GameAccount>(res);
+			ret = true;
+		}
+
+		delete res;
+		delete pstmt;
+	} catch (sql::SQLException &e) {
+		AuthLog->error("AuthSession::VerifyCredentialsBCrypt: {}", e.what());
+	}
+
+	AuthServer->MySQLUnborrow(sql);
+
+	return ret;
+}
+
+bool AuthSession::VerifyCredentialsPlainText(std::string username, std::string password)
 {
 	std::string query = "SELECT * FROM game_account WHERE username = ? AND password = ?";
 	auto sql = AuthServer->MySQLBorrow();
-	bool ret = true;
+	bool ret = false;
 
 	try {
 		sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
@@ -127,16 +179,11 @@ bool AuthSession::VerifyCredentials(std::string username, std::string password)
 		sql::ResultSet *res = pstmt->executeQuery();
 
 		if (res != nullptr && res->next()) {
-			if ((ret = CheckIfAlreadyConnected(res->getUInt64("id")))) {
-				AuthLog->info("Refused connection for account '{}', already online.", username);
-			} else {
-				this->game_account = std::make_unique<GameAccount>(res);
-				ProcessAuthentication();
-			}
-		} else {
-			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
-			AuthLog->info("Refused connection for unknown account '{}' or incorrect password.", username);
-			ret = false;
+			/**
+			 * Create Game Account Data
+			 */
+			this->game_account = std::make_unique<GameAccount>(res);
+			ret = true;
 		}
 
 		delete res;
@@ -158,7 +205,6 @@ bool AuthSession::CheckIfAlreadyConnected(uint64_t id)
 	// Check if session already exists.
 	if (online_index != onlineList->end()) {
 		onlineList->erase(online_index);
-		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
 		return true;
 	}
 

@@ -16,7 +16,8 @@ variables: &base_vars
     - echo "Building $CI_BUILD_NAME"
     - uname -a
     - apt-get update --yes
-    - apt-get install --yes cmake libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev mysql-server mysql-client
+    - apt-get install --yes $INSTALL_PACKAGES
+    - apt-get install --yes libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
     - mysql --version
     - service mysql start
     - echo "CREATE USER '${MYSQL_USER}'@'mysql' IDENTIFIED BY '${MYSQL_PASSWORD}';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
@@ -28,18 +29,22 @@ variables: &base_vars
 
 # Compilers
 
-one:cmake:
+debian:buster:
   <<: *prerequisites
   stage: primary
-  image: gcc
+  image: debian:buster
   variables:
     <<: *base_vars
+    INSTALL_PACKAGES: cmake default-mysql-server default-mysql-client
   script:
-    - mkdir build
-    - cd build
-    - rm -rf ./*
-    - cmake ../
-    - make install -j 4
-    - cd ../bin
-    - ./auth --test-run
-    - ./char --test-run
+    - ./gitlab-ci.sh
+
+debian:stretch:
+  <<: *prerequisites
+  stage: primary
+  image: ubuntu:artful
+  variables:
+    <<: *base_vars
+    INSTALL_PACKAGES: cmake mysql-server mysql-client
+  script:
+    - ./gitlab-ci.sh

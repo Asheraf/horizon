@@ -29,7 +29,7 @@ Network.Threads: 10
 # 1 = MD5 (client sent)
 # 2 = Bcrypt (Advanced hashing)
 ###################################################
-pass_hash_method: 0
+pass_hash_method: 2
 
 ###################################################
 # Auth Server Database Settings

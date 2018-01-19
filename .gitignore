@@ -5,3 +5,7 @@ cmake-build-debug/
 build/
 version.hpp
 bin
+
+# BCrypt Deliverable Exclusions
+bcrypt.a
+bcrypt.o

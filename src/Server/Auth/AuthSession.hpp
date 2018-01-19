@@ -65,7 +65,8 @@ public:
 	void Respond_AC_REFUSE_LOGIN_R2();
 	void Respond_CA_CHARSERVERCONNECT();
 
-	bool VerifyCredentials(std::string username, std::string password);
+	bool VerifyCredentialsBCrypt(std::string username, std::string password);
+	bool VerifyCredentialsPlainText(std::string username, std::string password);
 	bool CheckIfAlreadyConnected(uint64_t id);
 	void ProcessAuthentication();
 	void InitHandlers();
