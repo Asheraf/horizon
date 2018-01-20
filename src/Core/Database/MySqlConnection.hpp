@@ -1,10 +1,14 @@
-//
-// Created by SagunKho on 29/11/2017.
-//
-
-#ifndef HORIZON_MYSQLCONNECTION_H
-#define HORIZON_MYSQLCONNECTION_H
-/* Copyright 2013 Active911 Inc.
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright 2013 Active911 Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +22,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#ifndef HORIZON_MYSQLCONNECTION_H
+#define HORIZON_MYSQLCONNECTION_H
 #include "ConnectionPool.hpp"
 #include <string>
 #include <mysql_connection.h>

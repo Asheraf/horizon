@@ -14,7 +14,7 @@
 # or viewing without permission.
 #########################################################
 
-# Login Table
+# Game Accounts
 CREATE TABLE IF NOT EXISTS `game_account` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(23) NOT NULL DEFAULT '',

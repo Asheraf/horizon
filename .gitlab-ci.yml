@@ -1,3 +1,20 @@
+###################################################
+#       _   _            _                        #
+#      | | | |          (_)                       #
+#      | |_| | ___  _ __ _ _______  _ __          #
+#      |  _  |/ _ \| '__| |_  / _ \| '_  \        #
+#      | | | | (_) | |  | |/ / (_) | | | |        #
+#      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
+###################################################
+# This file is part of Horizon (c).
+# Copyright (c) 2018 Horizon Dev Team.
+#
+# Base Author - Sagun Khosla. (sagunxp@gmail.com)
+#
+# Under a proprietary license this file is not for use
+# or viewing without permission.
+###################################################
+
 stages:
   - primary
 
@@ -7,17 +24,16 @@ variables: &base_vars
   MYSQL_USER: 'ragnarok'
   MYSQL_ROOT_PASSWORD: 'ragnarok'
   MYSQL_PASSWORD: 'ragnarok'
-  MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
-  GIT_DEPTH: '1'
+  MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+  GIT_DEPTH: '3'
   DEBIAN_COMMON_PACKAGES: cmake mysql libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev
 
 .prerequisites: &prerequisites
   before_script:
     - echo "Building $CI_BUILD_NAME"
     - uname -a
-    - apt-get update --yes
-    - apt-get install --yes $INSTALL_PACKAGES
-    - apt-get install --yes libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+    - ${PKG_CMD} update
+    - ${PKG_CMD} install $INSTALL_PACKAGES
     - mysql --version
     - service mysql start
     - echo "CREATE USER '${MYSQL_USER}'@'mysql' IDENTIFIED BY '${MYSQL_PASSWORD}';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
@@ -28,23 +44,24 @@ variables: &base_vars
     - mysql:latest
 
 # Compilers
-
 debian:buster:
   <<: *prerequisites
   stage: primary
   image: debian:buster
   variables:
     <<: *base_vars
-    INSTALL_PACKAGES: cmake default-mysql-server default-mysql-client
+    PKG_CMD: apt-get --yes
+    INSTALL_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
   script:
     - ./gitlab-ci.sh
 
 debian:stretch:
   <<: *prerequisites
   stage: primary
-  image: ubuntu:artful
+  image: debian:stretch
   variables:
     <<: *base_vars
-    INSTALL_PACKAGES: cmake mysql-server mysql-client
+    PKG_CMD: apt-get --yes
+    INSTALL_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
   script:
-    - ./gitlab-ci.sh
+    - ./gitlab-ci.sh -DCMAKE_CXX_COMPILER=g++
