@@ -17,3 +17,4 @@
 
 add_subdirectory(Auth)
 add_subdirectory(Char)
+add_subdirectory(Zone)

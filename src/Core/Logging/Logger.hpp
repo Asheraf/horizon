@@ -24,6 +24,7 @@ enum log_main_types
 {
 	LOG_MAIN_AUTH,
 	LOG_MAIN_CHAR,
+	LOG_MAIN_ZONE,
 	LOG_MAIN_CORE,
 	LOG_MAIN_DATABASE,
 	LOG_MAIN_NETWORK
@@ -74,6 +75,7 @@ public:
 
 #define AuthLog Logger().getInstance()->registerLogger(LOG_MAIN_AUTH, "Auth", "logs/auth-server.log", 0, 102400, 1)
 #define CharLog Logger().getInstance()->registerLogger(LOG_MAIN_CHAR, "Char", "logs/char-server.log", 0, 102400, 1)
+#define ZoneLog Logger().getInstance()->registerLogger(LOG_MAIN_ZONE, "Zone", "logs/zone-server.log", 0, 102400, 1)
 #define CoreLog Logger().getInstance()->registerLogger(LOG_MAIN_CORE, "Core", "logs/core.log", 0, 102400, 1)
 #define DBLog Logger().getInstance()->registerLogger(LOG_MAIN_DATABASE, "Database", "logs/database.log", 0, 102400, 1)
 
