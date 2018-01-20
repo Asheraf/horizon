@@ -77,7 +77,7 @@ public:
 			// Set Default Schema
 			conn->sql_connection->setSchema(database);
 		} catch (sql::SQLException &e) {
-			throw e;
+			DBLog->error("{}", e.what());
 		}
 
 		DBLog->info("Initiated MySQL connection to database '{}' for user '{}' on host '{}'.", this->database, this->username, this->host);

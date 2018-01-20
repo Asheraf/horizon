@@ -54,7 +54,7 @@ public:
 			return false;
 		}
 
-		int32_t i = 0;
+		uint32_t i = 0;
 		for ( i = 0; i < _threadCount; i++) {
 			_threads[i].Start();
 		}
@@ -67,7 +67,7 @@ public:
 		_acceptor->Close();
 
 		if (_threadCount != 0) {
-			for (int32_t i = 0; i < _threadCount; i++) {
+			for (uint32_t i = 0; i < _threadCount; i++) {
 				_threads[i].Stop();
 			}
 		}
@@ -84,7 +84,7 @@ public:
 	void Wait()
 	{
 		if (_threadCount != 0) {
-			for (int32_t i = 0; i < _threadCount; ++i){
+			for (uint32_t i = 0; i < _threadCount; ++i){
 				_threads[i].Wait();
 			}
 		}
@@ -102,7 +102,7 @@ public:
 		}
 	}
 
-	int32_t GetNetworkThreadCount() const { return _threadCount; }
+	uint32_t GetNetworkThreadCount() const { return _threadCount; }
 
 	uint32_t SelectThreadWithMinConnections() const
 	{
@@ -127,7 +127,7 @@ protected:
 
 	AsyncAcceptor *_acceptor;
 	NetworkThread<SocketType> *_threads;
-	int32_t _threadCount;
+	uint32_t _threadCount;
 };
 
 #endif /* HORIZON_SOCKETMGR_HPP */

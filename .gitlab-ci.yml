@@ -16,7 +16,8 @@
 ###################################################
 
 stages:
-  - primary
+  - debug
+  - release
 
 variables: &base_vars
   # Configure mysql service (https://hub.docker.com/_/mysql/)
@@ -44,24 +45,74 @@ variables: &base_vars
     - mysql:latest
 
 # Compilers
-debian:buster:
+debian:buster-gcc:
   <<: *prerequisites
-  stage: primary
+  stage: debug
   image: debian:buster
   variables:
     <<: *base_vars
     PKG_CMD: apt-get --yes
-    INSTALL_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+    INSTALL_PACKAGES: git g++ cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
   script:
-    - ./gitlab-ci.sh
+    - g++ --version
+    - ./horizon build
+    - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
+    - cp bin/config/char-server.yaml.dist bin/config/char-server.yaml
+    - cp bin/config/zone-server.yaml.dist bin/config/zone-server.yaml
+    - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon char bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon zone bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
 
-debian:stretch:
+debian:buster-clang:
   <<: *prerequisites
-  stage: primary
+  stage: debug
+  image: debian:buster
+  variables:
+    <<: *base_vars
+    PKG_CMD: apt-get --yes
+    INSTALL_PACKAGES: git clang cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+  script:
+    - clang --version
+    - ./horizon build
+    - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
+    - cp bin/config/char-server.yaml.dist bin/config/char-server.yaml
+    - cp bin/config/zone-server.yaml.dist bin/config/zone-server.yaml
+    - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon char bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon zone bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+
+debian:stretch-gcc:
+  <<: *prerequisites
+  stage: debug
   image: debian:stretch
   variables:
     <<: *base_vars
     PKG_CMD: apt-get --yes
-    INSTALL_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+    INSTALL_PACKAGES: git g++ cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
   script:
-    - ./gitlab-ci.sh
+    - g++ --version
+    - ./horizon build
+    - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
+    - cp bin/config/char-server.yaml.dist bin/config/char-server.yaml
+    - cp bin/config/zone-server.yaml.dist bin/config/zone-server.yaml
+    - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon char bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon zone bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+
+debian:stretch-clang:
+  <<: *prerequisites
+  stage: debug
+  image: debian:stretch
+  variables:
+    <<: *base_vars
+    PKG_CMD: apt-get --yes
+    INSTALL_PACKAGES: git clang cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+  script:
+    - clang++ --version
+    - ./horizon build
+    - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
+    - cp bin/config/char-server.yaml.dist bin/config/char-server.yaml
+    - cp bin/config/zone-server.yaml.dist bin/config/zone-server.yaml
+    - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon char bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
+    - ./horizon zone bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10

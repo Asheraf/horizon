@@ -20,7 +20,7 @@ target_link_libraries(zone
 	PUBLIC
         boost
         networking
-	-lpthread
+	    -lpthread
         ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
 )
@@ -43,4 +43,8 @@ target_include_directories(zone
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
-install(TARGETS zone DESTINATION bin)
+install(TARGETS zone
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+
+install(FILES ${PROJECT_SOURCE_DIR}/config/zone-server.yaml.dist DESTINATION ${CONF_DIR})

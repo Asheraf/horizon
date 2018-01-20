@@ -31,7 +31,7 @@ using boost::asio::ip::udp;
 /* Create Socket Connection */
 boost::asio::io_service *io_service;
 
-ZoneMain::ZoneMain() : Server("Zone", "../config/", "zone-server.yaml")
+ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.yaml")
 {
 }
 
@@ -61,6 +61,9 @@ bool ZoneMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = this->general_config.config_file_path + this->general_config.config_file_name;
+	std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
+	uint16_t port = 3306;
+	int connection_threads = 2;
 
 	try {
 		config = YAML::LoadFile(filepath);
@@ -87,13 +90,10 @@ bool ZoneMain::ReadConfig()
 
 	/**
 	 * Database Configuration
-	 * @brief
+	 * @brief This is read only if the process is not a test-run.
 	 */
-	if (config["database"]) {
+	if (!ZoneServer->isTestRun() && config["database"]) {
 		YAML::Node n = config["database"];
-		std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
-		uint16_t port = 3306;
-		uint8_t connection_threads = 2;
 
 		if (n.Type() != YAML::NodeType::Map) {
 			ZoneLog->error("Unsupported node type in element {} for '{}'.", n.as<std::string>());
@@ -137,7 +137,7 @@ bool ZoneMain::ReadConfig()
 		if (!n["connection_threads"] || !n["connection_threads"].IsScalar()) {
 			ZoneLog->warn("Connection Threads not provided or invalid. Defaulting to '{}'...", connection_threads);
 		} else {
-			connection_threads = (uint8_t) n["connection_threads"].as<int>();
+			connection_threads = n["connection_threads"].as<int>();
 		}
 
 		if (n["charset"] || n["charset"].IsScalar()) {
@@ -157,16 +157,15 @@ bool ZoneMain::ReadConfig()
 				charset = charset;
 			}
 		}
-
-		ZoneServer->setDBHost(hostname);
-		ZoneServer->setDBDatabase(database);
-		ZoneServer->setDBUsername(username);
-		ZoneServer->setDBPassword(password);
-
-		// Create a pool of mysql connections.
-		mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(hostname, database, username, password);
-		mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(connection_threads, mysql_connection_factory);
-	} else {
+		/**
+		 * Set MySQL Information.
+		 */
+		setDBHost(hostname);
+		setDBDatabase(database);
+		setDBUsername(username);
+		setDBPassword(password);
+		setDBMaxThreads(connection_threads);
+	} else if (!ZoneServer->isTestRun()) {
 		ZoneLog->error("Zone database configuration not provided in '{}'.", filepath);
 		return false;
 	}
@@ -197,6 +196,11 @@ int main(int argc, const char * argv[])
 	 */
 	if (!ZoneServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
+
+	/**
+	 * MySQL Startup
+	 */
+	ZoneServer->InitializeMySQLConnections();
 
 	io_service = new boost::asio::io_service();
 

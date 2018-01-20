@@ -24,6 +24,9 @@ set (AUTH_TARGET_NAME auth)
 SET(CMAKE_BUILD_TYPE Debug)
 project (${PROJECT_NAME})
 
+# Compiler Options.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-c99-extensions -Wno-gnu-empty-struct")
+
 #################################
 # CMAKE Module Path
 #################################
@@ -40,8 +43,9 @@ include(cmake/genversion/genversion.cmake)
 #################################
 # Binary Installation Directory
 #################################
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX})
-
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #################################
 # INCLUDE COMPONENTS
@@ -74,7 +78,7 @@ check_cxx_source_compiles("
 #################################
 # Boost Library
 #################################
-set(BOOST_REQUIRED_VERSION 1.65.1)
+set(BOOST_REQUIRED_VERSION 1.55)
 
 if (STD_HAS_WORKING_WREGEX)
     find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams)
@@ -136,3 +140,8 @@ include(FindMySQLConnector)
 # Horizon Project Source
 #################
 add_subdirectory(src)
+
+#################
+# Create logs directory.
+#################
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/logs)

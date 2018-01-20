@@ -31,7 +31,7 @@ using boost::asio::ip::udp;
 boost::asio::io_service *io_service;
 
 AuthMain::AuthMain()
-: Server("Auth", "../config/", "auth-server.yaml")
+: Server("Auth", "config/", "auth-server.yaml")
 {
 	account_online_list = std::make_shared<OnlineListType>();
 }
@@ -56,6 +56,9 @@ bool AuthMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = this->general_config.config_file_path + this->general_config.config_file_name;
+	std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
+	uint16_t port = 3306;
+	int connection_threads = 2;
 
 	try {
 		config = YAML::LoadFile(filepath);
@@ -95,24 +98,17 @@ bool AuthMain::ReadConfig()
 	 * Database Configuration
 	 * @brief
 	 */
-	if (config["database"]) {
+	if (!AuthServer->isTestRun() && config["database"]) {
 		YAML::Node n = config["database"];
-		std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
-		uint16_t port = 3306;
-		uint8_t connection_threads = 2;
 
 		switch (n.Type())
 		{
 		case YAML::NodeType::Map:
 		{
-			if (!AuthServer->isTestRun()) {
-				if (!n["hostname"] || !n["hostname"].IsScalar()) {
-					AuthLog->warn("Hostname not provided or invalid. Defaulting to '{}'...", hostname);
-				} else {
-					hostname = n["hostname"].as<std::string>();
-				}
+			if (!n["hostname"] || !n["hostname"].IsScalar()) {
+				AuthLog->warn("Hostname not provided or invalid. Defaulting to '{}'...", hostname);
 			} else {
-				hostname = "mysql";
+				hostname = n["hostname"].as<std::string>();
 			}
 
 			if (!n["port"] || !n["port"].IsScalar()) {
@@ -142,7 +138,7 @@ bool AuthMain::ReadConfig()
 			if (!n["connection_threads"] || !n["connection_threads"].IsScalar()) {
 				AuthLog->warn("Connection Threads not provided or invalid. Defaulting to '{}'...", connection_threads);
 			} else {
-				connection_threads = (uint8_t) n["connection_threads"].as<int>();
+				connection_threads = n["connection_threads"].as<int>();
 			}
 
 			if (n["charset"] || n["charset"].IsScalar()) {
@@ -162,22 +158,21 @@ bool AuthMain::ReadConfig()
 					charset = charset;
 				}
 			}
-
-			AuthServer->setDBHost(hostname);
-			AuthServer->setDBDatabase(database);
-			AuthServer->setDBUsername(username);
-			AuthServer->setDBPassword(password);
-
-			// Create a pool of MySQL connections
-			mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(hostname, database, username, password);
-			mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(connection_threads, mysql_connection_factory);
 		}
 			break;
 		default:
 			AuthLog->error("Unsupported node type in element {} for '{}'.", n.as<std::string>());
 			return false;
 		}
-	} else {
+		/**
+		 * Set MySQL Information.
+		 */
+		setDBHost(hostname);
+		setDBDatabase(database);
+		setDBUsername(username);
+		setDBPassword(password);
+		setDBMaxThreads(connection_threads);
+	} else if (!AuthServer->isTestRun()) {
 		AuthLog->error("Auth database configuration not provided in '{}'.", filepath);
 		return false;
 	}
@@ -250,6 +245,11 @@ int main(int argc, const char * argv[])
 	if (!AuthServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
+	/**
+	 * MySQL Startup
+	 */
+	AuthServer->InitializeMySQLConnections();
+
 	io_service = new boost::asio::io_service();
 
 	// Start Auth Network
@@ -258,7 +258,8 @@ int main(int argc, const char * argv[])
 
 	boost::asio::signal_set signals(*io_service, SIGINT, SIGTERM);
 
-	signals.async_wait(SignalHandler);
+	if (!AuthServer->isTestRun())
+		signals.async_wait(SignalHandler);
 
 	/*
 	 * I/O Run Loop

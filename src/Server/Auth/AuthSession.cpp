@@ -221,60 +221,60 @@ bool AuthSession::CheckIfAlreadyConnected(uint64_t id)
 	return false;
 }
 
-void AuthSession::Handle_CA_REQ_HASH(PacketBuffer &packet)
+void AuthSession::Handle_CA_REQ_HASH(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_REQ_HASH pkt;
 
 }
 
-void AuthSession::Handle_CA_LOGIN2(PacketBuffer &packet)
+void AuthSession::Handle_CA_LOGIN2(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN2 pkt;
 }
 
-void AuthSession::Handle_CA_LOGIN3(PacketBuffer &packet)
+void AuthSession::Handle_CA_LOGIN3(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN3 pkt;
 
 }
 
-void AuthSession::Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &packet)
+void AuthSession::Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_CONNECT_INFO_CHANGED pkt;
 
 }
 
-void AuthSession::Handle_CA_EXE_HASHCHECK(PacketBuffer &packet)
+void AuthSession::Handle_CA_EXE_HASHCHECK(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_EXE_HASHCHECK pkt;
 
 }
 
-void AuthSession::Handle_CA_LOGIN_PCBANG(PacketBuffer &packet)
+void AuthSession::Handle_CA_LOGIN_PCBANG(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_PCBANG pkt;
 
 }
 
-void AuthSession::Handle_CA_LOGIN4(PacketBuffer &packet)
+void AuthSession::Handle_CA_LOGIN4(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN4 pkt;
 
 }
 
-void AuthSession::Handle_CA_LOGIN_HAN(PacketBuffer &packet)
+void AuthSession::Handle_CA_LOGIN_HAN(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_HAN pkt;
 
 }
 
-void AuthSession::Handle_CA_SSO_LOGIN_REQ(PacketBuffer &packet)
+void AuthSession::Handle_CA_SSO_LOGIN_REQ(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_SSO_LOGIN_REQ pkt;
 
 }
 
-void AuthSession::Handle_CA_LOGIN_OTP(PacketBuffer &packet)
+void AuthSession::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_OTP pkt;
 

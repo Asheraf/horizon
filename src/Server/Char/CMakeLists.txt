@@ -65,3 +65,5 @@ target_include_directories(char
 install(TARGETS char
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+
+install(FILES ${PROJECT_SOURCE_DIR}/config/char-server.yaml.dist DESTINATION ${CONF_DIR})

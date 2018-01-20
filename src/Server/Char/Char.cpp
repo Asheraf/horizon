@@ -32,7 +32,7 @@ using boost::asio::ip::udp;
 /* Create Socket Connection */
 boost::asio::io_service *io_service;
 
-CharMain::CharMain() : Server("Char", "../config/", "char-server.yaml")
+CharMain::CharMain() : Server("Char", "config/", "char-server.yaml")
 {
 }
 
@@ -62,6 +62,9 @@ bool CharMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = this->general_config.config_file_path + this->general_config.config_file_name;
+	std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
+	uint16_t port = 3306;
+	int connection_threads = 2;
 
 	try {
 		config = YAML::LoadFile(filepath);
@@ -90,11 +93,8 @@ bool CharMain::ReadConfig()
 	 * Database Configuration
 	 * @brief
 	 */
-	if (config["database"]) {
+	if (!CharServer->isTestRun() && config["database"]) {
 		YAML::Node n = config["database"];
-		std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
-		uint16_t port = 3306;
-		uint8_t connection_threads = 2;
 
 		switch (n.Type())
 		{
@@ -136,7 +136,7 @@ bool CharMain::ReadConfig()
 			if (!n["connection_threads"] || !n["connection_threads"].IsScalar()) {
 				CharLog->warn("Connection Threads not provided or invalid. Defaulting to '{}'...", connection_threads);
 			} else {
-				connection_threads = (uint8_t) n["connection_threads"].as<int>();
+				connection_threads = n["connection_threads"].as<int>();
 			}
 
 			if (n["charset"] || n["charset"].IsScalar()) {
@@ -156,21 +156,20 @@ bool CharMain::ReadConfig()
 					charset = charset;
 				}
 			}
-
-			CharServer->setDBHost(hostname);
-			CharServer->setDBDatabase(database);
-			CharServer->setDBUsername(username);
-			CharServer->setDBPassword(password);
-
-			// Create a pool of mysql connections.
-			mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(hostname, database, username, password);
-			mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(connection_threads, mysql_connection_factory);
 			break;
 		default:
 			CharLog->error("Unsupported node type in element {} for '{}'.", n.as<std::string>());
 			return false;
 		}
-	} else {
+		/**
+		 * Set MySQL Information.
+		 */
+		setDBHost(hostname);
+		setDBDatabase(database);
+		setDBUsername(username);
+		setDBPassword(password);
+		setDBMaxThreads(connection_threads);
+	} else if (!CharServer->isTestRun()) {
 		CharLog->error("Char database configuration not provided in '{}'.", filepath);
 		return false;
 	}
@@ -201,6 +200,12 @@ int main(int argc, const char * argv[])
 	 */
 	if (!CharServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
+
+
+	/**
+	 * MySQL Startup
+	 */
+	CharServer->InitializeMySQLConnections();
 
 	io_service = new boost::asio::io_service();
 

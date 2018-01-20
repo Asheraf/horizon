@@ -94,22 +94,22 @@ bool CharSession::HandleIncomingPacket(PacketBuffer &packet)
 	return true;
 }
 
-void CharSession::Handle_CH_ENTER(PacketBuffer &pkt)
+void CharSession::Handle_CH_ENTER(PacketBuffer &/*pkt*/)
 {
 	//
 }
 
-void CharSession::Handle_CH_SELECT_CHAR(PacketBuffer &pkt)
+void CharSession::Handle_CH_SELECT_CHAR(PacketBuffer &/*pkt*/)
 {
 	//
 }
 
-void CharSession::Handle_CH_MAKE_CHAR(PacketBuffer &pkt)
+void CharSession::Handle_CH_MAKE_CHAR(PacketBuffer &/*pkt*/)
 {
 	//
 }
 
-void CharSession::Handle_CH_DELETE_CHAR(PacketBuffer &pkt)
+void CharSession::Handle_CH_DELETE_CHAR(PacketBuffer &/*pkt*/)
 {
 	//
 }

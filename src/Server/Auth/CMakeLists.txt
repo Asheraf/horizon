@@ -79,3 +79,5 @@ target_include_directories(auth
 install(TARGETS auth
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+
+install(FILES ${PROJECT_SOURCE_DIR}/config/auth-server.yaml.dist DESTINATION ${CONF_DIR})

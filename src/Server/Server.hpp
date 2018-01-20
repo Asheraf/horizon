@@ -50,13 +50,17 @@ public:
 	void setDBUsername(std::string &username) { this->general_config.database.username = username; }
 	void setDBPassword(std::string &password) { this->general_config.database.password = password; }
 	void setDBDatabase(std::string &database) { this->general_config.database.database = database; }
+	void setDBMaxThreads(int &max_threads) { this->general_config.database.max_threads = max_threads; }
 
 	std::string &getDBHost() { return this->general_config.database.host; }
 	std::string &getDBUsername() { return this->general_config.database.username; }
 	std::string &getDBPassword() { return this->general_config.database.password; }
 	std::string &getDBDatabase() { return this->general_config.database.database; }
+	int &getDBMaxThreads() { return this->general_config.database.max_threads; }
 
 	struct network_configuration &getNetConf() { return this->general_config.network; }
+
+	void InitializeMySQLConnections();
 
 protected:
 	/* Configuration */
@@ -73,6 +77,7 @@ protected:
 		struct {
 			std::string host, username, password;
 			std::string database;
+			int max_threads;
 		} database;
 	} general_config;
 

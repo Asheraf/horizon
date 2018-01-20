@@ -19,7 +19,6 @@
 MODE="$1"
 shift
 
-
 function header
 {
     echo "                                                 "
@@ -38,11 +37,12 @@ function usage
 {
     header
 	echo "usage:"
-	echo "    $0 start"
+	echo "    $0 start [directory] [args]"
 	echo "    $0 stop"
-	echo "    $0 build [configure args]"
-	echo "    $0 auth <dbname> [dbuser] [dbpassword] [dbhost] [args]"
-	echo "    $0 char <dbname> [dbuser] [dbpassword] [dbhost] [args]"
+	echo "    $0 build [args]"
+	echo "    $0 auth [directory] [args]"
+	echo "    $0 char [directory] [args]"
+	echo "    $0 zone [directory] [args]"
 	echo "    $0 test <dbname> [dbuser] [dbpassword] [dbhost]"
 	echo "    $0 createdb <dbname> [dbuser] [dbpassword] [dbhost]"
 	echo "    $0 importdb <dbname> [dbuser] [dbpassword] [dbhost]"
@@ -67,7 +67,7 @@ function build_horizon
 
 function aborterror
 {
-	echo $@
+	echo "Horizon: $@"
 	exit 1
 }
 
@@ -122,17 +122,85 @@ case "$MODE" in
 		;;
 esac
 
+SERVERS=(auth char zone)
+
+function check_compile
+{
+    if [ ! -f ./$1/$2 ]; then
+        aborterror "$2 is not compiled... aborting."
+    fi
+}
+
+function start_server
+{
+    exe=$1
+    name=$2
+    dir=$3
+    args_str="$4 $5 $6 $7 $8 $9"
+    ###########
+    # Get Directory
+    ###########
+    shift
+    if [ -z "$dir" ]
+    then
+        dir="bin"
+    fi
+    ###########
+    # Start Server
+    ###########
+    check_compile ${dir} ${exe}
+    serv="${exe} ${args_str}"
+    cd $dir
+    exec ./${serv}
+    echo "${name} Server has started."
+    cd ..
+}
+
 case "$MODE" in
     start)
-        if auth 2> /dev/null; then
-            auth "$@"
-        else
-            if ./bin/auth 2> /dev/null; then
-                ./bin/auth "$@"
-            else
-                aborterror "Auth server not compiled, please compile before running."
-            fi
+        ###########
+        # Get Directory
+        ###########
+        dir=$1
+        if [ -z "$1" ]
+        then
+            dir="bin"
         fi
+
+        shift
+
+        ###########
+        # Start Servers
+        ###########
+        for i in ${SERVERS[@]};
+        do
+            check_compile ${dir} $i
+            cd $dir
+            serv="${i} $@"
+            exec ./${serv}&
+            echo $! > .${i}.pid;
+            cd ..
+        done
+        ;;
+    stop)
+        cd bin
+        for i in ${SERVERS[@]};
+        do
+            if [ -e ./.${i}.pid ]; then
+                kill $(cat .${i}.pid)
+                rm .${i}.pid
+            fi
+        done
+        cd ..
+        ;;
+    auth)
+        start_server $MODE "Authentication" $@
+        ;;
+    char)
+        start_server $MODE "Character" $@
+        ;;
+    zone)
+        start_server $MODE "Zone" $@
         ;;
 	createdb)
 		console_log "Creating Horizon MySQL Database $DBNAME as $DBUSER..."
