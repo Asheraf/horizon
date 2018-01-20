@@ -4,8 +4,6 @@
 #  spdlog_INCLUDE_DIR  - The path to where the spdlog include files are.
 # If spdlog is not found, spdlog_FOUND is set to false.
 
-find_package(PkgConfig)
-
 if(NOT EXISTS "${spdlog_INCLUDE_DIR}")
     find_path(spdlog_INCLUDE_DIR
             NAMES spdlog/spdlog.h

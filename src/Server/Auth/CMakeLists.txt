@@ -76,4 +76,6 @@ target_include_directories(auth
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
-install(TARGETS auth DESTINATION bin)
+install(TARGETS auth
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    CONFIGURATIONS ${CMAKE_BUILD_TYPE})

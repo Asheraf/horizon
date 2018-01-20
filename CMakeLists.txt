@@ -14,73 +14,54 @@
 # or viewing without permission.
 #########################################################
 
+#################################
+# Project Setup
+#################################
 cmake_minimum_required (VERSION 3.5 FATAL_ERROR)
-
 set(CMAKE_CXX_STANDARD 14)  # enable C++11 standard
-
 set (PROJECT_NAME "Horizon" CXX)
 set (AUTH_TARGET_NAME auth)
-
 SET(CMAKE_BUILD_TYPE Debug)
-
 project (${PROJECT_NAME})
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
-
+#################################
+# CMAKE Module Path
+#################################
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 
+#################################
+# Find revision ID and hash of the sourcetree
+#################################
 if(NOT WITHOUT_GIT)
   find_package(Git)
 endif()
-
-# Find revision ID and hash of the sourcetree
 include(cmake/genversion/genversion.cmake)
 
-####
+#################################
+# Binary Installation Directory
+#################################
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX})
 
+
+#################################
+# INCLUDE COMPONENTS
+#################################
 include(CheckCXXSourceRuns)
 include(CheckIncludeFiles)
-
 include(CheckPlatform)
 include(GroupSources)
 include(AutoCollect)
-include(FindMySQL)
-include(FindMySQLConnector)
-include(FindOpenSSL)
 
+#################################
 # print out the results before continuing
+#################################
 include(cmake/showoptions.cmake)
 
-# add this options before PROJECT keyword
+#################################
+# Disable in-source builds and changes
+#################################
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
-##################
-# Boost Library
-##################
-if(WIN32)
-    set(BOOST_DEBUG ON)
-    if(DEFINED ENV{BOOST_ROOT})
-        set(BOOST_ROOT $ENV{BOOST_ROOT})
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0)
-            set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib${PLATFORM}-msvc-12.0)
-        else()
-            if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
-                set(BOOST_LIBRARYDIR ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0)
-            else()
-                list(APPEND BOOST_LIBRARYDIR
-                        ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.1
-                        ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.0 )
-            endif()
-        endif()
-    else()
-        message(FATAL_ERROR "No BOOST_ROOT environment variable could be found! Please make sure it is set and the points to your Boost installation.")
-    endif()
-
-    set(Boost_USE_STATIC_LIBS        ON)
-    set(Boost_USE_MULTITHREADED      ON)
-    set(Boost_USE_STATIC_RUNTIME     OFF)
-endif()
 
 include (CheckCXXSourceCompiles)
 
@@ -89,33 +70,17 @@ check_cxx_source_compiles("
   int main() { std::wregex r(L\".*\"); }"
         STD_HAS_WORKING_WREGEX)
 
-if (WIN32)
-    # On windows the requirements are higher according to the wiki.
-    set(BOOST_REQUIRED_VERSION 1.59)
-else()
-    set(BOOST_REQUIRED_VERSION 1.55)
-endif()
+
+#################################
+# Boost Library
+#################################
+set(BOOST_REQUIRED_VERSION 1.65.1)
 
 if (STD_HAS_WORKING_WREGEX)
     find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams)
 else()
     find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams regex)
 endif()
-
-# Find if Boost was compiled in C++03 mode because it requires -DBOOST_NO_CXX11_SCOPED_ENUMS
-
-set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIR})
-set(CMAKE_REQUIRED_LIBRARIES ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
-set(CMAKE_REQUIRED_FLAGS "-std=c++14")
-check_cxx_source_compiles("
-  #include <boost/filesystem/path.hpp>
-  #include <boost/filesystem/operations.hpp>
-  int main() { boost::filesystem::copy_file(boost::filesystem::path(), boost::filesystem::path()); }"
-        boost_filesystem_copy_links_without_NO_SCOPED_ENUM)
-unset(CMAKE_REQUIRED_INCLUDES)
-unset(CMAKE_REQUIRED_LIBRARIES)
-unset(CMAKE_REQUIRED_FLAGS)
-
 add_library(boost INTERFACE)
 
 target_link_libraries(boost
@@ -136,12 +101,6 @@ target_compile_definitions(boost
         # May be removed when the requirement is raised to boost 1.61 on windows.
         -DBOOST_OPTIONAL_USE_OLD_DEFINITION_OF_NONE)
 
-if (NOT boost_filesystem_copy_links_without_NO_SCOPED_ENUM)
-    target_compile_definitions(boost
-            INTERFACE
-            -DBOOST_NO_CXX11_SCOPED_ENUMS)
-endif()
-
 if (NOT STD_HAS_WORKING_WREGEX)
     target_compile_definitions(boost
             INTERFACE
@@ -149,7 +108,7 @@ if (NOT STD_HAS_WORKING_WREGEX)
 endif()
 
 #################
-# SPDLog
+# SPDLog Library
 #################
 include(FindSPDLog)
 if (spdlog_FOUND)
@@ -159,11 +118,21 @@ else()
 endif()
 
 #################
-# YAML CPP
+# YAML CPP Library
 #################
 include(FindYAMLCpp)
 
 #################
-# Project Source
+# MySQL Library
+#################
+include(FindMySQL)
+
+#################
+# MySQL CPP Connector
+#################
+include(FindMySQLConnector)
+
+#################
+# Horizon Project Source
 #################
 add_subdirectory(src)

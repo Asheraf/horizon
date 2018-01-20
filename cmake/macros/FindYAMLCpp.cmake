@@ -28,6 +28,7 @@ find_path(YAMLCPP_INCLUDE_DIR yaml-cpp/yaml.h
         /opt/local/yaml-cpp/  # DarwinPorts
         /opt/csw/yaml-cpp/    # Blastwave
         /opt/yaml-cpp/
+        /usr/local/opt/yaml-cpp/ # Homebrew
         ${YAMLCPP_DIR}/include/)
 
 # find the yaml-cpp library
@@ -37,6 +38,7 @@ find_library(YAMLCPP_LIBRARY
         PATHS ~/Library/Frameworks
         /Library/Frameworks
         /usr/local
+        /usr/local/opt/ # Homebrew
         /usr
         /sw
         /opt/local

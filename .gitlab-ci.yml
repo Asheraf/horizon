@@ -64,4 +64,4 @@ debian:stretch:
     PKG_CMD: apt-get --yes
     INSTALL_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
   script:
-    - ./gitlab-ci.sh -DCMAKE_CXX_COMPILER=g++
+    - ./gitlab-ci.sh

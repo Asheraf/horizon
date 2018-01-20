@@ -1,12 +1,17 @@
+# Set Default output directory.
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set (CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/bin" CACHE PATH "default install path" FORCE )
+endif()
+
 # set default configuration directory
-if( NOT CONF_DIR )
-  set(CONF_DIR ${CMAKE_INSTALL_PREFIX}/etc)
+if (NOT CONF_DIR)
+  set(CONF_DIR ${CMAKE_INSTALL_PREFIX}/config)
   message(STATUS "UNIX: Using default configuration directory")
 endif()
 
 # set default library directory
-if( NOT LIBSDIR )
-  set(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
+if (NOT LIB_DIR)
+  set(LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
   message(STATUS "UNIX: Using default library directory")
 endif()
 

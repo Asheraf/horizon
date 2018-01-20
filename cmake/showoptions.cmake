@@ -27,7 +27,7 @@ message("")
 
 message("* Install core to        : ${CMAKE_INSTALL_PREFIX}")
 if( UNIX )
-  message("* Install libraries to   : ${LIBSDIR}")
+  message("* Install libraries to   : ${LIB_DIR}")
   message("* Install configs to     : ${CONF_DIR}")
 endif()
 message("")

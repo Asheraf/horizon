@@ -62,4 +62,6 @@ target_include_directories(char
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
-install(TARGETS char DESTINATION bin)
+install(TARGETS char
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    CONFIGURATIONS ${CMAKE_BUILD_TYPE})
