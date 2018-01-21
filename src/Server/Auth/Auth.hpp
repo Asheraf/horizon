@@ -21,34 +21,13 @@
 #include "AuthSession.hpp"
 
 #include "Core/Database/MySqlConnection.hpp"
-#include "Server/Server.hpp"
+#include "Common/Server.hpp"
+#include "Common/Models/Configuration/AuthServerConfiguration.hpp"
 
 #include <string>
+#include <Server/Common/Models/ServerData.hpp>
 
-enum HashingMethods
-{
-	PASS_HASH_NONE   = 0,
-	PASS_HASH_MD5    = 1,
-	PASS_HASH_BCRYPT = 2
-};
-
-struct auth_server_config {
-	enum HashingMethods pass_hash_method = PASS_HASH_NONE;           ///< Password Hashing Method.
-	std::string date_format = "%Y-%m-%d %H:%M:%S";                   ///< Date format sent to clients.
-	uint32_t client_version = 0;                                     ///< Client version to check. (0 = disabled)
-
-	/**
-	 * Authentication Server Logging
-	 */
-	struct {
-		bool enabled = true;                                         ///< Login logging is enabled.
-		uint32_t login_max_tries = 3;                                ///< Max login tries.
-		time_t login_fail_ban_time = 300;                            ///< 5 Minutes ban time
-		time_t login_fail_check_time = 60;                           ///< Save fail information for 1 minute.
-	} logs;
-};
-
-typedef std::vector<uint64_t> OnlineListType;
+typedef std::unordered_map<uint32_t, std::shared_ptr<AuthSession>> OnlineListType;
 
 class AuthMain : public Server
 {
@@ -63,34 +42,44 @@ public:
 	}
 
 	void PrintHeader();
-
 	bool ReadConfig();
 
-	boost::shared_ptr<MySQLConnection> MySQLBorrow()
+	/* Auth Server Configuration */
+	struct auth_server_config &getAuthConfig() { return auth_config; }
+	/* Account Online List */
+	void addOnlineAccount(uint32_t id, std::shared_ptr<AuthSession> session) { account_online_list.insert(std::make_pair(id, session)); }
+	std::shared_ptr<AuthSession> getOnlineAccount(uint32_t id)
 	{
-		return mysql_pool->borrow();
+		auto it = account_online_list.find(id);
+		if (it != account_online_list.end())
+			return it->second;
+		else
+			return nullptr;
 	}
+	void removeOnlineAccount(uint32_t id) { account_online_list.erase(id); }
 
-	void MySQLUnborrow(boost::shared_ptr<MySQLConnection> conn)
+	/* CLI */
+	void InitializeCLICommands();
+	/* Character Server Handlers */
+	void addCharacterServer(struct character_server_data &serv) { character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv))); }
+	std::shared_ptr<character_server_data> getCharacterServer(int id)
 	{
-		mysql_pool->unborrow(conn);
+		auto it = character_servers.find(id);
+
+		if (it != character_servers.end())
+			return it->second;
+		else
+			return nullptr;
 	}
-
-	/**
-	 * Account Online List Getter.
-	 * @return
-	 */
-	std::shared_ptr<OnlineListType> getAccountOnlineList() const;
-
-	const struct auth_server_config &getAuthConfig() { return auth_config; }
 
 protected:
+	/* Auth Server Configuration */
 	struct auth_server_config auth_config;
-
 	/**
 	 * List of accounts that are connected.
 	 */
-	std::shared_ptr<OnlineListType> account_online_list;
+	OnlineListType account_online_list;
+	std::unordered_map<int, std::shared_ptr<character_server_data>> character_servers;
 };
 
 #define AuthServer AuthMain::getInstance()

@@ -24,24 +24,17 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(char
 	${PRIVATE_SOURCES}
-    ../Packet.hpp
-    ../Server.hpp
-    ../Server.cpp
-    ../Common/Models/GameAccount.hpp
-    ../Common/Models/SessionData.hpp
-    ../Common/Definitions.hpp
-    ../Common/Horizon.hpp
-    ../../Core/Database/ConnectionPool.hpp
-    ../../Core/Database/MySqlConnection.hpp
-    ../../Core/Logging/Logger.hpp)
+	${COMMON_SOURCES}
+	${CORE_SOURCES})
 
 target_link_libraries(char
 	PUBLIC
         boost
         networking
-	-lpthread
+	    -lpthread
         ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
+        ${Readline_LIBRARY}
 )
 
 set(INCLUDE_DIRS
@@ -58,6 +51,7 @@ target_include_directories(char
 		${PUBLIC_INCLUDES}
         ${YAMLCPP_INCLUDE_DIR}
         ${MYSQL_CONNECTOR_INCLUDE_DIRS}
+        ${Readline_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

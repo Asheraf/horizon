@@ -7,14 +7,8 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(zone
 	${PRIVATE_SOURCES}
-    ../Packet.hpp
-    ../Server.hpp
-    ../Server.cpp
-    ../Common/Definitions.hpp
-    ../Common/Horizon.hpp
-    ../../Core/Database/ConnectionPool.hpp
-    ../../Core/Database/MySqlConnection.hpp
-    ../../Core/Logging/Logger.hpp)
+	${COMMON_SOURCES}
+	${CORE_SOURCES})
 
 target_link_libraries(zone
 	PUBLIC
@@ -23,6 +17,7 @@ target_link_libraries(zone
 	    -lpthread
         ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
+        ${Readline_LIBRARY}
 )
 
 set(INCLUDE_DIRS
@@ -39,6 +34,7 @@ target_include_directories(zone
 		${PUBLIC_INCLUDES}
         ${YAMLCPP_INCLUDE_DIR}
         ${MYSQL_CONNECTOR_INCLUDE_DIRS}
+        ${Readline_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

@@ -17,23 +17,22 @@
 #include "Auth.hpp"
 #include "AuthSocketMgr.hpp"
 
-#include "Server/Packet.hpp"
-
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
+#include <Server/Common/Server.hpp>
 
 using boost::asio::ip::udp;
+using namespace std::chrono_literals;
 
 /* Create Socket Connection */
-boost::asio::io_service *io_service;
 
 AuthMain::AuthMain()
 : Server("Auth", "config/", "auth-server.yaml")
 {
-	account_online_list = std::make_shared<OnlineListType>();
 }
 
 AuthMain::~AuthMain()
@@ -55,10 +54,7 @@ void AuthMain::PrintHeader()
 bool AuthMain::ReadConfig()
 {
 	YAML::Node config;
-	std::string filepath = this->general_config.config_file_path + this->general_config.config_file_name;
-	std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
-	uint16_t port = 3306;
-	int connection_threads = 2;
+	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
 
 	try {
 		config = YAML::LoadFile(filepath);
@@ -67,161 +63,125 @@ bool AuthMain::ReadConfig()
 		return false;
 	}
 
-	/**
-	 * Auth Server Networking
-	 * @brief Definitions of the authentication server networking configuration.
-	 */
-	if (config["BindIP"])
-		this->general_config.network.listen_ip = config["BindIP"].as<std::string>();
-
-	if (config["AuthPort"])
-		this->general_config.network.listen_port = config["AuthPort"].as<uint16_t>();
-
-	if (config["Network.Threads"])
-		this->general_config.network.max_threads = config["Network.Threads"].as<uint32_t>();
-
-	AuthLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.",
-	              this->general_config.network.listen_ip, this->general_config.network.listen_port, this->general_config.network.max_threads);
-
-	/**
-	 * Additional Configuration
-	 * @brief
-	 */
-    if (config["pass_hash_method"]) {
-		this->auth_config.pass_hash_method = static_cast<HashingMethods>(config["pass_hash_method"].as<int>());
-	}
-
-	if (this->auth_config.pass_hash_method == PASS_HASH_NONE)
-		AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
-
-	/**
-	 * Database Configuration
-	 * @brief
-	 */
-	if (!AuthServer->isTestRun() && config["database"]) {
-		YAML::Node n = config["database"];
-
-		switch (n.Type())
-		{
-		case YAML::NodeType::Map:
-		{
-			if (!n["hostname"] || !n["hostname"].IsScalar()) {
-				AuthLog->warn("Hostname not provided or invalid. Defaulting to '{}'...", hostname);
-			} else {
-				hostname = n["hostname"].as<std::string>();
-			}
-
-			if (!n["port"] || !n["port"].IsScalar()) {
-				AuthLog->warn("Port not provided or invalid. Defaulting to '{}'...", port);
-			} else {
-				port = n["port"].as<uint16_t>();
-			}
-
-			if (!n["database"] || !n["database"].IsScalar()) {
-				AuthLog->warn("Database not provided or invalid. Defaulting to '{}'...", database);
-			} else {
-				database = n["database"].as<std::string>();
-			}
-
-			if (!n["username"] || !n["username"].IsScalar()) {
-				AuthLog->warn("Username not provided or invalid. Defaulting to '{}'...", username);
-			} else {
-				username = n["username"].as<std::string>();
-			}
-
-			if (!n["password"] || !n["password"].IsScalar()) {
-				AuthLog->warn("Password not provided or invalid. Defaulting to '{}'...", password);
-			} else {
-				password = n["password"].as<std::string>();
-			}
-
-			if (!n["connection_threads"] || !n["connection_threads"].IsScalar()) {
-				AuthLog->warn("Connection Threads not provided or invalid. Defaulting to '{}'...", connection_threads);
-			} else {
-				connection_threads = n["connection_threads"].as<int>();
-			}
-
-			if (n["charset"] || n["charset"].IsScalar()) {
-				std::string charset = n["charset"].as<std::string>();
-
-				std::vector<std::string> sets = {
-				  "dec8", "cp850", "hp8", "koi8r", "latin1", "latin2", "swe7", "ascii",
-				  "ujis", "sjis", "hebrew", "tis620", "euckr", "koi8u", "gb2312", "greek",
-				  "cp1250", "gbk", "latin5", "armscii8", "utf8", "ucs2", "cp866", "keybcs2",
-				  "macce", "macroman", "cp852", "latin7", "utf8mb4", "cp1251", "utf16", "cp1256",
-				  "cp1257", "utf32", "binary", "geostd8", "cp932", "eucjpms"
-				};
-
-				if (std::find(sets.begin(), sets.end(), charset) == sets.end()) {
-					AuthLog->warn("Invalid charset '{}' provided database. Defaulting to '{}'...", charset, charset);
-				} else {
-					charset = charset;
-				}
-			}
-		}
-			break;
-		default:
-			AuthLog->error("Unsupported node type in element {} for '{}'.", n.as<std::string>());
-			return false;
-		}
+	try {
 		/**
-		 * Set MySQL Information.
+		 * Additional Configuration
+		 * @brief
 		 */
-		setDBHost(hostname);
-		setDBDatabase(database);
-		setDBUsername(username);
-		setDBPassword(password);
-		setDBMaxThreads(connection_threads);
-	} else if (!AuthServer->isTestRun()) {
-		AuthLog->error("Auth database configuration not provided in '{}'.", filepath);
+		if (config["pass_hash_method"]) {
+			HashingMethods hashingMethod = static_cast<HashingMethods>(config["pass_hash_method"].as<int>());
+			if (hashingMethod < PASS_HASH_NONE || hashingMethod > PASS_HASH_BCRYPT) {
+				AuthLog->warn("Incorrect value {} given for 'pass_hash_method', defaulting to 0.", hashingMethod);
+				getAuthConfig().setPassHashMethod(PASS_HASH_NONE);
+			} else {
+				getAuthConfig().setPassHashMethod(hashingMethod);
+			}
+		}
+
+		if (this->getAuthConfig().getPassHashMethod() == PASS_HASH_NONE)
+			AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
+
+		/**
+		 * Date Format for clients
+		 * @brief
+		 */
+		if (config["client_date_format"])
+			getAuthConfig().setClientDateFormat(config["client_date_format"].as<std::string>());
+
+		if (config["allowed_client_version"])
+			getAuthConfig().setAllowedClientVersion(config["allowed_client_version"].as<uint32_t>());
+
+		/**
+		 * Logging Configuration
+		 */
+		if (config["log"] && config["log"].as<bool>()) {
+			getAuthConfig().getLogConf().enable();
+
+			if (config["login_max_tries"])
+				getAuthConfig().getLogConf().setLoginMaxTries(config[ "login_max_tries" ].as<uint32_t>());
+
+			if (config["login_fail_ban_time"])
+				getAuthConfig().getLogConf().setLoginFailBanTime(config["login_fail_ban_time"].as<time_t>());
+
+			if (config["login_fail_check_time"])
+				getAuthConfig().getLogConf().setLoginFailCheckTime(config["login_fail_check_time"].as<time_t>());
+		}
+
+		AuthLog->info("Logging is {}.", getAuthConfig().getLogConf().isEnabled() ? "enabled" : "disabled");
+		AuthLog->info("Failed logins exceeding {} tries every {} seconds will be banned for {} seconds.",
+		              getAuthConfig().getLogConf().getLoginFailCheckTime(), getAuthConfig().getLogConf().getLoginMaxTries(), getAuthConfig().getLogConf().getLoginFailBanTime());
+
+		/**
+		 * Character Servers.
+		 * @brief configuration for the connection to character servers.
+		 */
+		if (config["character_servers"]) {
+			YAML::Node n = config["character_servers"];
+			if (n.IsMap()) {
+				for (std::size_t i = 1; i <= n.size(); ++i) {
+					YAML::Node nn = n[i];
+					character_server_data char_serv;
+					if (nn.IsMap()) {
+						if (nn["name"]) {
+							char_serv.name = nn["name"].as<std::string>();
+						} else {
+							AuthLog->warn("Name for character server at index '{}' not found, defaulting to 'Horizon_{}'.", i, i);
+							char_serv.name = "Horizon_" + std::to_string(i);
+						}
+						if (nn["host"]) {
+							char_serv.ip_address = nn["host"].as<std::string>();
+						} else {
+							AuthLog->warn("IP Address for character server '{}' not found, defaulting to 'localhost'.", char_serv.name);
+							char_serv.ip_address = "localhost";
+						}
+						if (nn["port"]) {
+							char_serv.port = nn["port"].as<uint16_t>();
+						} else {
+							AuthLog->warn("Port for character server '{}' not found, defaulting to '{}'.", char_serv.name, 6121);
+							char_serv.port = 6121;
+						}
+						if (nn["isNew"]) {
+							char_serv.isNew = nn["port"].as<uint16_t>();
+						}
+						addCharacterServer(char_serv); // Add the server in.
+						AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.isNew ? "(new)" : "");
+					} else {
+						AuthLog->warn("Invalid configuration type for sequence {} in 'character_servers', required map.", i);
+					}
+				}
+			} else {
+				AuthLog->warn("Invalid configuration type for character_servers, required nested maps.");
+			}
+		} else {
+			AuthLog->warn("Configurations for character servers were not found!");
+		}
+	} catch (YAML::Exception &e) {
+		AuthLog->error("YAML Parse Error: {}", e.what());
 		return false;
 	}
 
 	/**
-	 * Logging Configuration
+	 * Process Configuration that is common between servers.
 	 */
-	if (config["log"])
-		this->auth_config.logs.enabled = config["log"].as<bool>();
+	if (!ProcessCommonConfiguration(config))
+		return false;
 
-	if (config["login_max_tries"])
-		this->auth_config.logs.login_max_tries = config[ "login_max_tries" ].as<uint32_t>();
-
-	if (config["login_fail_ban_time"])
-		this->auth_config.logs.login_fail_ban_time = config["login_fail_ban_time"].as<time_t>();
-
-	if (config["login_fail_check_time"])
-		this->auth_config.logs.login_fail_check_time = config["login_fail_check_time"].as<time_t>();
-
-	if (this->auth_config.logs.enabled) {
-		AuthLog->info("Logging is {}.", this->auth_config.logs.enabled ? "enabled" : "disabled", filepath);
-		AuthLog->info("Failed logins exceeding {} tries every {} seconds will be banned for {} seconds.",
-		              this->auth_config.logs.login_fail_check_time, this->auth_config.logs.login_max_tries, this->auth_config.logs.login_fail_ban_time);
-	}
-
-	/**
-	 * Date Format for clients
-	 * @brief
-	 */
-	if (config["date_format"])
-		this->auth_config.date_format = config["date_format"].as<std::string>();
-
-	if (config["client_version"])
-		this->auth_config.client_version = config["client_version"].as<uint32_t>();
-
-	AuthLog->info("Done reading {} configurations in '{}'.", config.size(), this->general_config.config_file_path + this->general_config.config_file_name);
+	AuthLog->info("Done reading {} configurations in '{}'.", config.size(), getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
 
 	return true;
 }
 
-std::shared_ptr<OnlineListType> AuthMain::getAccountOnlineList() const
+void AuthMain::InitializeCLICommands()
 {
-	return account_online_list;
 }
 
-void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
+void SignalHandler(std::weak_ptr<boost::asio::io_service> ioServiceRef, const boost::system::error_code &error, int signal)
 {
-	if (!error)
-		io_service->stop();
+	if (!error) {
+		if (std::shared_ptr<boost::asio::io_service> io_service = ioServiceRef.lock())
+			io_service->stop();
+		AuthServer->shutdown(SIGINT);
+	}
 }
 
 /**
@@ -246,27 +206,24 @@ int main(int argc, const char * argv[])
 		exit(SIGTERM); // Stop process if the file can't be read.
 
 	/**
-	 * MySQL Startup
+	 * Core Signal Handler
 	 */
-	AuthServer->InitializeMySQLConnections();
-
-	io_service = new boost::asio::io_service();
+	boost::asio::signal_set signals(*AuthServer->getIOService(), SIGINT, SIGTERM);
+	// Set signal handler for callbacks.
+	// Set signal handlers (this must be done before starting io_service threads,
+	// because otherwise they would unblock and exit)
+	signals.async_wait(std::bind(&SignalHandler, std::weak_ptr<boost::asio::io_service>(AuthServer->getIOService()), std::placeholders::_1, std::placeholders::_2));
 
 	// Start Auth Network
-	sAuthSocketMgr.StartNetwork(*io_service,
-		AuthServer->getNetConf().listen_ip, AuthServer->getNetConf().listen_port, AuthServer->getNetConf().max_threads);
+	sAuthSocketMgr.StartNetwork(*AuthServer->getIOService(),
+		AuthServer->getNetworkConf().getListenIp(),
+		AuthServer->getNetworkConf().getListenPort(),
+		AuthServer->getNetworkConf().getMaxThreads());
 
-	boost::asio::signal_set signals(*io_service, SIGINT, SIGTERM);
-
-	if (!AuthServer->isTestRun())
-		signals.async_wait(SignalHandler);
-
-	/*
-	 * I/O Run Loop
-	 * @brief Main loop for I/O Service.
+	/**
+	 * Initialize the Common Core
 	 */
-	if (!AuthServer->isTestRun())
-		io_service->run();
+	AuthServer->InitializeCore();
 
 	/*
 	 * Core Cleanup
@@ -276,9 +233,8 @@ int main(int argc, const char * argv[])
 	/* Stop Network */
 	sAuthSocketMgr.StopNetwork();
 
+	// Cancel signal handling.
 	signals.cancel();
 
-	delete io_service;
-
-	return 0;
+	return AuthServer->getGeneralConf().getShutdownSignal();
 }

@@ -13,7 +13,7 @@
 # IP & Port Settings
 ###################################################
 BindIP: "0.0.0.0"
-ZonePort: 5121
+BindPort: 5121
 
 ###################################################
 # network_threads
@@ -38,3 +38,19 @@ database:
 # Log all requests to the zone server
 ###################################################
 log: true
+
+###################################################
+# Global Thread Pool
+# Used for
+#        - Core Signal handling
+#        - Socket Networking
+###################################################
+global_io_threads: 5
+
+###################################################
+# Server Update Interval (in milliseconds)
+# - The interval through which a server will update
+#   its events and global timers.
+# Default: 500ms
+###################################################
+core_update_interval: 500

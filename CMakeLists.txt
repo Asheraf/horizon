@@ -132,6 +132,11 @@ include(FindYAMLCpp)
 include(FindMySQL)
 
 #################
+# Readline Library
+#################
+include(FindReadline)
+
+#################
 # MySQL CPP Connector
 #################
 include(FindMySQLConnector)

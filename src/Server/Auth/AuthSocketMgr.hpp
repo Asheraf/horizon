@@ -38,9 +38,10 @@ public:
 
 	bool StartNetwork(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, int threads = 1) override
 	{
-
-		if (!BaseSocketMgr::StartNetwork(io_service, listen_ip, port, threads))
+		if (!BaseSocketMgr::StartNetwork(io_service, listen_ip, port, threads)) {
+			CoreLog->error("AuthSocketMgr failed to start network.");
 			return false;
+		}
 
 		CoreLog->trace("Max allowed socket connections {}", (int) boost::asio::socket_base::max_connections);
 

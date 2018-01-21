@@ -20,7 +20,7 @@
 #include "ZoneSession.hpp"
 
 #include "Logging/Logger.hpp"
-#include "Server/Server.hpp"
+#include "Common/Server.hpp"
 
 #include <string>
 #include <Core/Database/MySqlConnection.hpp>
@@ -38,8 +38,8 @@ public:
 	}
 
 	void PrintHeader();
-
 	bool ReadConfig();
+	void InitializeCLICommands();
 private:
 	struct {
 		bool enabled;

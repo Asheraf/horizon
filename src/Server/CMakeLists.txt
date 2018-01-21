@@ -14,7 +14,9 @@
 # Under a proprietary license this file is not for use
 # or viewing without permission.
 ###################################################
-
+# Common Sources
+add_subdirectory(Common)
+# Targets
 add_subdirectory(Auth)
 add_subdirectory(Char)
 add_subdirectory(Zone)

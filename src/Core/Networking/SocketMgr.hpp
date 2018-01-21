@@ -72,6 +72,8 @@ public:
 			}
 		}
 
+		CoreLog->info("Stopped {} network threads.", _threadCount);
+
 		Wait();
 
 		delete _acceptor;

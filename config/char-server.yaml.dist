@@ -21,7 +21,7 @@
 # IP & Port Settings
 ###################################################
 BindIP: "0.0.0.0"
-CharPort: 6121
+BindPort: 6121
 
 ###################################################
 # network_threads
@@ -29,7 +29,7 @@ CharPort: 6121
 # Default:        1 - (Recommended 1 thread per 1000 connections)
 # Note: Cannot be less than 1.
 ###################################################
-Network.Threads: 5
+Network.Threads: 2
 
 ###################################################
 # Char Server Database Settings
@@ -40,7 +40,7 @@ database:
     database: "horizon"
     username: "ragnarok"
     password: "ragnarok"
-    connection_threads: 5
+    connection_threads: 2
 
 ###################################################
 # Log all requests to the character server
@@ -48,3 +48,19 @@ database:
 # Required for dynamic password failure ban.
 ###################################################
 log: true
+
+###################################################
+# Global Thread Pool
+# Used for
+#        - Core Signal handling
+#        - Socket Networking
+###################################################
+global_io_threads: 2
+
+###################################################
+# Server Update Interval (in milliseconds)
+# - The interval through which a server will update
+#   its events and global timers.
+# Default: 500ms
+###################################################
+core_update_interval: 500

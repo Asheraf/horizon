@@ -61,6 +61,12 @@ public:
 		// Connection Factory.
 	}
 
+	MySQLConnectionFactory(std::string host, std::string database, std::string username, std::string password)
+		: host(host), database(database), username(username), password(password)
+	{
+		// Connection Factory.
+	}
+
 	// Any exceptions thrown here should be caught elsewhere
 	boost::shared_ptr<Connection> create()
 	{

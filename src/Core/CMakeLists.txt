@@ -16,3 +16,9 @@
 ###################################################
 
 add_subdirectory(Networking)
+
+set(CORE_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Database/ConnectionPool.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Database/MySqlConnection.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logging/Logger.hpp
+    PARENT_SCOPE)

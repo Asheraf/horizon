@@ -21,7 +21,7 @@
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
 
-#include "Server/Packet.hpp"
+#include "Common/Packet.hpp"
 
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>

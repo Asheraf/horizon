@@ -40,7 +40,7 @@ class GameAccount
 public:
 	GameAccount(sql::ResultSet *res)
 	{
-		id = res->getUInt64("id");
+		id = res->getInt("id");
 		username = res->getString("username");
 		gender = (game_account_gender_types) res->getInt("gender");
 		email = res->getString("email");
@@ -61,12 +61,12 @@ public:
 	{
 	}
 
-	uint64_t getId() const
+	uint32_t getId() const
 	{
 		return id;
 	}
 
-	void setId(uint64_t id)
+	void setId(uint32_t id)
 	{
 		GameAccount::id = id;
 	}
@@ -202,7 +202,7 @@ public:
 	}
 
 private:
-	uint64_t id;                                   ///< Account Id
+	uint32_t id;                                   ///< Account Id
 	std::string username;                          ///< Username
 	game_account_gender_types gender;              ///< Gender
 	std::string email;                             ///< e-mail (by default: a@a.com)

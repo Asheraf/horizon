@@ -21,8 +21,7 @@
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
 #include "Common/Horizon.hpp"
-
-#include "Server/Packet.hpp"
+#include "Common/Packet.hpp"
 #include "AuthPackets.hpp"
 
 #include <cstdio>
@@ -76,7 +75,7 @@ public:
 
 	bool VerifyCredentialsBCrypt(std::string username, std::string password);
 	bool VerifyCredentialsPlainText(std::string username, std::string password);
-	bool CheckIfAlreadyConnected(uint64_t id);
+	bool CheckIfAlreadyConnected(uint32_t id);
 	void ProcessAuthentication();
 	void InitHandlers();
 

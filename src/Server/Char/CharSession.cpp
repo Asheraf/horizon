@@ -17,7 +17,6 @@
 
 #include "CharSession.hpp"
 
-#include "Core/Logging/Logger.hpp"
 #include "CharPackets.hpp"
 
 CharSession::CharSession(tcp::socket &&socket)

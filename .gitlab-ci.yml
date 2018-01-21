@@ -27,7 +27,7 @@ variables: &base_vars
   MYSQL_PASSWORD: 'ragnarok'
   MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
   GIT_DEPTH: '3'
-  DEBIAN_COMMON_PACKAGES: cmake mysql libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev
+  DEBIAN_COMMON_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev libreadline-dev
 
 .prerequisites: &prerequisites
   before_script:
@@ -52,7 +52,7 @@ debian:buster-gcc:
   variables:
     <<: *base_vars
     PKG_CMD: apt-get --yes
-    INSTALL_PACKAGES: git g++ cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+    INSTALL_PACKAGES: git g++ ${DEBIAN_COMMON_PACKAGES}
   script:
     - g++ --version
     - ./horizon build
@@ -70,7 +70,7 @@ debian:buster-clang:
   variables:
     <<: *base_vars
     PKG_CMD: apt-get --yes
-    INSTALL_PACKAGES: git clang cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+    INSTALL_PACKAGES: git clang ${DEBIAN_COMMON_PACKAGES}
   script:
     - clang --version
     - ./horizon build
@@ -88,7 +88,7 @@ debian:stretch-gcc:
   variables:
     <<: *base_vars
     PKG_CMD: apt-get --yes
-    INSTALL_PACKAGES: git g++ cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+    INSTALL_PACKAGES: git g++ ${DEBIAN_COMMON_PACKAGES}
   script:
     - g++ --version
     - ./horizon build
@@ -106,7 +106,7 @@ debian:stretch-clang:
   variables:
     <<: *base_vars
     PKG_CMD: apt-get --yes
-    INSTALL_PACKAGES: git clang cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev
+    INSTALL_PACKAGES: git clang ${DEBIAN_COMMON_PACKAGES}
   script:
     - clang++ --version
     - ./horizon build

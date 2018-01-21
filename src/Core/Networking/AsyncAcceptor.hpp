@@ -33,8 +33,9 @@ public:
 	typedef void(*AcceptCallback) (tcp::socket &&newSocket, uint32_t thread_index);
 
 	AsyncAcceptor(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port)
-		: _acceptor(io_service, tcp::endpoint(boost::asio::ip::address::from_string(listen_ip), port)),
-		_socket(io_service), _closed(false), _socketFactory(std::bind(&AsyncAcceptor::DefaultSocketFactory, this))
+	: _acceptor(io_service, tcp::endpoint(boost::asio::ip::address::from_string(listen_ip), port)),
+	_endpoint(boost::asio::ip::address::from_string(listen_ip), port),
+	_socket(io_service), _closed(false), _socketFactory(std::bind(&AsyncAcceptor::DefaultSocketFactory, this))
 	{
 	}
 
@@ -64,6 +65,31 @@ public:
 				this->AsyncAcceptWithCallback<acceptCallback>();
 		});
 	}
+	bool Bind()
+	{
+		boost::system::error_code errorCode;
+		_acceptor.open(_endpoint.protocol(), errorCode);
+
+		if (errorCode) {
+			CoreLog->error("Failed to open acceptor %s", errorCode.message().c_str());
+			return false;
+		}
+
+		_acceptor.bind(_endpoint, errorCode);
+		if (errorCode) {
+			CoreLog->error("Could not bind to %s:%u %s", _endpoint.address().to_string().c_str(), _endpoint.port(), errorCode.message().c_str());
+			return false;
+		}
+
+		_acceptor.listen(boost::asio::socket_base::max_connections, errorCode);
+
+		if (errorCode) {
+			CoreLog->error("Failed to start listening on %s:%u %s", _endpoint.address().to_string().c_str(), _endpoint.port(), errorCode.message().c_str());
+			return false;
+		}
+
+		return true;
+	}
 
 	void Close()
 	{
@@ -80,6 +106,7 @@ private:
 	std::pair<tcp::socket*, uint32_t> DefaultSocketFactory() { return std::make_pair(&_socket, 0); }
 
 	tcp::acceptor _acceptor;
+	tcp::endpoint _endpoint;
 	tcp::socket _socket;
 	std::atomic<bool> _closed;
 	std::function<std::pair<tcp::socket*, uint32_t>()> _socketFactory;

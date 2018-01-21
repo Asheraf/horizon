@@ -29,7 +29,6 @@ AuthSession::AuthSession(tcp::socket &&socket)
 	InitHandlers();
 
 	session_data = std::make_unique<SessionData>();
-	session_data->setAuthCode(rand() + 1);
 }
 
 void AuthSession::Start()
@@ -128,10 +127,12 @@ void AuthSession::Handle_CA_LOGIN(PacketBuffer &packet)
 		if (CheckIfAlreadyConnected(this->game_account->getId())) {
 			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
 			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
+			DelayedCloseSocket();
 		} else {
 			ProcessAuthentication();
 		}
 	} else {
+		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
 		AuthLog->info("Rejected unknown account '{}' or incorrect password.", pkt.username);
 	}
 }
@@ -139,7 +140,9 @@ void AuthSession::Handle_CA_LOGIN(PacketBuffer &packet)
 void AuthSession::ProcessAuthentication()
 {
 	this->game_account->setLastIp(GetRemoteIPAddress().to_string());
-	this->game_account->setLastLogin((int) time(NULL));
+	this->game_account->setLastLogin((int) time(nullptr));
+	// Session ID as Game Account Id.
+	this->session_data->setAuthCode(this->game_account->getId());
 
 	Respond_AC_ACCEPT_LOGIN();
 }
@@ -204,20 +207,19 @@ bool AuthSession::VerifyCredentialsPlainText(std::string username, std::string p
 	AuthServer->MySQLUnborrow(sql);
 
 	return ret;
-};
+}
 
-bool AuthSession::CheckIfAlreadyConnected(uint64_t id)
+bool AuthSession::CheckIfAlreadyConnected(uint32_t id)
 {
-	std::shared_ptr<OnlineListType> onlineList = AuthServer->getAccountOnlineList();
-	auto online_index = std::find(onlineList->begin(), onlineList->end(), id);
+	std::shared_ptr<AuthSession> session = AuthServer->getOnlineAccount(id);
 
 	// Check if session already exists.
-	if (online_index != onlineList->end()) {
-		onlineList->erase(online_index);
+	if (session != nullptr) {
+		AuthServer->removeOnlineAccount(id);
 		return true;
 	}
 
-	onlineList->push_back(id);
+	AuthServer->addOnlineAccount(id, shared_from_this());
 	return false;
 }
 
@@ -285,9 +287,32 @@ void AuthSession::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
  */
 void AuthSession::Respond_AC_ACCEPT_LOGIN()
 {
-	PACKET_AC_ACCEPT_LOGIN pkt;
-	PacketBuffer buf;
+	//unsigned long max_servers = AuthServer->getCharacterServers().size();
+	//PACKET_AC_ACCEPT_LOGIN *pkt = new PACKET_AC_ACCEPT_LOGIN;
+
+	/**
+	 * Reject if no character servers.
+	 */
+//	if (!max_servers) {
+//		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_REJECTED_FROM_SERVER);
+//		return;
+//	}
 //
+//	pkt->server_list = new char_server_list[max_servers];
+//
+//	sizeof(pkt);         ///< Packet length (variable length)
+//	int32 auth_code;          ///< Authentication code
+//	uint32 aid;               ///< Account ID
+//	uint32 user_level;        ///< User level
+//	uint32 last_login_ip;     ///< Last login IP
+//	char last_login_time[26]; ///< Last login timestamp
+//	uint8 sex;                ///< Account sex
+//#if PACKETVER >= 20170315
+//	char unknown1[17];
+//#endif
+
+//	AuthLog->info("Size: {}", sizeof(pkt));
+
 //	buf << pkt.op_code << pkt.packet_len << pkt.auth_code << pkt.aid user_level;        ///< User level
 //	uint32 last_login_ip;     ///< Last login IP
 //	char last_login_time[26]; ///< Last login timestamp

@@ -15,38 +15,31 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_CHAR_H
-#define HORIZON_CHAR_H
-
-#include "CharSession.hpp"
-
-#include "Logging/Logger.hpp"
-#include "Common/Server.hpp"
+#ifndef HORIZON_CHARACTERSERVER_HPP
+#define HORIZON_CHARACTERSERVER_HPP
 
 #include <string>
-#include <Core/Database/MySqlConnection.hpp>
+#include "Horizon.hpp"
 
-class CharMain : public Server
+enum character_server_types : uint16_t
 {
-public:
-	CharMain();
-	~CharMain();
-
-	static CharMain *getInstance()
-	{
-		static CharMain instance;
-		return &instance;
-	}
-
-	void PrintHeader();
-	bool ReadConfig();
-	void InitializeCLICommands();
-private:
-	struct {
-		bool enabled;
-	} logs;
+	CHAR_SERVER_TYPE_NORMAL,
+	CHAR_SERVER_TYPE_MAINTENANCE,
+	CHAR_SERVER_TYPE_OVER18,
+	CHAR_SERVER_TYPE_PAYING,
+	CHAR_SERVER_TYPE_FREE2PLAY,
+	CHAR_SERVER_TYPE_MAX,
 };
 
-#define CharServer CharMain::getInstance()
+struct character_server_data
+{
+	int id;
+	std::string name;
+	std::string ip_address;
+	uint16_t port;
+	int user_count;
+	character_server_types server_type;
+	uint16_t isNew;
+};
 
-#endif //HORIZON_CHAR_H
+#endif //HORIZON_CHARACTERSERVER_HPP
