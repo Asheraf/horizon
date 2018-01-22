@@ -33,6 +33,7 @@ using namespace std::chrono_literals;
 AuthMain::AuthMain()
 : Server("Auth", "config/", "auth-server.yaml")
 {
+	InitializeCLICommands();
 }
 
 AuthMain::~AuthMain()
@@ -181,11 +182,22 @@ bool AuthMain::ReadConfig()
 	return true;
 }
 
-void AuthMain::InitializeCLICommands()
+bool AuthMain::CLICmd_ReloadConfig()
 {
+	// Clear all character server info before reloading.
+	character_servers.clear();
+
+	AuthLog->info("Reloading configuration from '{}'.", getGeneralConf().getConfigFileName());
+
+	return AuthServer->ReadConfig();
 }
 
-void SignalHandler(std::weak_ptr<boost::asio::io_service> ioServiceRef, const boost::system::error_code &error, int signal)
+void AuthMain::InitializeCLICommands()
+{
+	addCLIFunction("reloadconf", std::bind(&AuthMain::CLICmd_ReloadConfig, this));
+}
+
+void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const boost::system::error_code &error, int signal)
 {
 	if (!error) {
 		if (std::shared_ptr<boost::asio::io_service> io_service = ioServiceRef.lock())

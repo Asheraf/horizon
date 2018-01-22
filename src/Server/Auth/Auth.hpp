@@ -60,6 +60,8 @@ public:
 
 	/* CLI */
 	void InitializeCLICommands();
+	bool CLICmd_ReloadConfig();
+
 	/* Character Server Handlers */
 	void addCharacterServer(struct character_server_data &serv) { character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv))); }
 	std::shared_ptr<character_server_data> getCharacterServer(int id)

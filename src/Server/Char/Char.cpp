@@ -23,7 +23,6 @@
 #include <iostream>
 #include <boost/make_shared.hpp>
 
-
 using namespace std;
 
 using boost::asio::ip::udp;
@@ -110,6 +109,7 @@ int main(int argc, const char * argv[])
 	 * Core Signal Handler
 	 */
 	boost::asio::signal_set signals(*CharServer->getIOService(), SIGINT, SIGTERM);
+
 	// Set signal handler for callbacks.
 	// Set signal handlers (this must be done before starting io_service threads,
 	// because otherwise they would unblock and exit)
@@ -119,13 +119,6 @@ int main(int argc, const char * argv[])
 	 * Initialize the Common Core
 	 */
 	CharServer->InitializeCore();
-	/**
-	 * Core loop
-	 */
-	while(!CharServer->isShuttingDown() && !CharServer->getGeneralConf().isTestRun()) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(CharServer->getGeneralConf().getCoreUpdateInterval()));
-		CharServer->ProcessCLICommands();
-	}
 
 	/*
 	 * Core Cleanup

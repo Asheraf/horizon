@@ -18,11 +18,14 @@
 # Project Setup
 #################################
 cmake_minimum_required (VERSION 3.5 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 14)  # enable C++11 standard
+set(CMAKE_CXX_STANDARD 17)
 set (PROJECT_NAME "Horizon" CXX)
 set (AUTH_TARGET_NAME auth)
 SET(CMAKE_BUILD_TYPE Debug)
 project (${PROJECT_NAME})
+
+# Include External Projects Module
+include(ExternalProject)
 
 # Compiler Options.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-c99-extensions -Wno-gnu-empty-struct")
@@ -147,6 +150,7 @@ include(FindMySQLConnector)
 add_subdirectory(src)
 
 #################
-# Create logs directory.
+# Final Steps:
+# - Create logs directory.
 #################
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/logs)

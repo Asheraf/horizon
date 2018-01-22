@@ -295,7 +295,7 @@ void Server::InitializeCore()
 	getGeneralConf().setGlobalIOThreads(std::max(this->getGeneralConf().getGlobalIOThreads(), 1));
 
 	for (int i = 0; i < getGeneralConf().getGlobalIOThreads(); ++i) {
-		thread_pool->push_back(std::thread(std::bind(&Server::ServerUpdateLoop, this)));
+		thread_pool->push_back(std::thread(std::bind(&Server::IOServiceLoop, this)));
 	}
 
 	CoreLog->info("A Thread pool of {} global I/O threads have been spawned.", this->getGeneralConf().getGlobalIOThreads());
@@ -316,7 +316,7 @@ void Server::InitializeCore()
 	}
 }
 
-void Server::ServerUpdateLoop()
+void Server::IOServiceLoop()
 {
 	getIOService()->run();
 }

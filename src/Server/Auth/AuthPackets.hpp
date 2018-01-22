@@ -317,16 +317,16 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 	char unknown1[17];
 #endif
 	struct character_server_list {
-		uint32 ip;        ///< Server IP address
-		int16 port;       ///< Server port
-		char name[20];    ///< Server name
-		uint16 usercount; ///< Online users
-		uint16 state;     ///< Server state
-		uint16 type;  ///< Server property
+		uint32 ip;         ///< Server IP address
+		int16 port;        ///< Server port
+		char name[20];     ///< Server name
+		uint16 usercount;  ///< Online users
+		uint16 is_new;     ///< Server state
+		uint16 type;       ///< Server type @ character_server_types
 #if PACKETVER >= 20170315
 		char unknown2[128];
 #endif
-	} *server_list;
+	} server_list[];
 };
 
 /**

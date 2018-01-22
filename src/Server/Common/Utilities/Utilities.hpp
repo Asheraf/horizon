@@ -61,7 +61,7 @@ inline const char *TimeStamp2String(char *str, size_t size, time_t timestamp, co
 
 // Reorders bytes from network to little endian (Windows).
 // Necessary for sending port numbers to the RO client until Gravity notices that they forgot ntohs() calls.
-inline uint16 ntows(uint16 netshort)
+uint16 ntows(uint16 netshort)
 {
 	return (uint16) (((netshort & 0xFF) << 8) | ((netshort & 0xFF00) >> 8));
 }

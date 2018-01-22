@@ -39,7 +39,7 @@ namespace ByteConverter
 	}
 }
 
-#if 1 // Big Endian
+#if 0 // Big Endian
 template<typename T> inline void EndianConvert(T& val) { ByteConverter::apply<T>(&val); }
 template<typename T> inline void EndianConvertReverse(T&) { }
 template<typename T> inline void EndianConvertPtr(void* val) { ByteConverter::apply<T>(val); }

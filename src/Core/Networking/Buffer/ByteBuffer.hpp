@@ -421,15 +421,23 @@ public:
 			_storage.reserve(ressize);
 	}
 
-	void append(const char *src, size_t cnt)
+	void append(const char *src, size_t size)
 	{
-		return append((const uint8_t *)src, cnt);
+		return append((const uint8_t *)src, size);
 	}
 
 	template<class T>
-	void append(const T *src, size_t cnt)
+	void append(const T *src, size_t size)
 	{
-		return append((const uint8_t *) src, cnt);
+		return append((const uint8_t *) src, size);
+	}
+
+	template<class T, class SubT>
+	void append(const T *t, size_t t_size, const SubT *sub_t, int count)
+	{
+		append((const uint8_t *) t, t_size);
+		append((const uint8_t *) sub_t, sizeof(SubT) * count);
+		return ;
 	}
 
 	void append(const uint8_t *src, size_t cnt)

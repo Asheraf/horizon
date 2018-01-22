@@ -42,7 +42,7 @@ public:
 	/* Shutdown Handlers */
 	void shutdown(int signal) { getGeneralConf().setShuttingDown(signal); }
 	bool isShuttingDown() { return getGeneralConf().IsShuttingDown(); }
-	void ServerUpdateLoop();
+	void IOServiceLoop();
 
 	/* Core I/O Service*/
 	const std::shared_ptr<boost::asio::io_service> &getIOService() const;

@@ -19,10 +19,12 @@
 
 #include "MySqlConnection.hpp"
 #include "Auth.hpp"
-
-#include <random>
+#include "Networking/Buffer/ByteConverter.hpp"
 #include <Libraries/BCrypt/BCrypt.hpp>
 #include <Server/Common/Utilities/Utilities.hpp>
+
+#include <random>
+#include <memory>
 
 AuthSession::AuthSession(tcp::socket &&socket)
 : Socket(std::move(socket))
@@ -300,7 +302,7 @@ void AuthSession::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
  */
 void AuthSession::Respond_AC_ACCEPT_LOGIN()
 {
-	std::size_t max_servers = AuthServer->totalCharacterServers();
+	int max_servers = (int) AuthServer->totalCharacterServers();
 	auto *pkt = new PACKET_AC_ACCEPT_LOGIN();
 	PACKET_AC_ACCEPT_LOGIN::character_server_list *server_list;
 	PacketBuffer buf;
@@ -315,15 +317,14 @@ void AuthSession::Respond_AC_ACCEPT_LOGIN()
 
 	server_list = new PACKET_AC_ACCEPT_LOGIN::character_server_list[max_servers];
 
-	pkt->packet_len = 47 + (sizeof(struct PACKET_AC_ACCEPT_LOGIN::character_server_list) * max_servers);
+	pkt->packet_len = sizeof(*pkt) + (sizeof(struct PACKET_AC_ACCEPT_LOGIN::character_server_list) * max_servers);
 	pkt->auth_code = this->session_data->getAuthCode();
 	pkt->aid = this->game_account->getId();
-	pkt->user_level = 0;
+	pkt->user_level = 1;
 	pkt->last_login_ip = 0; // not used anymore.
 	memset(pkt->last_login_time, '\0', sizeof(pkt->last_login_time)); // Not used anymore
-	pkt->sex = (uint8_t) (this->game_account->getGender() == 'M' ? 1 : 0);
 
-	buf.append<PACKET_AC_ACCEPT_LOGIN>(pkt, 47);
+	pkt->sex = (uint8_t) (this->game_account->getGender() == ACCOUNT_MALE ? ACCOUNT_MALE : ACCOUNT_FEMALE);
 
 	for (int i = 0; i < max_servers; ++i) {
 		std::shared_ptr<character_server_data> chr;
@@ -331,14 +332,16 @@ void AuthSession::Respond_AC_ACCEPT_LOGIN()
 		if ((chr = AuthServer->getCharacterServer(i + 1)) == nullptr)
 			continue;
 
-		server_list[i].ip = htonl(inet_addr(chr->ip_address.c_str()));
-		server_list[i].port = ntows(htons(chr->port));
+		server_list[i].ip = inet_addr(chr->ip_address.c_str());
+		server_list[i].port = chr->port;
 		strncpy(server_list[i].name, chr->name.c_str(), sizeof(server_list[i].name));
 		server_list[i].type = (uint16_t) chr->server_type;
-		server_list[i].state = chr->isNew;
+		server_list[i].is_new = (uint16_t) (chr->isNew ? 1 : 0);
 		server_list[i].usercount = 88;
-		buf.append<PACKET_AC_ACCEPT_LOGIN::character_server_list>(server_list[i]);
-	}
+	} // 1677764800
+
+	buf.append<PACKET_AC_ACCEPT_LOGIN, PACKET_AC_ACCEPT_LOGIN::character_server_list>
+		(pkt, sizeof(*pkt), server_list, max_servers);
 
 	SendPacket(buf, (std::size_t) pkt->packet_len);
 

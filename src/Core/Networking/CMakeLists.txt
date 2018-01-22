@@ -1,6 +1,4 @@
-CollectSourceFiles(
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        PRIVATE_SOURCES)
+
 ###################################################
 #       _   _            _                        #
 #      | | | |          (_)                       #
@@ -17,6 +15,9 @@ CollectSourceFiles(
 # Under a proprietary license this file is not for use
 # or viewing without permission.
 ###################################################
+CollectSourceFiles(
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        PRIVATE_SOURCES)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
