@@ -18,6 +18,10 @@
 #ifndef HORIZON_UTILITIES_H
 #define HORIZON_UTILITIES_H
 
+#include <chrono>
+#include <cstring>
+#include "Common/Horizon.hpp"
+
 inline uint32_t getMSTime()
 {
 	using namespace std::chrono;
@@ -53,6 +57,13 @@ inline const char *TimeStamp2String(char *str, size_t size, time_t timestamp, co
 	memset(str + len, '\0', size - len);
 
 	return str;
+}
+
+// Reorders bytes from network to little endian (Windows).
+// Necessary for sending port numbers to the RO client until Gravity notices that they forgot ntohs() calls.
+inline uint16 ntows(uint16 netshort)
+{
+	return (uint16) (((netshort & 0xFF) << 8) | ((netshort & 0xFF00) >> 8));
 }
 
 #endif //HORIZON_UTILITIES_H

@@ -22,6 +22,7 @@
 
 #include <random>
 #include <Libraries/BCrypt/BCrypt.hpp>
+#include <Server/Common/Utilities/Utilities.hpp>
 
 AuthSession::AuthSession(tcp::socket &&socket)
 : Socket(std::move(socket))
@@ -69,6 +70,18 @@ void AuthSession::SendPacket(T pkt)
 	}
 }
 
+void AuthSession::SendPacket(PacketBuffer &buf, std::size_t size)
+{
+	if (!IsOpen())
+		return;
+
+	if (!buf.empty()) {
+		MessageBuffer buffer;
+		buffer.Write(buf.contents(), size);
+		QueuePacket(std::move(buffer));
+	}
+}
+
 void AuthSession::ReadHandler()
 {
 	uint16_t op_code;
@@ -99,42 +112,6 @@ bool AuthSession::HandleIncomingPacket(PacketBuffer &packet)
 	(this->*func)(packet);
 
 	return true;
-}
-
-void AuthSession::Handle_CA_LOGIN(PacketBuffer &packet)
-{
-	PACKET_CA_LOGIN pkt;
-	bool authenticated = false;
-
-	packet >> pkt;
-
-	AuthLog->info("Authentication of account '{}' requested.", pkt.username);
-
-	switch (AuthServer->getAuthConfig().pass_hash_method)
-	{
-	case PASS_HASH_NONE:
-	case PASS_HASH_MD5:
-		authenticated = VerifyCredentialsPlainText(pkt.username, pkt.password);
-		break;
-	case PASS_HASH_BCRYPT:
-		authenticated = VerifyCredentialsBCrypt(pkt.username, pkt.password);
-		break;
-	}
-
-	if (authenticated) {
-		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
-
-		if (CheckIfAlreadyConnected(this->game_account->getId())) {
-			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
-			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
-			DelayedCloseSocket();
-		} else {
-			ProcessAuthentication();
-		}
-	} else {
-		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
-		AuthLog->info("Rejected unknown account '{}' or incorrect password.", pkt.username);
-	}
 }
 
 void AuthSession::ProcessAuthentication()
@@ -223,6 +200,42 @@ bool AuthSession::CheckIfAlreadyConnected(uint32_t id)
 	return false;
 }
 
+void AuthSession::Handle_CA_LOGIN(PacketBuffer &packet)
+{
+	PACKET_CA_LOGIN pkt;
+	bool authenticated = false;
+
+	packet >> pkt;
+
+	AuthLog->info("Authentication of account '{}' requested.", pkt.username);
+
+	switch (AuthServer->getAuthConfig().pass_hash_method)
+	{
+	case PASS_HASH_NONE:
+	case PASS_HASH_MD5:
+		authenticated = VerifyCredentialsPlainText(pkt.username, pkt.password);
+		break;
+	case PASS_HASH_BCRYPT:
+		authenticated = VerifyCredentialsBCrypt(pkt.username, pkt.password);
+		break;
+	}
+
+	if (authenticated) {
+		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
+
+		if (CheckIfAlreadyConnected(this->game_account->getId())) {
+			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
+			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
+			DelayedCloseSocket();
+		} else {
+			ProcessAuthentication();
+		}
+	} else {
+		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
+		AuthLog->info("Rejected unknown account '{}' or incorrect password.", pkt.username);
+	}
+}
+
 void AuthSession::Handle_CA_REQ_HASH(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_REQ_HASH pkt;
@@ -287,36 +300,50 @@ void AuthSession::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
  */
 void AuthSession::Respond_AC_ACCEPT_LOGIN()
 {
-	//unsigned long max_servers = AuthServer->getCharacterServers().size();
-	//PACKET_AC_ACCEPT_LOGIN *pkt = new PACKET_AC_ACCEPT_LOGIN;
+	std::size_t max_servers = AuthServer->totalCharacterServers();
+	auto *pkt = new PACKET_AC_ACCEPT_LOGIN();
+	PACKET_AC_ACCEPT_LOGIN::character_server_list *server_list;
+	PacketBuffer buf;
 
 	/**
 	 * Reject if no character servers.
 	 */
-//	if (!max_servers) {
-//		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_REJECTED_FROM_SERVER);
-//		return;
-//	}
-//
-//	pkt->server_list = new char_server_list[max_servers];
-//
-//	sizeof(pkt);         ///< Packet length (variable length)
-//	int32 auth_code;          ///< Authentication code
-//	uint32 aid;               ///< Account ID
-//	uint32 user_level;        ///< User level
-//	uint32 last_login_ip;     ///< Last login IP
-//	char last_login_time[26]; ///< Last login timestamp
-//	uint8 sex;                ///< Account sex
-//#if PACKETVER >= 20170315
-//	char unknown1[17];
-//#endif
+	if (!max_servers) {
+		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_REJECTED_FROM_SERVER);
+		return;
+	}
 
-//	AuthLog->info("Size: {}", sizeof(pkt));
+	server_list = new PACKET_AC_ACCEPT_LOGIN::character_server_list[max_servers];
 
-//	buf << pkt.op_code << pkt.packet_len << pkt.auth_code << pkt.aid user_level;        ///< User level
-//	uint32 last_login_ip;     ///< Last login IP
-//	char last_login_time[26]; ///< Last login timestamp
-//	uint8 sex;                ///< Account sex
+	pkt->packet_len = 47 + (sizeof(struct PACKET_AC_ACCEPT_LOGIN::character_server_list) * max_servers);
+	pkt->auth_code = this->session_data->getAuthCode();
+	pkt->aid = this->game_account->getId();
+	pkt->user_level = 0;
+	pkt->last_login_ip = 0; // not used anymore.
+	memset(pkt->last_login_time, '\0', sizeof(pkt->last_login_time)); // Not used anymore
+	pkt->sex = (uint8_t) (this->game_account->getGender() == 'M' ? 1 : 0);
+
+	buf.append<PACKET_AC_ACCEPT_LOGIN>(pkt, 47);
+
+	for (int i = 0; i < max_servers; ++i) {
+		std::shared_ptr<character_server_data> chr;
+
+		if ((chr = AuthServer->getCharacterServer(i + 1)) == nullptr)
+			continue;
+
+		server_list[i].ip = htonl(inet_addr(chr->ip_address.c_str()));
+		server_list[i].port = ntows(htons(chr->port));
+		strncpy(server_list[i].name, chr->name.c_str(), sizeof(server_list[i].name));
+		server_list[i].type = (uint16_t) chr->server_type;
+		server_list[i].state = chr->isNew;
+		server_list[i].usercount = 88;
+		buf.append<PACKET_AC_ACCEPT_LOGIN::character_server_list>(server_list[i]);
+	}
+
+	SendPacket(buf, (std::size_t) pkt->packet_len);
+
+	delete[] server_list;
+	delete pkt;
 }
 
 void AuthSession::Respond_AC_REFUSE_LOGIN(login_error_codes error_code)

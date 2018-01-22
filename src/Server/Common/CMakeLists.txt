@@ -30,4 +30,5 @@ set(COMMON_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/CLI/CLICommand.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CLI/CommandLineInterface.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CLI/CommandLineInterface.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Utilities/Utilities.hpp
     PARENT_SCOPE)

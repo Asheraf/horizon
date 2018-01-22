@@ -48,6 +48,8 @@ public:
 	template <class T>
 	void SendPacket(T pkt);
 
+	void SendPacket(PacketBuffer &buf, std::size_t size);
+
 	/**
 	 * Client To Auth
 	 */

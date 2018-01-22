@@ -141,8 +141,18 @@ bool AuthMain::ReadConfig()
 							char_serv.port = 6121;
 						}
 						if (nn["isNew"]) {
-							char_serv.isNew = nn["port"].as<uint16_t>();
+							char_serv.isNew = (int16_t) (nn["isNew"].as<bool>() ? 1 : 0);
 						}
+						if (nn["type"]) {
+							char_serv.server_type = static_cast<character_server_types>(nn["type"].as<uint16_t>());
+							if (char_serv.server_type < CHAR_SERVER_TYPE_NORMAL || char_serv.server_type >= CHAR_SERVER_TYPE_MAX) {
+								AuthLog->error(
+									"Incorrect character server type '{}' given for server #{}, defaulting to 'normal type'.",
+									i, (int) char_serv.server_type);
+								char_serv.server_type = CHAR_SERVER_TYPE_NORMAL;
+							}
+						}
+						char_serv.id = (int) i;
 						addCharacterServer(char_serv); // Add the server in.
 						AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.isNew ? "(new)" : "");
 					} else {

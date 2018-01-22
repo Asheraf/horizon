@@ -103,7 +103,6 @@ public:
 
 	template <typename T> void append(T value)
 	{
-		static_assert(std::is_fundamental<T>::value, "append(compound)");
 		//EndianConvert(value);
 		append((uint8_t *)&value, sizeof(value));
 	}
@@ -427,9 +426,10 @@ public:
 		return append((const uint8_t *)src, cnt);
 	}
 
-	template<class T> void append(const T *src, size_t cnt)
+	template<class T>
+	void append(const T *src, size_t cnt)
 	{
-		return append((const uint8_t *)src, cnt * sizeof(T));
+		return append((const uint8_t *) src, cnt);
 	}
 
 	void append(const uint8_t *src, size_t cnt)

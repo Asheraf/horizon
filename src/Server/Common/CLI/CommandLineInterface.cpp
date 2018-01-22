@@ -33,23 +33,30 @@ void CLIThreadStart(Server *serv)
 
 	while (!serv->isShuttingDown())
 	{
-		std::string command_str;
+
+		char *command_str;
 
 		fflush(stdout);
 
 		command_str = readline(TERMINAL_STR);
 		rl_bind_key('\t', rl_complete);
 
-		if (command_str.length()) {
+		if (command_str != nullptr) {
 			for (int x = 0; command_str[x]; ++x)
 				if (command_str[x] == '\r' || command_str[x] == '\n') {
 					command_str[x] = 0;
 					break;
 				}
 
+			if (!*command_str) {
+				free(command_str);
+				continue;
+			}
+
 			fflush(stdout);
-			serv->QueueCLICommand(new CLICommand(serv, (char *) command_str.c_str(), &command_complete));
-			add_history(command_str.c_str());
+			serv->QueueCLICommand(new CLICommand(serv, command_str, &command_complete));
+			add_history(command_str);
+			free(command_str);
 			std::this_thread::sleep_for(std::chrono::milliseconds(serv->getGeneralConf().getCoreUpdateInterval() + 100)); // Sleep until core has updated.
 		} else if (feof(stdin)) {
 			serv->shutdown(SIGTERM);

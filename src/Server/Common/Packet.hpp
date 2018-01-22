@@ -76,7 +76,14 @@ public:
 	template<class PACKET_TYPE>
 	PacketBuffer & operator << (PACKET_TYPE &pkt)
 	{
-		append<PACKET_TYPE>(&pkt, 1);
+		append<PACKET_TYPE>(&pkt, sizeof(PACKET_TYPE));
+		return *this;
+	}
+
+	template<class PACKET_TYPE>
+	PacketBuffer & operator << (std::pair<PACKET_TYPE *, std::size_t> &pkt)
+	{
+		append<PACKET_TYPE>(pkt.first, pkt.second);
 		return *this;
 	}
 

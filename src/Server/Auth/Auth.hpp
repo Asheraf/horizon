@@ -71,6 +71,7 @@ public:
 		else
 			return nullptr;
 	}
+	std::size_t totalCharacterServers() { return character_servers.size(); }
 
 protected:
 	/* Auth Server Configuration */

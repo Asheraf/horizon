@@ -18,6 +18,7 @@
 #ifndef HORIZON_AUTHPACKETS_H
 #define HORIZON_AUTHPACKETS_H
 
+#include <Server/Common/Models/ServerData.hpp>
 #include "Common/Horizon.hpp"
 #include "Common/Packet.hpp"
 
@@ -301,17 +302,6 @@ struct PACKET_AC_REFUSE_LOGIN_R2 : public Packet
  *
  * Variable-length packet.
  */
-struct char_server_list {
-	uint32 ip;        ///< Server IP address
-	int16 port;       ///< Server port
-	char name[20];    ///< Server name
-	uint16 usercount; ///< Online users
-	uint16 state;     ///< Server state
-	uint16 property;  ///< Server property
-#if PACKETVER >= 20170315
-	char unknown2[128];
-#endif
-};
 struct PACKET_AC_ACCEPT_LOGIN : public Packet
 {
 	PACKET_AC_ACCEPT_LOGIN() : Packet(AC_ACCEPT_LOGIN) { }
@@ -326,7 +316,17 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 #if PACKETVER >= 20170315
 	char unknown1[17];
 #endif
-	struct char_server_list *server_list; ///< List of charservers
+	struct character_server_list {
+		uint32 ip;        ///< Server IP address
+		int16 port;       ///< Server port
+		char name[20];    ///< Server name
+		uint16 usercount; ///< Online users
+		uint16 state;     ///< Server state
+		uint16 type;  ///< Server property
+#if PACKETVER >= 20170315
+		char unknown2[128];
+#endif
+	} *server_list;
 };
 
 /**
