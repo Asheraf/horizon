@@ -145,6 +145,11 @@ function start_server
     then
         dir="bin"
     fi
+    ## Create logs dir if not exists.
+    if [ -z "${dir}/logs" ]
+    then
+        mkdir ${dir}/logs
+    fi
     ###########
     # Start Server
     ###########

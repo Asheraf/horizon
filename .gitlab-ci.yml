@@ -27,7 +27,7 @@ variables: &base_vars
   MYSQL_PASSWORD: 'ragnarok'
   MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
   GIT_DEPTH: '3'
-  DEBIAN_COMMON_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libspdlog-dev libyaml-cpp-dev libreadline-dev
+  DEBIAN_COMMON_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libyaml-cpp-dev libreadline-dev
 
 .prerequisites: &prerequisites
   before_script:
@@ -41,6 +41,9 @@ variables: &base_vars
     - echo "CREATE DATABASE ${MYSQL_DATABASE};"
     - echo "GRANT ALL ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'mysql';"
     - echo "USE ${MYSQL_DATABASE}; SELECT 'OK'" | mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --host=mysql
+    - git clone https://github.com/gabime/spdlog.git
+    - cd spdlog; mkdir build; cd build; cmake ../
+    - make install -j 4; cd ..; cd ..;
   services:
     - mysql:latest
 
