@@ -39,7 +39,7 @@ struct character_server_data
 	uint16_t port;
 	int user_count;
 	character_server_types server_type;
-	uint16_t isNew;
+	uint16_t is_new;
 };
 
 #endif //HORIZON_CHARACTERSERVER_HPP

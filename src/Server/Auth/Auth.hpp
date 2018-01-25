@@ -57,6 +57,7 @@ public:
 			return nullptr;
 	}
 	void removeOnlineAccount(uint32_t id) { account_online_list.erase(id); }
+	void ConnectWithInterServer();
 
 	/* CLI */
 	void InitializeCLICommands();

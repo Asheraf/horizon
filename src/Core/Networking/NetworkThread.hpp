@@ -34,7 +34,7 @@ class NetworkThread
 {
 public:
 	NetworkThread()
-	: _connections(0), _stopped(false), _thread(nullptr), _acceptSocket(_io_service), _updateTimer(_io_service)
+	: _connections(0), _stopped(false), _acceptSocket(_io_service), _updateTimer(_io_service)
 	{
 		// Constructor
 	}
@@ -42,11 +42,9 @@ public:
 	virtual ~NetworkThread()
 	{
 		Stop();
-		if (_thread)
-		{
+
+		if (_thread != nullptr)
 			Wait();
-			delete _thread;
-		}
 	}
 
 	void Stop()
@@ -57,20 +55,21 @@ public:
 
 	bool Start()
 	{
-		if (_thread)
+		if (_thread != nullptr)
 			return false;
 
-		_thread = new std::thread(&NetworkThread::Run, this);
+		_thread.reset(new std::thread(&NetworkThread::Run, this));
 		return true;
 	}
 
+	/**
+	 * Join all network threads, used to stop
+	 */
 	void Wait()
 	{
 		assert(_thread);
 
 		_thread->join();
-		delete _thread;
-		_thread = nullptr;
 	}
 
 	int32_t GetConnectionCount() const
@@ -90,6 +89,7 @@ public:
 	}
 
 	tcp::socket *GetSocketForAccept() { return &_acceptSocket; }
+	tcp::socket *GetSocketForConnect() { return &_acceptSocket; }
 protected:
 	virtual void SocketAdded(std::shared_ptr<SocketType> /*sock*/) { }
 	virtual void SocketRemoved(std::shared_ptr<SocketType> /*sock*/) { }
@@ -159,7 +159,7 @@ private:
 	std::atomic<int32_t> _connections;
 	std::atomic<bool> _stopped;
 
-	std::thread *_thread;
+	std::unique_ptr<std::thread> _thread;
 
 	SocketContainer _sockets;
 

@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#include "Zone.hpp"
-#include "ZoneSocketMgr.hpp"
+#include "Inter.hpp"
+#include "InterSocketMgr.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
@@ -28,11 +28,11 @@ using boost::asio::ip::udp;
 /* Create Socket Connection */
 boost::asio::io_service *io_service;
 
-ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.yaml")
+InterMain::InterMain() : Server("Inter", "config/", "inter-server.yaml")
 {
 }
 
-ZoneMain::~ZoneMain()
+InterMain::~InterMain()
 {
 }
 
@@ -40,15 +40,15 @@ ZoneMain::~ZoneMain()
  * Prints the header for auth server.
  * @brief Appends the Core header.
  */
-void ZoneMain::PrintHeader()
+void InterMain::PrintHeader()
 {
-	ZoneLog->info("Zone Server Initializing...");
+	InterLog->info("Inter Server Initializing...");
 }
 
 /**
- * Read /config/zone-server.yaml
+ * Read /config/inter-server.yaml
  */
-bool ZoneMain::ReadConfig()
+bool InterMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
@@ -56,7 +56,7 @@ bool ZoneMain::ReadConfig()
 	try {
 		config = YAML::LoadFile(filepath);
 	} catch (std::exception &err) {
-		ZoneLog->error("Unable to read {}. ({})", filepath, err.what());
+		InterLog->error("Unable to read {}. ({})", filepath, err.what());
 		return false;
 	}
 
@@ -66,12 +66,12 @@ bool ZoneMain::ReadConfig()
 	if (!ProcessCommonConfiguration(config))
 		return false;
 
-	ZoneLog->info("Done reading {} configurations in '{}'.", config.size(), getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
+	InterLog->info("Done reading {} configurations in '{}'.", config.size(), getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
 
 	return true;
 }
 
-void ZoneMain::InitializeCLICommands()
+void InterMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
 }
@@ -79,35 +79,35 @@ void ZoneMain::InitializeCLICommands()
 void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 {
 	if (!error) {
-		ZoneServer->shutdown(SIGINT);
+		InterServer->shutdown(SIGINT);
 	}
 }
 
 int main(int argc, const char * argv[])
 {
 	/* Header */
-	ZoneServer->PrintHeader();
+	InterServer->PrintHeader();
 
 	if (argc > 1)
-		ZoneServer->ParseRuntimeArguments(argv, argc);
+		InterServer->ParseRuntimeArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
-	 * the Zoneacter Server.
+	 * the Interacter Server.
 	 */
-	if (!ZoneServer->ReadConfig())
+	if (!InterServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
-	// Start Zoneacter Network
-	sZoneSocketMgr.StartNetwork(*ZoneServer->getIOService(),
-            ZoneServer->getNetworkConf().getListenIp(),
-            ZoneServer->getNetworkConf().getListenPort(),
-            ZoneServer->getNetworkConf().getMaxThreads());
+	// Start Interacter Network
+	sInterSocketMgr.StartNetwork(*InterServer->getIOService(),
+            InterServer->getNetworkConf().getListenIp(),
+            InterServer->getNetworkConf().getListenPort(),
+            InterServer->getNetworkConf().getMaxThreads());
 
 	/**
 	 * Core Signal Handler
 	 */
-	boost::asio::signal_set signals(*ZoneServer->getIOService(), SIGINT, SIGTERM);
+	boost::asio::signal_set signals(*InterServer->getIOService(), SIGINT, SIGTERM);
 	// Set signal handler for callbacks.
 	// Set signal handlers (this must be done before starting io_service threads,
 	// because otherwise they would unblock and exit)
@@ -116,24 +116,24 @@ int main(int argc, const char * argv[])
 	/**
 	 * Initialize the Common Core
 	 */
-	ZoneServer->InitializeCore();
+	InterServer->InitializeCore();
 
 	/**
 	 * Core loop
 	 */
-	while(!ZoneServer->isShuttingDown() && !ZoneServer->getGeneralConf().isTestRun()) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(ZoneServer->getGeneralConf().getCoreUpdateInterval()));
-		ZoneServer->ProcessCLICommands();
+	while(!InterServer->isShuttingDown() && !InterServer->getGeneralConf().isTestRun()) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(InterServer->getGeneralConf().getCoreUpdateInterval()));
+		InterServer->ProcessCLICommands();
 	}
 	/*
 	 * Core Cleanup
 	 */
-	ZoneLog->info("Server shutting down...");
+	InterLog->info("Server shutting down...");
 
 	/* Stop Network */
-	sZoneSocketMgr.StopNetwork();
+	sInterSocketMgr.StopNetwork();
 
 	signals.cancel();
 
-	return ZoneServer->getGeneralConf().getShutdownSignal();
+	return InterServer->getGeneralConf().getShutdownSignal();
 }

@@ -52,6 +52,10 @@ public:
 		_socket.close(error);
 	}
 
+	/* Socket Id */
+	uint64_t getSocketId() const { return _socket_id; }
+	void setSocketId(uint64_t socket_id) { Socket::_socket_id = socket_id; }
+
 	virtual void Start() = 0;
 
 	virtual bool Update()
@@ -209,6 +213,8 @@ private:
 		return !_writeQueue.empty();
 	}
 
+private:
+	uint64_t _socket_id;
 	tcp::socket _socket;
 	boost::asio::ip::address _remoteAddress;
 	uint16_t _remotePort;

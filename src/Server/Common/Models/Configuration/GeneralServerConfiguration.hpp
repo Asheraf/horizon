@@ -31,10 +31,19 @@ struct network_configuration
 	/* Max Threads */
 	uint32_t getMaxThreads() const { return max_threads; }
 	void setMaxThreads(uint32_t max_threads) { network_configuration::max_threads = max_threads; }
+	/* Inter-server IP */
+	const std::string &getInterServerIp() const { return inter_server_ip; }
+	void setInterServerIp(const std::string &inter_server_ip) { network_configuration::inter_server_ip = inter_server_ip; }
+	/* Inter-server Port */
+	uint16_t getInterServerPort() const { return inter_server_port; }
+	void setInterServerPort(uint16_t inter_server_port) { network_configuration::inter_server_port = inter_server_port; }
 
 	std::string listen_ip; //< Listen IP
 	uint16_t listen_port; //< Listen Port Number
 	uint32_t max_threads; //< Maximum network threads.
+
+	std::string inter_server_ip;
+	uint16_t inter_server_port;
 };
 
 struct database_configuration

@@ -24,6 +24,12 @@ BindIP: "0.0.0.0"
 BindPort: 6900
 
 ###################################################
+# Inter Server Settings
+###################################################
+InterServer.IP: "127.0.0.1"
+InterServer.Port: 9998
+
+###################################################
 # network_threads
 # Description: Number of threads for network.
 # Default:        1 - (Recommended 1 thread per 1000 connections)

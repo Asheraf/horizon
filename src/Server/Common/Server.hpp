@@ -67,7 +67,9 @@ public:
 	void MySQLUnborrow(boost::shared_ptr<MySQLConnection> conn) { mysql_pool->unborrow(conn); }
 	/* Command Line Interface */
 	void InitializeCLI();
-	void InitializeCLICommands();
+
+	virtual void InitializeCLICommands();
+	void InitializeCommonCLICommands();
 	void ProcessCLICommands();
 	void QueueCLICommand(CLICommand *cmdMgr) { m_CLICmdQueue.add(cmdMgr); }
 	static void FinalizeCLI(std::thread *thread);

@@ -324,7 +324,7 @@ void AuthSession::Respond_AC_ACCEPT_LOGIN()
 	pkt->last_login_ip = 0; // not used anymore.
 	memset(pkt->last_login_time, '\0', sizeof(pkt->last_login_time)); // Not used anymore
 
-	pkt->sex = (uint8_t) (this->game_account->getGender() == ACCOUNT_MALE ? ACCOUNT_MALE : ACCOUNT_FEMALE);
+	pkt->sex = (uint8_t) this->game_account->getGender();
 
 	for (int i = 0; i < max_servers; ++i) {
 		std::shared_ptr<character_server_data> chr;
@@ -336,9 +336,9 @@ void AuthSession::Respond_AC_ACCEPT_LOGIN()
 		server_list[i].port = chr->port;
 		strncpy(server_list[i].name, chr->name.c_str(), sizeof(server_list[i].name));
 		server_list[i].type = (uint16_t) chr->server_type;
-		server_list[i].is_new = (uint16_t) (chr->isNew ? 1 : 0);
+		server_list[i].is_new = chr->is_new;
 		server_list[i].usercount = 88;
-	} // 1677764800
+	}
 
 	buf.append<PACKET_AC_ACCEPT_LOGIN, PACKET_AC_ACCEPT_LOGIN::character_server_list>
 		(pkt, sizeof(*pkt), server_list, max_servers);

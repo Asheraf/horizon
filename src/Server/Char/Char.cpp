@@ -61,6 +61,23 @@ bool CharMain::ReadConfig()
 		CharLog->error("Unable to read {}. ({})", filepath, err.what());
 		return false;
 	}
+	/**
+	 * Inter Server Settings
+	 * @brief Definitions of the Inter-server networking configuration.
+	 */
+	if (config["InterServer.IP"]) {
+		getNetworkConf().setInterServerIp(config["InterServer.IP"].as<std::string>());
+	} else {
+		CharLog->error("Inter-server IP configuration not set, defaulting to '127.0.0.1'.");
+		getNetworkConf().setInterServerIp("127.0.0.1");
+	}
+
+	if (config["InterServer.Port"]) {
+		getNetworkConf().setInterServerPort(config["InterServer.Port"].as<uint16_t>());
+	} else {
+		CharLog->error("Inter-server Port configuration not set, defaulting to '9998'.");
+		getNetworkConf().setInterServerPort(9998);
+	}
 
 	/**
 	 * Process Configuration that is common between servers.
@@ -75,6 +92,17 @@ bool CharMain::ReadConfig()
 
 void CharMain::InitializeCLICommands()
 {
+	Server::InitializeCLICommands();
+}
+
+void CharMain::ConnectWithInterServer()
+{
+	try {
+		sCharSocketMgr.StartConnection("inter-server",
+		                               *CharServer->getIOService(), getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1);
+	} catch (boost::system::system_error &e) {
+		CharLog->error("{}", e.what());
+	}
 }
 
 void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
@@ -104,6 +132,11 @@ int main(int argc, const char * argv[])
 	        CharServer->getNetworkConf().getListenIp(),
             CharServer->getNetworkConf().getListenPort(),
             CharServer->getNetworkConf().getMaxThreads());
+
+	/**
+	 * Establish a connection to the inter-server.
+	 */
+	CharServer->ConnectWithInterServer();
 
 	/**
 	 * Core Signal Handler

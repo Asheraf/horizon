@@ -35,29 +35,40 @@ public:
 		return instance;
 	}
 
-	bool StartNetwork(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, int threads = 1) override
+	bool StartNetwork(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1) override
 	{
+		CharLog->trace("Max allowed socket connections {}", (int) boost::asio::socket_base::max_connections);
 
 		if (!BaseSocketMgr::StartNetwork(io_service, listen_ip, port, threads))
 			return false;
 
-		CoreLog->trace("Max allowed socket connections {}", (int) boost::asio::socket_base::max_connections);
-
 		_acceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForAccept, this));
 		_acceptor->AsyncAcceptWithCallback<&CharSocketMgr::OnSocketAccept>();
 
-		CoreLog->info("Networking initialized, listening on {} {} (Maximum Threads: {})", listen_ip, port, threads);
+		CharLog->info("Networking initialized, listening on {} {} (Maximum Threads: {})", listen_ip, port, threads);
+		return true;
+	}
+
+	bool StartConnection(std::string const &connection_name, boost::asio::io_service &io_service, std::string const &connect_ip, uint16_t port, uint32_t connections = 1) override
+	{
+		if (!BaseSocketMgr::StartConnection(connection_name, io_service, connect_ip, port, connections)) {
+			CharLog->error("CharSocketMgr failed to start a connection.");
+			return false;
+		}
+
+		_connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
+		_connector->ConnectWithCallback<&CharSocketMgr::OnSocketConnect>(connections);
 
 		return true;
 	}
 
 protected:
-	NetworkThread<CharSession>* CreateThreads() const override
+	static void OnSocketAccept(tcp::socket &&socket, uint32_t threadIndex)
 	{
-		return new NetworkThread<CharSession>[GetNetworkThreadCount()];
+		Instance().OnSocketOpen(std::forward<tcp::socket>(socket), threadIndex);
 	}
 
-	static void OnSocketAccept(tcp::socket &&socket, uint32_t threadIndex)
+	static void OnSocketConnect(tcp::socket &&socket, uint32_t threadIndex)
 	{
 		Instance().OnSocketOpen(std::forward<tcp::socket>(socket), threadIndex);
 	}

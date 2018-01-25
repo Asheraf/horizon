@@ -26,10 +26,12 @@ set(SOURCE_FILES
         NetworkThread.hpp
         Socket.hpp
         SocketMgr.hpp
+        NetworkConnector.hpp
         Buffer/ByteBuffer.cpp
         Buffer/ByteBuffer.hpp
         Buffer/ByteConverter.hpp
-        Buffer/MessageBuffer.hpp)
+        Buffer/MessageBuffer.hpp
+        Models/SocketSessionData.hpp)
 
 add_library(networking
         ${SOURCE_FILES})

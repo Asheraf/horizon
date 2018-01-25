@@ -66,6 +66,27 @@ bool AuthMain::ReadConfig()
 
 	try {
 		/**
+		 * Inter Server Settings
+		 * @brief Definitions of the Inter-server networking configuration.
+		 */
+		if (config["InterServer.IP"]) {
+			getNetworkConf().setInterServerIp(config["InterServer.IP"].as<std::string>());
+		} else {
+			AuthLog->error("Inter-server IP configuration not set, defaulting to '127.0.0.1'.");
+			getNetworkConf().setInterServerIp("127.0.0.1");
+		}
+
+		if (config["InterServer.Port"]) {
+			getNetworkConf().setInterServerPort(config["InterServer.Port"].as<uint16_t>());
+		} else {
+			AuthLog->error("Inter-server Port configuration not set, defaulting to '9998'.");
+			getNetworkConf().setInterServerPort(9998);
+		}
+
+		AuthLog->info("Inter-Server configured to tcp://{}:{}",
+		              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort());
+
+		/**
 		 * Additional Configuration
 		 * @brief
 		 */
@@ -142,7 +163,7 @@ bool AuthMain::ReadConfig()
 							char_serv.port = 6121;
 						}
 						if (nn["isNew"]) {
-							char_serv.isNew = (int16_t) (nn["isNew"].as<bool>() ? 1 : 0);
+							char_serv.is_new = (int16_t) (nn["isNew"].as<bool>() ? 1 : 0);
 						}
 						if (nn["type"]) {
 							char_serv.server_type = static_cast<character_server_types>(nn["type"].as<uint16_t>());
@@ -155,7 +176,7 @@ bool AuthMain::ReadConfig()
 						}
 						char_serv.id = (int) i;
 						addCharacterServer(char_serv); // Add the server in.
-						AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.isNew ? "(new)" : "");
+						AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.is_new ? "(new)" : "");
 					} else {
 						AuthLog->warn("Invalid configuration type for sequence {} in 'character_servers', required map.", i);
 					}
@@ -195,9 +216,21 @@ bool AuthMain::CLICmd_ReloadConfig()
 void AuthMain::InitializeCLICommands()
 {
 	addCLIFunction("reloadconf", std::bind(&AuthMain::CLICmd_ReloadConfig, this));
+
+	Server::InitializeCLICommands();
 }
 
-void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const boost::system::error_code &error, int signal)
+void AuthMain::ConnectWithInterServer()
+{
+	try {
+		sAuthSocketMgr.StartConnection("inter-server",
+		                               *AuthServer->getIOService(), getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1);
+	} catch (boost::system::system_error &e) {
+		AuthLog->error("{}", e.what());
+	}
+}
+
+void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
 		if (std::shared_ptr<boost::asio::io_service> io_service = ioServiceRef.lock())
@@ -241,6 +274,11 @@ int main(int argc, const char * argv[])
 		AuthServer->getNetworkConf().getListenIp(),
 		AuthServer->getNetworkConf().getListenPort(),
 		AuthServer->getNetworkConf().getMaxThreads());
+
+	/**
+	 * Establish a connection to the inter-server.
+	 */
+	AuthServer->ConnectWithInterServer();
 
 	/**
 	 * Initialize the Common Core

@@ -100,7 +100,7 @@ public:
 		_acceptor.close(error);
 	}
 
-	void SetSocketFactory(std::function<std::pair<tcp::socket *, uint32_t>()> func) { _socketFactory = func; }
+	void SetSocketFactory(std::function<std::pair<tcp::socket *, uint32_t>()> &&func) { _socketFactory = func; }
 
 private:
 	std::pair<tcp::socket*, uint32_t> DefaultSocketFactory() { return std::make_pair(&_socket, 0); }
@@ -115,7 +115,7 @@ private:
 template <class T>
 void AsyncAcceptor::AsyncAccept()
 {
-	_acceptor.async_accept(_socket, [this](boost::system::error_code error)
+	_acceptor.async_accept(_socket, [this] (boost::system::error_code error)
 	{
 		if (!error) {
 			try {

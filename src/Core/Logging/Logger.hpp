@@ -37,6 +37,7 @@ public:
 	std::shared_ptr<spdlog::logger> registerLogger(std::string name, std::string /*path*/, uint8_t level, size_t /*file_size*/, uint32_t /*max_files*/);
 };
 
+#define InterLog Logger().getInstance()->registerLogger("Inter", "logs/inter-server.log", 0, 102400, 1)
 #define AuthLog Logger().getInstance()->registerLogger("Auth", "logs/auth-server.log", 0, 102400, 1)
 #define CharLog Logger().getInstance()->registerLogger("Char", "logs/char-server.log", 0, 102400, 1)
 #define ZoneLog Logger().getInstance()->registerLogger("Zone", "logs/zone-server.log", 0, 102400, 1)

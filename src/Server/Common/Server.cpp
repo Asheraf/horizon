@@ -237,19 +237,16 @@ void Server::InitializeCLI()
 		CoreLog->info("Command line not supported during test-runs... skipping.");
 		return;
 	}
+
 	m_CLIThread.reset(new std::thread(std::bind(&CLIThreadStart, this)), &Server::FinalizeCLI);
 	InitializeCLICommands();
 }
 
 void Server::InitializeCLICommands()
 {
-	if (getGeneralConf().isTestRun()) {
-		CoreLog->info("Command line not supported during test-runs... skipping.");
-		return;
-	}
-
 	addCLIFunction("shutdown", std::bind(&Server::CLICmd_Shutdown, this));
 }
+
 
 void Server::FinalizeCLI(std::thread *thread)
 {
@@ -265,9 +262,6 @@ void Server::ProcessCLICommands()
 		bool ret = false;
 		std::function<bool(void)> cmd_func = getCLIFunc(command->m_command);
 
-		if (command->m_command.compare("shutdown") == 0) {
-
-		}
 		if (cmd_func) {
 			ret = cmd_func();
 		} else {
