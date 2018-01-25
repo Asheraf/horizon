@@ -98,12 +98,6 @@ int main(int argc, const char * argv[])
 	if (!InterServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
-	// Start Interacter Network
-	sInterSocketMgr.StartNetwork(*InterServer->getIOService(),
-            InterServer->getNetworkConf().getListenIp(),
-            InterServer->getNetworkConf().getListenPort(),
-            InterServer->getNetworkConf().getMaxThreads());
-
 	/**
 	 * Core Signal Handler
 	 */
@@ -113,18 +107,17 @@ int main(int argc, const char * argv[])
 	// because otherwise they would unblock and exit)
 	signals.async_wait(SignalHandler);
 
+	// Start Interacter Network
+	sInterSocketMgr.StartNetwork(*InterServer->getIOService(),
+            InterServer->getNetworkConf().getListenIp(),
+            InterServer->getNetworkConf().getListenPort(),
+            InterServer->getNetworkConf().getMaxThreads());
+
 	/**
 	 * Initialize the Common Core
 	 */
 	InterServer->InitializeCore();
 
-	/**
-	 * Core loop
-	 */
-	while(!InterServer->isShuttingDown() && !InterServer->getGeneralConf().isTestRun()) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(InterServer->getGeneralConf().getCoreUpdateInterval()));
-		InterServer->ProcessCLICommands();
-	}
 	/*
 	 * Core Cleanup
 	 */

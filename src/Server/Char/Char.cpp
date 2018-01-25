@@ -127,6 +127,17 @@ int main(int argc, const char * argv[])
 	if (!CharServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
+	/**
+	 * Core Signal Handler
+	 */
+	boost::asio::signal_set signals(*CharServer->getIOService(), SIGINT, SIGTERM);
+
+	// Set signal handler for callbacks.
+	// Set signal handlers (this must be done before starting io_service threads,
+	// because otherwise they would unblock and exit)
+	signals.async_wait(SignalHandler);
+
+
 	// Start Character Network
 	sCharSocketMgr.StartNetwork(*CharServer->getIOService(),
 	        CharServer->getNetworkConf().getListenIp(),
@@ -137,16 +148,6 @@ int main(int argc, const char * argv[])
 	 * Establish a connection to the inter-server.
 	 */
 	CharServer->ConnectWithInterServer();
-
-	/**
-	 * Core Signal Handler
-	 */
-	boost::asio::signal_set signals(*CharServer->getIOService(), SIGINT, SIGTERM);
-
-	// Set signal handler for callbacks.
-	// Set signal handlers (this must be done before starting io_service threads,
-	// because otherwise they would unblock and exit)
-	signals.async_wait(SignalHandler);
 
 	/**
 	 * Initialize the Common Core

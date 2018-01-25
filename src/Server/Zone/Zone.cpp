@@ -98,12 +98,6 @@ int main(int argc, const char * argv[])
 	if (!ZoneServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
-	// Start Zoneacter Network
-	sZoneSocketMgr.StartNetwork(*ZoneServer->getIOService(),
-            ZoneServer->getNetworkConf().getListenIp(),
-            ZoneServer->getNetworkConf().getListenPort(),
-            ZoneServer->getNetworkConf().getMaxThreads());
-
 	/**
 	 * Core Signal Handler
 	 */
@@ -113,18 +107,17 @@ int main(int argc, const char * argv[])
 	// because otherwise they would unblock and exit)
 	signals.async_wait(SignalHandler);
 
+	// Start Zoneacter Network
+	sZoneSocketMgr.StartNetwork(*ZoneServer->getIOService(),
+            ZoneServer->getNetworkConf().getListenIp(),
+            ZoneServer->getNetworkConf().getListenPort(),
+            ZoneServer->getNetworkConf().getMaxThreads());
+
 	/**
 	 * Initialize the Common Core
 	 */
 	ZoneServer->InitializeCore();
 
-	/**
-	 * Core loop
-	 */
-	while(!ZoneServer->isShuttingDown() && !ZoneServer->getGeneralConf().isTestRun()) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(ZoneServer->getGeneralConf().getCoreUpdateInterval()));
-		ZoneServer->ProcessCLICommands();
-	}
 	/*
 	 * Core Cleanup
 	 */

@@ -167,7 +167,7 @@ bool AuthMain::ReadConfig()
 						}
 						if (nn["type"]) {
 							char_serv.server_type = static_cast<character_server_types>(nn["type"].as<uint16_t>());
-							if (char_serv.server_type < CHAR_SERVER_TYPE_NORMAL || char_serv.server_type >= CHAR_SERVER_TYPE_MAX) {
+							if (char_serv.server_type >= CHAR_SERVER_TYPE_MAX) {
 								AuthLog->error(
 									"Incorrect character server type '{}' given for server #{}, defaulting to 'normal type'.",
 									i, (int) char_serv.server_type);
