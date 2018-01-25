@@ -30,8 +30,7 @@ set(SOURCE_FILES
         Buffer/ByteBuffer.cpp
         Buffer/ByteBuffer.hpp
         Buffer/ByteConverter.hpp
-        Buffer/MessageBuffer.hpp
-        Models/SocketSessionData.hpp)
+        Buffer/MessageBuffer.hpp)
 
 add_library(networking
         ${SOURCE_FILES})
