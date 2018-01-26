@@ -98,8 +98,7 @@ void CharMain::InitializeCLICommands()
 void CharMain::ConnectWithInterServer()
 {
 	try {
-		sCharSocketMgr.StartConnection("inter-server",
-		                               *CharServer->getIOService(), getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1);
+		sCharSocketMgr.StartNetworkConnection("inter-server", getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
 	} catch (boost::system::system_error &e) {
 		CharLog->error("{}", e.what());
 	}
@@ -136,7 +135,6 @@ int main(int argc, const char * argv[])
 	// Set signal handlers (this must be done before starting io_service threads,
 	// because otherwise they would unblock and exit)
 	signals.async_wait(SignalHandler);
-
 
 	// Start Character Network
 	sCharSocketMgr.StartNetwork(*CharServer->getIOService(),

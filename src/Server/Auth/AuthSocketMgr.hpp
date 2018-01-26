@@ -61,8 +61,8 @@ public:
 			CoreLog->error("SocketMgr.StartConnect '{}' to tcp:://{}:{}.", connection_name, connect_ip, port);
 			return false;
 		}
-		connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
 		this->AddToConnectorPool(connection_name, connector);
+		connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
 		connector->ConnectWithCallback<&AuthSocketMgr::OnSocketConnect>(connections);
 		return true;
 	}

@@ -41,7 +41,7 @@ public:
 			std::tie(socket, network_thread_idx) = _socketFactory();
 
 			do {
-				CoreLog->error("Trying to establish connection for '{}' at tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
+				CoreLog->info("Trying to establish connection for '{}' at tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 
 				// Try connecting to the endpoint.
 				socket->connect(_endpoint, error);
@@ -59,12 +59,14 @@ public:
                         this, socket, poll_thread_idx)),
                         [this] (std::thread *thr)
 					{
-						thr->join();
+						if (thr != nullptr)
+							thr->join();
 						delete thr;
 					});
 
+					std::lock_guard<std::mutex> lock(poll_thread_mtx);
 					_socket_poll_threads.insert(std::make_pair(poll_thread_idx, std::move(poll_thread)));
-					CoreLog->error("Successfully issued '{}' connection request to  endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
+					CoreLog->info("Successfully issued '{}' connection request to  endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 				}
 			} while (!socket->is_open());
 		}
@@ -80,7 +82,6 @@ public:
 
 		// Re-connection issue.
 		this->ConnectWithCallback<networkConnectorCallback>(1);
-		_socket_poll_threads.erase(thread_index);
 	}
 
 	void SetSocketFactory(std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> &&func) { _socketFactory = func; }
@@ -92,6 +93,7 @@ private:
 	tcp::endpoint _endpoint;
 	std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> _socketFactory;
 	std::unordered_map<uint64_t, std::shared_ptr<std::thread>> _socket_poll_threads;
+	std::mutex poll_thread_mtx;
 	std::atomic<uint64_t> _socket_poll_thread_index;
 };
 

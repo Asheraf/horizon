@@ -40,6 +40,7 @@ public:
 	void PrintHeader();
 	bool ReadConfig();
 	void InitializeCLICommands();
+	void ConnectWithInterServer();
 private:
 	struct {
 		bool enabled;
