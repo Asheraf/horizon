@@ -30,28 +30,28 @@ public:
 	void ConnectWithCallback(int /*connections*/ = 1)
 	{
 		tcp::socket *socket;
-		uint32_t thread_index;
 		boost::system::error_code error;
+		uint32_t thread_index;
 		int connection_count = 0;
+
+		// Get a new socket from a thread with the minimum connections.
+		std::tie(socket, thread_index) = _socketFactory();
 
 		do {
 			CoreLog->error("Trying to establish connection for '{}' at tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 
-			// Get a new socket from a thread with the minimum connections.
-			std::tie(socket, thread_index) = _socketFactory();
-
 			// Try connecting to the endpoint.
 			socket->connect(_endpoint, error);
 
-			if (error) {
-				CoreLog->error("Error connecting to '{}' endpoint tcp://{}:{}. Retrying in 10 seconds...", _connection_name, _endpoint.address().to_string(), _endpoint.port());
+			if (error != nullptr) {
+				CoreLog->error("Error connecting to '{}' endpoint tcp://{}:{}. Error Message: '{}'. Retrying in 10 seconds...", _connection_name, _endpoint.address().to_string(), _endpoint.port(), error.message());
 				std::this_thread::sleep_for(std::chrono::seconds(10));
 			} else {
 				networkConnectorCallback(std::move(*socket), thread_index);
 				connection_count++;
 				CoreLog->error("Successfully issued '{}' connection request to  endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 			}
-		} while (error != nullptr);
+		} while (error);
 	}
 
 	void SetSocketFactory(std::function<std::pair<tcp::socket *, uint32_t>()> &&func) { _socketFactory = func; }

@@ -278,12 +278,14 @@ int main(int argc, const char * argv[])
 	/**
 	 * Establish a connection to the inter-server.
 	 */
-	AuthServer->ConnectWithInterServer();
+	std::thread inter_conn_thread = std::thread(std::bind(&AuthMain::ConnectWithInterServer, AuthServer));
 
 	/**
 	 * Initialize the Common Core
 	 */
 	AuthServer->InitializeCore();
+
+	inter_conn_thread.join();
 
 	/*
 	 * Core Cleanup

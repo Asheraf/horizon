@@ -34,7 +34,7 @@ class NetworkThread
 {
 public:
 	NetworkThread()
-	: _connections(0), _stopped(false), _acceptSocket(_io_service), _updateTimer(_io_service)
+	: _connections(0), _stopped(false), _acceptSocket(_io_service), _connectSocket(_io_service), _updateTimer(_io_service)
 	{
 		// Constructor
 	}
@@ -89,7 +89,7 @@ public:
 	}
 
 	tcp::socket *GetSocketForAccept() { return &_acceptSocket; }
-	tcp::socket *GetSocketForConnect() { return &_acceptSocket; }
+	tcp::socket *GetSocketForConnect() { return &_connectSocket; }
 protected:
 	virtual void SocketAdded(std::shared_ptr<SocketType> /*sock*/) { }
 	virtual void SocketRemoved(std::shared_ptr<SocketType> /*sock*/) { }
@@ -168,6 +168,7 @@ private:
 
 	boost::asio::io_service _io_service;
 	tcp::socket _acceptSocket;
+	tcp::socket _connectSocket;
 	boost::asio::deadline_timer _updateTimer;
 
 };
