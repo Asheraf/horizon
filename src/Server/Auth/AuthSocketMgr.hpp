@@ -53,28 +53,29 @@ public:
 		return true;
 	}
 
-	bool StartConnection(std::string const &connection_name, boost::asio::io_service &io_service, std::string const &connect_ip, uint16_t port, uint32_t connections = 1) override
+	bool StartNetworkConnection(std::string const &connection_name, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
 	{
-		if (!BaseSocketMgr::StartConnection(connection_name, io_service, connect_ip, port, connections)) {
-			CoreLog->error("AuthSocketMgr failed to start a connection.");
+		std::shared_ptr<NetworkConnector> connector;
+
+		if (!(connector = std::make_shared<NetworkConnector>(connection_name, connect_ip, port))) {
+			CoreLog->error("SocketMgr.StartConnect '{}' to tcp:://{}:{}.", connection_name, connect_ip, port);
 			return false;
 		}
-
-		_connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
-		_connector->ConnectWithCallback<&AuthSocketMgr::OnSocketConnect>(connections);
-
+		connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
+		this->AddToConnectorPool(connection_name, connector);
+		connector->ConnectWithCallback<&AuthSocketMgr::OnSocketConnect>(connections);
 		return true;
 	}
 
 protected:
-	static void OnSocketAccept(tcp::socket &&socket, uint32_t threadIndex)
+	static void OnSocketAccept(std::shared_ptr<tcp::socket> socket, uint32_t threadIndex)
 	{
-		Instance().OnSocketOpen(std::forward<tcp::socket>(socket), threadIndex);
+		Instance().OnSocketOpenForAccept(std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_CLIENT);
 	}
 
-	static void OnSocketConnect(tcp::socket &&socket, uint32_t threadIndex)
+	static void OnSocketConnect(std::string &conn_name, std::shared_ptr<tcp::socket> socket, uint32_t threadIndex)
 	{
-		Instance().OnSocketOpen(std::forward<tcp::socket>(socket), threadIndex);
+		Instance().OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
 	}
 };
 

@@ -223,8 +223,7 @@ void AuthMain::InitializeCLICommands()
 void AuthMain::ConnectWithInterServer()
 {
 	try {
-		sAuthSocketMgr.StartConnection("inter-server",
-		                               *AuthServer->getIOService(), getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1);
+		sAuthSocketMgr.StartNetworkConnection("inter-server", getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
 	} catch (boost::system::system_error &e) {
 		AuthLog->error("{}", e.what());
 	}

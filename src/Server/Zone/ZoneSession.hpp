@@ -34,7 +34,7 @@ class ZoneSession : public Socket<ZoneSession>
 	typedef Socket<ZoneSession> ZoneSocket;
 	typedef void (ZoneSession::*ZonePacketHandler) (PacketBuffer &pkt);
 public:
-	ZoneSession(tcp::socket &&socket);
+	ZoneSession(std::shared_ptr<tcp::socket> socket);
 	~ZoneSession() { }
 
 	void Start() override;

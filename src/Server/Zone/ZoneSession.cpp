@@ -19,8 +19,8 @@
 #include "Core/Logging/Logger.hpp"
 #include "ZonePackets.hpp"
 
-ZoneSession::ZoneSession(tcp::socket &&socket)
-  : Socket(std::move(socket))
+ZoneSession::ZoneSession(std::shared_ptr<tcp::socket> socket)
+  : Socket(socket)
 {
 	InitHandlers();
 }
@@ -73,8 +73,6 @@ void ZoneSession::ReadHandler()
 		if (!HandleIncomingPacket(pkt))
 			GetReadBuffer().Reset();
 	}
-
-	AsyncRead();
 }
 
 bool ZoneSession::HandleIncomingPacket(PacketBuffer &packet)

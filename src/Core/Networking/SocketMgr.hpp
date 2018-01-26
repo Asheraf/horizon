@@ -31,6 +31,15 @@
 template <class SocketType>
 class SocketMgr
 {
+	typedef std::shared_ptr<NetworkThread<SocketType>> NetworkThreadPtr;
+	typedef std::vector<std::shared_ptr<SocketType>> SessionContainer;
+	struct connector_pool_data
+	{
+		std::shared_ptr<NetworkConnector> connector;
+		SessionContainer borrowed_pool;
+		SessionContainer session_pool;
+	};
+	typedef std::unordered_map<std::string, connector_pool_data>  NetworkConnectorPool;
 public:
 	virtual ~SocketMgr() {
 		assert(_thread_map.empty());
@@ -51,18 +60,6 @@ public:
 		return true;
 	}
 
-	virtual bool StartConnection(std::string  const &connection_name, boost::asio::io_service &io_service, std::string const &connect_ip, uint16_t port, uint32_t /*connections*/ = 1)
-	{
-		try {
-			_connector = std::make_unique<NetworkConnector>(connection_name, io_service, connect_ip, port);
-		} catch (boost::system::system_error const &error) {
-			CoreLog->error("SocketMgr.StartConnect '{}' to tcp:://{}:{}. Exception: {}", connection_name, connect_ip, port, error.what());
-			return false;
-		}
-
-		return true;
-	}
-
 	bool StartThreadsForNetwork(uint32_t threads = 1)
 	{
 		for (uint32_t i = 0; i < threads; i++) {
@@ -72,11 +69,56 @@ public:
 				CoreLog->error("Networking: Error in creating threads, SocketMgr.StartThreadForNetworks.");
 				return false;
 			}
-			_thread_map.insert(std::make_pair(++last_thread_id, network_thr));
+			_thread_map.insert(std::make_pair(++_last_thread_id, network_thr));
 			network_thr->Start();
 		}
 
 		return true;
+	}
+
+	void AddToConnectorPool(std::string const &connection_name, std::shared_ptr<NetworkConnector> connector)
+	{
+		auto it = _network_connector_pool.find(connection_name);
+
+		if (it != _network_connector_pool.end()) {
+			it->second.connector = std::move(connector);
+		} else {
+			struct connector_pool_data cpd;
+			cpd.connector = std::move(connector);
+			_network_connector_pool.insert(std::make_pair(connection_name, cpd));
+		}
+	}
+
+	void AddSessionToConnectorPool(std::string const &conn_name, std::shared_ptr<SocketType> session)
+	{
+		auto it = _network_connector_pool.find(conn_name);
+
+		if (it != _network_connector_pool.end())
+			it->second.session_pool.push_back(session);
+	}
+
+	std::shared_ptr<SocketType> BorrowConnectedSession(std::string const &conn_name)
+	{
+		auto it = _network_connector_pool.find(conn_name);
+
+		if (it != _network_connector_pool.end() && it->second.session_pool.size() > 0) {
+			std::shared_ptr<SocketType> session = it->second.session_pool.front();
+			it->second.borrowed_pool.push_back(session);
+			it->second.session_pool.erase(std::remove(it->second.session_pool.begin(), it->second.session_pool.end(), session), it->second.session_pool.end());
+			return session;
+		}
+
+		return nullptr;
+	}
+
+	void UnborrowConnectedSession(std::string const &conn_name, std::shared_ptr<SocketType> session)
+	{
+		auto it = _network_connector_pool.find(conn_name);
+
+		if (it != _network_connector_pool.end()) {
+			it->second.borrowed_pool.erase(std::remove(it->second.borrowed_pool.begin(), it->second.borrowed_pool.end(), session), it->second.borrowed_pool.end());
+			it->second.session_pool.push_back(session);
+		}
 	}
 
 	/**
@@ -112,23 +154,46 @@ public:
 		}
 	}
 
+	void OnSocketOpenForConnect(std::string &conn_name, std::shared_ptr<tcp::socket> &&socket, uint32_t thread_index, enum socket_endpoint_type type)
+	{
+		std::shared_ptr<SocketType> new_session = std::make_shared<SocketType>(std::move(socket));
+
+		try {
+			// Set Socket data
+			new_session->setSocketId(++_last_socket_id);
+			// Set Socket Type
+			new_session->setSocketType(type);
+			// Start Session
+			new_session->Start();
+			// Add socket to thread.
+			NetworkThreadPtr(_thread_map.at(thread_index))->AddSocket(new_session);
+			// Add socket to connector map.
+			AddSessionToConnectorPool(conn_name, new_session);
+		} catch (boost::system::system_error const &error) {
+			CoreLog->error("Networking: Failed to retrieve client's remote address {}", error.what());
+		}
+	}
 	/**
 	 * Move the socket ownership from the caller to a new socket and add it to a thread.
 	 * @param socket
 	 * @param threadIndex
 	 */
-	void OnSocketOpen(tcp::socket &&socket, uint32_t threadIndex)
+	void OnSocketOpenForAccept(std::shared_ptr<tcp::socket> &&socket, uint32_t thread_index, enum socket_endpoint_type type)
 	{
 		try {
-			std::shared_ptr<SocketType> newSocket = std::make_shared<SocketType>(std::move(socket));
+			std::shared_ptr<SocketType> new_session = std::make_shared<SocketType>(std::move(socket));
 			// Set Socket data
-			newSocket->setSocketId(++last_socket_id);
+			new_session->setSocketId(++_last_socket_id);
+			// Set Socket Type
+			new_session->setSocketType(type);
 			// Start Session
-			newSocket->Start();
+			new_session->Start();
 			// Add socket to thread.
-			NetworkThreadPtr(_thread_map.at(threadIndex))->AddSocket(newSocket);
-			// Add a reference to the session container.
-			_sessions.push_back(newSocket);
+			NetworkThreadPtr(_thread_map.at(thread_index))->AddSocket(new_session);
+
+			// Add a reference to the appropriate session container.
+			_client_sessions.push_back(new_session);
+
 		} catch (boost::system::system_error const &error) {
 			CoreLog->error("Networking: Failed to retrieve client's remote address {}", error.what());
 		}
@@ -147,28 +212,27 @@ public:
 		return min_idx;
 	}
 
-	std::pair<tcp::socket*, uint32_t> GetSocketForAccept()
+	std::pair<std::shared_ptr<tcp::socket>, uint32_t> GetSocketForAccept()
 	{
 		int min_idx = SelectThreadWithMinConnections();
 		return std::make_pair(NetworkThreadPtr(_thread_map.at(min_idx))->GetSocketForAccept(), min_idx);
 	}
 
-	std::pair<tcp::socket *, uint32_t> GetSocketForConnect()
+	std::pair<std::shared_ptr<tcp::socket>, uint32_t> GetSocketForConnect()
 	{
 		int min_idx = SelectThreadWithMinConnections();
 		return std::make_pair(NetworkThreadPtr(_thread_map.at(min_idx))->GetSocketForConnect(), min_idx);
 	}
 
 protected:
-	typedef std::shared_ptr<NetworkThread<SocketType>> NetworkThreadPtr;
-	typedef std::vector<std::shared_ptr<SocketType>> SessionContainer;
+	SocketMgr() { }
 
-	uint64_t last_socket_id;
-	SessionContainer _sessions;
+	uint64_t _last_socket_id;
+	SessionContainer _client_sessions;
 	std::unique_ptr<AsyncAcceptor> _acceptor;
-	std::unique_ptr<NetworkConnector> _connector;
-	uint32_t last_thread_id;
+	uint32_t _last_thread_id;
 	std::unordered_map<uint32_t, NetworkThreadPtr> _thread_map;
+	NetworkConnectorPool _network_connector_pool;
 };
 
 #endif /* HORIZON_SOCKETMGR_HPP */

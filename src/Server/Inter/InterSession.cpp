@@ -19,8 +19,8 @@
 #include "Core/Logging/Logger.hpp"
 #include "InterPackets.hpp"
 
-InterSession::InterSession(tcp::socket &&socket)
-  : Socket(std::move(socket))
+InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
+  : Socket(socket)
 {
 	InitHandlers();
 }
@@ -73,8 +73,6 @@ void InterSession::ReadHandler()
 		if (!HandleIncomingPacket(pkt))
 			GetReadBuffer().Reset();
 	}
-
-	AsyncRead();
 }
 
 bool InterSession::HandleIncomingPacket(PacketBuffer &packet)

@@ -26,8 +26,8 @@
 #include <random>
 #include <memory>
 
-AuthSession::AuthSession(tcp::socket &&socket)
-: Socket(std::move(socket))
+AuthSession::AuthSession(std::shared_ptr<tcp::socket> socket)
+: Socket(socket)
 {
 	InitHandlers();
 
@@ -96,8 +96,6 @@ void AuthSession::ReadHandler()
 		if (!HandleIncomingPacket(pkt))
 			GetReadBuffer().Reset();
 	}
-
-	AsyncRead();
 }
 
 bool AuthSession::HandleIncomingPacket(PacketBuffer &packet)

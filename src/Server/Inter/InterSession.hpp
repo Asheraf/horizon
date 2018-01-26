@@ -34,7 +34,7 @@ class InterSession : public Socket<InterSession>
 	typedef Socket<InterSession> InterSocket;
 	typedef void (InterSession::*InterPacketHandler) (PacketBuffer &pkt);
 public:
-	InterSession(tcp::socket &&socket);
+	InterSession(std::shared_ptr<tcp::socket> socket);
 	~InterSession() { }
 
 	void Start() override;

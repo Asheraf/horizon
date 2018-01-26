@@ -37,7 +37,7 @@ class AuthSession : public Socket<AuthSession>
 	friend class AuthMain;
 	typedef Socket<AuthSession> AuthSocket;
 public:
-	AuthSession(tcp::socket &&socket);
+	explicit AuthSession(std::shared_ptr<tcp::socket> socket);
 	~AuthSession() { }
 
 	void Start() override;

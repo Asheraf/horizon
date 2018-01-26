@@ -19,8 +19,8 @@
 
 #include "CharPackets.hpp"
 
-CharSession::CharSession(tcp::socket &&socket)
-  : Socket(std::move(socket))
+CharSession::CharSession(std::shared_ptr<tcp::socket> socket)
+  : Socket(socket)
 {
 	InitHandlers();
 }
@@ -73,8 +73,6 @@ void CharSession::ReadHandler()
 		if (!HandleIncomingPacket(pkt))
 			GetReadBuffer().Reset();
 	}
-
-	AsyncRead();
 }
 
 bool CharSession::HandleIncomingPacket(PacketBuffer &packet)

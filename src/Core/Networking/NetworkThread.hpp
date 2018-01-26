@@ -88,8 +88,8 @@ public:
 		CoreLog->trace("A new socket has been added to a thread. (Thread Connections: {}) ", _connections);
 	}
 
-	tcp::socket *GetSocketForAccept() { return &_acceptSocket; }
-	tcp::socket *GetSocketForConnect() { return &_connectSocket; }
+	std::shared_ptr<tcp::socket> GetSocketForAccept() { return std::make_shared<tcp::socket>(_io_service); }
+	std::shared_ptr<tcp::socket> GetSocketForConnect() { return std::make_shared<tcp::socket>(_io_service); }
 protected:
 	virtual void SocketAdded(std::shared_ptr<SocketType> /*sock*/) { }
 	virtual void SocketRemoved(std::shared_ptr<SocketType> /*sock*/) { }
@@ -135,7 +135,7 @@ protected:
 
 		AddNewSockets();
 
-		_sockets.erase(std::remove_if(_sockets.begin(), _sockets.end(), [this](std::shared_ptr<SocketType> sock)
+		_sockets.erase(std::remove_if(_sockets.begin(), _sockets.end(), [this] (std::shared_ptr<SocketType> sock)
 		{
 			if (!sock->Update()) {
 				if (sock->IsOpen())

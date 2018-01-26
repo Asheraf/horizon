@@ -35,7 +35,7 @@ class CharSession : public Socket<CharSession>
 	typedef Socket<CharSession> CharSocket;
 	typedef void (CharSession::*CharPacketHandler) (PacketBuffer &pkt);
 public:
-	CharSession(tcp::socket &&socket);
+	CharSession(std::shared_ptr<tcp::socket> socket);
 	~CharSession() { }
 
 	void Start() override;

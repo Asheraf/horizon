@@ -37,40 +37,44 @@ public:
 
 	bool StartNetwork(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1) override
 	{
-		CharLog->trace("Max allowed socket connections {}", (int) boost::asio::socket_base::max_connections);
-
-		if (!BaseSocketMgr::StartNetwork(io_service, listen_ip, port, threads))
+		if (!BaseSocketMgr::StartNetwork(io_service, listen_ip, port, threads)) {
+			CoreLog->error("CharSocketMgr failed to start network.");
 			return false;
+		}
+
+		CoreLog->trace("Max allowed socket connections {}", (int) boost::asio::socket_base::max_connections);
 
 		_acceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForAccept, this));
 		_acceptor->AsyncAcceptWithCallback<&CharSocketMgr::OnSocketAccept>();
 
-		CharLog->info("Networking initialized, listening on {} {} (Maximum Threads: {})", listen_ip, port, threads);
+		CoreLog->info("Networking initialized, listening on {} {} (Maximum Threads: {})", listen_ip, port, threads);
+
 		return true;
 	}
 
-	bool StartConnection(std::string const &connection_name, boost::asio::io_service &io_service, std::string const &connect_ip, uint16_t port, uint32_t connections = 1) override
+	bool StartNetworkConnection(std::string const &connection_name, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
 	{
-		if (!BaseSocketMgr::StartConnection(connection_name, io_service, connect_ip, port, connections)) {
-			CharLog->error("CharSocketMgr failed to start a connection.");
+		std::shared_ptr<NetworkConnector> connector;
+
+		if (!(connector = std::make_shared<NetworkConnector>(connection_name, connect_ip, port))) {
+			CoreLog->error("SocketMgr.StartConnect '{}' to tcp:://{}:{}.", connection_name, connect_ip, port);
 			return false;
 		}
-
-		_connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
-		_connector->ConnectWithCallback<&CharSocketMgr::OnSocketConnect>(connections);
-
+		connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
+		connector->ConnectWithCallback<&CharSocketMgr::OnSocketConnect>(connections);
+		this->AddToConnectorPool(connection_name, std::forward<std::shared_ptr<NetworkConnector>>(connector));
 		return true;
 	}
 
 protected:
-	static void OnSocketAccept(tcp::socket &&socket, uint32_t threadIndex)
+	static void OnSocketAccept(std::shared_ptr<tcp::socket> socket, uint32_t threadIndex)
 	{
-		Instance().OnSocketOpen(std::forward<tcp::socket>(socket), threadIndex);
+		Instance().OnSocketOpenForAccept(std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_CLIENT);
 	}
 
-	static void OnSocketConnect(tcp::socket &&socket, uint32_t threadIndex)
+	static void OnSocketConnect(std::string &conn_name, std::shared_ptr<tcp::socket> socket, uint32_t threadIndex)
 	{
-		Instance().OnSocketOpen(std::forward<tcp::socket>(socket), threadIndex);
+		Instance().OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
 	}
 };
 
