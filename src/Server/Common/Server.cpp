@@ -238,20 +238,13 @@ void Server::InitializeCLI()
 		return;
 	}
 
-	m_CLIThread.reset(new std::thread(std::bind(&CLIThreadStart, this)), &Server::FinalizeCLI);
+	m_CLIThread = std::thread(std::bind(&CLIThreadStart, this));
 	InitializeCLICommands();
 }
 
 void Server::InitializeCLICommands()
 {
 	addCLIFunction("shutdown", std::bind(&Server::CLICmd_Shutdown, this));
-}
-
-
-void Server::FinalizeCLI(std::thread *thread)
-{
-	thread->join();
-	delete thread;
 }
 
 void Server::ProcessCLICommands()
@@ -308,6 +301,9 @@ void Server::InitializeCore()
 		ProcessCLICommands();
 		std::this_thread::sleep_for(std::chrono::milliseconds(getGeneralConf().getCoreUpdateInterval()));
 	}
+
+	// Join the CLI Thread.
+	m_CLIThread.join();
 }
 
 void Server::IOServiceLoop()

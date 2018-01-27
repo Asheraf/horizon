@@ -72,7 +72,6 @@ public:
 	void InitializeCommonCLICommands();
 	void ProcessCLICommands();
 	void QueueCLICommand(CLICommand *cmdMgr) { m_CLICmdQueue.add(cmdMgr); }
-	static void FinalizeCLI(std::thread *thread);
 	void addCLIFunction(std::string cmd, std::function<bool(void)> func) { m_CLIFunctionMap.insert(std::make_pair(cmd, func)); };
 	/* CLI Function getter */
 	std::function<bool(void)> getCLIFunc(std::string &cmd)
@@ -98,7 +97,7 @@ protected:
 	boost::shared_ptr<ConnectionPool<MySQLConnection>> mysql_pool;
 	// CLI command holder to be thread safe
 	LockedQueue<CLICommand *> m_CLICmdQueue;
-	std::shared_ptr<std::thread> m_CLIThread;
+	std::thread m_CLIThread;
 	std::unordered_map<std::string, std::function<bool(void)>> m_CLIFunctionMap;
 	/**
 	 * Core IO Service

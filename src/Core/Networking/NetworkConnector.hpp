@@ -16,8 +16,8 @@ class NetworkConnector
 public:
 	typedef void (*NetworkConnectorCallback) (std::string &conn_name, std::shared_ptr<tcp::socket> socket, uint32_t threadIndex);
 
-	NetworkConnector(std::string connection_name, Server *server, std::string const &connect_ip, uint16_t port)
-	: _connection_name(connection_name), server(server), _endpoint(boost::asio::ip::address::from_string(connect_ip), port),
+	NetworkConnector(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port)
+	: server(server), _connection_name(connection_name), _endpoint(boost::asio::ip::address::from_string(connect_ip), port),
 	  _socketFactory(std::bind(&NetworkConnector::DefaultSocketFactory, this))
 	{
 	}
@@ -56,7 +56,7 @@ public:
 
 					// Start polling thread.
 					std::shared_ptr<std::thread> poll_thread(new std::thread(std::bind(&NetworkConnector::ValidateConnection<networkConnectorCallback>,
-                        this, socket, poll_thread_idx)),
+                        this, socket)),
                         [this] (std::thread *thr)
 					{
 						if (thr->joinable())
@@ -64,7 +64,6 @@ public:
 						delete thr;
 					});
 
-					std::lock_guard<std::mutex> lock(poll_thread_mtx);
 					_socket_poll_threads.insert(std::make_pair(poll_thread_idx, std::move(poll_thread)));
 					CoreLog->info("Successfully issued '{}' connection request to  endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 				}
@@ -73,7 +72,7 @@ public:
 	}
 
 	template<NetworkConnectorCallback networkConnectorCallback>
-	void ValidateConnection(std::shared_ptr<tcp::socket> const &socket, uint64_t thread_index)
+	void ValidateConnection(std::shared_ptr<tcp::socket> const &socket)
 	{
 		do {
 			// Connection is alive, sleep for 10 seconds.
@@ -95,7 +94,6 @@ private:
 	tcp::endpoint _endpoint;
 	std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> _socketFactory;
 	std::unordered_map<uint64_t, std::shared_ptr<std::thread>> _socket_poll_threads;
-	std::mutex poll_thread_mtx;
 	std::atomic<uint64_t> _socket_poll_thread_index;
 };
 
