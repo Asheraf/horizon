@@ -15,8 +15,8 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_CHAR_H
-#define HORIZON_CHAR_H
+#ifndef HORIZON_CHAR_CHARMAIN_H
+#define HORIZON_CHAR_CHARMAIN_H
 
 #include "CharSession.hpp"
 
@@ -26,6 +26,10 @@
 #include <string>
 #include <Core/Database/MySqlConnection.hpp>
 
+namespace Horizon
+{
+namespace Char
+{
 class CharMain : public Server
 {
 public:
@@ -47,7 +51,9 @@ private:
 		bool enabled;
 	} logs;
 };
+}
+}
 
-#define CharServer CharMain::getInstance()
+#define CharServer Horizon::Char::CharMain::getInstance()
 
-#endif //HORIZON_CHAR_H
+#endif //HORIZON_CHAR_CHARMAIN_H

@@ -17,7 +17,6 @@
 #ifndef HORIZON_ZONESESSION_H
 #define HORIZON_ZONESESSION_H
 
-
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
 
@@ -28,6 +27,10 @@
 
 using boost::asio::ip::tcp;
 
+namespace Horizon
+{
+namespace Zone
+{
 class ZoneSession : public Socket<ZoneSession>
 {
 	friend class ZoneMain;
@@ -40,24 +43,11 @@ public:
 	void Start() override;
 	bool Update() override;
 
-	void SendPacket(ByteBuffer& packet);
-
-	bool HandleIncomingPacket(PacketBuffer &packet);
-
-	void InitHandlers();
-
-	/**
-	 * Receivable Packets
-	 */
-	
-	/**
-	 * Sendable Responses
-	 */
-
 protected:
-	std::unordered_map<uint16_t, ZonePacketHandler> handlers;
 	void ReadHandler() override;
 	void OnClose() override;
 };
+}
+}
 
 #endif //HORIZON_ZONESESSION_H

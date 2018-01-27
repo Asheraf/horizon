@@ -2,23 +2,29 @@
 // Created by SagunKho on 27/01/2018.
 //
 
-#ifndef HORIZON_AUTHPACKETHANDLER20171113_HPP
-#define HORIZON_AUTHPACKETHANDLER20171113_HPP
+#ifndef HORIZON_AUTH_PACKETHANDLER20171113_HPP
+#define HORIZON_AUTH_PACKETHANDLER20171113_HPP
 
 #include "Server/Common/Horizon.hpp"
-#include "Server/Auth/PacketHandler/AuthPacketHandler.hpp"
+#include "Server/Auth/PacketHandler/PacketHandler.hpp"
 
 struct PACKET_CA_LOGIN_OTP_20171113;
 
-class AuthPacketHandler20171113 : public AuthPacketHandler
+namespace Horizon
+{
+namespace Auth
+{
+class PacketHandler20171113 : public PacketHandler
 {
 public:
-	explicit AuthPacketHandler20171113(std::shared_ptr<AuthSession> session);
-	~AuthPacketHandler20171113() override;
+	explicit PacketHandler20171113(std::shared_ptr<AuthSession> session);
+	~PacketHandler20171113() override;
 
 	void Handle_CA_LOGIN_OTP(PacketBuffer &packet) override;
 	void InitializeHandlers() override;
 };
+}
+}
 
 /**
  * Overloaded Packet Definitions
@@ -39,4 +45,4 @@ struct PACKET_CA_LOGIN_OTP_20171113 : public PACKET_CA_LOGIN_OTP
 
 #pragma pack(pop)
 
-#endif //HORIZON_AUTHPACKETHANDLER20171113_HPP
+#endif //HORIZON_AUTH_PACKETHANDLER20171113_HPP

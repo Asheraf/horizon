@@ -19,6 +19,10 @@
 
 #include "Core/Networking/SocketMgr.hpp"
 
+namespace Horizon
+{
+namespace Inter
+{
 /**
  * Auth Socket Manager
  * @brief Singleton class
@@ -76,7 +80,9 @@ protected:
 		Instance().OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
 	}
 };
+}
+}
 
-#define sInterSocketMgr InterSocketMgr::Instance()
+#define sInterSocketMgr Horizon::Inter::InterSocketMgr::Instance()
 
 #endif //HORIZON_INTERSOCKETMGR_H

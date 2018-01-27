@@ -15,13 +15,17 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_CHARSOCKETMGR_H
-#define HORIZON_CHARSOCKETMGR_H
+#ifndef HORIZON_CHAR_CHARSOCKETMGR_H
+#define HORIZON_CHAR_CHARSOCKETMGR_H
 
 #include "Core/Networking/SocketMgr.hpp"
 
+namespace Horizon
+{
+namespace Char
+{
 /**
- * Auth Socket Manager
+ * Char Socket Manager
  * @brief Singleton class
  */
 class CharSocketMgr : public SocketMgr<CharSession>
@@ -77,7 +81,9 @@ protected:
 		Instance().OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
 	}
 };
+}
+}
 
-#define sCharSocketMgr CharSocketMgr::Instance()
+#define sCharSocketMgr Horizon::Char::CharSocketMgr::Instance()
 
-#endif //HORIZON_CHARSOCKETMGR_H
+#endif //HORIZON_CHAR_CHARSOCKETMGR_H

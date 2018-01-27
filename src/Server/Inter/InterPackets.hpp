@@ -17,7 +17,11 @@
 #ifndef HORIZON_INTERPACKETS_H
 #define HORIZON_INTERPACKETS_H
 
-enum inter_client_packets
+namespace Horizon
+{
+namespace Inter
+{
+enum packets
 {
 	/**
 	 * Receivable Packets
@@ -27,4 +31,6 @@ enum inter_client_packets
 	 * Sendable Packets
 	 */
 };
+}
+}
 #endif //HORIZON_INTERPACKETS_H

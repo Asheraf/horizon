@@ -5,9 +5,9 @@
 #ifndef HORIZON_PACKETHANDLERFACTORY_HPP
 #define HORIZON_PACKETHANDLERFACTORY_HPP
 
-#include "AuthPacketHandler.hpp"
-#include "Versions/AuthPacketHandler20170315.hpp"
-#include "Versions/AuthPacketHandler20171113.hpp"
+#include "PacketHandler.hpp"
+#include "Versions/PacketHandler20170315.hpp"
+#include "Versions/PacketHandler20171113.hpp"
 
 class PacketHandlerFactory
 {
@@ -15,16 +15,16 @@ public:
 	PacketHandlerFactory() { };
 	~PacketHandlerFactory() { };
 
-	static std::shared_ptr<AuthPacketHandler> CreateAuthPacketHandler(uint32_t packet_version, std::shared_ptr<AuthSession> session)
+	static std::shared_ptr<Horizon::Auth::PacketHandler> CreateAuthPacketHandler(int packet_version, std::shared_ptr<Horizon::Auth::AuthSession> session)
 	{
 		switch (packet_version)
 		{
 		case 20170315:
-			return std::make_shared<AuthPacketHandler20170315>(session);
+			return std::make_shared<Horizon::Auth::PacketHandler20170315>(session);
 		case 20171113:
-			return std::make_shared<AuthPacketHandler20171113>(session);
+			return std::make_shared<Horizon::Auth::PacketHandler20171113>(session);
 		default: // return common type.
-			return std::make_shared<AuthPacketHandler>(session);
+			return std::make_shared<Horizon::Auth::PacketHandler>(session);
 		}
 	}
 };

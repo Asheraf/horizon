@@ -2,7 +2,7 @@
 // Created by SagunKho on 27/01/2018.
 //
 
-#include "AuthPacketHandler.hpp"
+#include "PacketHandler.hpp"
 
 #include "Core/Database/MySqlConnection.hpp"
 #include "Server/Auth/AuthSession.hpp"
@@ -11,21 +11,21 @@
 
 #include <string>
 
-AuthPacketHandler::AuthPacketHandler(std::shared_ptr<AuthSession> &session)
+Horizon::Auth::PacketHandler::PacketHandler(std::shared_ptr<AuthSession> &session)
 	: _session(session)
 {
 	// Construct
 	InitializeHandlers();
 }
 
-AuthPacketHandler::~AuthPacketHandler()
+Horizon::Auth::PacketHandler::~PacketHandler()
 {
 	// Destruct
 }
 
-bool AuthPacketHandler::HandleIncomingPacket(PacketBuffer &packet)
+bool Horizon::Auth::PacketHandler::HandleIncomingPacket(PacketBuffer &packet)
 {
-	auto opCode = (auth_client_packets) packet.getOpCode();
+	auto opCode = (Horizon::Auth::packets) packet.getOpCode();
 	auto it = _handlers.find(opCode);
 
 	if (it == _handlers.end()) {
@@ -33,14 +33,14 @@ bool AuthPacketHandler::HandleIncomingPacket(PacketBuffer &packet)
 		return false;
 	}
 
-	AuthPacketHandlerFunc func = it->second;
+	PacketHandlerFunc func = it->second;
 	(this->*func)(packet);
 
 	return true;
 }
 
 template <class T>
-void AuthPacketHandler::SendPacket(T pkt)
+void Horizon::Auth::PacketHandler::SendPacket(T pkt)
 {
 	PacketBuffer buf;
 
@@ -56,7 +56,7 @@ void AuthPacketHandler::SendPacket(T pkt)
 	}
 }
 
-void AuthPacketHandler::SendPacket(PacketBuffer &buf, std::size_t size)
+void Horizon::Auth::PacketHandler::SendPacket(PacketBuffer &buf, std::size_t size)
 {
 	if (!_session->IsOpen())
 		return;
@@ -68,7 +68,7 @@ void AuthPacketHandler::SendPacket(PacketBuffer &buf, std::size_t size)
 	}
 }
 
-void AuthPacketHandler::ProcessAuthentication()
+void Horizon::Auth::PacketHandler::ProcessAuthentication()
 {
 	_session->getGameAccount()->setLastIp(_session->GetRemoteIPAddress().to_string());
 	_session->getGameAccount()->setLastLogin((int) time(nullptr));
@@ -78,7 +78,7 @@ void AuthPacketHandler::ProcessAuthentication()
 	Respond_AC_ACCEPT_LOGIN();
 }
 
-bool AuthPacketHandler::VerifyCredentialsBCrypt(std::string username, std::string password)
+bool Horizon::Auth::PacketHandler::VerifyCredentialsBCrypt(std::string username, std::string password)
 {
 	std::string query = "SELECT * FROM game_account WHERE username = ?";
 	auto sql = AuthServer->MySQLBorrow();
@@ -109,7 +109,7 @@ bool AuthPacketHandler::VerifyCredentialsBCrypt(std::string username, std::strin
 	return ret;
 }
 
-bool AuthPacketHandler::VerifyCredentialsPlainText(std::string username, std::string password)
+bool Horizon::Auth::PacketHandler::VerifyCredentialsPlainText(std::string username, std::string password)
 {
 	std::string query = "SELECT * FROM game_account WHERE username = ? AND password = ?";
 	auto sql = AuthServer->MySQLBorrow();
@@ -140,21 +140,13 @@ bool AuthPacketHandler::VerifyCredentialsPlainText(std::string username, std::st
 	return ret;
 }
 
-bool AuthPacketHandler::CheckIfAlreadyConnected(uint32_t id)
+bool Horizon::Auth::PacketHandler::CheckIfAlreadyConnected(uint32_t /*id*/)
 {
-	std::shared_ptr<AuthSession> session = AuthServer->getOnlineAccount(id);
-
-	// Check if session already exists.
-	if (session != nullptr) {
-		AuthServer->removeOnlineAccount(id);
-		return true;
-	}
-
-	AuthServer->addOnlineAccount(id, _session);
+	//
 	return false;
 }
 
-void AuthPacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
+void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 {
 	PACKET_CA_LOGIN pkt;
 	bool authenticated = false;
@@ -200,60 +192,60 @@ void AuthPacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 	}
 }
 
-void AuthPacketHandler::Handle_CA_REQ_HASH(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_REQ_HASH(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_REQ_HASH pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_LOGIN2(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_LOGIN2(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN2 pkt;
 }
 
-void AuthPacketHandler::Handle_CA_LOGIN3(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_LOGIN3(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN3 pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_CONNECT_INFO_CHANGED pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_EXE_HASHCHECK(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_EXE_HASHCHECK(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_EXE_HASHCHECK pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_LOGIN_PCBANG(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_PCBANG(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_PCBANG pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_LOGIN4(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_LOGIN4(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN4 pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_LOGIN_HAN(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_HAN(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_HAN pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_SSO_LOGIN_REQ(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_SSO_LOGIN_REQ(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_SSO_LOGIN_REQ pkt;
 
 }
 
-void AuthPacketHandler::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
+void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_OTP pkt;
 
@@ -262,7 +254,7 @@ void AuthPacketHandler::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
 /**
  * Auth To Client
  */
-void AuthPacketHandler::Respond_AC_ACCEPT_LOGIN()
+void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 {
 	int max_servers = (int) AuthServer->totalCharacterServers();
 	auto *pkt = new PACKET_AC_ACCEPT_LOGIN();
@@ -311,49 +303,49 @@ void AuthPacketHandler::Respond_AC_ACCEPT_LOGIN()
 	delete pkt;
 }
 
-void AuthPacketHandler::Respond_AC_REFUSE_LOGIN(login_error_codes error_code)
+void Horizon::Auth::PacketHandler::Respond_AC_REFUSE_LOGIN(login_error_codes error_code)
 {
 	PACKET_AC_REFUSE_LOGIN pkt;
 	pkt.error_code = (uint8_t) error_code;
 	SendPacket(pkt);
 }
 
-void AuthPacketHandler::Respond_SC_NOTIFY_BAN()
+void Horizon::Auth::PacketHandler::Respond_SC_NOTIFY_BAN()
 {
 
 }
 
-void AuthPacketHandler::Respond_AC_ACK_HASH()
+void Horizon::Auth::PacketHandler::Respond_AC_ACK_HASH()
 {
 
 }
 
-void AuthPacketHandler::Respond_AC_REFUSE_LOGIN_R2()
+void Horizon::Auth::PacketHandler::Respond_AC_REFUSE_LOGIN_R2()
 {
 
 }
 
-void AuthPacketHandler::Respond_CA_CHARSERVERCONNECT()
+void Horizon::Auth::PacketHandler::Respond_CA_CHARSERVERCONNECT()
 {
 
 }
 
-void AuthPacketHandler::InitializeHandlers()
+void Horizon::Auth::PacketHandler::InitializeHandlers()
 {
-	_handlers.insert(std::make_pair(CA_LOGIN, &AuthPacketHandler::Handle_CA_LOGIN));
-	_handlers.insert(std::make_pair(CA_REQ_HASH, &AuthPacketHandler::Handle_CA_REQ_HASH));
-	_handlers.insert(std::make_pair(CA_LOGIN2, &AuthPacketHandler::Handle_CA_LOGIN2));
-	_handlers.insert(std::make_pair(CA_LOGIN3, &AuthPacketHandler::Handle_CA_LOGIN3));
-	_handlers.insert(std::make_pair(CA_CONNECT_INFO_CHANGED, &AuthPacketHandler::Handle_CA_CONNECT_INFO_CHANGED));
-	_handlers.insert(std::make_pair(CA_EXE_HASHCHECK, &AuthPacketHandler::Handle_CA_EXE_HASHCHECK));
-	_handlers.insert(std::make_pair(CA_LOGIN_PCBANG, &AuthPacketHandler::Handle_CA_LOGIN_PCBANG));
-	_handlers.insert(std::make_pair(CA_LOGIN4, &AuthPacketHandler::Handle_CA_LOGIN4));
-	_handlers.insert(std::make_pair(CA_LOGIN_HAN, &AuthPacketHandler::Handle_CA_LOGIN_HAN));
-	_handlers.insert(std::make_pair(CA_SSO_LOGIN_REQ, &AuthPacketHandler::Handle_CA_SSO_LOGIN_REQ));
-	_handlers.insert(std::make_pair(CA_LOGIN_OTP, &AuthPacketHandler::Handle_CA_LOGIN_OTP));
+	_handlers.insert(std::make_pair(CA_LOGIN, &PacketHandler::Handle_CA_LOGIN));
+	_handlers.insert(std::make_pair(CA_REQ_HASH, &PacketHandler::Handle_CA_REQ_HASH));
+	_handlers.insert(std::make_pair(CA_LOGIN2, &PacketHandler::Handle_CA_LOGIN2));
+	_handlers.insert(std::make_pair(CA_LOGIN3, &PacketHandler::Handle_CA_LOGIN3));
+	_handlers.insert(std::make_pair(CA_CONNECT_INFO_CHANGED, &PacketHandler::Handle_CA_CONNECT_INFO_CHANGED));
+	_handlers.insert(std::make_pair(CA_EXE_HASHCHECK, &PacketHandler::Handle_CA_EXE_HASHCHECK));
+	_handlers.insert(std::make_pair(CA_LOGIN_PCBANG, &PacketHandler::Handle_CA_LOGIN_PCBANG));
+	_handlers.insert(std::make_pair(CA_LOGIN4, &PacketHandler::Handle_CA_LOGIN4));
+	_handlers.insert(std::make_pair(CA_LOGIN_HAN, &PacketHandler::Handle_CA_LOGIN_HAN));
+	_handlers.insert(std::make_pair(CA_SSO_LOGIN_REQ, &PacketHandler::Handle_CA_SSO_LOGIN_REQ));
+	_handlers.insert(std::make_pair(CA_LOGIN_OTP, &PacketHandler::Handle_CA_LOGIN_OTP));
 }
 
-const AuthHandlerMap &AuthPacketHandler::getHandlers() const
+const Horizon::Auth::AuthHandlerMap &Horizon::Auth::PacketHandler::getHandlers() const
 {
 	return _handlers;
 }

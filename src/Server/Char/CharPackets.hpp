@@ -18,7 +18,11 @@
 #ifndef HORIZON_CHARPACKETS_H
 #define HORIZON_CHARPACKETS_H
 
-enum char_client_packets
+namespace Horizon
+{
+namespace Char
+{
+enum packets
 {
 	/**
 	 * Receivable Packets
@@ -30,12 +34,15 @@ enum char_client_packets
 	/**
 	 * Sendable Packets
 	 */
-	HC_ACCEPT_ENTER       =  0x6b,
-	HC_REFUSE_ENTER       =  0x6c,
-	HC_ACCEPT_MAKECHAR    =  0x6d,
-	HC_REFUSE_MAKECHAR    =  0x6e,
-	HC_ACCEPT_DELETECHAR  =  0x6f,
+	HC_ACCEPT_ENTER       =  0x6B,
+	HC_REFUSE_ENTER       =  0x6C,
+	HC_ACCEPT_MAKECHAR    =  0x6D,
+	HC_REFUSE_MAKECHAR    =  0x6E,
+	HC_ACCEPT_DELETECHAR  =  0x6F,
 	HC_REFUSE_DELETECHAR  =  0x70,
 	HC_NOTIFY_ZONESVR     =  0x71,
 };
+}
+}
+
 #endif //HORIZON_CHARPACKETS_H

@@ -33,22 +33,23 @@ boost::asio::io_service *io_service;
 /**
  * CharMain Constructor
  */
-CharMain::CharMain() : Server("Char", "config/", "char-server.yaml")
+Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.yaml")
 {
 }
 
 /**
  * CharMain Destructor
  */
-CharMain::~CharMain()
+Horizon::Char::CharMain::~CharMain()
 {
+	//
 }
 
 /**
  * Prints the header for auth server.
  * @brief Appends the Core header.
  */
-void CharMain::PrintHeader()
+void Horizon::Char::CharMain::PrintHeader()
 {
 	CharLog->info("Character Server Initializing...");
 }
@@ -57,7 +58,7 @@ void CharMain::PrintHeader()
  * Read /config/char-server.yaml
  * @return true on success false on failure.
  */
-bool CharMain::ReadConfig()
+bool Horizon::Char::CharMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
@@ -100,7 +101,7 @@ bool CharMain::ReadConfig()
 /**
  * Initialize Char-Server CLI Commands
  */
-void CharMain::InitializeCLICommands()
+void Horizon::Char::CharMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
 }
@@ -108,7 +109,7 @@ void CharMain::InitializeCLICommands()
 /**
  * Connect with the Inter-server.
  */
-void CharMain::ConnectWithInterServer()
+void Horizon::Char::CharMain::ConnectWithInterServer()
 {
 	try {
 		sCharSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);

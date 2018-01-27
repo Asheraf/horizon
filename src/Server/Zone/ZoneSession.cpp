@@ -19,13 +19,12 @@
 #include "Core/Logging/Logger.hpp"
 #include "ZonePackets.hpp"
 
-ZoneSession::ZoneSession(std::shared_ptr<tcp::socket> socket)
+Horizon::Zone::ZoneSession::ZoneSession(std::shared_ptr<tcp::socket> socket)
   : Socket(socket)
 {
-	InitHandlers();
 }
 
-void ZoneSession::Start()
+void Horizon::Zone::ZoneSession::Start()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
@@ -34,34 +33,22 @@ void ZoneSession::Start()
 	AsyncRead();
 }
 
-void ZoneSession::OnClose()
+void Horizon::Zone::ZoneSession::OnClose()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
 	ZoneLog->info("Closed connection from {}.", ip_address);
 }
 
-bool ZoneSession::Update()
+bool Horizon::Zone::ZoneSession::Update()
 {
 	return ZoneSocket::Update();
-}
-
-void ZoneSession::SendPacket(ByteBuffer &packet)
-{
-	if (!IsOpen())
-		return;
-
-	if (!packet.empty()) {
-		MessageBuffer buffer;
-		buffer.Write(packet.contents(), packet.size());
-		QueuePacket(std::move(buffer));
-	}
 }
 
 /**
  * Incoming buffer read handler.
  */
-void ZoneSession::ReadHandler()
+void Horizon::Zone::ZoneSession::ReadHandler()
 {
 	uint16_t op_code;
 
@@ -70,31 +57,7 @@ void ZoneSession::ReadHandler()
 
 		PacketBuffer pkt(op_code, std::move(GetReadBuffer()));
 
-		if (!HandleIncomingPacket(pkt))
-			GetReadBuffer().Reset();
+//		if (!HandleIncomingPacket(pkt))
+//			GetReadBuffer().Reset();
 	}
-}
-
-bool ZoneSession::HandleIncomingPacket(PacketBuffer &packet)
-{
-	auto opCode = (zone_client_packets) packet.getOpCode();
-	ZonePacketHandler func = nullptr;
-
-	/* Call the function handling */
-	if ((func = handlers[opCode]) == nullptr) {
-		ZoneLog->trace("Unknown packet with ID received: {0:x}", opCode);
-		return false;
-	}
-
-	(this->*func)(packet);
-
-	return true;
-}
-/**
- * Sendable Packets
- */
-
-void ZoneSession::InitHandlers()
-{
-	//
 }

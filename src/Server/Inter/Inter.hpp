@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_INTER_H
-#define HORIZON_INTER_H
+#ifndef HORIZON_INTER_INTERMAIN_H
+#define HORIZON_INTER_INTERMAIN_H
 
 #include "InterSession.hpp"
 
@@ -25,6 +25,10 @@
 #include <string>
 #include <Core/Database/MySqlConnection.hpp>
 
+namespace Horizon
+{
+namespace Inter
+{
 class InterMain : public Server
 {
 public:
@@ -45,7 +49,9 @@ private:
 		bool enabled;
 	} logs;
 };
+}
+}
 
-#define InterServer InterMain::getInstance()
+#define InterServer Horizon::Inter::InterMain::getInstance()
 
 #endif //HORIZON_INTER_H

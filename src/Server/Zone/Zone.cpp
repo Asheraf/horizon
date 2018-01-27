@@ -31,14 +31,14 @@ boost::asio::io_service *io_service;
 /**
  * Zone Main server constructor.
  */
-ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.yaml")
+Horizon::Zone::ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.yaml")
 {
 }
 
 /**
  * Zone Main server destructor.
  */
-ZoneMain::~ZoneMain()
+Horizon::Zone::ZoneMain::~ZoneMain()
 {
 }
 
@@ -46,7 +46,7 @@ ZoneMain::~ZoneMain()
  * Prints the header for auth server.
  * @brief Appends the Core header.
  */
-void ZoneMain::PrintHeader()
+void Horizon::Zone::ZoneMain::PrintHeader()
 {
 	ZoneLog->info("Zone Server Initializing...");
 }
@@ -55,7 +55,7 @@ void ZoneMain::PrintHeader()
  * Read /config/zone-server.yaml
  * @return false on failure, true on success.
  */
-bool ZoneMain::ReadConfig()
+bool Horizon::Zone::ZoneMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
@@ -81,7 +81,7 @@ bool ZoneMain::ReadConfig()
 /**
  * Initialize Zone-Server CLI Commands.
  */
-void ZoneMain::InitializeCLICommands()
+void Horizon::Zone::ZoneMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
 }
@@ -89,7 +89,7 @@ void ZoneMain::InitializeCLICommands()
 /**
  * Create connection-pool of Inter-server connections.
  */
-void ZoneMain::ConnectWithInterServer()
+void Horizon::Zone::ZoneMain::ConnectWithInterServer()
 {
 	try {
 		sZoneSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);

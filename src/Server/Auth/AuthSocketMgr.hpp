@@ -15,12 +15,16 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_AUTHSOCKETMGR_HPP
-#define HORIZON_AUTHSOCKETMGR_HPP
+#ifndef HORIZON_AUTH_AUTHSOCKETMGR_HPP
+#define HORIZON_AUTH_AUTHSOCKETMGR_HPP
 
 #include "AuthSession.hpp"
 #include "Core/Networking/SocketMgr.hpp"
 
+namespace Horizon
+{
+namespace Auth
+{
 /**
  * Auth Socket Manager
  * @brief Singleton class
@@ -78,7 +82,9 @@ protected:
 		Instance().OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
 	}
 };
+}
+}
 
-#define sAuthSocketMgr AuthSocketMgr::Instance()
+#define sAuthSocketMgr Horizon::Auth::AuthSocketMgr::Instance()
 
-#endif //HORIZON_AUTHSOCKETMGR_HPP
+#endif //HORIZON_AUTH_AUTHSOCKETMGR_HPP

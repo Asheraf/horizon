@@ -15,10 +15,14 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_AUTHPACKETS_H
-#define HORIZON_AUTHPACKETS_H
+#ifndef HORIZON_AUTH_PACKETS_HPP
+#define HORIZON_AUTH_PACKETS_HPP
 
-enum auth_client_packets {
+namespace Horizon
+{
+namespace Auth
+{
+enum packets {
 	/**
 	 * Receivable Packets.
 	 */
@@ -37,16 +41,18 @@ enum auth_client_packets {
 	/**
 	 * Response Packets
 	 */
-	AC_ACCEPT_LOGIN         = 0x0069,
+		AC_ACCEPT_LOGIN         = 0x0069,
 	AC_REFUSE_LOGIN         = 0x006a,
 	SC_NOTIFY_BAN           = 0x0081,
 	AC_ACK_HASH             = 0x01dc,
 	AC_REFUSE_LOGIN_R2      = 0x083e,
+	/**
+	 * Auth-Interserver Packets
+	 */
+		AZ_ADD_SESSION          = 0x9991,
+	AZ_REMOVE_SESSION       = 0x9992,
+	AZ_GET_CHAR_SERVER_INFO = 0x9993,
 	MAX_AUTH_PACKETS,
-};
-
-enum auth_character_packets {
-	CA_CHARSERVERCONNECT    = 0x2710, // Custom Packet
 };
 
 enum class login_error_codes {
@@ -74,15 +80,16 @@ enum class login_error_codes {
 	ERR_DELETING_CHAR                   = 103, // This character is being deleted. Login is temporarily unavailable for the time being
 	ERR_DELETING_SPOUSE                 = 104, // This character is being deleted. Login is temporarily unavailable for the time being
 };
+}
+}
 
 #pragma pack(push, 1)
-
 /**
  * Client-Server Packets
  */
 struct PACKET_CA_LOGIN : public Packet
 {
-	PACKET_CA_LOGIN() : Packet(CA_LOGIN) { }
+	PACKET_CA_LOGIN() : Packet(Horizon::Auth::CA_LOGIN) { }
 
 	uint32 version{};       ///< Client Version Information
 	char username[24]{};    ///< Username
@@ -90,12 +97,9 @@ struct PACKET_CA_LOGIN : public Packet
 	uint8 client_type{};    ///< Client Type
 };
 
-/**
- * Packet structure for CA_LOGIN2.
- */
 struct PACKET_CA_LOGIN2 : public Packet
 {
-	PACKET_CA_LOGIN2() : Packet(CA_LOGIN2) { }
+	PACKET_CA_LOGIN2() : Packet(Horizon::Auth::CA_LOGIN2) { }
 
 	uint32 version{};         ///< Client Version
 	char id[24]{};            ///< Username
@@ -103,12 +107,9 @@ struct PACKET_CA_LOGIN2 : public Packet
 	uint8 clienttype{};       ///< Client Type
 };
 
-/**
- * Packet structure for CA_LOGIN3.
- */
 struct PACKET_CA_LOGIN3 : public Packet
 {
-	PACKET_CA_LOGIN3() : Packet(CA_LOGIN3) { }
+	PACKET_CA_LOGIN3() : Packet(Horizon::Auth::CA_LOGIN3) { }
 
 	uint32 version{};         ///< Client Version
 	char id[24]{};            ///< Username
@@ -117,12 +118,9 @@ struct PACKET_CA_LOGIN3 : public Packet
 	uint8 clientinfo{};       ///< Index of the connection in the clientinfo file (+10 if the command-line contains "pc")
 };
 
-/**
- * Packet structure for CA_LOGIN4.
- */
 struct PACKET_CA_LOGIN4 : public Packet
 {
-	PACKET_CA_LOGIN4() : Packet(CA_LOGIN4) { }
+	PACKET_CA_LOGIN4() : Packet(Horizon::Auth::CA_LOGIN4) { }
 
 	uint32 version{};         ///< Client Version
 	char id[24]{};            ///< Username
@@ -131,12 +129,9 @@ struct PACKET_CA_LOGIN4 : public Packet
 	char mac_address[13]{};   ///< MAC Address
 };
 
-/**
- * Packet structure for CA_LOGIN_PCBANG.
- */
 struct PACKET_CA_LOGIN_PCBANG : public Packet
 {
-	PACKET_CA_LOGIN_PCBANG() : Packet(CA_LOGIN_PCBANG) { }
+	PACKET_CA_LOGIN_PCBANG() : Packet(Horizon::Auth::CA_LOGIN_PCBANG) { }
 
 	uint32 version{};	      ///< Client Version
 	char id[24]{};          ///< Username
@@ -146,12 +141,9 @@ struct PACKET_CA_LOGIN_PCBANG : public Packet
 	char mac_address[13]{}; ///< MAC Address
 };
 
-/**
- * Packet structure for CA_LOGIN_HAN.
- */
 struct PACKET_CA_LOGIN_HAN : public Packet
 {
-	PACKET_CA_LOGIN_HAN() : Packet(CA_LOGIN_HAN) { }
+	PACKET_CA_LOGIN_HAN() : Packet(Horizon::Auth::CA_LOGIN_HAN) { }
 
 	uint32 version{};         ///< Client Version
 	char id[24]{};            ///< Username
@@ -162,14 +154,9 @@ struct PACKET_CA_LOGIN_HAN : public Packet
 	uint8 is_han_game_user{}; ///< 'isGravityID'
 };
 
-/**
- * Packet structure for CA_SSO_LOGIN_REQ.
- *
- * Variable-length packet.
- */
 struct PACKET_CA_SSO_LOGIN_REQ : public Packet
 {
-	PACKET_CA_SSO_LOGIN_REQ() : Packet(CA_SSO_LOGIN_REQ) { }
+	PACKET_CA_SSO_LOGIN_REQ() : Packet(Horizon::Auth::CA_SSO_LOGIN_REQ) { }
 
 	int16 packet_len{};     ///< Length (variable length)
 	uint32 version{};       ///< Clientver
@@ -181,97 +168,44 @@ struct PACKET_CA_SSO_LOGIN_REQ : public Packet
 	char t1[];            ///< SSO Login Token (variable length)
 };
 
-/**
- * Packet structure for CA_LOGIN_OTP.
- */
 struct PACKET_CA_LOGIN_OTP : public Packet
 {
-	PACKET_CA_LOGIN_OTP() : Packet(CA_LOGIN_OTP) { }
+	PACKET_CA_LOGIN_OTP() : Packet(Horizon::Auth::CA_LOGIN_OTP) { }
 
 	char login[25]{};       ///< Username
 	char password[32]{};    ///< Password encrypted by rijndael
 	char flagsStr[5]{};     ///< Unknown flags. Normally string: G000
 };
 
-#if 0 // Unused
-struct PACKET_CA_SSO_LOGIN_REQa {
-	int16 PACKET_id;
-	int16 packet_len;
-	uint32 version;
-	uint8 clienttype;
-	char id[24];
-	int8 mac_address[17];
-	char ip[15];
-	char t1[];
-};
-#endif // unused
-
-/**
- * Packet structure for CA_CONNECT_INFO_CHANGED.
- *
- * New alive packet. Used to verify if client is always alive.
- */
 struct PACKET_CA_CONNECT_INFO_CHANGED : public Packet
 {
-	PACKET_CA_CONNECT_INFO_CHANGED() : Packet(CA_CONNECT_INFO_CHANGED) { }
+	PACKET_CA_CONNECT_INFO_CHANGED() : Packet(Horizon::Auth::CA_CONNECT_INFO_CHANGED) { }
 
 	char id[24]{};    ///< account.userid
 };
 
-/**
- * Packet structure for CA_EXE_HASHCHECK.
- *
- * (kRO 2004-05-31aSakexe langtype 0 and 6)
- */
 struct PACKET_CA_EXE_HASHCHECK : public Packet
 {
-	PACKET_CA_EXE_HASHCHECK() : Packet(CA_EXE_HASHCHECK) { }
+	PACKET_CA_EXE_HASHCHECK() : Packet(Horizon::Auth::CA_EXE_HASHCHECK) { }
 
 	uint8 hash_value[16]; ///< Client MD5 hash
 };
 
-/**
- * Packet structure for CA_REQ_HASH.
- */
 struct PACKET_CA_REQ_HASH : public Packet
 {
-	PACKET_CA_REQ_HASH() : Packet(CA_REQ_HASH) { }
+	PACKET_CA_REQ_HASH() : Packet(Horizon::Auth::CA_REQ_HASH) { }
 };
 
-//**
-// * Packet structure for CA_CHARSERVERCONNECT.
-// *
-// * This packet is used internally, to signal a char-server connection.
-// */
-//struct PACKET_CA_CHARSERVERCONNECT {
-//	int16 PACKET_id;   ///< Packet ID (#PACKET_ID_CA_CHARSERVERCONNECT)
-//	char userid[24];   ///< Username
-//	char password[24]; ///< Password
-//	int32 unknown;
-//	int32 ip;          ///< Charserver IP
-//	int16 port;        ///< Charserver port
-//	char name[20];     ///< Charserver name
-//	int16 unknown2;
-//	int16 type;        ///< Charserver type
-//	int16 new;         ///< Whether charserver is to be marked as new
-//};
-
-/**
- * Packet structure for SC_NOTIFY_BAN.
- */
 struct PACKET_SC_NOTIFY_BAN : public Packet
 {
-	PACKET_SC_NOTIFY_BAN() : Packet(SC_NOTIFY_BAN) { }
+	PACKET_SC_NOTIFY_BAN() : Packet(Horizon::Auth::SC_NOTIFY_BAN) { }
 
 	uint8 error_code; ///< Error code
 };
 
-/**
- * Packet structure for AC_REFUSE_LOGIN.
- */
 struct PACKET_AC_REFUSE_LOGIN : public Packet
 {
-	PACKET_AC_REFUSE_LOGIN() : Packet(AC_REFUSE_LOGIN)
+	PACKET_AC_REFUSE_LOGIN() : Packet(Horizon::Auth::AC_REFUSE_LOGIN)
 	{
 		memset(block_date, '\0', 20);
 	}
@@ -280,25 +214,17 @@ struct PACKET_AC_REFUSE_LOGIN : public Packet
 	char block_date[20]; ///< Ban expiration date
 };
 
-/**
- * Packet structure for AC_REFUSE_LOGIN_R2.
- */
 struct PACKET_AC_REFUSE_LOGIN_R2 : public Packet
 {
-	PACKET_AC_REFUSE_LOGIN_R2() : Packet(AC_REFUSE_LOGIN_R2) { }
+	PACKET_AC_REFUSE_LOGIN_R2() : Packet(Horizon::Auth::AC_REFUSE_LOGIN_R2) { }
 
 	uint32 error_code;   ///< Error code
 	char block_date[20]; ///< Ban expiration date
 };
 
-/**
- * Packet structure for AC_ACCEPT_LOGIN.
- *
- * Variable-length packet.
- */
 struct PACKET_AC_ACCEPT_LOGIN : public Packet
 {
-	PACKET_AC_ACCEPT_LOGIN() : Packet(AC_ACCEPT_LOGIN) { }
+	PACKET_AC_ACCEPT_LOGIN() : Packet(Horizon::Auth::AC_ACCEPT_LOGIN) { }
 
 	int16 packet_len;         ///< Packet length (variable length)
 	int32 auth_code;          ///< Authentication code
@@ -317,17 +243,12 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 	} server_list[];
 };
 
-/**
- * Packet structure for AC_ACK_HASH.
- *
- * Variable-length packet
- */
 struct PACKET_AC_ACK_HASH : public Packet
 {
-	PACKET_AC_ACK_HASH() : Packet(AC_ACK_HASH) { }
+	PACKET_AC_ACK_HASH() : Packet(Horizon::Auth::AC_ACK_HASH) { }
 
 	uint8 secret[];   ///< Challenge string
 };
 #pragma pack(pop)
 
-#endif //HORIZON_AUTHPACKETS_H
+#endif //HORIZON_AUTH_PACKETS_HPP

@@ -15,8 +15,8 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_AUTHSESSION_HPP
-#define HORIZON_AUTHSESSION_HPP
+#ifndef HORIZON_AUTH_AUTHSESSION_HPP
+#define HORIZON_AUTH_AUTHSESSION_HPP
 
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
@@ -28,10 +28,14 @@
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
 
-class AuthPacketHandler;
 
 using boost::asio::ip::tcp;
 
+namespace Horizon
+{
+namespace Auth
+{
+class PacketHandler;
 class AuthSession : public Socket<AuthSession>
 {
 	typedef Socket<AuthSession> AuthSocket;
@@ -49,8 +53,8 @@ public:
 	std::shared_ptr<SessionData> getSessionData();
 	void setSessionData(std::shared_ptr<SessionData> session_data);
 	/* Packet Handler */
-	std::shared_ptr<AuthPacketHandler> getPacketHandler();
-	void setPacketHandler(std::shared_ptr<AuthPacketHandler> packet_handler);
+	std::shared_ptr<PacketHandler> getPacketHandler();
+	void setPacketHandler(std::shared_ptr<PacketHandler> packet_handler);
 
 protected:
 	int GetPacketVersion(uint16_t op_code, PacketBuffer buf);
@@ -60,7 +64,9 @@ protected:
 private:
 	std::shared_ptr<GameAccount> _game_account;
 	std::shared_ptr<SessionData> _session_data;
-	std::shared_ptr<AuthPacketHandler> _packet_handler;
+	std::shared_ptr<PacketHandler> _packet_handler;
 };
+}
+}
 
-#endif /* HORIZON_AUTHSESSION_HPP */
+#endif /* HORIZON_AUTH_AUTHSESSION_HPP */

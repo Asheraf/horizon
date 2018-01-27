@@ -31,14 +31,14 @@ boost::asio::io_service *io_service;
 /**
  * Inter Main server constructor.
  */
-InterMain::InterMain() : Server("Inter", "config/", "inter-server.yaml")
+Horizon::Inter::InterMain::InterMain() : Server("Inter", "config/", "inter-server.yaml")
 {
 }
 
 /**
  * Inter Main server destructor.
  */
-InterMain::~InterMain()
+Horizon::Inter::InterMain::~InterMain()
 {
 }
 
@@ -46,7 +46,7 @@ InterMain::~InterMain()
  * Prints the header for auth server.
  * @brief Appends the Core header.
  */
-void InterMain::PrintHeader()
+void Horizon::Inter::InterMain::PrintHeader()
 {
 	InterLog->info("Inter Server Initializing...");
 }
@@ -55,7 +55,7 @@ void InterMain::PrintHeader()
  * Read /config/inter-server.yaml
   * @return true on success, false on failure.
   */
-bool InterMain::ReadConfig()
+bool Horizon::Inter::InterMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
@@ -81,7 +81,7 @@ bool InterMain::ReadConfig()
 /**
  * Initialize Inter-Server CLI Commands.
  */
-void InterMain::InitializeCLICommands()
+void Horizon::Inter::InterMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
 }

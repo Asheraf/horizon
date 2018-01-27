@@ -25,6 +25,10 @@
 #include <string>
 #include <Core/Database/MySqlConnection.hpp>
 
+namespace Horizon
+{
+namespace Zone
+{
 class ZoneMain : public Server
 {
 public:
@@ -46,7 +50,9 @@ private:
 		bool enabled;
 	} logs;
 };
+}
+}
 
-#define ZoneServer ZoneMain::getInstance()
+#define ZoneServer Horizon::Zone::ZoneMain::getInstance()
 
 #endif //HORIZON_ZONE_H

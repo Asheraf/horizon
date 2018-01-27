@@ -19,6 +19,10 @@
 
 #include "Core/Networking/SocketMgr.hpp"
 
+namespace Horizon
+{
+namespace Zone
+{
 /**
  * Auth Socket Manager
  * @brief Singleton class
@@ -77,7 +81,9 @@ protected:
 		Instance().OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
 	}
 };
+}
+}
 
-#define sZoneSocketMgr ZoneSocketMgr::Instance()
+#define sZoneSocketMgr Horizon::Zone::ZoneSocketMgr::Instance()
 
 #endif //HORIZON_ZONESOCKETMGR_H

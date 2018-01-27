@@ -17,7 +17,11 @@
 #ifndef HORIZON_ZONEPACKETS_H
 #define HORIZON_ZONEPACKETS_H
 
-enum zone_client_packets
+namespace Horizon
+{
+namespace Zone
+{
+enum packets
 {
 	/**
 	 * Receivable Packets
@@ -27,4 +31,6 @@ enum zone_client_packets
 	 * Sendable Packets
 	 */
 };
+}
+}
 #endif //HORIZON_ZONEPACKETS_H

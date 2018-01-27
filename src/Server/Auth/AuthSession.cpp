@@ -17,19 +17,19 @@
 
 #include "AuthSession.hpp"
 
-#include "PacketHandler/AuthPackets.hpp"
+#include "PacketHandler/Packets.hpp"
 #include "Server/Common/Factories/PacketHandlerFactory.hpp"
-#include "PacketHandler/AuthPacketHandler.hpp"
+#include "PacketHandler/PacketHandler.hpp"
 
 #include <random>
 
-AuthSession::AuthSession(std::shared_ptr<tcp::socket> socket)
+Horizon::Auth::AuthSession::AuthSession(std::shared_ptr<tcp::socket> socket)
 : Socket(socket)
 {
 	_session_data = std::make_shared<SessionData>();
 }
 
-void AuthSession::Start()
+void Horizon::Auth::AuthSession::Start()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
@@ -38,19 +38,19 @@ void AuthSession::Start()
 	AsyncRead();
 }
 
-void AuthSession::OnClose()
+void Horizon::Auth::AuthSession::OnClose()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
 	AuthLog->info("Closed connection from {}.", ip_address);
 }
 
-bool AuthSession::Update()
+bool Horizon::Auth::AuthSession::Update()
 {
 	return AuthSocket::Update();
 }
 
-int AuthSession::GetPacketVersion(uint16_t op_code, PacketBuffer buf)
+int Horizon::Auth::AuthSession::GetPacketVersion(uint16_t op_code, PacketBuffer buf)
 {
 	int packet_ver = 0;
 
@@ -70,7 +70,7 @@ int AuthSession::GetPacketVersion(uint16_t op_code, PacketBuffer buf)
 	return packet_ver;
 }
 
-void AuthSession::ReadHandler()
+void Horizon::Auth::AuthSession::ReadHandler()
 {
 	uint16_t op_code;
 
@@ -95,32 +95,32 @@ void AuthSession::ReadHandler()
 	}
 }
 
-std::shared_ptr<GameAccount> AuthSession::getGameAccount()
+std::shared_ptr<GameAccount> Horizon::Auth::AuthSession::getGameAccount()
 {
 	return _game_account;
 }
 
-void AuthSession::setGameAccount(std::shared_ptr<GameAccount> game_account)
+void Horizon::Auth::AuthSession::setGameAccount(std::shared_ptr<GameAccount> game_account)
 {
 	_game_account = game_account;
 }
 
-std::shared_ptr<SessionData> AuthSession::getSessionData()
+std::shared_ptr<SessionData> Horizon::Auth::AuthSession::getSessionData()
 {
 	return _session_data;
 }
 
-void AuthSession::setSessionData(std::shared_ptr<SessionData> session_data)
+void Horizon::Auth::AuthSession::setSessionData(std::shared_ptr<SessionData> session_data)
 {
 	_session_data = session_data;
 }
 
-std::shared_ptr<AuthPacketHandler> AuthSession::getPacketHandler()
+std::shared_ptr<Horizon::Auth::PacketHandler> Horizon::Auth::AuthSession::getPacketHandler()
 {
 	return _packet_handler;
 }
 
-void AuthSession::setPacketHandler(std::shared_ptr<AuthPacketHandler> packet_handler)
+void Horizon::Auth::AuthSession::setPacketHandler(std::shared_ptr<Horizon::Auth::PacketHandler> packet_handler)
 {
 	_packet_handler = packet_handler;
 }

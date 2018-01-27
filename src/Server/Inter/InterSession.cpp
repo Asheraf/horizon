@@ -19,13 +19,13 @@
 #include "Core/Logging/Logger.hpp"
 #include "InterPackets.hpp"
 
-InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
+Horizon::Inter::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
   : Socket(socket)
 {
 	InitHandlers();
 }
 
-void InterSession::Start()
+void Horizon::Inter::InterSession::Start()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
@@ -34,19 +34,19 @@ void InterSession::Start()
 	AsyncRead();
 }
 
-void InterSession::OnClose()
+void Horizon::Inter::InterSession::OnClose()
 {
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
 	InterLog->info("Closed connection from {}.", ip_address);
 }
 
-bool InterSession::Update()
+bool Horizon::Inter::InterSession::Update()
 {
 	return InterSocket::Update();
 }
 
-void InterSession::SendPacket(ByteBuffer &packet)
+void Horizon::Inter::InterSession::SendPacket(ByteBuffer &packet)
 {
 	if (!IsOpen())
 		return;
@@ -61,7 +61,7 @@ void InterSession::SendPacket(ByteBuffer &packet)
 /**
  * Incoming buffer read handler.
  */
-void InterSession::ReadHandler()
+void Horizon::Inter::InterSession::ReadHandler()
 {
 	uint16_t op_code;
 
@@ -75,26 +75,17 @@ void InterSession::ReadHandler()
 	}
 }
 
-bool InterSession::HandleIncomingPacket(PacketBuffer &packet)
+bool Horizon::Inter::InterSession::HandleIncomingPacket(PacketBuffer &packet)
 {
-	auto opCode = (inter_client_packets) packet.getOpCode();
-	InterPacketHandler func = nullptr;
-
-	/* Call the function handling */
-	if ((func = handlers[opCode]) == nullptr) {
-		InterLog->trace("Unknown packet with ID received: {0:x}", opCode);
-		return false;
-	}
-
-	(this->*func)(packet);
+	auto opCode = (Horizon::Inter::packets) packet.getOpCode();
 
 	return true;
 }
+
 /**
  * Sendable Packets
  */
-
-void InterSession::InitHandlers()
+void Horizon::Inter::InterSession::InitHandlers()
 {
 	//
 }

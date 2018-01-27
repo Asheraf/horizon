@@ -2,27 +2,31 @@
 // Created by SagunKho on 27/01/2018.
 //
 
-#ifndef HORIZON_AUTHPACKETHANDLER_HPP
-#define HORIZON_AUTHPACKETHANDLER_HPP
+#ifndef HORIZON_AUTH_PACKETHANDLER_HPP
+#define HORIZON_AUTH_PACKETHANDLER_HPP
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Packet.hpp"
-#include "AuthPackets.hpp"
+#include "Packets.hpp"
 
 #include <memory>
 #include <unordered_map>
 
+namespace Horizon
+{
+namespace Auth
+{
 class AuthSession;
-class AuthPacketHandler;
+class PacketHandler;
 
-typedef void (AuthPacketHandler::*AuthPacketHandlerFunc) (PacketBuffer &pkt);
-typedef std::unordered_map<uint16_t, AuthPacketHandlerFunc> AuthHandlerMap;
+typedef void (PacketHandler::*PacketHandlerFunc) (PacketBuffer &pkt);
+typedef std::unordered_map<uint16_t, PacketHandlerFunc> AuthHandlerMap;
 
-class AuthPacketHandler
+class PacketHandler
 {
 public:
-	explicit AuthPacketHandler(std::shared_ptr<AuthSession> &session);
-	virtual ~AuthPacketHandler();
+	explicit PacketHandler(std::shared_ptr<AuthSession> &session);
+	virtual ~PacketHandler();
 
 	template <class T>
 	void SendPacket(T pkt);
@@ -72,5 +76,7 @@ private:
 	std::shared_ptr<AuthSession> _session;
 	AuthHandlerMap _handlers;
 };
+}
+}
 
-#endif //HORIZON_AUTHPACKETHANDLER_HPP
+#endif //HORIZON_AUTH_PACKETHANDLER_HPP

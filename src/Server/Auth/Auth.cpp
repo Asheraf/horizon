@@ -33,7 +33,7 @@ using namespace std::chrono_literals;
 /**
  * AuthMain Constructor.
  */
-AuthMain::AuthMain()
+Horizon::Auth::AuthMain::AuthMain()
 : Server("Auth", "config/", "auth-server.yaml")
 {
 	InitializeCLICommands();
@@ -42,7 +42,7 @@ AuthMain::AuthMain()
 /**
  * AuthMain Destructor.
  */
-AuthMain::~AuthMain()
+Horizon::Auth::AuthMain::~AuthMain()
 {
 }
 
@@ -50,7 +50,7 @@ AuthMain::~AuthMain()
  * Prints the header for auth server.
  * @brief Appends the Core header.
  */
-void AuthMain::PrintHeader()
+void Horizon::Auth::AuthMain::PrintHeader()
 {
 	AuthLog->info("Authentication Server Initializing...");
 }
@@ -59,7 +59,7 @@ void AuthMain::PrintHeader()
  * Read /config/auth-server.yaml
  * @return true on success, false on failure.
  */
-bool AuthMain::ReadConfig()
+bool Horizon::Auth::AuthMain::ReadConfig()
 {
 	YAML::Node config;
 	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
@@ -214,7 +214,7 @@ bool AuthMain::ReadConfig()
  * CLI Command: Reload Configuration
  * @return boolean value from AuthServer->ReadConfig()
  */
-bool AuthMain::CLICmd_ReloadConfig()
+bool Horizon::Auth::AuthMain::CLICmd_ReloadConfig()
 {
 	// Clear all character server info before reloading.
 	character_servers.clear();
@@ -227,9 +227,9 @@ bool AuthMain::CLICmd_ReloadConfig()
 /**
  * Initialize CLI Comamnds
  */
-void AuthMain::InitializeCLICommands()
+void Horizon::Auth::AuthMain::InitializeCLICommands()
 {
-	addCLIFunction("reloadconf", std::bind(&AuthMain::CLICmd_ReloadConfig, this));
+	addCLIFunction("reloadconf", std::bind(&Horizon::Auth::AuthMain::CLICmd_ReloadConfig, this));
 
 	Server::InitializeCLICommands();
 }
@@ -237,7 +237,7 @@ void AuthMain::InitializeCLICommands()
 /**
  * Connect with Inter Server
  */
-void AuthMain::ConnectWithInterServer()
+void Horizon::Auth::AuthMain::ConnectWithInterServer()
 {
 	try {
 		sAuthSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 100);
@@ -299,7 +299,7 @@ int main(int argc, const char * argv[])
 	/**
 	 * Establish a connection to the inter-server.
 	 */
-	std::thread inter_conn_thread = std::thread(std::bind(&AuthMain::ConnectWithInterServer, AuthServer));
+	std::thread inter_conn_thread = std::thread(std::bind(&Horizon::Auth::AuthMain::ConnectWithInterServer, AuthServer));
 
 	/**
 	 * Initialize the Common Core

@@ -17,10 +17,8 @@
 #ifndef HORIZON_INTERSESSION_H
 #define HORIZON_INTERSESSION_H
 
-
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
-
 #include "Common/Packet.hpp"
 
 #include <cstdio>
@@ -28,6 +26,10 @@
 
 using boost::asio::ip::tcp;
 
+namespace Horizon
+{
+namespace Inter
+{
 class InterSession : public Socket<InterSession>
 {
 	friend class InterMain;
@@ -49,7 +51,7 @@ public:
 	/**
 	 * Receivable Packets
 	 */
-	
+
 	/**
 	 * Sendable Responses
 	 */
@@ -59,5 +61,7 @@ protected:
 	void ReadHandler() override;
 	void OnClose() override;
 };
+}
+}
 
 #endif //HORIZON_INTERSESSION_H

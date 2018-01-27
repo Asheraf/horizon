@@ -15,8 +15,8 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_AUTH_HPP
-#define HORIZON_AUTH_HPP
+#ifndef HORIZON_AUTH_MAIN_HPP
+#define HORIZON_AUTH_MAIN_HPP
 
 #include "AuthSession.hpp"
 
@@ -27,8 +27,10 @@
 #include <string>
 #include <Server/Common/Models/ServerData.hpp>
 
-typedef std::unordered_map<uint32_t, std::shared_ptr<AuthSession>> OnlineListType;
-
+namespace Horizon
+{
+namespace Auth
+{
 /**
  * Main Auth Server Singleton Class.
  */
@@ -49,19 +51,6 @@ public:
 
 	/* Auth Server Configuration */
 	struct auth_server_config &getAuthConfig() { return auth_config; }
-
-	/* Account Online List */
-	void addOnlineAccount(uint32_t id, std::shared_ptr<AuthSession> session) { account_online_list.insert(std::make_pair(id, session)); }
-	std::shared_ptr<AuthSession> getOnlineAccount(uint32_t id)
-	{
-		auto it = account_online_list.find(id);
-		if (it != account_online_list.end())
-			return it->second;
-		else
-			return nullptr;
-	}
-
-	void removeOnlineAccount(uint32_t id) { account_online_list.erase(id); }
 
 	void ConnectWithInterServer();
 
@@ -85,13 +74,12 @@ public:
 protected:
 	/* Auth Server Configuration */
 	struct auth_server_config auth_config;
-	/**
-	 * List of accounts that are connected.
-	 */
-	OnlineListType account_online_list;
 	std::unordered_map<int, std::shared_ptr<character_server_data>> character_servers;
 };
+}
+}
 
-#define AuthServer AuthMain::getInstance()
+#define AuthServer Horizon::Auth::AuthMain::getInstance()
 
-#endif /* HORIZON_AUTH_HPP */
+
+#endif /* HORIZON_AUTH_MAIN_HPP */

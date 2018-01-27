@@ -2,22 +2,28 @@
 // Created by SagunKho on 27/01/2018.
 //
 
-#ifndef HORIZON_AUTHPACKETHANDLER20170315_HPP
-#define HORIZON_AUTHPACKETHANDLER20170315_HPP
+#ifndef HORIZON_AUTH_PACKETHANDLER20170315_HPP
+#define HORIZON_AUTH_PACKETHANDLER20170315_HPP
 
-#include "Server/Auth/PacketHandler/AuthPacketHandler.hpp"
+#include "Server/Auth/PacketHandler/PacketHandler.hpp"
 
 struct PACKET_AC_ACCEPT_LOGIN_20170315;
 
-class AuthPacketHandler20170315 : public AuthPacketHandler
+namespace Horizon
+{
+namespace Auth
+{
+class PacketHandler20170315 : public PacketHandler
 {
 public:
-	explicit AuthPacketHandler20170315(std::shared_ptr<AuthSession> &session);
-	~AuthPacketHandler20170315() override;
+	explicit PacketHandler20170315(std::shared_ptr<AuthSession> &session);
+	~PacketHandler20170315() override;
 
 	void Respond_AC_ACCEPT_LOGIN() override;
 	void InitializeHandlers() override;
 };
+}
+}
 
 /**
  * Overloaded Packet Definitions
@@ -25,7 +31,7 @@ public:
 #pragma pack(push, 1)
 struct PACKET_AC_ACCEPT_LOGIN_20170315 : public Packet
 {
-	PACKET_AC_ACCEPT_LOGIN_20170315() : Packet(CA_LOGIN) { }
+	PACKET_AC_ACCEPT_LOGIN_20170315() : Packet(Horizon::Auth::CA_LOGIN) { }
 
 	int16 packet_len{};         ///< Packet length (variable length)
 	int32 auth_code{};          ///< Authentication code
@@ -47,4 +53,4 @@ struct PACKET_AC_ACCEPT_LOGIN_20170315 : public Packet
 };
 #pragma pack(pop)
 
-#endif //HORIZON_AUTHPACKETHANDLER20170315_HPP
+#endif //HORIZON_AUTH_PACKETHANDLER20170315_HPP
