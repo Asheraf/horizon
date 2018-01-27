@@ -28,10 +28,16 @@ using boost::asio::ip::udp;
 /* Create Socket Connection */
 boost::asio::io_service *io_service;
 
+/**
+ * Zone Main server constructor.
+ */
 ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.yaml")
 {
 }
 
+/**
+ * Zone Main server destructor.
+ */
 ZoneMain::~ZoneMain()
 {
 }
@@ -47,6 +53,7 @@ void ZoneMain::PrintHeader()
 
 /**
  * Read /config/zone-server.yaml
+ * @return false on failure, true on success.
  */
 bool ZoneMain::ReadConfig()
 {
@@ -71,11 +78,17 @@ bool ZoneMain::ReadConfig()
 	return true;
 }
 
+/**
+ * Initialize Zone-Server CLI Commands.
+ */
 void ZoneMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
 }
 
+/**
+ * Create connection-pool of Inter-server connections.
+ */
 void ZoneMain::ConnectWithInterServer()
 {
 	try {
@@ -85,6 +98,10 @@ void ZoneMain::ConnectWithInterServer()
 	}
 }
 
+/**
+ * Signal Handler for the Zone-Server main thread.
+ * @param error
+ */
 void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 {
 	if (!error) {
@@ -92,6 +109,12 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 	}
 }
 
+/**
+ * Zone Server Main runtime entrypoint.
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, const char * argv[])
 {
 	/* Header */

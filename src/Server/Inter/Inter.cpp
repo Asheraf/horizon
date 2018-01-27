@@ -28,10 +28,16 @@ using boost::asio::ip::udp;
 /* Create Socket Connection */
 boost::asio::io_service *io_service;
 
+/**
+ * Inter Main server constructor.
+ */
 InterMain::InterMain() : Server("Inter", "config/", "inter-server.yaml")
 {
 }
 
+/**
+ * Inter Main server destructor.
+ */
 InterMain::~InterMain()
 {
 }
@@ -47,7 +53,8 @@ void InterMain::PrintHeader()
 
 /**
  * Read /config/inter-server.yaml
- */
+  * @return true on success, false on failure.
+  */
 bool InterMain::ReadConfig()
 {
 	YAML::Node config;
@@ -71,11 +78,18 @@ bool InterMain::ReadConfig()
 	return true;
 }
 
+/**
+ * Initialize Inter-Server CLI Commands.
+ */
 void InterMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
 }
 
+/**
+ * Signal Handler for the Inter-Server's main thread.
+ * @param error
+ */
 void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 {
 	if (!error) {
@@ -83,6 +97,12 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 	}
 }
 
+/**
+ * Main entry point of the char-server application.
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, const char * argv[])
 {
 	/* Header */

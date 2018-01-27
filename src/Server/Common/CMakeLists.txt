@@ -15,20 +15,22 @@
 # or viewing without permission.
 ###################################################
 
+set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(COMMON_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Packet.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Definitions.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Horizon.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Models/GameAccount.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Models/SessionData.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Models/ServerData.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Models/Configuration/AuthServerConfiguration.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Models/Configuration/GeneralServerConfiguration.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Models/Configuration/Logging.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/CLI/CLICommand.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/CLI/CommandLineInterface.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/CLI/CommandLineInterface.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Utilities/Utilities.hpp
+    ${DIR}/Packet.hpp
+    ${DIR}/Server.hpp
+    ${DIR}/Server.cpp
+    ${DIR}/Definitions.hpp
+    ${DIR}/Horizon.hpp
+    ${DIR}/Models/GameAccount.hpp
+    ${DIR}/Models/SessionData.hpp
+    ${DIR}/Models/ServerData.hpp
+    ${DIR}/Models/Configuration/AuthServerConfiguration.hpp
+    ${DIR}/Models/Configuration/GeneralServerConfiguration.hpp
+    ${DIR}/Models/Configuration/Logging.hpp
+    ${DIR}/CLI/CLICommand.hpp
+    ${DIR}/CLI/CommandLineInterface.cpp
+    ${DIR}/CLI/CommandLineInterface.hpp
+    ${DIR}/Utilities/Utilities.hpp
+    ${DIR}/Factories/PacketHandlerFactory.hpp
     PARENT_SCOPE)

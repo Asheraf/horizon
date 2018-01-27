@@ -18,10 +18,6 @@
 #ifndef HORIZON_AUTHPACKETS_H
 #define HORIZON_AUTHPACKETS_H
 
-#include <Server/Common/Models/ServerData.hpp>
-#include "Common/Horizon.hpp"
-#include "Common/Packet.hpp"
-
 enum auth_client_packets {
 	/**
 	 * Receivable Packets.
@@ -88,10 +84,10 @@ struct PACKET_CA_LOGIN : public Packet
 {
 	PACKET_CA_LOGIN() : Packet(CA_LOGIN) { }
 
-	uint32 version;       ///< Client Version Information
-	char username[24];    ///< Username
-	char password[24];    ///< Password
-	uint8 client_type;    ///< Client Type
+	uint32 version{};       ///< Client Version Information
+	char username[24]{};    ///< Username
+	char password[24]{};    ///< Password
+	uint8 client_type{};    ///< Client Type
 };
 
 /**
@@ -101,10 +97,10 @@ struct PACKET_CA_LOGIN2 : public Packet
 {
 	PACKET_CA_LOGIN2() : Packet(CA_LOGIN2) { }
 
-	uint32 version;         ///< Client Version
-	char id[24];            ///< Username
-	uint8 password_md5[16]; ///< Password hash
-	uint8 clienttype;       ///< Client Type
+	uint32 version{};         ///< Client Version
+	char id[24]{};            ///< Username
+	uint8 password_md5[16]{}; ///< Password hash
+	uint8 clienttype{};       ///< Client Type
 };
 
 /**
@@ -114,11 +110,11 @@ struct PACKET_CA_LOGIN3 : public Packet
 {
 	PACKET_CA_LOGIN3() : Packet(CA_LOGIN3) { }
 
-	uint32 version;         ///< Client Version
-	char id[24];            ///< Username
-	uint8 password_md5[16]; ///< Password hash
-	uint8 clienttype;       ///< Client Type
-	uint8 clientinfo;       ///< Index of the connection in the clientinfo file (+10 if the command-line contains "pc")
+	uint32 version{};         ///< Client Version
+	char id[24]{};            ///< Username
+	uint8 password_md5[16]{}; ///< Password hash
+	uint8 clienttype{};       ///< Client Type
+	uint8 clientinfo{};       ///< Index of the connection in the clientinfo file (+10 if the command-line contains "pc")
 };
 
 /**
@@ -128,11 +124,11 @@ struct PACKET_CA_LOGIN4 : public Packet
 {
 	PACKET_CA_LOGIN4() : Packet(CA_LOGIN4) { }
 
-	uint32 version;         ///< Client Version
-	char id[24];            ///< Username
-	uint8 password_md5[16]; ///< Password hash
-	uint8 clienttype;       ///< Client Type
-	char mac_address[13];   ///< MAC Address
+	uint32 version{};         ///< Client Version
+	char id[24]{};            ///< Username
+	uint8 password_md5[16]{}; ///< Password hash
+	uint8 clienttype{};       ///< Client Type
+	char mac_address[13]{};   ///< MAC Address
 };
 
 /**
@@ -142,12 +138,12 @@ struct PACKET_CA_LOGIN_PCBANG : public Packet
 {
 	PACKET_CA_LOGIN_PCBANG() : Packet(CA_LOGIN_PCBANG) { }
 
-	uint32 version;	      ///< Client Version
-	char id[24];          ///< Username
-	char password[24];    ///< Password
-	uint8 clienttype;     ///< Client Type
-	char ip[16];          ///< IP Address
-	char mac_address[13]; ///< MAC Address
+	uint32 version{};	      ///< Client Version
+	char id[24]{};          ///< Username
+	char password[24]{};    ///< Password
+	uint8 clienttype{};     ///< Client Type
+	char ip[16]{};          ///< IP Address
+	char mac_address[13]{}; ///< MAC Address
 };
 
 /**
@@ -157,13 +153,13 @@ struct PACKET_CA_LOGIN_HAN : public Packet
 {
 	PACKET_CA_LOGIN_HAN() : Packet(CA_LOGIN_HAN) { }
 
-	uint32 version;         ///< Client Version
-	char id[24];            ///< Username
-	char password[24];      ///< Password
-	uint8 clienttype;       ///< Client Type
-	char ip[16];            ///< IP Address
-	char mac_address[13];   ///< MAC Address
-	uint8 is_han_game_user; ///< 'isGravityID'
+	uint32 version{};         ///< Client Version
+	char id[24]{};            ///< Username
+	char password[24]{};      ///< Password
+	uint8 clienttype{};       ///< Client Type
+	char ip[16]{};            ///< IP Address
+	char mac_address[13]{};   ///< MAC Address
+	uint8 is_han_game_user{}; ///< 'isGravityID'
 };
 
 /**
@@ -175,13 +171,13 @@ struct PACKET_CA_SSO_LOGIN_REQ : public Packet
 {
 	PACKET_CA_SSO_LOGIN_REQ() : Packet(CA_SSO_LOGIN_REQ) { }
 
-	int16 packet_len;     ///< Length (variable length)
-	uint32 version;       ///< Clientver
-	uint8 clienttype;     ///< Clienttype
-	char id[24];          ///< Username
-	char password[27];    ///< Password
-	int8 mac_address[17]; ///< MAC Address
-	char ip[15];          ///< IP Address
+	int16 packet_len{};     ///< Length (variable length)
+	uint32 version{};       ///< Clientver
+	uint8 clienttype{};     ///< Clienttype
+	char id[24]{};          ///< Username
+	char password[27]{};    ///< Password
+	int8 mac_address[17]{}; ///< MAC Address
+	char ip[15]{};          ///< IP Address
 	char t1[];            ///< SSO Login Token (variable length)
 };
 
@@ -191,12 +187,10 @@ struct PACKET_CA_SSO_LOGIN_REQ : public Packet
 struct PACKET_CA_LOGIN_OTP : public Packet
 {
 	PACKET_CA_LOGIN_OTP() : Packet(CA_LOGIN_OTP) { }
-#if PACKETVER >= 20171113
-	uint32 devFlags;      ///< flags including dev flag
-#endif
-	char login[25];       ///< Username
-	char password[32];    ///< Password encrypted by rijndael
-	char flagsStr[5];     ///< Unknown flags. Normally string: G000
+
+	char login[25]{};       ///< Username
+	char password[32]{};    ///< Password encrypted by rijndael
+	char flagsStr[5]{};     ///< Unknown flags. Normally string: G000
 };
 
 #if 0 // Unused
@@ -221,7 +215,7 @@ struct PACKET_CA_CONNECT_INFO_CHANGED : public Packet
 {
 	PACKET_CA_CONNECT_INFO_CHANGED() : Packet(CA_CONNECT_INFO_CHANGED) { }
 
-	char id[24];    ///< account.userid
+	char id[24]{};    ///< account.userid
 };
 
 /**
@@ -313,9 +307,6 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 	uint32 last_login_ip;     ///< Last login IP
 	char last_login_time[26]; ///< Last login timestamp
 	uint8 sex;                ///< Account sex
-#if PACKETVER >= 20170315
-	char unknown1[17];
-#endif
 	struct character_server_list {
 		uint32 ip;         ///< Server IP address
 		int16 port;        ///< Server port
@@ -323,9 +314,6 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 		uint16 usercount;  ///< Online users
 		uint16 is_new;     ///< Server state
 		uint16 type;       ///< Server type @ character_server_types
-#if PACKETVER >= 20170315
-		char unknown2[128];
-#endif
 	} server_list[];
 };
 

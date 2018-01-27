@@ -30,12 +30,18 @@ using namespace std::chrono_literals;
 
 /* Create Socket Connection */
 
+/**
+ * AuthMain Constructor.
+ */
 AuthMain::AuthMain()
 : Server("Auth", "config/", "auth-server.yaml")
 {
 	InitializeCLICommands();
 }
 
+/**
+ * AuthMain Destructor.
+ */
 AuthMain::~AuthMain()
 {
 }
@@ -51,6 +57,7 @@ void AuthMain::PrintHeader()
 
 /**
  * Read /config/auth-server.yaml
+ * @return true on success, false on failure.
  */
 bool AuthMain::ReadConfig()
 {
@@ -203,6 +210,10 @@ bool AuthMain::ReadConfig()
 	return true;
 }
 
+/**
+ * CLI Command: Reload Configuration
+ * @return boolean value from AuthServer->ReadConfig()
+ */
 bool AuthMain::CLICmd_ReloadConfig()
 {
 	// Clear all character server info before reloading.
@@ -213,6 +224,9 @@ bool AuthMain::CLICmd_ReloadConfig()
 	return AuthServer->ReadConfig();
 }
 
+/**
+ * Initialize CLI Comamnds
+ */
 void AuthMain::InitializeCLICommands()
 {
 	addCLIFunction("reloadconf", std::bind(&AuthMain::CLICmd_ReloadConfig, this));
@@ -220,6 +234,9 @@ void AuthMain::InitializeCLICommands()
 	Server::InitializeCLICommands();
 }
 
+/**
+ * Connect with Inter Server
+ */
 void AuthMain::ConnectWithInterServer()
 {
 	try {
@@ -229,6 +246,11 @@ void AuthMain::ConnectWithInterServer()
 	}
 }
 
+/**
+ * Signal Handler from the main thread.
+ * @param ioServiceRef
+ * @param error
+ */
 void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {

@@ -117,7 +117,7 @@ public:
 		AsyncProcessQueue();
 	}
 
-	bool IsOpen() const { return !_closed && !_closing; }
+	bool IsOpen() { return !_closed && !_closing; }
 
 	void CloseSocket()
 	{

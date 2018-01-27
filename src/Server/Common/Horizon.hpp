@@ -20,9 +20,17 @@
 
 #include "Definitions.hpp"
 
-// Client Packet Version.
-#ifndef PACKETVER
-	#define PACKETVER 20141022
+#ifndef MINIMUM_PACKETVER
+	#define MINIMUM_PACKETVER 20141022
+#endif
+
+#ifndef MAXIMUM_PACKETVER
+	#define MAXIMUM_PACKETVER 20171113
+#endif
+
+// DEfault Client Packet Version.
+#ifndef DEFAULT_PACKETVER
+	#define DEFAULT_PACKETVER MINIMUM_PACKETVER
 #endif
 
 #endif //HORIZON_HORIZON_H

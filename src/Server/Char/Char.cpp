@@ -30,10 +30,16 @@ using boost::asio::ip::udp;
 /* Create Socket Connection */
 boost::asio::io_service *io_service;
 
+/**
+ * CharMain Constructor
+ */
 CharMain::CharMain() : Server("Char", "config/", "char-server.yaml")
 {
 }
 
+/**
+ * CharMain Destructor
+ */
 CharMain::~CharMain()
 {
 }
@@ -49,6 +55,7 @@ void CharMain::PrintHeader()
 
 /**
  * Read /config/char-server.yaml
+ * @return true on success false on failure.
  */
 bool CharMain::ReadConfig()
 {
@@ -90,11 +97,17 @@ bool CharMain::ReadConfig()
 	return true;
 }
 
+/**
+ * Initialize Char-Server CLI Commands
+ */
 void CharMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
 }
 
+/**
+ * Connect with the Inter-server.
+ */
 void CharMain::ConnectWithInterServer()
 {
 	try {
@@ -104,6 +117,9 @@ void CharMain::ConnectWithInterServer()
 	}
 }
 
+/**
+ * Signal handler for the Char-Server main thread.
+ */
 void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 {
 	if (!error) {
@@ -111,6 +127,12 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 	}
 }
 
+/**
+ * Main entry point of the char-server application.
+ * @param argc
+ * @param argv
+ * @return integer of shutdown signal.
+ */
 int main(int argc, const char * argv[])
 {
 	/* Header */

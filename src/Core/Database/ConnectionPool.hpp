@@ -18,6 +18,8 @@
 #ifndef HORIZON_CONNECTIONPOOL_H
 #define HORIZON_CONNECTIONPOOL_H
 
+#include "Logging/Logger.hpp"
+
 #include <deque>
 #include <set>
 #include <boost/shared_ptr.hpp>
