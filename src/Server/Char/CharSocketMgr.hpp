@@ -52,11 +52,11 @@ public:
 		return true;
 	}
 
-	bool StartNetworkConnection(std::string const &connection_name, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
+	bool StartNetworkConnection(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
 	{
 		std::shared_ptr<NetworkConnector> connector;
 
-		if (!(connector = std::make_shared<NetworkConnector>(connection_name, connect_ip, port))) {
+		if (!(connector = std::make_shared<NetworkConnector>(connection_name, server, connect_ip, port))) {
 			CoreLog->error("SocketMgr.StartConnect '{}' to tcp:://{}:{}.", connection_name, connect_ip, port);
 			return false;
 		}

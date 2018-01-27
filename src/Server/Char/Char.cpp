@@ -98,7 +98,7 @@ void CharMain::InitializeCLICommands()
 void CharMain::ConnectWithInterServer()
 {
 	try {
-		sCharSocketMgr.StartNetworkConnection("inter-server", getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
+		sCharSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
 	} catch (boost::system::system_error &e) {
 		CharLog->error("{}", e.what());
 	}

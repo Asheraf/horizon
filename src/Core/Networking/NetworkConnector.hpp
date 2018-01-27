@@ -16,8 +16,8 @@ class NetworkConnector
 public:
 	typedef void (*NetworkConnectorCallback) (std::string &conn_name, std::shared_ptr<tcp::socket> socket, uint32_t threadIndex);
 
-	NetworkConnector(std::string connection_name, std::string const &connect_ip, uint16_t port)
-	: _connection_name(connection_name), _endpoint(boost::asio::ip::address::from_string(connect_ip), port),
+	NetworkConnector(std::string connection_name, Server *server, std::string const &connect_ip, uint16_t port)
+	: _connection_name(connection_name), server(server), _endpoint(boost::asio::ip::address::from_string(connect_ip), port),
 	  _socketFactory(std::bind(&NetworkConnector::DefaultSocketFactory, this))
 	{
 	}
@@ -59,7 +59,7 @@ public:
                         this, socket, poll_thread_idx)),
                         [this] (std::thread *thr)
 					{
-						if (thr != nullptr)
+						if (thr->joinable())
 							thr->join();
 						delete thr;
 					});
@@ -77,11 +77,12 @@ public:
 	{
 		do {
 			// Connection is alive, sleep for 10 seconds.
-			std::this_thread::sleep_for(std::chrono::seconds(10));
-		} while (socket->is_open());
+			std::this_thread::sleep_for(std::chrono::seconds(3));
+		} while (socket->is_open() && !server->isShuttingDown());
 
 		// Re-connection issue.
-		this->ConnectWithCallback<networkConnectorCallback>(1);
+		if (!server->isShuttingDown())
+			this->ConnectWithCallback<networkConnectorCallback>(1);
 	}
 
 	void SetSocketFactory(std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> &&func) { _socketFactory = func; }
@@ -89,6 +90,7 @@ public:
 private:
 	std::pair<std::shared_ptr<tcp::socket>, uint32_t> DefaultSocketFactory() { return std::make_pair(nullptr, 0); }
 
+	Server *server;
 	std::string _connection_name;
 	tcp::endpoint _endpoint;
 	std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> _socketFactory;

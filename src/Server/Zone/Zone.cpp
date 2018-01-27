@@ -79,7 +79,7 @@ void ZoneMain::InitializeCLICommands()
 void ZoneMain::ConnectWithInterServer()
 {
 	try {
-		sZoneSocketMgr.StartNetworkConnection("inter-server", getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
+		sZoneSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
 	} catch (boost::system::system_error &e) {
 		ZoneLog->error("{}", e.what());
 	}
