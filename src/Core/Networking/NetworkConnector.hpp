@@ -32,7 +32,7 @@ public:
 	template<NetworkConnectorCallback networkConnectorCallback>
 	void ConnectWithCallback(int connections = 1)
 	{
-		for (int i = 0; i < connections; i++) {
+		for (int i = 0; i < connections && !server->isShuttingDown(); i++) {
 			std::shared_ptr<tcp::socket> socket;
 			uint32_t network_thread_idx;
 			boost::system::error_code error;
@@ -67,7 +67,7 @@ public:
 					_socket_poll_threads.insert(std::make_pair(poll_thread_idx, std::move(poll_thread)));
 					CoreLog->info("Successfully issued '{}' connection request to  endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 				}
-			} while (!socket->is_open());
+			} while (!socket->is_open() && !server->isShuttingDown());
 		}
 	}
 

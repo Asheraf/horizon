@@ -54,6 +54,7 @@ public:
 
 	void ConnectWithInterServer();
 
+	void InitializeCore();
 	/* CLI */
 	void InitializeCLICommands();
 	bool CLICmd_ReloadConfig();

@@ -60,7 +60,7 @@ public:
 	/* Common Configuration */
 	bool ProcessCommonConfiguration(YAML::Node &config);
 	/* Initialize Core */
-	void InitializeCore();
+	virtual void InitializeCore();
 	/* Mysql Threads */
 	void InitializeMySQLConnections();
 	boost::shared_ptr<MySQLConnection> MySQLBorrow() { return mysql_pool->borrow(); }

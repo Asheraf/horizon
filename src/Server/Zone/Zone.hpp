@@ -43,6 +43,7 @@ public:
 
 	void PrintHeader();
 	bool ReadConfig();
+	void InitializeCore();
 	void InitializeCLICommands();
 	void ConnectWithInterServer();
 private:

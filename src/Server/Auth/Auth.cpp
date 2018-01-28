@@ -234,6 +234,19 @@ void Horizon::Auth::AuthMain::InitializeCLICommands()
 	Server::InitializeCLICommands();
 }
 
+void Horizon::Auth::AuthMain::InitializeCore()
+{
+	/**
+	 * Establish a connection to the inter-server.
+	 */
+	std::shared_ptr<std::thread> inter_conn_thread(new std::thread(std::bind(&Horizon::Auth::AuthMain::ConnectWithInterServer, this)), [] (std::thread *thr) {
+		thr->join();
+		delete thr;
+	});
+
+	// Initialize Main Core.
+	Server::InitializeCore();
+}
 /**
  * Connect with Inter Server
  */
@@ -242,7 +255,6 @@ void Horizon::Auth::AuthMain::ConnectWithInterServer()
 	try {
 		sAuthSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 100);
 	} catch (boost::system::system_error &e) {
-		AuthLog->error("{}", e.what());
 	}
 }
 
@@ -297,16 +309,9 @@ int main(int argc, const char * argv[])
 		AuthServer->getNetworkConf().getMaxThreads());
 
 	/**
-	 * Establish a connection to the inter-server.
-	 */
-	std::thread inter_conn_thread = std::thread(std::bind(&Horizon::Auth::AuthMain::ConnectWithInterServer, AuthServer));
-
-	/**
 	 * Initialize the Common Core
 	 */
 	AuthServer->InitializeCore();
-
-	inter_conn_thread.join();
 
 	/*
 	 * Core Cleanup

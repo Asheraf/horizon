@@ -78,6 +78,18 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	return true;
 }
 
+void Horizon::Zone::ZoneMain::InitializeCore()
+{
+	/**
+	 * Inter-connection thread.
+	 */
+	std::thread inter_conn_thread(std::bind(&ZoneServer->ConnectWithInterServer(), this));
+
+	Server::InitializeCore();
+
+	inter_conn_thread.join();
+}
+
 /**
  * Initialize Zone-Server CLI Commands.
  */

@@ -106,6 +106,18 @@ void Horizon::Char::CharMain::InitializeCLICommands()
 	Server::InitializeCLICommands();
 }
 
+void Horizon::Char::CharMain::InitializeCore()
+{
+	/**
+	 * Inter-connection thread.
+	 */
+	std::thread inter_conn_thread(std::bind(&CharServer->ConnectWithInterServer(), this));
+
+	Server::InitializeCore();
+
+	inter_conn_thread.join();
+}
+
 /**
  * Connect with the Inter-server.
  */
@@ -164,11 +176,6 @@ int main(int argc, const char * argv[])
 	        CharServer->getNetworkConf().getListenIp(),
             CharServer->getNetworkConf().getListenPort(),
             CharServer->getNetworkConf().getMaxThreads());
-
-	/**
-	 * Establish a connection to the inter-server.
-	 */
-	CharServer->ConnectWithInterServer();
 
 	/**
 	 * Initialize the Common Core

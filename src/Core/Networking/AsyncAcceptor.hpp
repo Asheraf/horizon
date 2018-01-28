@@ -50,7 +50,7 @@ public:
 
 		std::tie(socket, thread_index) = _socketFactory();
 
-		_acceptor.async_accept(*socket, [this, socket = std::forward<std::shared_ptr<tcp::socket>>(socket), thread_index] (boost::system::error_code error)
+		_acceptor.async_accept(*socket, [this, socket, thread_index] (boost::system::error_code error)
 		{
 			if (!error) {
 				try {

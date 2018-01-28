@@ -46,6 +46,7 @@ public:
 	bool ReadConfig();
 	void InitializeCLICommands();
 	void ConnectWithInterServer();
+	void InitializeCore();
 private:
 	struct {
 		bool enabled;
