@@ -20,6 +20,7 @@ public:
 	~PacketHandler20170315() override;
 
 	void Respond_AC_ACCEPT_LOGIN() override;
+	void Handle_TEST_POLY(PacketBuffer &pkt);
 	void InitializeHandlers() override;
 };
 }

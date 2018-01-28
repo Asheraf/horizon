@@ -41,7 +41,7 @@ public:
 
 	/* Shutdown Handlers */
 	void shutdown(int signal) { getGeneralConf().setShuttingDown(signal); }
-	bool isShuttingDown() { return getGeneralConf().IsShuttingDown(); }
+	bool IsShuttingDown() { return getGeneralConf().IsShuttingDown(); }
 	void IOServiceLoop();
 
 	/* Core I/O Service*/

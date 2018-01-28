@@ -74,8 +74,7 @@ public:
 	// Discards inactive data
 	void Normalize()
 	{
-		if (_rpos)
-		{
+		if (_rpos) {
 			if (_rpos != _wpos)
 				memmove(GetBasePointer(), GetReadPointer(), GetActiveSize());
 			_wpos -= _rpos;
@@ -100,14 +99,19 @@ public:
 		}
 	}
 
-	std::vector<uint8_t>&& Move()
+	std::vector<uint8_t> &&Move()
 	{
 		_wpos = 0;
 		_rpos = 0;
 		return std::move(_storage);
 	}
 
-	MessageBuffer& operator=(MessageBuffer const& right)
+	const std::vector<uint8_t> &Copy()
+	{
+		return _storage;
+	}
+
+	MessageBuffer &operator=(MessageBuffer const& right)
 	{
 		if (this != &right)
 		{

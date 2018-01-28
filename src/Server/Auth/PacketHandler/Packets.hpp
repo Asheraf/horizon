@@ -18,6 +18,8 @@
 #ifndef HORIZON_AUTH_PACKETS_HPP
 #define HORIZON_AUTH_PACKETS_HPP
 
+#include "Server/Common/Horizon.hpp"
+
 namespace Horizon
 {
 namespace Auth
@@ -41,17 +43,11 @@ enum packets {
 	/**
 	 * Response Packets
 	 */
-		AC_ACCEPT_LOGIN         = 0x0069,
+	AC_ACCEPT_LOGIN         = 0x0069,
 	AC_REFUSE_LOGIN         = 0x006a,
 	SC_NOTIFY_BAN           = 0x0081,
 	AC_ACK_HASH             = 0x01dc,
 	AC_REFUSE_LOGIN_R2      = 0x083e,
-	/**
-	 * Auth-Interserver Packets
-	 */
-		AZ_ADD_SESSION          = 0x9991,
-	AZ_REMOVE_SESSION       = 0x9992,
-	AZ_GET_CHAR_SERVER_INFO = 0x9993,
 	MAX_AUTH_PACKETS,
 };
 
@@ -249,6 +245,7 @@ struct PACKET_AC_ACK_HASH : public Packet
 
 	uint8 secret[];   ///< Challenge string
 };
+
 #pragma pack(pop)
 
 #endif //HORIZON_AUTH_PACKETS_HPP

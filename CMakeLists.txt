@@ -28,7 +28,7 @@ project (${PROJECT_NAME})
 include(ExternalProject)
 
 # Compiler Options.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-c99-extensions -Wno-gnu-empty-struct -fno-limit-debug-info")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 
 #################################
 # CMAKE Module Path
@@ -148,9 +148,3 @@ include(FindMySQLConnector)
 # Horizon Project Source
 #################
 add_subdirectory(src)
-
-#################
-# Final Steps:
-# - Create logs directory.
-#################
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/logs)

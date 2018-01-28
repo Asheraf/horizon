@@ -5,9 +5,10 @@
 #ifndef HORIZON_NETWORKCONNECTOR_HPP
 #define HORIZON_NETWORKCONNECTOR_HPP
 
+#include "Core/Logging/Logger.hpp"
+#include "Server/Common/Server.hpp"
 #include <boost/asio.hpp>
 #include <thread>
-#include <Core/Logging/Logger.hpp>
 
 using namespace boost::asio::ip;
 
@@ -32,7 +33,7 @@ public:
 	template<NetworkConnectorCallback networkConnectorCallback>
 	void ConnectWithCallback(int connections = 1)
 	{
-		for (int i = 0; i < connections && !server->isShuttingDown(); i++) {
+		for (int i = 0; i < connections && !server->IsShuttingDown(); i++) {
 			std::shared_ptr<tcp::socket> socket;
 			uint32_t network_thread_idx;
 			boost::system::error_code error;
@@ -65,9 +66,9 @@ public:
 					});
 
 					_socket_poll_threads.insert(std::make_pair(poll_thread_idx, std::move(poll_thread)));
-					CoreLog->info("Successfully issued '{}' connection request to  endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
+					CoreLog->info("Successfully connected to '{}' at endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 				}
-			} while (!socket->is_open() && !server->isShuttingDown());
+			} while (!socket->is_open() && !server->IsShuttingDown());
 		}
 	}
 
@@ -77,10 +78,10 @@ public:
 		do {
 			// Connection is alive, sleep for 10 seconds.
 			std::this_thread::sleep_for(std::chrono::seconds(3));
-		} while (socket->is_open() && !server->isShuttingDown());
+		} while (socket->is_open() && !server->IsShuttingDown());
 
 		// Re-connection issue.
-		if (!server->isShuttingDown())
+		if (!server->IsShuttingDown())
 			this->ConnectWithCallback<networkConnectorCallback>(1);
 	}
 

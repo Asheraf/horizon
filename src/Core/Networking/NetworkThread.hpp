@@ -68,13 +68,7 @@ public:
 	void Wait()
 	{
 		assert(_thread);
-
 		_thread->join();
-	}
-
-	int32_t GetConnectionCount() const
-	{
-		return _connections;
 	}
 
 	virtual void AddSocket(std::shared_ptr<SocketType> sock)
@@ -90,28 +84,11 @@ public:
 
 	std::shared_ptr<tcp::socket> GetSocketForAccept() { return std::make_shared<tcp::socket>(_io_service); }
 	std::shared_ptr<tcp::socket> GetSocketForConnect() { return std::make_shared<tcp::socket>(_io_service); }
+	int32_t GetConnectionCount() const { return _connections; }
+
 protected:
 	virtual void SocketAdded(std::shared_ptr<SocketType> /*sock*/) { }
 	virtual void SocketRemoved(std::shared_ptr<SocketType> /*sock*/) { }
-
-	void AddNewSockets()
-	{
-		std::lock_guard<std::mutex> lock(_newSocketsLock);
-
-		if (_newSockets.empty())
-			return;
-
-		for (std::shared_ptr<SocketType> sock : _newSockets) {
-			if (!sock->IsOpen()) {
-				SocketRemoved(sock);
-				--_connections;
-			} else {
-				_sockets.push_back(sock);
-			}
-		}
-
-		_newSockets.clear();
-	}
 
 	void Run()
 	{
@@ -153,6 +130,28 @@ protected:
 		}), _sockets.end());
 	}
 
+	void AddNewSockets()
+	{
+		std::lock_guard<std::mutex> lock(_newSocketsLock);
+
+		if (_newSockets.empty())
+			return;
+
+		for (std::shared_ptr<SocketType> sock : _newSockets) {
+			if (!sock->IsOpen()) {
+				SocketRemoved(sock);
+				sock->CloseSocket();
+				--_connections;
+			} else {
+				_sockets.push_back(sock);
+				// Start receiving from the socket.
+				sock->Start();
+			}
+		}
+
+		_newSockets.clear();
+	}
+
 private:
 	typedef std::vector<std::shared_ptr<SocketType>> SocketContainer;
 
@@ -170,7 +169,6 @@ private:
 	tcp::socket _acceptSocket;
 	tcp::socket _connectSocket;
 	boost::asio::deadline_timer _updateTimer;
-
 };
 
 #endif //HORIZON_NETWORKTHREAD_HPP

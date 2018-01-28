@@ -15,6 +15,7 @@ target_link_libraries(inter
         boost
         networking
 	    -lpthread
+	    bcrypt
         ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
         ${Readline_LIBRARY}

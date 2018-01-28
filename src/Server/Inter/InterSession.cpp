@@ -16,13 +16,15 @@
 
 #include "InterSession.hpp"
 
+#include "Server/Inter/PacketHandler/PacketHandlerFactory.hpp"
+
 #include "Core/Logging/Logger.hpp"
-#include "InterPackets.hpp"
+#include "Packets.hpp"
 
 Horizon::Inter::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
   : Socket(socket)
 {
-	InitHandlers();
+	//
 }
 
 void Horizon::Inter::InterSession::Start()
@@ -31,6 +33,10 @@ void Horizon::Inter::InterSession::Start()
 
 	InterLog->info("Established connection from {}.", ip_address);
 
+	if (_packet_handler == nullptr) {
+		_packet_handler = PacketHandlerFactory::CreatePacketHandler(shared_from_this());
+		_packet_handler->Respond_CONNECT_INIT();
+	}
 	AsyncRead();
 }
 
@@ -46,46 +52,24 @@ bool Horizon::Inter::InterSession::Update()
 	return InterSocket::Update();
 }
 
-void Horizon::Inter::InterSession::SendPacket(ByteBuffer &packet)
-{
-	if (!IsOpen())
-		return;
-
-	if (!packet.empty()) {
-		MessageBuffer buffer;
-		buffer.Write(packet.contents(), packet.size());
-		QueuePacket(std::move(buffer));
-	}
-}
-
 /**
  * Incoming buffer read handler.
  */
 void Horizon::Inter::InterSession::ReadHandler()
 {
-	uint16_t op_code;
-
 	while (GetReadBuffer().GetActiveSize()) {
+		uint16_t op_code;
 		memcpy(&op_code, GetReadBuffer().GetReadPointer(), sizeof(uint16_t));
 
-		PacketBuffer pkt(op_code, std::move(GetReadBuffer()));
+		PacketBuffer pkt(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
+		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
 
-		if (!HandleIncomingPacket(pkt))
+		if (_packet_handler == nullptr) {
+			_packet_handler = PacketHandlerFactory::CreatePacketHandler(shared_from_this());
+			_packet_handler->Respond_CONNECT_INIT();
+		}
+
+		if (!_packet_handler->HandleIncomingPacket(pkt))
 			GetReadBuffer().Reset();
 	}
-}
-
-bool Horizon::Inter::InterSession::HandleIncomingPacket(PacketBuffer &packet)
-{
-	auto opCode = (Horizon::Inter::packets) packet.getOpCode();
-
-	return true;
-}
-
-/**
- * Sendable Packets
- */
-void Horizon::Inter::InterSession::InitHandlers()
-{
-	//
 }

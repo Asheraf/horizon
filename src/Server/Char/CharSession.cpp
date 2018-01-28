@@ -55,7 +55,8 @@ void Horizon::Char::CharSession::ReadHandler()
 	while (GetReadBuffer().GetActiveSize()) {
 		memcpy(&op_code, GetReadBuffer().GetReadPointer(), sizeof(uint16_t));
 
-		PacketBuffer pkt(op_code, std::move(GetReadBuffer()));
+		PacketBuffer pkt(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
+		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
 
 //		if (!HandleIncomingPacket(pkt))
 //			GetReadBuffer().Reset();

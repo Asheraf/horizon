@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONESESSION_H
-#define HORIZON_ZONESESSION_H
+#ifndef HORIZON_ZONE_ZONESESSION_H
+#define HORIZON_ZONE_ZONESESSION_H
 
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
@@ -50,4 +50,4 @@ protected:
 }
 }
 
-#endif //HORIZON_ZONESESSION_H
+#endif //HORIZON_ZONE_ZONESESSION_H

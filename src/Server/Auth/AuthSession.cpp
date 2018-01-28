@@ -18,7 +18,7 @@
 #include "AuthSession.hpp"
 
 #include "PacketHandler/Packets.hpp"
-#include "Server/Common/Factories/PacketHandlerFactory.hpp"
+#include "Server/Auth/PacketHandler/PacketHandlerFactory.hpp"
 #include "PacketHandler/PacketHandler.hpp"
 
 #include <random>
@@ -34,6 +34,12 @@ void Horizon::Auth::AuthSession::Start()
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
 	AuthLog->info("Established connection from {}.", ip_address);
+
+	if (getSocketType() == SOCKET_ENDPOINT_TYPE_SERVER) {
+		if (_inter_packet_handler == nullptr) { // guessing that it was the inter-server.
+			_inter_packet_handler = PacketHandlerFactory::CreateInterAuthPacketHandler(shared_from_this());
+		}
+	}
 
 	AsyncRead();
 }
@@ -72,26 +78,37 @@ int Horizon::Auth::AuthSession::GetPacketVersion(uint16_t op_code, PacketBuffer 
 
 void Horizon::Auth::AuthSession::ReadHandler()
 {
-	uint16_t op_code;
-
 	while (GetReadBuffer().GetActiveSize()) {
+		uint16_t op_code = 0x0;
 		memcpy(&op_code, GetReadBuffer().GetReadPointer(), sizeof(uint16_t));
 
-		PacketBuffer pkt(op_code, std::move(GetReadBuffer()));
+		PacketBuffer pkt(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
+		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
 
 		/**
 		 * Devise the a suitable packet handler
 		 * based on the client's packet version.
 		 */
-		if (op_code == CA_LOGIN) {
-			int packet_ver = GetPacketVersion(op_code, pkt);
-			_packet_handler = PacketHandlerFactory::CreateAuthPacketHandler(packet_ver, shared_from_this());
-		} else if (_packet_handler == nullptr) {
-			return;
-		}
+		if (getSocketType() == SOCKET_ENDPOINT_TYPE_CLIENT) {
+			if (op_code == CA_LOGIN) {
+				int packet_ver = GetPacketVersion(op_code, pkt);
+				_packet_handler = PacketHandlerFactory::CreateAuthPacketHandler(packet_ver, shared_from_this());
+			}
 
-		if (!_packet_handler->HandleIncomingPacket(pkt))
-			GetReadBuffer().Reset();
+			if (_packet_handler == nullptr) {
+				AuthLog->error("Packet handler was null!");
+				return;
+			}
+
+			if (!_packet_handler->HandleIncomingPacket(pkt))
+				GetReadBuffer().Reset();
+		} else if (getSocketType() == SOCKET_ENDPOINT_TYPE_SERVER) {
+			if (_inter_packet_handler == nullptr) { // guessing that it was the inter-server.
+				_inter_packet_handler = PacketHandlerFactory::CreateInterAuthPacketHandler(shared_from_this());
+			}
+			if (!_inter_packet_handler->HandleIncomingPacket(pkt))
+				GetReadBuffer().Reset();
+		}
 	}
 }
 

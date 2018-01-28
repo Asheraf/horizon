@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONEPACKETS_H
-#define HORIZON_ZONEPACKETS_H
+#ifndef HORIZON_ZONE_PACKETS_H
+#define HORIZON_ZONE_PACKETS_H
 
 namespace Horizon
 {

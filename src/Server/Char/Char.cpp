@@ -27,9 +27,6 @@ using namespace std;
 
 using boost::asio::ip::udp;
 
-/* Create Socket Connection */
-boost::asio::io_service *io_service;
-
 /**
  * CharMain Constructor
  */
@@ -87,6 +84,14 @@ bool Horizon::Char::CharMain::ReadConfig()
 		getNetworkConf().setInterServerPort(9998);
 	}
 
+	if (config["InterServer.Password"]) {
+		getNetworkConf().setInterServerPassword(config["InterServer.Password"].as<std::string>());
+	}
+
+	CharLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
+	              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
+	              (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -111,7 +116,7 @@ void Horizon::Char::CharMain::InitializeCore()
 	/**
 	 * Inter-connection thread.
 	 */
-	std::thread inter_conn_thread(std::bind(&CharServer->ConnectWithInterServer(), this));
+	std::thread inter_conn_thread(std::bind(&CharMain::ConnectWithInterServer, this));
 
 	Server::InitializeCore();
 
@@ -123,10 +128,13 @@ void Horizon::Char::CharMain::InitializeCore()
  */
 void Horizon::Char::CharMain::ConnectWithInterServer()
 {
-	try {
-		sCharSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
-	} catch (boost::system::system_error &e) {
-		CharLog->error("{}", e.what());
+	if (!getGeneralConf().isTestRun()) {
+		try {
+			sCharSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
+			                                      getNetworkConf().getInterServerPort(), 10);
+		} catch (boost::system::system_error &e) {
+			CharLog->error("{}", e.what());
+		}
 	}
 }
 

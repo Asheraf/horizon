@@ -100,7 +100,6 @@ public:
 	T &peek(bool unlock_queue = false)
     {
         lock();
-
         T &result = _queue.front();
 
         if (unlock_queue)
@@ -115,7 +114,6 @@ public:
 	void cancel()
     {
         std::lock_guard<std::mutex> lock(_lock);
-
         _canceled = true;
     }
 
@@ -167,12 +165,10 @@ private:
      * Queue Mutual Lock
 	 */
      std::mutex _lock;
-
 	/*
      * The base queue.
 	 */
      QueueType _queue;
-
 	/*
      * Cancellation flag.
 	 */

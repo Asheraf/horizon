@@ -15,8 +15,8 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_CHARACTERSERVER_HPP
-#define HORIZON_CHARACTERSERVER_HPP
+#ifndef HORIZON_SERVERDATA_HPP
+#define HORIZON_SERVERDATA_HPP
 
 #include <string>
 #include "Horizon.hpp"
@@ -42,4 +42,4 @@ struct character_server_data
 	uint16_t is_new;
 };
 
-#endif //HORIZON_CHARACTERSERVER_HPP
+#endif //HORIZON_SERVERDATA_HPP

@@ -32,5 +32,4 @@ set(COMMON_SOURCES
     ${DIR}/CLI/CommandLineInterface.cpp
     ${DIR}/CLI/CommandLineInterface.hpp
     ${DIR}/Utilities/Utilities.hpp
-    ${DIR}/Factories/PacketHandlerFactory.hpp
     PARENT_SCOPE)

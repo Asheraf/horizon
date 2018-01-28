@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_INTERSOCKETMGR_H
-#define HORIZON_INTERSOCKETMGR_H
+#ifndef HORIZON_INTER_INTERSOCKETMGR_H
+#define HORIZON_INTER_INTERSOCKETMGR_H
 
 #include "Core/Networking/SocketMgr.hpp"
 

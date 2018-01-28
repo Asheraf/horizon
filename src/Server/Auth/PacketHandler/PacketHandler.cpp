@@ -11,7 +11,7 @@
 
 #include <string>
 
-Horizon::Auth::PacketHandler::PacketHandler(std::shared_ptr<AuthSession> &session)
+Horizon::Auth::PacketHandler::PacketHandler(std::shared_ptr<AuthSession> session)
 	: _session(session)
 {
 	// Construct
@@ -34,7 +34,7 @@ bool Horizon::Auth::PacketHandler::HandleIncomingPacket(PacketBuffer &packet)
 	}
 
 	PacketHandlerFunc func = it->second;
-	(this->*func)(packet);
+	func(packet);
 
 	return true;
 }
@@ -332,20 +332,20 @@ void Horizon::Auth::PacketHandler::Respond_CA_CHARSERVERCONNECT()
 
 void Horizon::Auth::PacketHandler::InitializeHandlers()
 {
-	_handlers.insert(std::make_pair(CA_LOGIN, &PacketHandler::Handle_CA_LOGIN));
-	_handlers.insert(std::make_pair(CA_REQ_HASH, &PacketHandler::Handle_CA_REQ_HASH));
-	_handlers.insert(std::make_pair(CA_LOGIN2, &PacketHandler::Handle_CA_LOGIN2));
-	_handlers.insert(std::make_pair(CA_LOGIN3, &PacketHandler::Handle_CA_LOGIN3));
-	_handlers.insert(std::make_pair(CA_CONNECT_INFO_CHANGED, &PacketHandler::Handle_CA_CONNECT_INFO_CHANGED));
-	_handlers.insert(std::make_pair(CA_EXE_HASHCHECK, &PacketHandler::Handle_CA_EXE_HASHCHECK));
-	_handlers.insert(std::make_pair(CA_LOGIN_PCBANG, &PacketHandler::Handle_CA_LOGIN_PCBANG));
-	_handlers.insert(std::make_pair(CA_LOGIN4, &PacketHandler::Handle_CA_LOGIN4));
-	_handlers.insert(std::make_pair(CA_LOGIN_HAN, &PacketHandler::Handle_CA_LOGIN_HAN));
-	_handlers.insert(std::make_pair(CA_SSO_LOGIN_REQ, &PacketHandler::Handle_CA_SSO_LOGIN_REQ));
-	_handlers.insert(std::make_pair(CA_LOGIN_OTP, &PacketHandler::Handle_CA_LOGIN_OTP));
+	_handlers.insert(std::make_pair(CA_LOGIN, boost::bind(&PacketHandler::Handle_CA_LOGIN, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_REQ_HASH, boost::bind(&PacketHandler::Handle_CA_REQ_HASH, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_LOGIN2, boost::bind(&PacketHandler::Handle_CA_LOGIN2, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_LOGIN3, boost::bind(&PacketHandler::Handle_CA_LOGIN3, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_CONNECT_INFO_CHANGED, boost::bind(&PacketHandler::Handle_CA_CONNECT_INFO_CHANGED, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_EXE_HASHCHECK, boost::bind(&PacketHandler::Handle_CA_EXE_HASHCHECK, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_LOGIN_PCBANG, boost::bind(&PacketHandler::Handle_CA_LOGIN_PCBANG, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_LOGIN4, boost::bind(&PacketHandler::Handle_CA_LOGIN4, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_LOGIN_HAN, boost::bind(&PacketHandler::Handle_CA_LOGIN_HAN, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_SSO_LOGIN_REQ, boost::bind(&PacketHandler::Handle_CA_SSO_LOGIN_REQ, this, boost::placeholders::_1)));
+	_handlers.insert(std::make_pair(CA_LOGIN_OTP, boost::bind(&PacketHandler::Handle_CA_LOGIN_OTP, this, boost::placeholders::_1)));
 }
 
-const Horizon::Auth::AuthHandlerMap &Horizon::Auth::PacketHandler::getHandlers() const
+const PacketHandlerMap &Horizon::Auth::PacketHandler::getHandlers() const
 {
 	return _handlers;
 }

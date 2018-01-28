@@ -80,6 +80,7 @@ public:
 										  _storage(right._storage) { }
 
 	ByteBuffer(MessageBuffer&& buffer);
+	ByteBuffer(MessageBuffer &buffer);
 
 	ByteBuffer& operator=(ByteBuffer const& right)
 	{
@@ -266,7 +267,7 @@ public:
 	ByteBuffer &operator>>(std::string& value)
 	{
 		value.clear();
-		while (rpos() < size())                         // prevent crash at wrong string format in packet
+		while (rpos() < size())
 		{
 			char c = read<char>();
 			if (c == 0)
@@ -333,7 +334,6 @@ public:
 		if (pos + sizeof(T) > size())
 			throw ByteBufferPositionException(false, pos, sizeof(T), size());
 		T val = *((T const*)&_storage[pos]);
-		EndianConvert(val);
 		return val;
 	}
 

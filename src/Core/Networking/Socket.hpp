@@ -27,6 +27,9 @@
 #include <functional>
 #include <type_traits>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/bind.hpp>
+#include <boost/asio/write.hpp>
+#include <iostream>
 
 using boost::asio::ip::tcp;
 
@@ -51,20 +54,11 @@ public:
 	virtual ~Socket()
 	{
 		boost::system::error_code error;
-
 		_closed = true;
-
 		_socket->close(error);
 	}
 
-	/* Socket Id */
-	uint64_t getSocketId() const { return _socket_id; }
-	void setSocketId(uint64_t socket_id) { Socket::_socket_id = socket_id; }
-	socket_endpoint_type getSocketType() const { return _type; }
-	void setSocketType(socket_endpoint_type _type) { Socket::_type = _type; }
-
 	virtual void Start() = 0;
-
 	virtual bool Update()
 	{
 		if (_closed)
@@ -73,20 +67,21 @@ public:
 		if (_isWritingAsync || (_writeQueue.empty() && !_closing))
 			return true;
 
-		for (; HandleQueue();)
+		while (HandleQueue())
 			;
+
 		return true;
 	}
 
-	boost::asio::ip::address GetRemoteIPAddress() const
-	{
-		return _socket->remote_endpoint().address();
-	}
-
-	uint16_t GetRemotePort() const
-	{
-		return _socket->remote_endpoint().port();
-	}
+	/* Socket Id */
+	uint64_t getSocketId() const { return _socket_id; }
+	void setSocketId(uint64_t socket_id) { Socket::_socket_id = socket_id; }
+	/* Socket Type */
+	socket_endpoint_type getSocketType() const { return _type; }
+	void setSocketType(socket_endpoint_type _type) { Socket::_type = _type; }
+	/* Remote IP and Port */
+	boost::asio::ip::address GetRemoteIPAddress() const { return _socket->remote_endpoint().address(); }
+	uint16_t GetRemotePort() const { return _socket->remote_endpoint().port(); }
 
 	void AsyncRead()
 	{
@@ -95,8 +90,10 @@ public:
 
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
-		_socket->async_receive(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-				std::bind(&Socket<T>::ReadHandlerInternal, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+
+		//std::cout << "Size: " << _readBuffer.GetRemainingSpace() << std::endl;
+		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
+				boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
 	void AsyncReadWithCallback(void (T::*callback)(boost::system::error_code, std::size_t))
@@ -106,15 +103,13 @@ public:
 
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
-		_socket->async_receive(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-				std::bind(callback, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
+		                       boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
 	void QueuePacket(MessageBuffer &&buffer)
 	{
 		_writeQueue.push(std::move(buffer));
-
-		AsyncProcessQueue();
 	}
 
 	bool IsOpen() { return !_closed && !_closing; }
@@ -158,10 +153,10 @@ protected:
 
 		_isWritingAsync = true;
 
-		_socket->async_write_some(boost::asio::null_buffers(), std::bind(&Socket<T>::WriteHandlerWrapper,
-				this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+		_socket->async_write_some(boost::asio::null_buffers(), boost::bind(&Socket<T>::WriteHandlerWrapper,
+				this, boost::placeholders::_1, boost::placeholders::_2));
 
-		return false;
+		return true;
 	}
 
 	void SetNoDelay(bool enable)
@@ -173,6 +168,7 @@ protected:
 					GetRemoteIPAddress().to_string().c_str(), error.value(), error.message().c_str());
 		}
 	}
+
 private:
 	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
 	{
@@ -181,8 +177,11 @@ private:
 			return;
 		}
 
-		_readBuffer.WriteCompleted(transferredBytes);
-		ReadHandler();
+		if (transferredBytes > 0) {
+			_readBuffer.WriteCompleted(transferredBytes);
+			ReadHandler();
+		}
+		AsyncRead();
 	}
 
 	void WriteHandlerWrapper(boost::system::error_code /*error*/, std::size_t /*transferedBytes*/)
@@ -193,14 +192,13 @@ private:
 
 	bool HandleQueue()
 	{
+		boost::system::error_code error;
+
 		if (_writeQueue.empty())
 			return false;
 
-		MessageBuffer &queuedMessage = _writeQueue.front();
-
+		MessageBuffer queuedMessage = _writeQueue.front();
 		std::size_t bytesToSend = queuedMessage.GetActiveSize();
-
-		boost::system::error_code error;
 		std::size_t bytesSent = _socket->write_some(boost::asio::buffer(queuedMessage.GetReadPointer(), bytesToSend), error);
 
 		if (error) {
@@ -216,7 +214,7 @@ private:
 			if (_closing && _writeQueue.empty())
 				CloseSocket();
 			return false;
-		} else if (bytesSent < bytesToSend) { // now n > 0
+		} else if (bytesSent < bytesToSend) {
 			queuedMessage.ReadCompleted(bytesSent);
 			return AsyncProcessQueue();
 		}
@@ -237,7 +235,6 @@ private:
 	std::queue<MessageBuffer> _writeQueue;
 	std::atomic<bool> _closed;
 	std::atomic<bool> _closing;
-
 	bool _isWritingAsync;
 };
 

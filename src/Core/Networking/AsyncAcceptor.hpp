@@ -65,6 +65,7 @@ public:
 				this->AsyncAcceptWithCallback<acceptCallback>();
 		});
 	}
+
 	bool Bind()
 	{
 		boost::system::error_code errorCode;

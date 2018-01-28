@@ -14,6 +14,7 @@
 ###################################################
 BindIP: "0.0.0.0"
 BindPort: 9998
+Password: "$2a$12$uAhi4RtvH.UkDhJsfIdZzOgLPhcnHmtbAG56XDyXzaWWPN3S4H0m6"
 
 ###################################################
 # network_threads

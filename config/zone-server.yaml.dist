@@ -20,6 +20,7 @@ BindPort: 5121
 ###################################################
 InterServer.IP: "127.0.0.1"
 InterServer.Port: 9998
+InterServer.Password: "ABCDEF"
 
 ###################################################
 # network_threads

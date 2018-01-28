@@ -25,9 +25,6 @@
 using namespace std;
 using boost::asio::ip::udp;
 
-/* Create Socket Connection */
-boost::asio::io_service *io_service;
-
 /**
  * Zone Main server constructor.
  */
@@ -66,6 +63,31 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 		ZoneLog->error("Unable to read {}. ({})", filepath, err.what());
 		return false;
 	}
+	/**
+	 * Inter Server Settings
+	 * @brief Definitions of the Inter-server networking configuration.
+	 */
+	if (config["InterServer.IP"]) {
+		getNetworkConf().setInterServerIp(config["InterServer.IP"].as<std::string>());
+	} else {
+		ZoneLog->error("Inter-server IP configuration not set, defaulting to '127.0.0.1'.");
+		getNetworkConf().setInterServerIp("127.0.0.1");
+	}
+
+	if (config["InterServer.Port"]) {
+		getNetworkConf().setInterServerPort(config["InterServer.Port"].as<uint16_t>());
+	} else {
+		ZoneLog->error("Inter-server Port configuration not set, defaulting to '9998'.");
+		getNetworkConf().setInterServerPort(9998);
+	}
+
+	if (config["InterServer.Password"]) {
+		getNetworkConf().setInterServerPassword(config["InterServer.Password"].as<std::string>());
+	}
+
+	ZoneLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
+	              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
+	              (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
 
 	/**
 	 * Process Configuration that is common between servers.
@@ -83,7 +105,7 @@ void Horizon::Zone::ZoneMain::InitializeCore()
 	/**
 	 * Inter-connection thread.
 	 */
-	std::thread inter_conn_thread(std::bind(&ZoneServer->ConnectWithInterServer(), this));
+	std::thread inter_conn_thread(std::bind(&ZoneMain::ConnectWithInterServer, this));
 
 	Server::InitializeCore();
 
@@ -103,10 +125,13 @@ void Horizon::Zone::ZoneMain::InitializeCLICommands()
  */
 void Horizon::Zone::ZoneMain::ConnectWithInterServer()
 {
-	try {
-		sZoneSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 10);
-	} catch (boost::system::system_error &e) {
-		ZoneLog->error("{}", e.what());
+	if (!getGeneralConf().isTestRun()) {
+		try {
+			sZoneSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
+			                                      getNetworkConf().getInterServerPort(), 10);
+		} catch (boost::system::system_error &e) {
+			ZoneLog->error("{}", e.what());
+		}
 	}
 }
 

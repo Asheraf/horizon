@@ -18,7 +18,6 @@
 #define HORIZON_BCRYPT_HPP
 
 #include "bcrypt.h"
-
 #include <string>
 
 class BCrypt {

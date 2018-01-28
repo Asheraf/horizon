@@ -11,21 +11,18 @@
 
 #include <memory>
 #include <unordered_map>
+#include <boost/function.hpp>
 
 namespace Horizon
 {
 namespace Auth
 {
 class AuthSession;
-class PacketHandler;
-
-typedef void (PacketHandler::*PacketHandlerFunc) (PacketBuffer &pkt);
-typedef std::unordered_map<uint16_t, PacketHandlerFunc> AuthHandlerMap;
 
 class PacketHandler
 {
 public:
-	explicit PacketHandler(std::shared_ptr<AuthSession> &session);
+	explicit PacketHandler(std::shared_ptr<AuthSession> session);
 	virtual ~PacketHandler();
 
 	template <class T>
@@ -70,11 +67,11 @@ public:
 	virtual void Respond_CA_CHARSERVERCONNECT();
 
 	virtual void InitializeHandlers();
-	const AuthHandlerMap &getHandlers() const;
+	const PacketHandlerMap &getHandlers() const;
 
-private:
+protected:
 	std::shared_ptr<AuthSession> _session;
-	AuthHandlerMap _handlers;
+	PacketHandlerMap _handlers;
 };
 }
 }

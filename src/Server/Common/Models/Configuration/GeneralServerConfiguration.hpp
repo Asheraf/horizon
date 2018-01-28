@@ -37,6 +37,9 @@ struct network_configuration
 	/* Inter-server Port */
 	uint16_t getInterServerPort() const { return inter_server_port; }
 	void setInterServerPort(uint16_t inter_server_port) { network_configuration::inter_server_port = inter_server_port; }
+	/* Inter-server Password */
+	std::string getInterServerPassword() const { return inter_server_password; }
+	void setInterServerPassword(std::string const &inter_server_password) { network_configuration::inter_server_password = inter_server_password; }
 
 	std::string listen_ip; //< Listen IP
 	uint16_t listen_port; //< Listen Port Number
@@ -44,6 +47,7 @@ struct network_configuration
 
 	std::string inter_server_ip;
 	uint16_t inter_server_port;
+	std::string inter_server_password;
 };
 
 struct database_configuration

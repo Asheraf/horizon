@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONE_H
-#define HORIZON_ZONE_H
+#ifndef HORIZON_ZONE_ZONEMAIN_H
+#define HORIZON_ZONE_ZONEMAIN_H
 
 #include "ZoneSession.hpp"
 
@@ -56,4 +56,4 @@ private:
 
 #define ZoneServer Horizon::Zone::ZoneMain::getInstance()
 
-#endif //HORIZON_ZONE_H
+#endif //HORIZON_ZONE_ZONEMAIN_H

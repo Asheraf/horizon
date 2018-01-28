@@ -279,9 +279,9 @@ void Server::InitializeCore()
 		delete del;
 	});
 
-	getGeneralConf().setGlobalIOThreads(std::max(this->getGeneralConf().getGlobalIOThreads(), 1));
+	int global_thread_count = std::max(getGeneralConf().getGlobalIOThreads(), 1);
 
-	for (int i = 0; i < getGeneralConf().getGlobalIOThreads(); ++i) {
+	for (int i = 0; i < global_thread_count; ++i) {
 		thread_pool->push_back(std::thread(std::bind(&Server::IOServiceLoop, this)));
 	}
 
@@ -297,13 +297,14 @@ void Server::InitializeCore()
 	 */
 	InitializeCLI();
 
-	while (!isShuttingDown() && !getGeneralConf().isTestRun()) {
+	while (!IsShuttingDown() && !getGeneralConf().isTestRun()) {
 		ProcessCLICommands();
 		std::this_thread::sleep_for(std::chrono::milliseconds(getGeneralConf().getCoreUpdateInterval()));
 	}
 
 	// Join the CLI Thread.
-	m_CLIThread.join();
+	if (!getGeneralConf().isTestRun())
+		m_CLIThread.join();
 }
 
 void Server::IOServiceLoop()

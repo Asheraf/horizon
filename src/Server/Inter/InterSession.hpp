@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_INTERSESSION_H
-#define HORIZON_INTERSESSION_H
+#ifndef HORIZON_INTER_INTERSESSION_H
+#define HORIZON_INTER_INTERSESSION_H
 
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
@@ -30,6 +30,7 @@ namespace Horizon
 {
 namespace Inter
 {
+class PacketHandler;
 class InterSession : public Socket<InterSession>
 {
 	friend class InterMain;
@@ -42,12 +43,6 @@ public:
 	void Start() override;
 	bool Update() override;
 
-	void SendPacket(ByteBuffer& packet);
-
-	bool HandleIncomingPacket(PacketBuffer &packet);
-
-	void InitHandlers();
-
 	/**
 	 * Receivable Packets
 	 */
@@ -57,9 +52,11 @@ public:
 	 */
 
 protected:
-	std::unordered_map<uint16_t, InterPacketHandler> handlers;
 	void ReadHandler() override;
 	void OnClose() override;
+
+private:
+	std::shared_ptr<PacketHandler> _packet_handler;
 };
 }
 }

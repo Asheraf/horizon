@@ -7,6 +7,7 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Auth/PacketHandler/PacketHandler.hpp"
+#include "PacketHandler20170315.hpp"
 
 struct PACKET_CA_LOGIN_OTP_20171113;
 
@@ -14,13 +15,14 @@ namespace Horizon
 {
 namespace Auth
 {
-class PacketHandler20171113 : public PacketHandler
+class PacketHandler20171113 : public PacketHandler20170315
 {
 public:
 	explicit PacketHandler20171113(std::shared_ptr<AuthSession> session);
 	~PacketHandler20171113() override;
 
-	void Handle_CA_LOGIN_OTP(PacketBuffer &packet) override;
+	void Handle_CA_LOGIN_OTP(PacketBuffer &buf) override;
+	void Handle_Poly(PacketBuffer &buf);
 	void InitializeHandlers() override;
 };
 }

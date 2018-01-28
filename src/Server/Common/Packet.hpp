@@ -18,7 +18,14 @@
 #define PACKET_H
 
 #include <stdint.h>
+#include <boost/function.hpp>
 #include "Core/Networking/Buffer/ByteBuffer.hpp"
+#include <unordered_map>
+
+class PacketBuffer;
+
+typedef boost::function<void(PacketBuffer &)> PacketHandlerFunc;
+typedef std::unordered_map<uint16_t, PacketHandlerFunc> PacketHandlerMap;
 
 #pragma pack(push, 1)
 struct Packet
@@ -35,9 +42,10 @@ public:
 	{
 	}
 
-	PacketBuffer(uint16_t id, MessageBuffer&& buffer)
-	: ByteBuffer(std::move(buffer)), op_code(id)
+	PacketBuffer(uint16_t id, uint8_t *data, size_t size)
+	: ByteBuffer(size), op_code(id)
 	{
+		append(data, size);
 	}
 
 	PacketBuffer(uint16_t id, size_t reserve = 200)

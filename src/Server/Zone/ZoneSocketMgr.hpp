@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONESOCKETMGR_H
-#define HORIZON_ZONESOCKETMGR_H
+#ifndef HORIZON_ZONE_ZONESOCKETMGR_H
+#define HORIZON_ZONE_ZONESOCKETMGR_H
 
 #include "Core/Networking/SocketMgr.hpp"
 

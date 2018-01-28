@@ -43,6 +43,7 @@ function usage
 	echo "    $0 auth [directory] [args]"
 	echo "    $0 char [directory] [args]"
 	echo "    $0 zone [directory] [args]"
+	echo "    $0 inter [directory] [args]"
 	echo "    $0 test <dbname> [dbuser] [dbpassword] [dbhost]"
 	echo "    $0 createdb <dbname> [dbuser] [dbpassword] [dbhost]"
 	echo "    $0 importdb <dbname> [dbuser] [dbpassword] [dbhost]"
@@ -60,7 +61,7 @@ function build_horizon
     rm -rf ./*
     cmake ../ $@ || aborterror "Horizon Build has failed."
     echo "Initiating Build..."
-    make install -j 2 || aborterror "Horizon Build has failed."
+    make install -j 4 || aborterror "Horizon Build has failed."
     echo "Build Complete."
     cd ../
 }
@@ -122,7 +123,7 @@ case "$MODE" in
 		;;
 esac
 
-SERVERS=(auth char zone)
+SERVERS=(inter auth char zone)
 
 function check_compile
 {
@@ -144,11 +145,6 @@ function start_server
     if [ -z "$dir" ]
     then
         dir="bin"
-    fi
-    ## Create logs dir if not exists.
-    if [ -z "${dir}/logs" ]
-    then
-        mkdir ${dir}/logs
     fi
     ###########
     # Start Server
@@ -197,6 +193,9 @@ case "$MODE" in
             fi
         done
         cd ..
+        ;;
+    inter)
+        start_server $MODE "Inter" $@
         ;;
     auth)
         start_server $MODE "Authentication" $@

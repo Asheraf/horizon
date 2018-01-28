@@ -43,6 +43,7 @@ public:
 
 	void PrintHeader();
 	bool ReadConfig();
+	bool CLICmd_SendAuthPacket();
 	void InitializeCLICommands();
 private:
 	struct {

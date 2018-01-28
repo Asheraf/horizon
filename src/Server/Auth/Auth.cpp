@@ -28,8 +28,6 @@
 using boost::asio::ip::udp;
 using namespace std::chrono_literals;
 
-/* Create Socket Connection */
-
 /**
  * AuthMain Constructor.
  */
@@ -86,12 +84,16 @@ bool Horizon::Auth::AuthMain::ReadConfig()
 		if (config["InterServer.Port"]) {
 			getNetworkConf().setInterServerPort(config["InterServer.Port"].as<uint16_t>());
 		} else {
-			AuthLog->error("Inter-server Port configuration not set, defaulting to '9998'.");
-			getNetworkConf().setInterServerPort(9998);
+			AuthLog->error("Inter-server password not set.");
 		}
 
-		AuthLog->info("Inter-Server configured to tcp://{}:{}",
-		              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort());
+		if (config["InterServer.Password"]) {
+			getNetworkConf().setInterServerPassword(config["InterServer.Password"].as<std::string>());
+		}
+
+		AuthLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
+		            getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
+					(getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
 
 		/**
 		 * Additional Configuration
@@ -229,7 +231,7 @@ bool Horizon::Auth::AuthMain::CLICmd_ReloadConfig()
  */
 void Horizon::Auth::AuthMain::InitializeCLICommands()
 {
-	addCLIFunction("reloadconf", std::bind(&Horizon::Auth::AuthMain::CLICmd_ReloadConfig, this));
+	addCLIFunction("reloadconf", std::bind(&AuthMain::CLICmd_ReloadConfig, this));
 
 	Server::InitializeCLICommands();
 }
@@ -239,22 +241,25 @@ void Horizon::Auth::AuthMain::InitializeCore()
 	/**
 	 * Establish a connection to the inter-server.
 	 */
-	std::shared_ptr<std::thread> inter_conn_thread(new std::thread(std::bind(&Horizon::Auth::AuthMain::ConnectWithInterServer, this)), [] (std::thread *thr) {
-		thr->join();
-		delete thr;
-	});
+	std::thread inter_conn_thread(std::bind(&AuthMain::ConnectWithInterServer, this));
 
 	// Initialize Main Core.
 	Server::InitializeCore();
+
+	// Join connection thread on end.
+	inter_conn_thread.join();
 }
 /**
  * Connect with Inter Server
  */
 void Horizon::Auth::AuthMain::ConnectWithInterServer()
 {
-	try {
-		sAuthSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 100);
-	} catch (boost::system::system_error &e) {
+	if (!getGeneralConf().isTestRun()) {
+		try {
+			sAuthSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
+			                                      getNetworkConf().getInterServerPort(), 1);
+		} catch (boost::system::system_error &e) {
+		}
 	}
 }
 

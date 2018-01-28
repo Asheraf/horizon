@@ -27,7 +27,7 @@
 
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
-
+#include "Core/Multithreading/LockedQueue.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -35,6 +35,7 @@ namespace Horizon
 {
 namespace Auth
 {
+class InterAuthPacketHandler;
 class PacketHandler;
 class AuthSession : public Socket<AuthSession>
 {
@@ -65,6 +66,7 @@ private:
 	std::shared_ptr<GameAccount> _game_account;
 	std::shared_ptr<SessionData> _session_data;
 	std::shared_ptr<PacketHandler> _packet_handler;
+	std::shared_ptr<InterAuthPacketHandler> _inter_packet_handler;
 };
 }
 }

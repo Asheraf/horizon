@@ -25,9 +25,6 @@
 using namespace std;
 using boost::asio::ip::udp;
 
-/* Create Socket Connection */
-boost::asio::io_service *io_service;
-
 /**
  * Inter Main server constructor.
  */
@@ -67,6 +64,9 @@ bool Horizon::Inter::InterMain::ReadConfig()
 		return false;
 	}
 
+	if (config["Password"])
+		getNetworkConf().setInterServerPassword(config["Password"].as<std::string>());
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -78,6 +78,10 @@ bool Horizon::Inter::InterMain::ReadConfig()
 	return true;
 }
 
+bool Horizon::Inter::InterMain::CLICmd_SendAuthPacket()
+{
+	return true;
+}
 /**
  * Initialize Inter-Server CLI Commands.
  */
