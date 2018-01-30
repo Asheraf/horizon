@@ -42,9 +42,6 @@ variables: &base_vars
     - echo "CREATE DATABASE ${MYSQL_DATABASE};"
     - echo "GRANT ALL ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'mysql';"
     - echo "USE ${MYSQL_DATABASE}; SELECT 'OK'" | mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --host=mysql
-    - git clone https://github.com/gabime/spdlog.git
-    - cd spdlog; mkdir build; cd build; cmake ../
-    - make install -j 4; cd ..; cd ..;
   services:
     - mysql:latest
 
@@ -56,10 +53,14 @@ debian:buster-gcc:
   variables:
     <<: *base_vars
     PKG_CMD: apt-get --yes
-    INSTALL_PACKAGES: git g++-7 ${DEBIAN_COMMON_PACKAGES}
+    INSTALL_PACKAGES: git ${DEBIAN_COMMON_PACKAGES}
+    INSTALL_COMPILER: g++-7
   script:
     - ${INSTALL_COMPILER} --version
     - export CXX=/usr/bin/${INSTALL_COMPILER}
+    - git clone https://github.com/gabime/spdlog.git
+    - cd spdlog; mkdir build; cd build; cmake ../
+    - make install -j 4; cd ..; cd ..;
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
@@ -83,6 +84,9 @@ debian:buster-clang:
   script:
     - ${INSTALL_COMPILER} --version
     - export CXX=/usr/bin/${INSTALL_COMPILER}++
+    - git clone https://github.com/gabime/spdlog.git
+    - cd spdlog; mkdir build; cd build; cmake ../
+    - make install -j 4; cd ..; cd ..;
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
@@ -104,8 +108,11 @@ debian:stretch-gcc:
     INSTALL_PACKAGES: git ${DEBIAN_COMMON_PACKAGES}
     INSTALL_COMPILER: g++-6
   script:
-    - ${INSTALL_COMPILER} --version
+    - ${INSTALL_COMPILER} -v
     - export CXX=/usr/bin/${INSTALL_COMPILER}
+    - git clone https://github.com/gabime/spdlog.git
+    - cd spdlog; mkdir build; cd build; cmake ../
+    - make install -j 4; cd ..; cd ..;
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
@@ -129,6 +136,9 @@ debian:stretch-clang:
   script:
     - ${INSTALL_COMPILER} --version
     - export CXX=/usr/bin/${INSTALL_COMPILER}++
+    - git clone https://github.com/gabime/spdlog.git
+    - cd spdlog; mkdir build; cd build; cmake ../
+    - make install -j 4; cd ..; cd ..;
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml

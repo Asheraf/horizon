@@ -249,6 +249,7 @@ void Horizon::Auth::AuthMain::InitializeCore()
 	// Join connection thread on end.
 	inter_conn_thread.join();
 }
+
 /**
  * Connect with Inter Server
  */
