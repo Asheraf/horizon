@@ -36,7 +36,6 @@ variables: &base_vars
     - ${PKG_CMD} update
     - ${PKG_CMD} install ${INSTALL_PACKAGES}
     - ${PKG_CMD} install ${INSTALL_COMPILER}
-    - export CXX=/usr/bin/${INSTALL_COMPILER}
     - mysql --version
     - service mysql start
     - echo "CREATE USER '${MYSQL_USER}'@'mysql' IDENTIFIED BY '${MYSQL_PASSWORD}';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
@@ -60,6 +59,7 @@ debian:buster-gcc:
     INSTALL_PACKAGES: git g++-7 ${DEBIAN_COMMON_PACKAGES}
   script:
     - ${INSTALL_COMPILER} --version
+    - export CXX=/usr/bin/${INSTALL_COMPILER}
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
@@ -79,9 +79,10 @@ debian:buster-clang:
     <<: *base_vars
     PKG_CMD: apt-get --yes
     INSTALL_PACKAGES: git ${DEBIAN_COMMON_PACKAGES}
-    INSTALL_COMPILER: clang++
+    INSTALL_COMPILER: clang
   script:
     - ${INSTALL_COMPILER} --version
+    - export CXX=/usr/bin/${INSTALL_COMPILER}++
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
@@ -104,6 +105,7 @@ debian:stretch-gcc:
     INSTALL_COMPILER: g++-6
   script:
     - ${INSTALL_COMPILER} --version
+    - export CXX=/usr/bin/${INSTALL_COMPILER}
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
@@ -123,9 +125,10 @@ debian:stretch-clang:
     <<: *base_vars
     PKG_CMD: apt-get --yes
     INSTALL_PACKAGES: git ${DEBIAN_COMMON_PACKAGES}
-    INSTALL_COMPILER: clang++
+    INSTALL_COMPILER: clang
   script:
     - ${INSTALL_COMPILER} --version
+    - export CXX=/usr/bin/${INSTALL_COMPILER}++
     - ./horizon build
     - cp bin/config/inter-server.yaml.dist bin/config/inter-server.yaml
     - cp bin/config/auth-server.yaml.dist bin/config/auth-server.yaml
