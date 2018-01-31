@@ -18,6 +18,10 @@
 #ifndef HORIZON_USER_H
 #define HORIZON_USER_H
 
+#include "Server/Common/Server.hpp"
+#include "Libraries/BCrypt/BCrypt.hpp"
+#include "Core/Database/MySqlConnection.hpp"
+
 #include <cstdint>
 #include <boost/asio/ip/address.hpp>
 #include <cppconn/resultset.h>
@@ -38,7 +42,76 @@ enum game_account_state_types
 class GameAccount
 {
 public:
-	GameAccount(sql::ResultSet *res)
+	GameAccount()
+	{
+	}
+
+	~GameAccount()
+	{
+	}
+
+	bool VerifyCredentials(Server *server, std::string username, std::string password)
+	{
+		std::string query = "SELECT * FROM game_account WHERE username = ? AND password = ?";
+		auto sql = server->MySQLBorrow();
+		bool ret = false;
+
+		try {
+			sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
+			pstmt->setString(1, username);
+			pstmt->setString(2, password);
+			sql::ResultSet *res = pstmt->executeQuery();
+
+			if (res != nullptr && res->next()) {
+				/**
+				 * Create Game Account Data
+				 */
+				LoadFromDatabase(res);
+				ret = true;
+			}
+
+			delete res;
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("GameAccount::VerifyCredentials: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+		return ret;
+	}
+
+	bool VerifyCredentialsBCrypt(Server *server, std::string username, std::string password)
+	{
+		std::string query = "SELECT * FROM game_account WHERE username = ?";
+		auto sql = server->MySQLBorrow();
+		bool ret = false;
+
+		try {
+			sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
+			pstmt->setString(1, username);
+			sql::ResultSet *res = pstmt->executeQuery();
+
+			if (res != nullptr && res->next()
+			    && BCrypt::validatePassword(password, res->getString("password"))) {
+				/**
+				 * Create Game Account Data
+				 */
+				LoadFromDatabase(res);
+				ret = true;
+			}
+
+			delete res;
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("GameAccount::VerifyCredentialsBCrypt: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+
+		return ret;
+	}
+
+	void LoadFromDatabase(sql::ResultSet *res)
 	{
 		id = res->getInt("id");
 		username = res->getString("username");
@@ -55,10 +128,6 @@ public:
 		character_slots = (uint8_t) res->getInt("character_slots");
 		pincode = res->getInt("pincode");
 		pincode_expiry = res->getInt64("pincode_expiry");
-	}
-
-	~GameAccount()
-	{
 	}
 
 	uint32_t getId() const

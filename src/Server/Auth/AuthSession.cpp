@@ -36,8 +36,8 @@ void Horizon::Auth::AuthSession::Start()
 	AuthLog->info("Established connection from {}.", ip_address);
 
 	if (getSocketType() == SOCKET_ENDPOINT_TYPE_SERVER) {
-		if (_inter_packet_handler == nullptr) { // guessing that it was the inter-server.
-			_inter_packet_handler = PacketHandlerFactory::CreateInterAuthPacketHandler(shared_from_this());
+		if (getInterPacketHandler() == nullptr) { // guessing that it was the inter-server.
+			setInterPacketHandler(PacketHandlerFactory::CreateInterPacketHandler(shared_from_this()));
 		}
 	}
 
@@ -92,21 +92,20 @@ void Horizon::Auth::AuthSession::ReadHandler()
 		if (getSocketType() == SOCKET_ENDPOINT_TYPE_CLIENT) {
 			if (op_code == CA_LOGIN) {
 				int packet_ver = GetPacketVersion(op_code, pkt);
-				_packet_handler = PacketHandlerFactory::CreateAuthPacketHandler(packet_ver, shared_from_this());
+				setPacketHandler(PacketHandlerFactory::CreateAuthPacketHandler(packet_ver, shared_from_this()));
 			}
 
-			if (_packet_handler == nullptr) {
+			if (getPacketHandler() == nullptr) {
 				AuthLog->error("Packet handler was null!");
 				return;
 			}
 
-			if (!_packet_handler->HandleIncomingPacket(pkt))
+			if (!getPacketHandler()->HandleIncomingPacket(pkt))
 				GetReadBuffer().Reset();
 		} else if (getSocketType() == SOCKET_ENDPOINT_TYPE_SERVER) {
-			if (_inter_packet_handler == nullptr) { // guessing that it was the inter-server.
-				_inter_packet_handler = PacketHandlerFactory::CreateInterAuthPacketHandler(shared_from_this());
-			}
-			if (!_inter_packet_handler->HandleIncomingPacket(pkt))
+			if (getInterPacketHandler() == nullptr) // guessing that it was the inter-server.
+				setInterPacketHandler(PacketHandlerFactory::CreateInterPacketHandler(shared_from_this()));
+			if (!getInterPacketHandler()->HandleIncomingPacket(pkt))
 				GetReadBuffer().Reset();
 		}
 	}
@@ -140,4 +139,14 @@ std::shared_ptr<Horizon::Auth::PacketHandler> Horizon::Auth::AuthSession::getPac
 void Horizon::Auth::AuthSession::setPacketHandler(std::shared_ptr<Horizon::Auth::PacketHandler> packet_handler)
 {
 	_packet_handler = packet_handler;
+}
+
+std::shared_ptr<Horizon::Auth::InterPacketHandler> Horizon::Auth::AuthSession::getInterPacketHandler()
+{
+	return _inter_packet_handler;
+}
+
+void Horizon::Auth::AuthSession::setInterPacketHandler(std::shared_ptr<Horizon::Auth::InterPacketHandler> inter_packet_handler)
+{
+	_inter_packet_handler = inter_packet_handler;
 }

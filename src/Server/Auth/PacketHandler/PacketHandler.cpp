@@ -5,10 +5,12 @@
 #include "PacketHandler.hpp"
 
 #include "Core/Database/MySqlConnection.hpp"
+#include "Libraries/BCrypt/BCrypt.hpp"
 #include "Server/Auth/AuthSession.hpp"
 #include "Server/Auth/Auth.hpp"
-#include "Libraries/BCrypt/BCrypt.hpp"
-
+#include "Server/Inter/PacketHandler/Packets.hpp"
+#include "Server/Auth/AuthSocketMgr.hpp"
+#include "Server/Auth/PacketHandler/InterPacketHandler.hpp"
 #include <string>
 
 Horizon::Auth::PacketHandler::PacketHandler(std::shared_ptr<AuthSession> session)
@@ -70,79 +72,33 @@ void Horizon::Auth::PacketHandler::SendPacket(PacketBuffer &buf, std::size_t siz
 
 void Horizon::Auth::PacketHandler::ProcessAuthentication()
 {
-	_session->getGameAccount()->setLastIp(_session->GetRemoteIPAddress().to_string());
-	_session->getGameAccount()->setLastLogin((int) time(nullptr));
-	// Session ID as Game Account Id.
-	_session->getSessionData()->setAuthCode(_session->getGameAccount()->getId());
-
 	Respond_AC_ACCEPT_LOGIN();
 }
 
-bool Horizon::Auth::PacketHandler::VerifyCredentialsBCrypt(std::string username, std::string password)
+bool Horizon::Auth::PacketHandler::ValidateSessionData(uint32_t id, uint32_t client_version, uint8_t client_type)
 {
-	std::string query = "SELECT * FROM game_account WHERE username = ?";
-	auto sql = AuthServer->MySQLBorrow();
-	bool ret = false;
+	std::shared_ptr<AuthSession> session = AuthServer->getOnlineAccount(id);
+	std::shared_ptr<AuthSession> inter_session = sAuthSocketMgr.BorrowConnectedSession(INTER_SESSION_NAME);
 
-	try {
-		sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
-		pstmt->setString(1, username);
-		sql::ResultSet *res = pstmt->executeQuery();
+	_session->getGameAccount()->setLastIp(_session->GetRemoteIPAddress().to_string());
+	_session->getGameAccount()->setLastLogin((int) time(nullptr));
+	// Session ID as Game Account Id.
+	_session->getSessionData()->setGameAccountId(_session->getGameAccount()->getId());
+	_session->getSessionData()->setAuthCode(_session->getGameAccount()->getId());
+	_session->getSessionData()->setClientVersion(client_version);
+	_session->getSessionData()->setClientType(client_type);
 
-		if (res != nullptr && res->next()
-		    && BCrypt::validatePassword(password, res->getString("password"))) {
-			/**
-			 * Create Game Account Data
-			 */
-			_session->setGameAccount(std::forward<std::shared_ptr<GameAccount>>(std::make_shared<GameAccount>(res)));
-			ret = true;
-		}
-
-		delete res;
-		delete pstmt;
-	} catch (sql::SQLException &e) {
-		AuthLog->error("AuthSession::VerifyCredentialsBCrypt: {}", e.what());
+	// Check if session already exists.
+	if (session != nullptr) {
+		AuthServer->removeOnlineAccount(id);
+		inter_session->getInterPacketHandler()->Respond_SESSION_DEL(_session->getSessionData()->getGameAccountId());
+		sAuthSocketMgr.UnborrowConnectedSession(INTER_SESSION_NAME, inter_session);
+		return true;
 	}
 
-	AuthServer->MySQLUnborrow(sql);
-
-	return ret;
-}
-
-bool Horizon::Auth::PacketHandler::VerifyCredentialsPlainText(std::string username, std::string password)
-{
-	std::string query = "SELECT * FROM game_account WHERE username = ? AND password = ?";
-	auto sql = AuthServer->MySQLBorrow();
-	bool ret = false;
-
-	try {
-		sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
-		pstmt->setString(1, username);
-		pstmt->setString(2, password);
-		sql::ResultSet *res = pstmt->executeQuery();
-
-		if (res != nullptr && res->next()) {
-			/**
-			 * Create Game Account Data
-			 */
-			_session->setGameAccount(std::forward<std::shared_ptr<GameAccount>>(std::make_shared<GameAccount>(res)));
-			ret = true;
-		}
-
-		delete res;
-		delete pstmt;
-	} catch (sql::SQLException &e) {
-		AuthLog->error("AuthSession::VerifyCredentials: {}", e.what());
-	}
-
-	AuthServer->MySQLUnborrow(sql);
-
-	return ret;
-}
-
-bool Horizon::Auth::PacketHandler::CheckIfAlreadyConnected(uint32_t /*id*/)
-{
-	//
+	inter_session->getInterPacketHandler()->Respond_SESSION_SET(*_session->getSessionData());
+	sAuthSocketMgr.UnborrowConnectedSession(INTER_SESSION_NAME, inter_session);
+	AuthServer->addOnlineAccount(id, _session);
 	return false;
 }
 
@@ -165,10 +121,10 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 	{
 	case PASS_HASH_NONE:
 	case PASS_HASH_MD5:
-		authenticated = VerifyCredentialsPlainText(pkt.username, pkt.password);
+		authenticated = _session->getGameAccount()->VerifyCredentials(AuthServer, pkt.username, pkt.password);
 		break;
 	case PASS_HASH_BCRYPT:
-		authenticated = VerifyCredentialsBCrypt(pkt.username, pkt.password);
+		authenticated = _session->getGameAccount()->VerifyCredentialsBCrypt(AuthServer, pkt.username, pkt.password);
 		break;
 	}
 
@@ -179,10 +135,9 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 		}
 		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
 
-		if (CheckIfAlreadyConnected(_session->getGameAccount()->getId())) {
+		if (ValidateSessionData(_session->getGameAccount()->getId(), pkt.version, pkt.client_type)) {
 			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
 			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
-			_session->DelayedCloseSocket();
 		} else {
 			ProcessAuthentication();
 		}

@@ -63,10 +63,11 @@ public:
 			CoreLog->error("SocketMgr.StartConnect '{}' to tcp:://{}:{}.", connection_name, connect_ip, port);
 			return false;
 		}
-
+		// Add the connector to the session pool before anything.
+		this->AddToConnectorPool(connection_name, connector);
+		// Set the socket factory. & Start attempting to connect.
 		connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForConnect, this));
 		connector->ConnectWithCallback<&ZoneSocketMgr::OnSocketConnect>(connections);
-		this->AddToConnectorPool(connection_name, std::forward<std::shared_ptr<NetworkConnector>>(connector));
 		return true;
 	}
 

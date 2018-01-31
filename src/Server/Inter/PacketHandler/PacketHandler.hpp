@@ -5,6 +5,7 @@
 #ifndef HORIZON_INTER_PACKETHANDLER_HPP
 #define HORIZON_INTER_PACKETHANDLER_HPP
 
+#include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Packet.hpp"
 #include <cstdint>
 #include <memory>
@@ -38,11 +39,14 @@ public:
 	 * Handlers
 	 */
 	void Handle_CONNECT_AUTH(PacketBuffer &buf);
+	void Handle_SESSION_GET(PacketBuffer &buf);
+	void Handle_SESSION_SET(PacketBuffer &buf);
+	void Handle_SESSION_DEL(PacketBuffer &buf);
 	/**
 	 * Response
 	 */
-	void Respond_ACK_RECEIVED(uint16_t packet_id);
-	void Respond_CONNECT_RESPONSE(bool success);
+	void Respond_SESSION_SET(SessionData &session_data);
+	void Respond_ACK_RECEIVED(uint16_t packet_id, uint8_t response);
 	void Respond_CONNECT_INIT();
 
 private:

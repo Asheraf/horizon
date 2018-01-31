@@ -19,6 +19,7 @@
 #define HORIZON_HORIZON_H
 
 #include "Definitions.hpp"
+#include "Client.hpp"
 
 #ifndef MINIMUM_PACKETVER
 	#define MINIMUM_PACKETVER 20141022
@@ -31,6 +32,10 @@
 // DEfault Client Packet Version.
 #ifndef DEFAULT_PACKETVER
 	#define DEFAULT_PACKETVER MINIMUM_PACKETVER
+#endif
+
+#ifndef INTER_SESSION_NAME
+	#define INTER_SESSION_NAME "inter-server"
 #endif
 
 #endif //HORIZON_HORIZON_H

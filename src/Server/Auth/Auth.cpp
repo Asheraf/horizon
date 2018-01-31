@@ -257,7 +257,7 @@ void Horizon::Auth::AuthMain::ConnectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
 		try {
-			sAuthSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
+			sAuthSocketMgr.StartNetworkConnection(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(),
 			                                      getNetworkConf().getInterServerPort(), 1);
 		} catch (boost::system::system_error &e) {
 		}

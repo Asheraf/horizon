@@ -31,6 +31,7 @@ namespace Horizon
 {
 namespace Auth
 {
+typedef std::unordered_map<uint32_t, std::shared_ptr<AuthSession>> OnlineListType;
 /**
  * Main Auth Server Singleton Class.
  */
@@ -59,6 +60,22 @@ public:
 	void InitializeCLICommands();
 	bool CLICmd_ReloadConfig();
 
+
+	/* Account Online List */
+	void addOnlineAccount(uint32_t id, std::shared_ptr<AuthSession> session) { account_online_list.insert(std::make_pair(id, session)); }
+	std::shared_ptr<AuthSession> getOnlineAccount(uint32_t id)
+	{
+		auto it = account_online_list.find(id);
+		if (it != account_online_list.end())
+			return it->second;
+		else
+			return nullptr;
+	}
+	void removeOnlineAccount(uint32_t id) { account_online_list.erase(id); }
+
+	void UpdateCharServLoop();
+	void UpdateSessionLoop();
+
 	/* Character Server Handlers */
 	void addCharacterServer(struct character_server_data &serv) { character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv))); }
 	std::shared_ptr<character_server_data> getCharacterServer(int id)
@@ -76,6 +93,7 @@ protected:
 	/* Auth Server Configuration */
 	struct auth_server_config auth_config;
 	std::unordered_map<int, std::shared_ptr<character_server_data>> character_servers;
+	OnlineListType account_online_list;
 };
 }
 }

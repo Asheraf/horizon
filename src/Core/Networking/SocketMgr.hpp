@@ -33,12 +33,15 @@ class SocketMgr
 {
 	typedef std::shared_ptr<NetworkThread<SocketType>> NetworkThreadPtr;
 	typedef std::vector<std::shared_ptr<SocketType>> SessionContainer;
+	typedef std::map<uint32_t, std::shared_ptr<SocketType>> SessionMap;
+
 	struct connector_pool_data
 	{
 		std::shared_ptr<NetworkConnector> connector;
 		SessionContainer borrowed_pool;
 		SessionContainer session_pool;
 	};
+
 	typedef std::unordered_map<std::string, connector_pool_data>  NetworkConnectorPool;
 public:
 	virtual ~SocketMgr()
@@ -108,6 +111,16 @@ public:
 			it->second.session_pool.erase(std::remove(it->second.session_pool.begin(), it->second.session_pool.end(), session), it->second.session_pool.end());
 			return session;
 		}
+
+		return nullptr;
+	}
+
+	std::shared_ptr<SocketType> GetClientSession(uint32_t session_id)
+	{
+		auto it = _client_sessions.find(session_id);
+
+		if (it != _client_sessions.end())
+			return _client_sessions.at(session_id);
 
 		return nullptr;
 	}
@@ -191,7 +204,7 @@ public:
 			// Add socket to thread.
 			NetworkThreadPtr(_thread_map.at(thread_index))->AddSocket(new_session);
 			// Add a reference to the appropriate session container.
-			_client_sessions.push_back(new_session);
+			_client_sessions.insert(std::make_pair(new_session->getSocketId(), new_session));
 		} catch (boost::system::system_error const &error) {
 			CoreLog->error("Networking: Failed to retrieve client's remote address {}", error.what());
 		}
@@ -226,7 +239,7 @@ protected:
 	SocketMgr() { }
 
 	uint64_t _last_socket_id{};
-	SessionContainer _client_sessions;
+	SessionMap _client_sessions;
 	std::unique_ptr<AsyncAcceptor> _acceptor;
 	uint32_t _last_thread_id{};
 	std::unordered_map<uint32_t, NetworkThreadPtr> _thread_map;

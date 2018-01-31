@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Auth
 {
-class InterAuthPacketHandler;
+class InterPacketHandler;
 class PacketHandler;
 class AuthSession : public Socket<AuthSession>
 {
@@ -56,17 +56,20 @@ public:
 	/* Packet Handler */
 	std::shared_ptr<PacketHandler> getPacketHandler();
 	void setPacketHandler(std::shared_ptr<PacketHandler> packet_handler);
+	/* Inter Packet Handler */
+	std::shared_ptr<InterPacketHandler> getInterPacketHandler();
+	void setInterPacketHandler(std::shared_ptr<InterPacketHandler> packet_handler);
 
+	void ReadHandler() override;
 protected:
 	int GetPacketVersion(uint16_t op_code, PacketBuffer buf);
-	void ReadHandler() override;
 	void OnClose() override;
 
 private:
 	std::shared_ptr<GameAccount> _game_account;
 	std::shared_ptr<SessionData> _session_data;
 	std::shared_ptr<PacketHandler> _packet_handler;
-	std::shared_ptr<InterAuthPacketHandler> _inter_packet_handler;
+	std::shared_ptr<InterPacketHandler> _inter_packet_handler;
 };
 }
 }

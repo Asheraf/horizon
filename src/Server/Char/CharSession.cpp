@@ -58,7 +58,7 @@ void Horizon::Char::CharSession::ReadHandler()
 		PacketBuffer pkt(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
 		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
 
-//		if (!HandleIncomingPacket(pkt))
-//			GetReadBuffer().Reset();
+		if (!HandleIncomingPacket(pkt))
+			GetReadBuffer().Reset();
 	}
 }

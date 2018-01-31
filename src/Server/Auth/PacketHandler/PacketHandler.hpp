@@ -12,6 +12,8 @@
 #include <memory>
 #include <unordered_map>
 #include <boost/function.hpp>
+#include <future>
+#include <boost/system/error_code.hpp>
 
 namespace Horizon
 {
@@ -36,9 +38,7 @@ public:
 	/**
 	 *
 	 */
-	virtual bool VerifyCredentialsBCrypt(std::string username, std::string password);
-	virtual bool VerifyCredentialsPlainText(std::string username, std::string password);
-	virtual bool CheckIfAlreadyConnected(uint32_t id);
+	virtual bool ValidateSessionData(uint32_t id, uint32_t client_version, uint8_t client_type);
 	virtual void ProcessAuthentication();
 
 	/**

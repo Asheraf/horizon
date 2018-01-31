@@ -16,20 +16,36 @@
 ###################################################
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(COMMON_SOURCES
+
+set(MAIN_SOURCES
     ${DIR}/Packet.hpp
     ${DIR}/Server.hpp
     ${DIR}/Server.cpp
     ${DIR}/Definitions.hpp
     ${DIR}/Horizon.hpp
-    ${DIR}/Models/GameAccount.hpp
-    ${DIR}/Models/SessionData.hpp
-    ${DIR}/Models/ServerData.hpp
-    ${DIR}/Models/Configuration/AuthServerConfiguration.hpp
-    ${DIR}/Models/Configuration/GeneralServerConfiguration.hpp
-    ${DIR}/Models/Configuration/Logging.hpp
     ${DIR}/CLI/CLICommand.hpp
     ${DIR}/CLI/CommandLineInterface.cpp
     ${DIR}/CLI/CommandLineInterface.hpp
-    ${DIR}/Utilities/Utilities.hpp
+    ${DIR}/Utilities/Utilities.hpp)
+
+set(MODELS_DIR ${DIR}/Models)
+set(MODELS_SOURCES
+    ${MODELS_DIR}/GameAccount.hpp
+    ${MODELS_DIR}/SessionData.hpp
+    ${MODELS_DIR}/ServerData.hpp
+    ${MODELS_DIR}/Configuration/AuthServerConfiguration.hpp
+    ${MODELS_DIR}/Configuration/GeneralServerConfiguration.hpp
+    ${MODELS_DIR}/Configuration/Logging.hpp
+    ${MODELS_DIR}/Characters/Access.hpp
+    ${MODELS_DIR}/Characters/Character.hpp
+    ${MODELS_DIR}/Characters/Companion.hpp
+    ${MODELS_DIR}/Characters/Family.hpp
+    ${MODELS_DIR}/Characters/Group.hpp
+    ${MODELS_DIR}/Characters/Misc.hpp
+    ${MODELS_DIR}/Characters/Status.hpp
+    ${MODELS_DIR}/Characters/UISettings.hpp)
+
+set(COMMON_SOURCES
+    ${MAIN_SOURCES}
+    ${MODELS_SOURCES}
     PARENT_SCOPE)

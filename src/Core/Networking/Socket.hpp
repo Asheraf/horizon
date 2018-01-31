@@ -29,7 +29,9 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/asio/use_future.hpp>
 #include <iostream>
+#include <future>
 
 using boost::asio::ip::tcp;
 
@@ -91,12 +93,11 @@ public:
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
 
-		//std::cout << "Size: " << _readBuffer.GetRemainingSpace() << std::endl;
 		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
 				boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
-	void AsyncReadWithCallback(void (T::*callback)(boost::system::error_code, std::size_t))
+	void AsyncReadWithCallback(void (Socket<T>::*callback)(boost::system::error_code, std::size_t))
 	{
 		if (!IsOpen())
 			return;
@@ -104,7 +105,25 @@ public:
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
 		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-		                       boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
+		                         boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
+	}
+
+	/**
+	 * Asynchronous reading with a future value.
+	 * @return future to the size when complete.
+	 */
+	std::size_t ReadFuture()
+	{
+		return _socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()), boost::asio::use_future);
+	}
+
+	/**
+	 * Asynchronous reading with a future value.
+	 * @return future to the size when complete.
+	 */
+	std::future<std::size_t> WriteFuture(MessageBuffer &message, std::size_t bytes_to_send)
+	{
+		return _socket->async_write_some(boost::asio::buffer(message.GetReadPointer(), bytes_to_send), boost::asio::use_future);
 	}
 
 	void QueuePacket(MessageBuffer &&buffer)
@@ -159,6 +178,10 @@ protected:
 		return true;
 	}
 
+	/**
+	 * Disable the Nagle Algorithm on our socket.
+	 * @param enable
+	 */
 	void SetNoDelay(bool enable)
 	{
 		boost::system::error_code error;
@@ -169,7 +192,24 @@ protected:
 		}
 	}
 
+	/**
+	 * Write a message to the buffer.
+	 * @param to_send
+	 * @param error
+	 * @return
+	 */
+	std::size_t WriteToBufferAndSend(MessageBuffer &to_send, boost::system::error_code &error)
+	{
+		std::size_t bytes_to_send = to_send.GetActiveSize();
+		std::size_t bytes_sent = _socket->write_some(boost::asio::buffer(to_send.GetReadPointer(), bytes_to_send), error);
+		return bytes_sent;
+	}
 private:
+	/**
+	 * Aysnchronous reading handler method.
+	 * @param error
+	 * @param transferredBytes
+	 */
 	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
 	{
 		if (error) {
@@ -184,12 +224,19 @@ private:
 		AsyncRead();
 	}
 
+	/**
+	 *
+	 */
 	void WriteHandlerWrapper(boost::system::error_code /*error*/, std::size_t /*transferedBytes*/)
 	{
 		_isWritingAsync = false;
 		HandleQueue();
 	}
 
+	/**
+	 * Handle the queue
+	 * @return true on success, false on failure.
+	 */
 	bool HandleQueue()
 	{
 		boost::system::error_code error;
@@ -197,34 +244,27 @@ private:
 		if (_writeQueue.empty())
 			return false;
 
-		MessageBuffer queuedMessage = _writeQueue.front();
-		std::size_t bytesToSend = queuedMessage.GetActiveSize();
-		std::size_t bytesSent = _socket->write_some(boost::asio::buffer(queuedMessage.GetReadPointer(), bytesToSend), error);
+		MessageBuffer &to_send = _writeQueue.front();
+		std::size_t bytes_sent = WriteToBufferAndSend(to_send, error);
 
-		if (error) {
-			if (error == boost::asio::error::would_block || error == boost::asio::error::try_again)
-				return AsyncProcessQueue();
+		if (error == boost::asio::error::would_block || error == boost::asio::error::try_again)
+			return AsyncProcessQueue();
 
-			_writeQueue.pop();
-			if (_closing && _writeQueue.empty())
-				CloseSocket();
-			return false;
-		} else if (bytesSent == 0) {
-			_writeQueue.pop();
-			if (_closing && _writeQueue.empty())
-				CloseSocket();
-			return false;
-		} else if (bytesSent < bytesToSend) {
-			queuedMessage.ReadCompleted(bytesSent);
+		/**
+		 * Re-process queue if we have remaining bytes.
+		 */
+		if (!error && bytes_sent < to_send.GetActiveSize()) {
+			to_send.ReadCompleted(bytes_sent);
 			return AsyncProcessQueue();
 		}
 
+		// Pop the front element.
 		_writeQueue.pop();
-
+		// Close if required.
 		if (_closing && _writeQueue.empty())
 			CloseSocket();
 
-		return !_writeQueue.empty();
+		return !_writeQueue.empty() && bytes_sent;
 	}
 
 private:

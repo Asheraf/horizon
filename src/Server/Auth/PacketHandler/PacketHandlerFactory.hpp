@@ -6,7 +6,7 @@
 #define HORIZON_AUTH_PACKETHANDLERFACTORY_HPP
 
 #include "PacketHandler.hpp"
-#include "InterAuthPacketHandler.hpp"
+#include "InterPacketHandler.hpp"
 #include "Versions/PacketHandler20170315.hpp"
 #include "Versions/PacketHandler20171113.hpp"
 
@@ -33,9 +33,9 @@ public:
 		}
 	}
 
-	static std::shared_ptr<InterAuthPacketHandler> CreateInterAuthPacketHandler(std::shared_ptr<AuthSession> session)
+	static std::shared_ptr<InterPacketHandler> CreateInterPacketHandler(std::shared_ptr<AuthSession> session)
 	{
-		return std::make_shared<InterAuthPacketHandler>(session);
+		return std::make_shared<InterPacketHandler>(session);
 	}
 };
 }

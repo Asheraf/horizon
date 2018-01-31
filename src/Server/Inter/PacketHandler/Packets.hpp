@@ -23,14 +23,16 @@ namespace Inter
 {
 enum packets
 {
+	/* Common Inter Packets */
 	INTER_CONNECT_INIT          = 0x01,
 	INTER_CONNECT_AUTH          = 0x02,
-	INTER_CONNECT_RESPONSE      = 0x03,
-	INTER_ACK_RECEIVED          = 0x04,
+	INTER_ACK_RECEIVED          = 0x03,
+	INTER_SESSION_GET           = 0x04,
+	INTER_SESSION_RECV          = 0x05,
+	INTER_SESSION_SET           = 0x06,
+	INTER_SESSION_DEL           = 0x07,
 	/* Inter-Auth Packets */
-	AI_ADD_SESSION = 0x06,
-	AI_REMOVE_SESSION = 0x07,
-	AI_GET_CHAR_SERVER_INFO = 0x08
+	AI_CHARSERV_GET_INFO        = 0x09,
 };
 }
 }
@@ -49,51 +51,43 @@ struct PACKET_INTER_CONNECT_AUTH : public Packet
 	unsigned char password[];
 };
 
-struct PACKET_INTER_CONNECT_RESPONSE : public Packet
-{
-	PACKET_INTER_CONNECT_RESPONSE() : Packet(Horizon::Inter::INTER_CONNECT_RESPONSE) {}
-
-	uint8_t success{};
-};
-
 struct PACKET_INTER_ACK_RECEIVED : public Packet
 {
 	PACKET_INTER_ACK_RECEIVED() : Packet(Horizon::Inter::INTER_ACK_RECEIVED) {}
 
 	uint16_t ack_packet_id{};
+	uint8_t response{};
 };
 
 /**
  * Inter-Auth packets
  */
-struct PACKET_AI_ADD_SESSION : public Packet
+struct PACKET_INTER_SESSION
 {
-	PACKET_AI_ADD_SESSION() : Packet(Horizon::Inter::AI_ADD_SESSION) { }
-
-	uint32_t session_id{};
 	uint32_t game_account_id{};
-	uint32_t auth_code{};
+	int auth_code{};
 	uint32_t client_version{};
 	uint8_t client_type{};
 };
 
-struct PACKET_AI_REMOVE_SESSION : public Packet
+struct PACKET_INTER_SESSION_SET : public Packet
 {
-	PACKET_AI_REMOVE_SESSION() : Packet(Horizon::Inter::AI_REMOVE_SESSION) { }
+	PACKET_INTER_SESSION_SET() : Packet(Horizon::Inter::INTER_SESSION_SET) { }
 
 	uint32_t session_id{};
+	struct PACKET_INTER_SESSION s;
 };
 
-struct PACKET_AI_CHECK_SESSION_ACTIVE : public Packet
+struct PACKET_INTER_SESSION_DEL : public Packet
 {
-	PACKET_AI_CHECK_SESSION_ACTIVE() : Packet(Horizon::Inter::AI_REMOVE_SESSION) { }
+	PACKET_INTER_SESSION_DEL() : Packet(Horizon::Inter::INTER_SESSION_DEL) { }
 
 	uint32_t session_id{};
 };
 
 struct PACKET_AI_GET_CHAR_SERVER_INFO : public Packet
 {
-	PACKET_AI_GET_CHAR_SERVER_INFO() : Packet(Horizon::Inter::AI_GET_CHAR_SERVER_INFO) { }
+	PACKET_AI_GET_CHAR_SERVER_INFO() : Packet(Horizon::Inter::AI_CHARSERV_GET_INFO) { }
 
 	uint32_t server_id;
 	uint32_t user_count;

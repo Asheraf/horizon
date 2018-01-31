@@ -140,7 +140,6 @@ protected:
 		for (std::shared_ptr<SocketType> sock : _newSockets) {
 			if (!sock->IsOpen()) {
 				SocketRemoved(sock);
-				sock->CloseSocket();
 				--_connections;
 			} else {
 				_sockets.push_back(sock);

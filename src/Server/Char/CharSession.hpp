@@ -20,7 +20,6 @@
 
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
-
 #include "Common/Packet.hpp"
 
 #include <cstdio>
@@ -28,15 +27,20 @@
 
 using boost::asio::ip::tcp;
 
+class SessionData;
+class GameAccount;
+
 namespace Horizon
 {
 namespace Char
 {
+
+class PacketHandler;
+class InterPacketHandler;
+
 class CharSession : public Socket<CharSession>
 {
-	friend class CharMain;
 	typedef Socket<CharSession> CharSocket;
-	typedef void (CharSession::*CharPacketHandler) (PacketBuffer &pkt);
 public:
 	CharSession(std::shared_ptr<tcp::socket> socket);
 	~CharSession() { }
@@ -45,9 +49,14 @@ public:
 	bool Update() override;
 
 protected:
-	std::unordered_map<uint16_t, CharPacketHandler> handlers;
 	void ReadHandler() override;
 	void OnClose() override;
+
+private:
+	std::shared_ptr<GameAccount> _game_account;
+	std::shared_ptr<SessionData> _session_data;
+	std::shared_ptr<PacketHandler> _packet_handler;
+	std::shared_ptr<InterPacketHandler> _inter_packet_handler;
 };
 }
 }

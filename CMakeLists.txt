@@ -81,7 +81,7 @@ check_cxx_source_compiles("
 #################################
 # Boost Library
 #################################
-set(BOOST_REQUIRED_VERSION 1.55)
+set(BOOST_REQUIRED_VERSION 1.60)
 
 if (STD_HAS_WORKING_WREGEX)
     find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams)

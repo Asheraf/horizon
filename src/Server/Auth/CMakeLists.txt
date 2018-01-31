@@ -36,7 +36,6 @@ target_link_libraries(auth
         ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
         ${Readline_LIBRARY}
-    PRIVATE
 )
 
 set(INCLUDE_DIRS

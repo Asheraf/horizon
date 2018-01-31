@@ -4,13 +4,16 @@
 
 #include "PacketHandler.hpp"
 
-#include "Packets.hpp"
 #include "Core/Logging/Logger.hpp"
+#include "Libraries/BCrypt/BCrypt.hpp"
 #include "Server/Inter/InterSession.hpp"
+#include "Server/Inter/Inter.hpp"
+#include "Server/Inter/InterSocketMgr.hpp"
+#include "Server/Inter/InterStore.hpp"
+#include "Server/Common/Models/SessionData.hpp"
+#include "Server/Inter/PacketHandler/Packets.hpp"
 
 #include <boost/bind.hpp>
-#include <Libraries/BCrypt/BCrypt.hpp>
-#include <Server/Inter/Inter.hpp>
 
 Horizon::Inter::PacketHandler::PacketHandler(std::shared_ptr<InterSession> session)
 	: _session(session)
@@ -26,7 +29,11 @@ Horizon::Inter::PacketHandler::~PacketHandler()
 
 void Horizon::Inter::PacketHandler::InitializeHandlers()
 {
-	_handlers.insert(std::make_pair(INTER_CONNECT_AUTH, boost::bind(&PacketHandler::Handle_CONNECT_AUTH, this, boost::placeholders::_1)));
+#define HANDLER_FUNC(packet, handler) _handlers.insert(std::make_pair((packet), boost::bind((handler), this, boost::placeholders::_1)))
+	HANDLER_FUNC(INTER_CONNECT_AUTH, &PacketHandler::Handle_CONNECT_AUTH);
+	HANDLER_FUNC(INTER_SESSION_DEL, &PacketHandler::Handle_SESSION_DEL);
+	HANDLER_FUNC(INTER_SESSION_SET, &PacketHandler::Handle_SESSION_SET);
+#undef HANDLER_FUNC
 }
 
 bool Horizon::Inter::PacketHandler::HandleIncomingPacket(PacketBuffer &packet)
@@ -88,21 +95,43 @@ void Horizon::Inter::PacketHandler::Handle_CONNECT_AUTH(PacketBuffer &buf)
 		_session->CloseSocket();
 	}
 
-	Respond_CONNECT_RESPONSE(success);
+	Respond_ACK_RECEIVED(pkt.op_code, (uint8_t) success);
 }
 
-void Horizon::Inter::PacketHandler::Respond_CONNECT_RESPONSE(bool success)
+void Horizon::Inter::PacketHandler::Handle_SESSION_SET(PacketBuffer &buf)
 {
-	PACKET_INTER_CONNECT_RESPONSE pkt;
-	pkt.success = (uint8_t) success;
+	PACKET_INTER_SESSION_SET pkt;
+	buf >> pkt;
+	SessionData sessionData(pkt.s.auth_code, pkt.s.client_version, pkt.s.client_type, pkt.s.game_account_id);
+	InterStore->AddToSessionStore(pkt.session_id, sessionData);
+}
+
+void Horizon::Inter::PacketHandler::Handle_SESSION_DEL(PacketBuffer &buf)
+{
+	PACKET_INTER_SESSION_DEL pkt;
+	buf >> pkt;
+
+	InterStore->RemoveFromSessionStore(pkt.session_id);
+}
+
+void Horizon::Inter::PacketHandler::Respond_SESSION_SET(SessionData &session_data)
+{
+	PACKET_INTER_SESSION_SET pkt;
+
+	pkt.session_id = (uint32_t) session_data.getGameAccountId();
+	pkt.s.game_account_id = session_data.getGameAccountId();
+	pkt.s.auth_code = session_data.getAuthCode();
+	pkt.s.client_type = session_data.getClientType();
+	pkt.s.client_version = session_data.getClientVersion();
 
 	SendPacket(pkt);
 }
 
-void Horizon::Inter::PacketHandler::Respond_ACK_RECEIVED(uint16_t packet_id)
+void Horizon::Inter::PacketHandler::Respond_ACK_RECEIVED(uint16_t packet_id, uint8_t response)
 {
 	PACKET_INTER_ACK_RECEIVED pkt;
 	pkt.ack_packet_id = packet_id;
+	pkt.response = response;
 	SendPacket(pkt);
 }
 
