@@ -16,12 +16,17 @@
  **************************************************/
 
 #include "Char.hpp"
-#include "CharSocketMgr.hpp"
+
+#include "Core/Database/MySqlConnection.hpp"
+#include "Core/Logging/Logger.hpp"
+#include "Server/Char/Session/Session.hpp"
+#include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
+#include "Server/Char/SocketMgr/InterSocketMgr.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
-#include <iostream>
 #include <boost/make_shared.hpp>
+#include <iostream>
 
 using namespace std;
 
@@ -32,6 +37,7 @@ using boost::asio::ip::udp;
  */
 Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.yaml")
 {
+	//
 }
 
 /**
@@ -40,15 +46,6 @@ Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.yam
 Horizon::Char::CharMain::~CharMain()
 {
 	//
-}
-
-/**
- * Prints the header for auth server.
- * @brief Appends the Core header.
- */
-void Horizon::Char::CharMain::PrintHeader()
-{
-	CharLog->info("Character Server Initializing...");
 }
 
 /**
@@ -66,6 +63,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 		CharLog->error("Unable to read {}. ({})", filepath, err.what());
 		return false;
 	}
+
 	/**
 	 * Inter Server Settings
 	 * @brief Definitions of the Inter-server networking configuration.
@@ -103,9 +101,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 	return true;
 }
 
-/**
- * Initialize Char-Server CLI Commands
- */
+/* Initialize Char-Server CLI Commands */
 void Horizon::Char::CharMain::InitializeCLICommands()
 {
 	Server::InitializeCLICommands();
@@ -113,9 +109,7 @@ void Horizon::Char::CharMain::InitializeCLICommands()
 
 void Horizon::Char::CharMain::InitializeCore()
 {
-	/**
-	 * Inter-connection thread.
-	 */
+	/* Inter-server connection thread. */
 	std::thread inter_conn_thread(std::bind(&CharMain::ConnectWithInterServer, this));
 
 	Server::InitializeCore();
@@ -130,8 +124,8 @@ void Horizon::Char::CharMain::ConnectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
 		try {
-			sCharSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
-			                                      getNetworkConf().getInterServerPort(), 10);
+			InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(),
+			                                      getNetworkConf().getInterServerPort(), 1);
 		} catch (boost::system::system_error &e) {
 			CharLog->error("{}", e.what());
 		}
@@ -140,8 +134,10 @@ void Horizon::Char::CharMain::ConnectWithInterServer()
 
 /**
  * Signal handler for the Char-Server main thread.
+ * @param[in|out] error   boost system error code.
+ * @param[in]     signal  interrupt signal code
  */
-void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
+void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
 		CharServer->shutdown(SIGINT);
@@ -156,47 +152,33 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
  */
 int main(int argc, const char * argv[])
 {
-	/* Header */
-	CharServer->PrintHeader();
-
+	/* Parse Command Line Arguments */
 	if (argc > 1)
-		CharServer->ParseRuntimeArguments(argv, argc);
+		CharServer->ParseExecArguments(argv, argc);
 
-	/*
-	 * Read Configuration Settings for
-	 * the Character Server.
-	 */
+	/* Read Char Configuration */
 	if (!CharServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
-	/**
-	 * Core Signal Handler
-	 */
+	/* Core Signal Handler  */
 	boost::asio::signal_set signals(*CharServer->getIOService(), SIGINT, SIGTERM);
-
-	// Set signal handler for callbacks.
-	// Set signal handlers (this must be done before starting io_service threads,
-	// because otherwise they would unblock and exit)
 	signals.async_wait(SignalHandler);
 
-	// Start Character Network
-	sCharSocketMgr.StartNetwork(*CharServer->getIOService(),
+	/* Start Character Network */
+	ClientSocktMgr->Start(*CharServer->getIOService(),
 	        CharServer->getNetworkConf().getListenIp(),
             CharServer->getNetworkConf().getListenPort(),
             CharServer->getNetworkConf().getMaxThreads());
 
-	/**
-	 * Initialize the Common Core
-	 */
+	/* Initialize the Common Core */
 	CharServer->InitializeCore();
 
-	/*
-	 * Core Cleanup
-	 */
+	/* Core Cleanup */
 	CharLog->info("Server shutting down...");
 
 	/* Stop Network */
-	sCharSocketMgr.StopNetwork();
+	ClientSocktMgr->StopNetwork();
+	InterSocktMgr->StopNetwork();
 
 	signals.cancel();
 

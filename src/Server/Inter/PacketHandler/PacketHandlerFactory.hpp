@@ -17,7 +17,7 @@ public:
 	PacketHandlerFactory() { };
 	~PacketHandlerFactory() { };
 
-	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<InterSession> session)
+	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<Session> session)
 	{
 		return std::make_shared<PacketHandler>(session);
 	}

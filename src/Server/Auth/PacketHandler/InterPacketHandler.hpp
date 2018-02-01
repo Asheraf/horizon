@@ -1,17 +1,27 @@
-//
-// Created by SagunKho on 28/01/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_AUTH_INTERPACKETHANDLER_HPP
 #define HORIZON_AUTH_INTERPACKETHANDLER_HPP
 
-#include "Horizon.hpp"
+#include "Core/Logging/Logger.hpp"
+#include "Server/Common/Base/PacketHandler/InterPacketHandler.hpp"
 #include "Server/Common/Models/SessionData.hpp"
-#include "Server/Common/Packet.hpp"
-
-#include <boost/function.hpp>
-#include <memory>
-#include <unordered_map>
+#include "Server/Common/PacketBuffer.hpp"
 
 class PacketBuffer;
 
@@ -19,40 +29,14 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSession;
-class InterPacketHandler
+class InterSession;
+class InterPacketHandler : public Horizon::Base::InterPacketHandler<InterSession>
 {
 public:
-	InterPacketHandler(std::shared_ptr<AuthSession> session);
+	InterPacketHandler(std::shared_ptr<InterSession> session);
 	~InterPacketHandler();
 
-	template <class T>
-	void SendPacket(T pkt);
-
-	void SendPacket(PacketBuffer &buf, std::size_t size);
-	/**
-	 *
-	 */
-	bool HandleIncomingPacket(PacketBuffer &packet);
-
-	virtual void InitializeHandlers();
-	const PacketHandlerMap &getHandlers() const;
-
-	/**
-	 * Handlers
-	 */
-	void Handle_ACK_RECEIVED(PacketBuffer &buf);
-	void Handle_CONNECT_INIT(PacketBuffer &buf);
-	/**
-	 * Response
-	 */
-	void Respond_CONNECT_AUTH();
-	void Respond_SESSION_SET(SessionData &session_data);
-	void Respond_SESSION_DEL(uint32_t id);
-
-private:
-	std::shared_ptr<AuthSession> _session;
-	PacketHandlerMap _handlers;
+	void InitializeHandlers() override;
 };
 }
 }

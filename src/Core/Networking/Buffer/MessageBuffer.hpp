@@ -26,7 +26,7 @@ class MessageBuffer
 	typedef std::vector<uint8_t>::size_type size_type;
 
 public:
-	uint32_t MAX_BUFFER_LENGTH{1024};
+	uint32_t MAX_BUFFER_LENGTH{1536};
 	
 	MessageBuffer() : _wpos(0), _rpos(0), _storage()
 	{

@@ -24,28 +24,28 @@ public:
 		return &s;
 	}
 
-	void AddToSessionStore(uint32_t session_id, SessionData &sess)
+	void AddToSessionStore(SessionData &sess)
 	{
-		if (FindAndRemoveFromSessionStore(session_id)) {
-			InterLog->info("Session ID: {} has been updated.", session_id);
+		if (FindAndRemoveFromSessionStore(sess.getAuthCode())) {
+			InterLog->info("Session ID: {} has been updated.", sess.getAuthCode());
 		} else {
-			InterLog->info("Session ID: {} has been added.", session_id);
+			InterLog->info("Session ID: {} has been added.", sess.getAuthCode());
 		}
-		_session_store.insert(std::make_pair(session_id, std::make_shared<SessionData>(sess)));
+		_session_store.insert(std::make_pair(sess.getAuthCode(), std::make_shared<SessionData>(sess)));
 	}
 
-	void RemoveFromSessionStore(uint32_t session_id)
+	void RemoveFromSessionStore(uint32_t auth_code)
 	{
-		if (FindAndRemoveFromSessionStore(session_id))
-			InterLog->info("Session ID: {} has been removed.", session_id);
+		if (FindAndRemoveFromSessionStore(auth_code))
+			InterLog->info("Session ID: {} has been removed.", auth_code);
 	}
 
-	std::shared_ptr<SessionData> GetFromSessionStore(uint32_t session_id)
+	std::shared_ptr<SessionData> GetFromSessionStore(uint32_t auth_code)
 	{
-		auto it = _session_store.find(session_id);
+		auto it = _session_store.find(auth_code);
 
 		if (it != _session_store.end())
-			return _session_store.at(session_id);
+			return _session_store.at(auth_code);
 		else
 			return nullptr;
 	}
@@ -54,10 +54,10 @@ public:
 	std::map<uint32_t, std::shared_ptr<SessionData>> &GetSessionStore() { return _session_store; };
 
 private:
-	bool FindAndRemoveFromSessionStore(uint32_t session_id)
+	bool FindAndRemoveFromSessionStore(uint32_t auth_code)
 	{
-		if (GetFromSessionStore(session_id) != nullptr) {
-			_session_store.erase(session_id);
+		if (GetFromSessionStore(auth_code) != nullptr) {
+			_session_store.erase(auth_code);
 			return true;
 		}
 		return false;

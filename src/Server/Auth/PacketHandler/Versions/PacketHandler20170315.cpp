@@ -1,12 +1,28 @@
-//
-// Created by SagunKho on 27/01/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #include "PacketHandler20170315.hpp"
+
 #include "Core/Logging/Logger.hpp"
+#include "Server/Auth/Session/Session.hpp"
+
 #include <boost/bind.hpp>
 
-Horizon::Auth::PacketHandler20170315::PacketHandler20170315(std::shared_ptr<AuthSession> &session)
+Horizon::Auth::PacketHandler20170315::PacketHandler20170315(std::shared_ptr<Session> &session)
 : PacketHandler(session)
 {
 	InitializeHandlers();
@@ -35,6 +51,5 @@ void Horizon::Auth::PacketHandler20170315::Handle_TEST_POLY(PacketBuffer &buf)
 void Horizon::Auth::PacketHandler20170315::InitializeHandlers()
 {
 	Horizon::Auth::PacketHandler::InitializeHandlers();
-	_handlers.erase(CA_LOGIN);
-	_handlers.insert(std::make_pair(CA_LOGIN, boost::bind(&PacketHandler20170315::Handle_TEST_POLY, this, boost::placeholders::_1)));
+	addPacketHandler(CA_LOGIN, boost::bind(&PacketHandler20170315::Handle_TEST_POLY, this, boost::placeholders::_1));
 }

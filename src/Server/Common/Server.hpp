@@ -37,7 +37,7 @@ public:
 	Server(std::string name, std::string config_file_path, std::string config_file_name);
 	~Server();
 
-	void ParseRuntimeArguments(const char *argv[], int argc);
+	void ParseExecArguments(const char *argv[], int argc);
 
 	/* Shutdown Handlers */
 	void shutdown(int signal) { getGeneralConf().setShuttingDown(signal); }

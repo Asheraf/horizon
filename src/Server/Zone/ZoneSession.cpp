@@ -16,6 +16,7 @@
 
 #include "ZoneSession.hpp"
 
+#include "Server/Zone/ZoneSocketMgr.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "ZonePackets.hpp"
 
@@ -38,6 +39,11 @@ void Horizon::Zone::ZoneSession::OnClose()
 	std::string ip_address = GetRemoteIPAddress().to_string();
 
 	ZoneLog->info("Closed connection from {}.", ip_address);
+
+	/**
+	 * @brief Perform socket manager cleanup.
+	 */
+	sZoneSocketMgr->ClearSession(shared_from_this());
 }
 
 bool Horizon::Zone::ZoneSession::Update()

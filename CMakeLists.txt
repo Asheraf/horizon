@@ -148,3 +148,6 @@ include(FindMySQLConnector)
 # Horizon Project Source
 #################
 add_subdirectory(src)
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)
+

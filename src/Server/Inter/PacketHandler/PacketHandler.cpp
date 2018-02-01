@@ -6,17 +6,17 @@
 
 #include "Core/Logging/Logger.hpp"
 #include "Libraries/BCrypt/BCrypt.hpp"
-#include "Server/Inter/InterSession.hpp"
-#include "Server/Inter/Inter.hpp"
-#include "Server/Inter/InterSocketMgr.hpp"
-#include "Server/Inter/InterStore.hpp"
 #include "Server/Common/Models/SessionData.hpp"
+#include "Server/Inter/Inter.hpp"
+#include "Server/Inter/InterStore.hpp"
 #include "Server/Inter/PacketHandler/Packets.hpp"
+#include "Server/Inter/Session/Session.hpp"
+#include "Server/Inter/SocketMgr/ClientSocketMgr.hpp"
 
 #include <boost/bind.hpp>
 
-Horizon::Inter::PacketHandler::PacketHandler(std::shared_ptr<InterSession> session)
-	: _session(session)
+Horizon::Inter::PacketHandler::PacketHandler(std::shared_ptr<Session> session)
+: Horizon::Base::PacketHandler<Session>(session)
 {
 	// Construct
 	InitializeHandlers();
@@ -29,113 +29,86 @@ Horizon::Inter::PacketHandler::~PacketHandler()
 
 void Horizon::Inter::PacketHandler::InitializeHandlers()
 {
-#define HANDLER_FUNC(packet, handler) _handlers.insert(std::make_pair((packet), boost::bind((handler), this, boost::placeholders::_1)))
-	HANDLER_FUNC(INTER_CONNECT_AUTH, &PacketHandler::Handle_CONNECT_AUTH);
-	HANDLER_FUNC(INTER_SESSION_DEL, &PacketHandler::Handle_SESSION_DEL);
-	HANDLER_FUNC(INTER_SESSION_SET, &PacketHandler::Handle_SESSION_SET);
+#define HANDLER_FUNC(packet) addPacketHandler(Horizon::Base::inter_packets::packet, boost::bind((&PacketHandler::Handle_ ## packet), this, boost::placeholders::_1))
+	HANDLER_FUNC(INTER_CONNECT_AUTH);
+	HANDLER_FUNC(INTER_SESSION_DEL);
+	HANDLER_FUNC(INTER_SESSION_SET);
+	HANDLER_FUNC(INTER_SESSION_REQ);
 #undef HANDLER_FUNC
 }
 
-bool Horizon::Inter::PacketHandler::HandleIncomingPacket(PacketBuffer &packet)
-{
-	auto opCode = (packets) packet.getOpCode();
-	auto it = _handlers.find(opCode);
-
-	if (it == _handlers.end()) {
-		InterLog->trace("Unknown packet with ID received: {0:x}", opCode);
-		return false;
-	}
-
-	PacketHandlerFunc func = it->second;
-	func(packet);
-
-	return true;
-}
-
-template <class T>
-void Horizon::Inter::PacketHandler::SendPacket(T pkt)
-{
-	PacketBuffer buf;
-
-	buf << pkt;
-
-	if (!_session->IsOpen())
-		return;
-
-	if (!buf.empty()) {
-		MessageBuffer buffer;
-		buffer.Write(buf.contents(), sizeof(T));
-		_session->QueuePacket(std::move(buffer));
-	}
-}
-
-void Horizon::Inter::PacketHandler::SendPacket(PacketBuffer &buf, std::size_t size)
-{
-	if (!_session->IsOpen())
-		return;
-
-	if (!buf.empty()) {
-		MessageBuffer buffer;
-		buffer.Write(buf.contents(), size);
-		_session->QueuePacket(std::move(buffer));
-	}
-}
-
-void Horizon::Inter::PacketHandler::Handle_CONNECT_AUTH(PacketBuffer &buf)
+void Horizon::Inter::PacketHandler::Handle_INTER_CONNECT_AUTH(PacketBuffer &buf)
 {
 	PACKET_INTER_CONNECT_AUTH pkt;
 	bool success;
 
-	buf.read(&pkt, 4);
+	buf.read(&pkt, 5);
 
-	char pass[pkt.packet_len - 4];
+	char pass[pkt.packet_len - 5];
+
 	buf.read(pass, sizeof(pass));
 
+	InterLog->info("Received request for connection of client from endpoint {}.", getSession()->getRemoteIPAddress());
 	if (!(success = BCrypt::validatePassword(pass, InterServer->getNetworkConf().getInterServerPassword()))) {
-		_session->CloseSocket();
+		std::string password = pass;
+		InterLog->info("Connection refused for endpoint {}, incorrect password {}.", getSession()->getRemoteIPAddress(), password);
+		getSession()->CloseSocket();
+	} else {
+		InterLog->info("Connection successfully authorized for endpoint {}.", getSession()->getRemoteIPAddress());
 	}
+	
+	getSession()->setClientType(pkt.client_type);
 
-	Respond_ACK_RECEIVED(pkt.op_code, (uint8_t) success);
+	Respond_INTER_ACK_RECEIVED(pkt.op_code, (uint8_t) success);
 }
 
-void Horizon::Inter::PacketHandler::Handle_SESSION_SET(PacketBuffer &buf)
+void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_SET(PacketBuffer &buf)
 {
 	PACKET_INTER_SESSION_SET pkt;
+	SessionData session_data;
 	buf >> pkt;
-	SessionData sessionData(pkt.s.auth_code, pkt.s.client_version, pkt.s.client_type, pkt.s.game_account_id);
-	InterStore->AddToSessionStore(pkt.session_id, sessionData);
+	session_data << pkt.s;
+	InterStore->AddToSessionStore(session_data);
 }
 
-void Horizon::Inter::PacketHandler::Handle_SESSION_DEL(PacketBuffer &buf)
+void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_DEL(PacketBuffer &buf)
 {
 	PACKET_INTER_SESSION_DEL pkt;
 	buf >> pkt;
-
-	InterStore->RemoveFromSessionStore(pkt.session_id);
+	InterStore->RemoveFromSessionStore(pkt.auth_code);
 }
 
-void Horizon::Inter::PacketHandler::Respond_SESSION_SET(SessionData &session_data)
+void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_REQ(PacketBuffer &buf)
 {
-	PACKET_INTER_SESSION_SET pkt;
+	PACKET_INTER_SESSION_REQ pkt;
+	PACKET_INTER_SESSION_GET send_pkt;
+	std::shared_ptr<SessionData> session_data;
 
-	pkt.session_id = (uint32_t) session_data.getGameAccountId();
-	pkt.s.game_account_id = session_data.getGameAccountId();
-	pkt.s.auth_code = session_data.getAuthCode();
-	pkt.s.client_type = session_data.getClientType();
-	pkt.s.client_version = session_data.getClientVersion();
+	buf >> pkt;
 
-	SendPacket(pkt);
+	session_data = InterStore->GetFromSessionStore(pkt.auth_code);
+
+	if (session_data != nullptr) {
+		*session_data >> send_pkt.s;
+		SendPacket(send_pkt);
+		InterLog->info("Found session data for id {} requested by server {}.", pkt.auth_code, (int) getSession()->getClientType());
+	} else {
+		Respond_INTER_ACK_RECEIVED(pkt.op_code, false);
+		InterLog->info("Not found session data for id {} requested by server {}.", pkt.auth_code, (int) getSession()->getClientType());
+	}
 }
 
-void Horizon::Inter::PacketHandler::Respond_ACK_RECEIVED(uint16_t packet_id, uint8_t response)
+void Horizon::Inter::PacketHandler::Respond_INTER_ACK_RECEIVED(uint16_t packet_id, uint8_t response)
 {
 	PACKET_INTER_ACK_RECEIVED pkt;
+
 	pkt.ack_packet_id = packet_id;
 	pkt.response = response;
+
 	SendPacket(pkt);
 }
 
-void Horizon::Inter::PacketHandler::Respond_CONNECT_INIT()
+void Horizon::Inter::PacketHandler::Respond_INTER_CONNECT_INIT()
 {
 	SendPacket(PACKET_INTER_CONNECT_INIT());
 }

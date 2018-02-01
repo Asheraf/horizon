@@ -38,4 +38,9 @@
 	#define INTER_SESSION_NAME "inter-server"
 #endif
 
+/* Maximum Character Slots (in multiples of 3) */
+#ifndef MAX_CHARACTER_SLOTS
+	#define MAX_CHARACTER_SLOTS 9
+#endif
+
 #endif //HORIZON_HORIZON_H

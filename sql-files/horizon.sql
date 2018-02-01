@@ -60,19 +60,19 @@ CREATE TABLE `character_access_data` (
 
 CREATE TABLE `character_misc_data` (
   `id` int(11) unsigned NOT NULL,
-  `rename_count` smallint(3) unsigned NOT NULL DEFAULT 0,
+  `rename_count` tinyint(2) unsigned NOT NULL DEFAULT 0,
   `unique_item_counter` bigint(20) unsigned NOT NULL DEFAULT 0,
-  `hotkey_rowshift` tinyint(3) unsigned NOT NULL DEFAULT 0,
-  `change_slot` smallint(3) unsigned NOT NULL DEFAULT 0,
+  `hotkey_row_index` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `change_slot_count` tinyint(2) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `character_ui_settings` (
   `id` int(11) unsigned NOT NULL,
-  `font` tinyint(3) unsigned NOT NULL DEFAULT 0,
-  `show_equip` int(11) unsigned NOT NULL DEFAULT 0,
-  `allow_party` int(11) unsigned NOT NULL DEFAULT 0,
+  `font` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `show_equip` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `allow_party` tinyint(1) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -134,28 +134,28 @@ CREATE TABLE `character_status_data` (
 
 CREATE TABLE `character_view_data` (
   `id` int(11) unsigned NOT NULL,
-  `hair` tinyint(4) unsigned NOT NULL DEFAULT 0,
-  `hair_color` smallint(5) unsigned NOT NULL DEFAULT 0,
-  `clothes_color` smallint(5) unsigned NOT NULL DEFAULT 0,
-  `body` smallint(5) unsigned NOT NULL DEFAULT 0,
-  `weapon` smallint(6) unsigned NOT NULL DEFAULT 0,
-  `shield` smallint(6) unsigned NOT NULL DEFAULT 0,
-  `head_top` smallint(6) unsigned NOT NULL DEFAULT 0,
-  `head_mid` smallint(6) unsigned NOT NULL DEFAULT 0,
-  `head_bottom` smallint(6) unsigned NOT NULL DEFAULT 0,
-  `robe` smallint(6) unsigned NOT NULL DEFAULT 0,
+  `hair_style_id` tinyint(4) unsigned NOT NULL DEFAULT 0,
+  `hair_color_id` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `cloth_color_id` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `body_id` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `weapon_id` smallint(6) unsigned NOT NULL DEFAULT 0,
+  `shield_id` smallint(6) unsigned NOT NULL DEFAULT 0,
+  `head_top_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
+  `head_mid_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
+  `head_bottom_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
+  `robe_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `character_position_data` (
   `id` int(11) unsigned NOT NULL,
-  `last_map` varchar(11) NOT NULL DEFAULT '',
-  `last_x` smallint(4) unsigned NOT NULL DEFAULT 53,
-  `last_y` smallint(4) unsigned NOT NULL DEFAULT 111,
-  `save_map` varchar(11) NOT NULL DEFAULT '',
-  `save_x` smallint(4) unsigned NOT NULL DEFAULT 53,
-  `save_y` smallint(4) unsigned NOT NULL DEFAULT 111,
+  `current_map` varchar(11) NOT NULL DEFAULT '',
+  `current_x` smallint(4) unsigned NOT NULL DEFAULT 53,
+  `current_y` smallint(4) unsigned NOT NULL DEFAULT 111,
+  `saved_map` varchar(11) NOT NULL DEFAULT '',
+  `saved_x` smallint(4) unsigned NOT NULL DEFAULT 53,
+  `saved_y` smallint(4) unsigned NOT NULL DEFAULT 111,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

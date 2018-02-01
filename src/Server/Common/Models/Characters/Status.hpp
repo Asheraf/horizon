@@ -2,8 +2,8 @@
 // Created by SagunKho on 31/01/2018.
 //
 
-#ifndef HORIZON_CHARACTERSTATUSDATA_HPP
-#define HORIZON_CHARACTERSTATUSDATA_HPP
+#ifndef HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP
+#define HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP
 
 #include "Core/Database/MySqlConnection.hpp"
 #include "Server/Common/Horizon.hpp"
@@ -21,6 +21,12 @@ public:
 	Status() {}
 	~Status() {}
 
+	/**
+	 * Load all fields from the database into this instance.
+	 * @param server
+	 * @param char_id
+	 * @return
+	 */
 	bool LoadFromDatabase(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM character_status_data WHERE char_id = ?";
@@ -36,7 +42,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharId(char_id);
+				setCharacterId(char_id);
 				setJobClass((uint16_t) res->getUInt("job_class"));
 				setBaseLevel((uint16_t) res->getUInt("base_level"));
 				setJobLevel((uint16_t) res->getUInt("job_level"));
@@ -65,16 +71,17 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("GameAccount::VerifyCredentialsBCrypt: {}", e.what());
+			DBLog->error("Models::Characters::Status::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);
 
-		return false;
+		return ret;
 	}
-	/* Char ID */
-	uint32_t getCharId() const { return char_id; }
-	void setCharId(uint32_t char_id) { Status::char_id = char_id; }
+
+	/* Character ID */
+	uint32_t getCharacterId() const { return character_id; }
+	void setCharacterId(uint32_t character_id) { Status::character_id = character_id; }
 	/* Job Class */
 	uint16_t getJobClass() const { return job_class; }
 	void setJobClass(uint16_t job_class) { Status::job_class = job_class; }
@@ -142,7 +149,7 @@ public:
 	int16_t getManner() const { return manner; }
 	void setManner(int16_t manner) { Status::manner = manner; }
 private:
-	uint32_t char_id;
+	uint32_t character_id;
 	uint16_t job_class;
 	uint16_t base_level;
 	uint16_t job_level;
@@ -166,4 +173,4 @@ private:
 }
 }
 }
-#endif //HORIZON_CHARACTERSTATUSDATA_HPP
+#endif // HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP

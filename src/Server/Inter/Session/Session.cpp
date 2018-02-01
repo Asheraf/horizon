@@ -14,40 +14,49 @@
  * or viewing without permission.
  ****************************************************/
 
-#include "InterSession.hpp"
+#include "Session.hpp"
 
+#include "Server/Inter/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Inter/PacketHandler/PacketHandlerFactory.hpp"
 
 #include "Core/Logging/Logger.hpp"
 #include "Packets.hpp"
 
-Horizon::Inter::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
+Horizon::Inter::Session::Session(std::shared_ptr<tcp::socket> socket)
   : Socket(socket)
 {
 	//
 }
 
-void Horizon::Inter::InterSession::Start()
+void Horizon::Inter::Session::Start()
 {
-	std::string ip_address = GetRemoteIPAddress().to_string();
+	std::string ip_address = getRemoteIPAddress();
 
 	InterLog->info("Established connection from {}.", ip_address);
 
-	if (_packet_handler == nullptr) {
-		_packet_handler = PacketHandlerFactory::CreatePacketHandler(shared_from_this());
-		_packet_handler->Respond_CONNECT_INIT();
+	if (getPacketHandler() == nullptr) {
+		setPacketHandler(PacketHandlerFactory::CreatePacketHandler(shared_from_this()));
+		getPacketHandler()->Respond_INTER_CONNECT_INIT();
 	}
 	AsyncRead();
 }
 
-void Horizon::Inter::InterSession::OnClose()
+void Horizon::Inter::Session::OnClose()
 {
-	std::string ip_address = GetRemoteIPAddress().to_string();
+	try {
+		std::string ip_address = getRemoteIPAddress();
+		InterLog->info("Closed connection from {}.", ip_address);
+	} catch (boost::system::system_error &error) {
+		InterLog->info("Closed a connected session abruptly. Error: {}", error.what());
+	}
 
-	InterLog->info("Closed connection from {}.", ip_address);
+	/**
+	 * @brief Perform socket manager cleanup.
+	 */
+	ClientSocktMgr->ClearSession(shared_from_this());
 }
 
-bool Horizon::Inter::InterSession::Update()
+bool Horizon::Inter::Session::Update()
 {
 	return InterSocket::Update();
 }
@@ -55,7 +64,7 @@ bool Horizon::Inter::InterSession::Update()
 /**
  * Incoming buffer read handler.
  */
-void Horizon::Inter::InterSession::ReadHandler()
+void Horizon::Inter::Session::ReadHandler()
 {
 	while (GetReadBuffer().GetActiveSize()) {
 		uint16_t op_code;
@@ -64,12 +73,12 @@ void Horizon::Inter::InterSession::ReadHandler()
 		PacketBuffer pkt(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
 		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
 
-		if (_packet_handler == nullptr) {
-			_packet_handler = PacketHandlerFactory::CreatePacketHandler(shared_from_this());
-			_packet_handler->Respond_CONNECT_INIT();
+		if (getPacketHandler() == nullptr) {
+			setPacketHandler(PacketHandlerFactory::CreatePacketHandler(shared_from_this()));
+			getPacketHandler()->Respond_INTER_CONNECT_INIT();
 		}
 
-		if (!_packet_handler->HandleIncomingPacket(pkt))
+		if (!getPacketHandler()->HandleReceivedPacket(pkt))
 			GetReadBuffer().Reset();
 	}
 }

@@ -20,7 +20,7 @@
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
 
-#include "Common/Packet.hpp"
+#include "Common/PacketBuffer.hpp"
 
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>

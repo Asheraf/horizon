@@ -1,13 +1,27 @@
-//
-// Created by SagunKho on 27/01/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_AUTH_PACKETHANDLER_HPP
 #define HORIZON_AUTH_PACKETHANDLER_HPP
 
 #include "Server/Common/Horizon.hpp"
-#include "Server/Common/Packet.hpp"
-#include "Packets.hpp"
+#include "Server/Common/PacketBuffer.hpp"
+#include "Server/Common/Base/PacketHandler/PacketHandler.hpp"
+#include "Server/Auth/PacketHandler/Packets.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -15,31 +29,22 @@
 #include <future>
 #include <boost/system/error_code.hpp>
 
+class SessionData;
+
 namespace Horizon
 {
 namespace Auth
 {
-class AuthSession;
-
-class PacketHandler
+class Session;
+class PacketHandler : public Horizon::Base::PacketHandler<Session>
 {
 public:
-	explicit PacketHandler(std::shared_ptr<AuthSession> session);
+	explicit PacketHandler(std::shared_ptr<Session> session);
 	virtual ~PacketHandler();
-
-	template <class T>
-	void SendPacket(T pkt);
-
-	void SendPacket(PacketBuffer &buf, std::size_t size);
 	/**
 	 *
 	 */
-	bool HandleIncomingPacket(PacketBuffer &packet);
-	/**
-	 *
-	 */
-	virtual bool ValidateSessionData(uint32_t id, uint32_t client_version, uint8_t client_type);
-	virtual void ProcessAuthentication();
+	bool ValidateSessionData(uint32_t id, uint32_t client_version, uint8_t client_type);
 
 	/**
 	 * Client To Auth
@@ -67,11 +72,6 @@ public:
 	virtual void Respond_CA_CHARSERVERCONNECT();
 
 	virtual void InitializeHandlers();
-	const PacketHandlerMap &getHandlers() const;
-
-protected:
-	std::shared_ptr<AuthSession> _session;
-	PacketHandlerMap _handlers;
 };
 }
 }

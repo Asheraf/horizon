@@ -20,6 +20,8 @@
 
 #include "Core/Logging/Logger.hpp"
 #include "Buffer/MessageBuffer.hpp"
+#include "Server/Common/Models/SessionData.hpp"
+#include "Server/Common/Models/GameAccount.hpp"
 
 #include <atomic>
 #include <queue>
@@ -29,34 +31,31 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/asio/use_future.hpp>
 #include <iostream>
-#include <future>
 
 using boost::asio::ip::tcp;
 
 #define READ_BLOCK_SIZE 4096
 
-enum socket_endpoint_type
-{
-	SOCKET_ENDPOINT_TYPE_CLIENT,
-	SOCKET_ENDPOINT_TYPE_SERVER
-};
+class SocketMgr;
 
 template <class T>
 class Socket : public std::enable_shared_from_this<T>
 {
 public:
 	explicit Socket(std::shared_ptr<tcp::socket> &socket)
-	: _socket_id(0), _socket(socket), _type(SOCKET_ENDPOINT_TYPE_CLIENT), _readBuffer(), _closed(false), _closing(false), _isWritingAsync(false)
+	: _socket_id(0), _socket(socket), _remote_ip_address(_socket->remote_endpoint().address().to_string()),
+	  _remote_port(_socket->remote_endpoint().port()), _readBuffer(), _closed(false), _closing(false), _isWritingAsync(false)
 	{
 		_readBuffer.Resize(READ_BLOCK_SIZE);
+		// Initialize account-related objects.
+		_session_data = std::make_shared<SessionData>();
+		_game_account = std::make_shared<GameAccount>();
 	}
 
 	virtual ~Socket()
 	{
 		boost::system::error_code error;
-		_closed = true;
 		_socket->close(error);
 	}
 
@@ -78,12 +77,9 @@ public:
 	/* Socket Id */
 	uint64_t getSocketId() const { return _socket_id; }
 	void setSocketId(uint64_t socket_id) { Socket::_socket_id = socket_id; }
-	/* Socket Type */
-	socket_endpoint_type getSocketType() const { return _type; }
-	void setSocketType(socket_endpoint_type _type) { Socket::_type = _type; }
 	/* Remote IP and Port */
-	boost::asio::ip::address GetRemoteIPAddress() const { return _socket->remote_endpoint().address(); }
-	uint16_t GetRemotePort() const { return _socket->remote_endpoint().port(); }
+	std::string getRemoteIPAddress() const { return _remote_ip_address; }
+	uint16_t getRemotePort() const { return _remote_port; }
 
 	void AsyncRead()
 	{
@@ -97,7 +93,7 @@ public:
 				boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
-	void AsyncReadWithCallback(void (Socket<T>::*callback)(boost::system::error_code, std::size_t))
+	void AsyncReadWithCallback(void (Socket<T>::*/*callback*/)(boost::system::error_code, std::size_t))
 	{
 		if (!IsOpen())
 			return;
@@ -109,21 +105,26 @@ public:
 	}
 
 	/**
-	 * Asynchronous reading with a future value.
-	 * @return future to the size when complete.
+	 * Synchronous reading.
+	 * @return size of the read buffer.
 	 */
-	std::size_t ReadFuture()
+	std::size_t SyncRead(MessageBuffer &buf)
 	{
-		return _socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()), boost::asio::use_future);
+		std::size_t size = _socket->read_some(boost::asio::buffer(buf.GetWritePointer(), buf.GetRemainingSpace()));
+		buf.WriteCompleted(size);
+		return size;
 	}
 
 	/**
-	 * Asynchronous reading with a future value.
-	 * @return future to the size when complete.
+	 * Synchronous writing.
+	 * @return size of the written buffer.
 	 */
-	std::future<std::size_t> WriteFuture(MessageBuffer &message, std::size_t bytes_to_send)
+	std::size_t SyncWrite(MessageBuffer &message, std::size_t bytes_to_send)
 	{
-		return _socket->async_write_some(boost::asio::buffer(message.GetReadPointer(), bytes_to_send), boost::asio::use_future);
+		boost::system::error_code error;
+		std::size_t size = _socket->write_some(boost::asio::buffer(message.GetReadPointer(), bytes_to_send), error);
+		message.ReadCompleted(size);
+		return size;
 	}
 
 	void QueuePacket(MessageBuffer &&buffer)
@@ -153,14 +154,21 @@ public:
 
 		if (error) {
 			CoreLog->error("Error when shutting down socket from IP {} (error code: {} - {})",
-				GetRemoteIPAddress().to_string(), error.value(), error.message().c_str());
+				getRemoteIPAddress(), error.value(), error.message().c_str());
 		}
-
 	}
 
 	void DelayedCloseSocket() { _closing = true; }
 
 	MessageBuffer &GetReadBuffer() { return _readBuffer; }
+
+	/* Game Account Data */
+	const std::shared_ptr<GameAccount> &getGameAccount() const { return _game_account; }
+	void setGameAccount(std::shared_ptr<GameAccount> &account) { _game_account = account; }
+	/* Session Data */
+	const std::shared_ptr<SessionData> &getSessionData() const { return _session_data; }
+	void setSessionData(std::shared_ptr<SessionData> const &sess) { _session_data = sess; }
+
 protected:
 	virtual void OnClose() = 0;
 	virtual void ReadHandler() = 0;
@@ -188,7 +196,7 @@ protected:
 		_socket->set_option(tcp::no_delay(enable), error);
 		if (error) {
 			CoreLog->error("Networking: Socket::SetNoDelay: failed to set_option(boost::asio::ip::tcp::no_delay) for IP {} (error_code: {} - {})",
-					GetRemoteIPAddress().to_string().c_str(), error.value(), error.message().c_str());
+					getRemoteIPAddress(), error.value(), error.message().c_str());
 		}
 	}
 
@@ -221,6 +229,7 @@ private:
 			_readBuffer.WriteCompleted(transferredBytes);
 			ReadHandler();
 		}
+
 		AsyncRead();
 	}
 
@@ -270,12 +279,15 @@ private:
 private:
 	uint64_t _socket_id;
 	std::shared_ptr<tcp::socket> _socket;               ///< After accepting, the reference count of this pointer should be 1.
-	enum socket_endpoint_type _type;
+	std::string _remote_ip_address;
+	uint16_t _remote_port;
 	MessageBuffer _readBuffer;
 	std::queue<MessageBuffer> _writeQueue;
 	std::atomic<bool> _closed;
 	std::atomic<bool> _closing;
 	bool _isWritingAsync;
+	std::shared_ptr<GameAccount> _game_account;
+	std::shared_ptr<SessionData> _session_data;
 };
 
 #endif //HORIZON_SOCKET_HPP

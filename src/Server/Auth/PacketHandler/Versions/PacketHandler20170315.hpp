@@ -1,6 +1,19 @@
-//
-// Created by SagunKho on 27/01/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_AUTH_PACKETHANDLER20170315_HPP
 #define HORIZON_AUTH_PACKETHANDLER20170315_HPP
@@ -13,10 +26,11 @@ namespace Horizon
 {
 namespace Auth
 {
+class Session;
 class PacketHandler20170315 : public PacketHandler
 {
 public:
-	explicit PacketHandler20170315(std::shared_ptr<AuthSession> &session);
+	explicit PacketHandler20170315(std::shared_ptr<Session> &session);
 	~PacketHandler20170315() override;
 
 	void Respond_AC_ACCEPT_LOGIN() override;
@@ -30,9 +44,9 @@ public:
  * Overloaded Packet Definitions
  */
 #pragma pack(push, 1)
-struct PACKET_AC_ACCEPT_LOGIN_20170315 : public Packet
+struct PACKET_AC_ACCEPT_LOGIN_20170315 : public PacketBuffer
 {
-	PACKET_AC_ACCEPT_LOGIN_20170315() : Packet(Horizon::Auth::CA_LOGIN) { }
+	PACKET_AC_ACCEPT_LOGIN_20170315() : PacketBuffer(Horizon::Auth::CA_LOGIN) { }
 
 	int16 packet_len{};         ///< Packet length (variable length)
 	int32 auth_code{};          ///< Authentication code

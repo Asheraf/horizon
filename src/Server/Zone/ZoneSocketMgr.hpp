@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONE_ZONESOCKETMGR_H
-#define HORIZON_ZONE_ZONESOCKETMGR_H
+#ifndef HORIZON_ZONE_ZONESOCKETMGR_HPP
+#define HORIZON_ZONE_ZONESOCKETMGR_HPP
 
 #include "Core/Networking/SocketMgr.hpp"
 
@@ -27,15 +27,15 @@ namespace Zone
  * Auth Socket Manager
  * @brief Singleton class
  */
-class ZoneSocketMgr : public SocketMgr<ZoneSession>
+class ZoneSocketMgr : public Horizon::Networking::SocketMgr<ZoneSession>
 {
-	typedef SocketMgr<ZoneSession> BaseSocketMgr;
+	typedef Horizon::Networking::SocketMgr<ZoneSession> BaseSocketMgr;
 
 public:
-	static ZoneSocketMgr &Instance()
+	static ZoneSocketMgr *Instance()
 	{
 		static ZoneSocketMgr instance;
-		return instance;
+		return &instance;
 	}
 
 	bool StartNetwork(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1) override
@@ -57,10 +57,10 @@ public:
 
 	bool StartNetworkConnection(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
 	{
-		std::shared_ptr<NetworkConnector> connector;
+		std::shared_ptr<Horizon::Networking::Connector> connector;
 
-		if (!(connector = std::make_shared<NetworkConnector>(connection_name, server, connect_ip, port))) {
-			CoreLog->error("SocketMgr.StartConnect '{}' to tcp:://{}:{}.", connection_name, connect_ip, port);
+		if (!(connector = std::make_shared<Horizon::Networking::Connector>(connection_name, server, connect_ip, port))) {
+			CoreLog->error("ZoneSocketMgr::StartConnect '{}' to tcp:://{}:{}.", connection_name, connect_ip, port);
 			return false;
 		}
 		// Add the connector to the session pool before anything.
@@ -74,12 +74,12 @@ public:
 protected:
 	static void OnSocketAccept(std::shared_ptr<tcp::socket> socket, uint32_t threadIndex)
 	{
-		Instance().OnSocketOpenForAccept(std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_CLIENT);
+		Instance()->OnSocketOpenForAccept(std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_CLIENT);
 	}
 
 	static void OnSocketConnect(std::string &conn_name, std::shared_ptr<tcp::socket> socket, uint32_t threadIndex)
 	{
-		Instance().OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
+		Instance()->OnSocketOpenForConnect(conn_name, std::forward<std::shared_ptr<tcp::socket>>(socket), threadIndex, SOCKET_ENDPOINT_TYPE_SERVER);
 	}
 };
 }
@@ -87,4 +87,4 @@ protected:
 
 #define sZoneSocketMgr Horizon::Zone::ZoneSocketMgr::Instance()
 
-#endif //HORIZON_ZONESOCKETMGR_H
+#endif //HORIZON_ZONE_ZONESOCKETMGR_HPP

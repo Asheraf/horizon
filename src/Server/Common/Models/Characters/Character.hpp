@@ -2,8 +2,8 @@
 // Created by SagunKho on 31/01/2018.
 //
 
-#ifndef HORIZON_CHARACTERDATA_HPP
-#define HORIZON_CHARACTERDATA_HPP
+#ifndef HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
+#define HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
 
 #include "Server/Common/Horizon.hpp"
 #include <string>
@@ -27,6 +27,12 @@ public:
 	Character() {}
 	~Character() {}
 
+	/**
+	 * Load all fields from the database into this instance.
+	 * @param server
+	 * @param char_id
+	 * @return
+	 */
 	bool LoadFromDatabase(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM characters WHERE char_id = ?";
@@ -42,7 +48,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharId(char_id);
+				setCharacterId(char_id);
 				setAccount_id(res->getUInt("account_id"));
 				setSlot((uint16_t) res->getUInt("slot"));
 				setName(res->getString("name"));
@@ -54,16 +60,16 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("GameAccount::VerifyCredentialsBCrypt: {}", e.what());
+			DBLog->error("Models::Characters::GameAccount::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);
 
-		return false;
+		return ret;
 	}
-	/* Char ID */
-	uint32_t getCharId() const { return char_id; }
-	void setCharId(uint32_t char_id) { Character::char_id = char_id; }
+	/* Character ID */
+	uint32_t getCharacterId() const { return character_id; }
+	void setCharacterId(uint32_t character_id) { Character::character_id = character_id; }
 	/* Account ID */
 	uint32_t getAccount_id() const { return account_id; }
 	void setAccount_id(uint32_t account_id) { Character::account_id = account_id; }
@@ -81,7 +87,7 @@ public:
 	void setGender(character_gender_types gender) { Character::gender = gender; }
 
 private:
-	uint32_t char_id;
+	uint32_t character_id;
 	uint32_t account_id;
 	uint16_t slot;
 	std::string name;
@@ -92,4 +98,4 @@ private:
 }
 }
 
-#endif //HORIZON_CHARACTERDATA_HPP
+#endif // HORIZON_MODELS_CHARACTERS_CHARACTER_HPP

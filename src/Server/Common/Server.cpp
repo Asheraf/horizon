@@ -50,7 +50,7 @@ Server::~Server()
 {
 }
 
-void Server::ParseRuntimeArguments(const char *argv[], int argc)
+void Server::ParseExecArguments(const char *argv[], int argc)
 {
 	if (strcmp(argv[1], "--test-run") == 0) {
 		CoreLog->info("Test run initiated.");

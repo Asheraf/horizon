@@ -17,13 +17,12 @@
 #ifndef HORIZON_INTER_INTERMAIN_H
 #define HORIZON_INTER_INTERMAIN_H
 
-#include "InterSession.hpp"
-
-#include "Logging/Logger.hpp"
-#include "Common/Server.hpp"
+#include "Core/Database/MySqlConnection.hpp"
+#include "Core/Logging/Logger.hpp"
+#include "Server/Common/Server.hpp"
+#include "Server/Inter/Session/Session.hpp"
 
 #include <string>
-#include <Core/Database/MySqlConnection.hpp>
 
 namespace Horizon
 {
@@ -41,7 +40,6 @@ public:
 		return &instance;
 	}
 
-	void PrintHeader();
 	bool ReadConfig();
 	bool CLICmd_SendAuthPacket();
 	void InitializeCLICommands();

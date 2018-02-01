@@ -107,7 +107,6 @@ public:
 		}
 
 		server->MySQLUnborrow(sql);
-
 		return ret;
 	}
 

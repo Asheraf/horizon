@@ -15,37 +15,24 @@
 # or viewing without permission.
 ###################################################
 
+add_subdirectory(CLI)
+add_subdirectory(Models)
+add_subdirectory(Utilities)
+add_subdirectory(Interfaces)
+add_subdirectory(Base)
+
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(MAIN_SOURCES
-    ${DIR}/Packet.hpp
-    ${DIR}/Server.hpp
-    ${DIR}/Server.cpp
-    ${DIR}/Definitions.hpp
-    ${DIR}/Horizon.hpp
-    ${DIR}/CLI/CLICommand.hpp
-    ${DIR}/CLI/CommandLineInterface.cpp
-    ${DIR}/CLI/CommandLineInterface.hpp
-    ${DIR}/Utilities/Utilities.hpp)
-
-set(MODELS_DIR ${DIR}/Models)
-set(MODELS_SOURCES
-    ${MODELS_DIR}/GameAccount.hpp
-    ${MODELS_DIR}/SessionData.hpp
-    ${MODELS_DIR}/ServerData.hpp
-    ${MODELS_DIR}/Configuration/AuthServerConfiguration.hpp
-    ${MODELS_DIR}/Configuration/GeneralServerConfiguration.hpp
-    ${MODELS_DIR}/Configuration/Logging.hpp
-    ${MODELS_DIR}/Characters/Access.hpp
-    ${MODELS_DIR}/Characters/Character.hpp
-    ${MODELS_DIR}/Characters/Companion.hpp
-    ${MODELS_DIR}/Characters/Family.hpp
-    ${MODELS_DIR}/Characters/Group.hpp
-    ${MODELS_DIR}/Characters/Misc.hpp
-    ${MODELS_DIR}/Characters/Status.hpp
-    ${MODELS_DIR}/Characters/UISettings.hpp)
-
 set(COMMON_SOURCES
-    ${MAIN_SOURCES}
-    ${MODELS_SOURCES}
-    PARENT_SCOPE)
+	${DIR}/PacketBuffer.hpp
+	${DIR}/Server.hpp
+	${DIR}/Server.cpp
+	${DIR}/Definitions.hpp
+	${DIR}/Client.hpp
+	${DIR}/Horizon.hpp
+	${CLI_SOURCES}
+	${UTILITIES_SOURCES}
+	${MODELS_SOURCES}
+	${INTERFACE_SOURCES}
+	${BASE_SOURCES}
+	PARENT_SCOPE)

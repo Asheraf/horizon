@@ -15,7 +15,8 @@
  * or viewing without permission.
  **************************************************/
 #include "Auth.hpp"
-#include "AuthSocketMgr.hpp"
+#include "Server/Auth/SocketMgr/InterSocketMgr.hpp"
+#include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
@@ -42,15 +43,6 @@ Horizon::Auth::AuthMain::AuthMain()
  */
 Horizon::Auth::AuthMain::~AuthMain()
 {
-}
-
-/**
- * Prints the header for auth server.
- * @brief Appends the Core header.
- */
-void Horizon::Auth::AuthMain::PrintHeader()
-{
-	AuthLog->info("Authentication Server Initializing...");
 }
 
 /**
@@ -219,7 +211,7 @@ bool Horizon::Auth::AuthMain::ReadConfig()
 bool Horizon::Auth::AuthMain::CLICmd_ReloadConfig()
 {
 	// Clear all character server info before reloading.
-	character_servers.clear();
+	_character_servers.clear();
 
 	AuthLog->info("Reloading configuration from '{}'.", getGeneralConf().getConfigFileName());
 
@@ -257,8 +249,7 @@ void Horizon::Auth::AuthMain::ConnectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
 		try {
-			sAuthSocketMgr.StartNetworkConnection(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(),
-			                                      getNetworkConf().getInterServerPort(), 1);
+			InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1);
 		} catch (boost::system::system_error &e) {
 		}
 	}
@@ -286,11 +277,8 @@ void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const b
  */
 int main(int argc, const char * argv[])
 {
-	/* Header */
-	AuthServer->PrintHeader();
-
 	if (argc > 1)
-		AuthServer->ParseRuntimeArguments(argv, argc);
+		AuthServer->ParseExecArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -309,7 +297,7 @@ int main(int argc, const char * argv[])
 	signals.async_wait(std::bind(&SignalHandler, std::weak_ptr<boost::asio::io_service>(AuthServer->getIOService()), std::placeholders::_1, std::placeholders::_2));
 
 	// Start Auth Network
-	sAuthSocketMgr.StartNetwork(*AuthServer->getIOService(),
+	ClientSocktMgr->Start(*AuthServer->getIOService(),
 		AuthServer->getNetworkConf().getListenIp(),
 		AuthServer->getNetworkConf().getListenPort(),
 		AuthServer->getNetworkConf().getMaxThreads());
@@ -325,7 +313,8 @@ int main(int argc, const char * argv[])
 	AuthLog->info("Server shutting down...");
 
 	/* Stop Network */
-	sAuthSocketMgr.StopNetwork();
+	ClientSocktMgr->StopNetwork();
+	InterSocktMgr->StopNetwork();
 
 	// Cancel signal handling.
 	signals.cancel();

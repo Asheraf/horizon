@@ -18,13 +18,9 @@
 #ifndef HORIZON_CHAR_CHARMAIN_H
 #define HORIZON_CHAR_CHARMAIN_H
 
-#include "CharSession.hpp"
-
-#include "Logging/Logger.hpp"
-#include "Common/Server.hpp"
+#include "Server/Common/Server.hpp"
 
 #include <string>
-#include <Core/Database/MySqlConnection.hpp>
 
 namespace Horizon
 {
@@ -41,16 +37,11 @@ public:
 		static CharMain instance;
 		return &instance;
 	}
-
-	void PrintHeader();
+	
 	bool ReadConfig();
 	void InitializeCLICommands();
 	void ConnectWithInterServer();
 	void InitializeCore();
-private:
-	struct {
-		bool enabled;
-	} logs;
 };
 }
 }

@@ -14,35 +14,33 @@
  * Under a proprietary license this file is not for use
  * or viewing without permission.
  **************************************************/
+#ifndef HORIZON_BCRYPT_CPP
+#define HORIZON_BCRYPT_CPP
 
-#ifndef HORIZON_CHARPACKETS_H
-#define HORIZON_CHARPACKETS_H
+#include "BCrypt.hpp"
+#include <string>
 
-namespace Horizon
+std::string BCrypt::generateHash(const std::string & password, int workload = 12)
 {
-namespace Char
-{
-enum packets
-{
-	/**
-	 * Receivable Packets
-	 */
-	CH_ENTER              =  0x65,
-	CH_SELECT_CHAR        =  0x66,
-	CH_MAKE_CHAR          =  0x67,
-	CH_DELETE_CHAR        =  0x68,
-	/**
-	 * Sendable Packets
-	 */
-	HC_ACCEPT_ENTER       =  0x6B,
-	HC_REFUSE_ENTER       =  0x6C,
-	HC_ACCEPT_MAKECHAR    =  0x6D,
-	HC_REFUSE_MAKECHAR    =  0x6E,
-	HC_ACCEPT_DELETECHAR  =  0x6F,
-	HC_REFUSE_DELETECHAR  =  0x70,
-	HC_NOTIFY_ZONESVR     =  0x71,
-};
-}
+	char salt[BCRYPT_HASHSIZE];
+	char hash[BCRYPT_HASHSIZE];
+	int ret;
+	ret = bcrypt_gensalt(workload, salt);
+
+	if (ret != 0)
+		throw std::runtime_error{"bcrypt: can not generate salt"};
+
+	 ret = bcrypt_hashpw(password.c_str(), salt, hash);
+
+	 if (ret != 0)
+		throw std::runtime_error{"bcrypt: can not generate hash"};
+
+	 return hash;
 }
 
-#endif //HORIZON_CHARPACKETS_H
+bool BCrypt::validatePassword(const std::string & password, const std::string & hash)
+{
+	return (bcrypt_checkpw(password.c_str(), hash.c_str()) == 0);
+}
+
+#endif //HORIZON_BCRYPT_CPP

@@ -40,15 +40,6 @@ Horizon::Zone::ZoneMain::~ZoneMain()
 }
 
 /**
- * Prints the header for auth server.
- * @brief Appends the Core header.
- */
-void Horizon::Zone::ZoneMain::PrintHeader()
-{
-	ZoneLog->info("Zone Server Initializing...");
-}
-
-/**
  * Read /config/zone-server.yaml
  * @return false on failure, true on success.
  */
@@ -127,7 +118,7 @@ void Horizon::Zone::ZoneMain::ConnectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
 		try {
-			sZoneSocketMgr.StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
+			sZoneSocketMgr->StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
 			                                      getNetworkConf().getInterServerPort(), 10);
 		} catch (boost::system::system_error &e) {
 			ZoneLog->error("{}", e.what());
@@ -154,11 +145,8 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
  */
 int main(int argc, const char * argv[])
 {
-	/* Header */
-	ZoneServer->PrintHeader();
-
 	if (argc > 1)
-		ZoneServer->ParseRuntimeArguments(argv, argc);
+		ZoneServer->ParseExecArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -177,7 +165,7 @@ int main(int argc, const char * argv[])
 	signals.async_wait(SignalHandler);
 
 	// Start Zoneacter Network
-	sZoneSocketMgr.StartNetwork(*ZoneServer->getIOService(),
+	sZoneSocketMgr->StartNetwork(*ZoneServer->getIOService(),
             ZoneServer->getNetworkConf().getListenIp(),
             ZoneServer->getNetworkConf().getListenPort(),
             ZoneServer->getNetworkConf().getMaxThreads());
@@ -193,7 +181,7 @@ int main(int argc, const char * argv[])
 	ZoneLog->info("Server shutting down...");
 
 	/* Stop Network */
-	sZoneSocketMgr.StopNetwork();
+	sZoneSocketMgr->StopNetwork();
 
 	signals.cancel();
 

@@ -34,10 +34,10 @@ public:
 	{
 	}
 
-	Server *m_Server;
-	std::string m_command;
-	FinishFunc m_finish_func;
-	bool terminal_shutdown_signal;
+	Server *m_Server;                 ///< Instance to the server
+	std::string m_command;            ///< Command string.
+	FinishFunc m_finish_func;         ///< Completion handler function.
+	bool terminal_shutdown_signal;    ///< Terminal shutdown signal.
 
 private:
 	CLICommand (CLICommand const &right) = delete;

@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef PACKET_H
-#define PACKET_H
+#ifndef HORIZON_COMMON_PACKETBUFFER_H
+#define HORIZON_COMMON_PACKETBUFFER_H
 
 #include <stdint.h>
 #include <boost/function.hpp>
@@ -23,9 +23,6 @@
 #include <unordered_map>
 
 class PacketBuffer;
-
-typedef boost::function<void(PacketBuffer &)> PacketHandlerFunc;
-typedef std::unordered_map<uint16_t, PacketHandlerFunc> PacketHandlerMap;
 
 #pragma pack(push, 1)
 struct Packet
@@ -45,7 +42,7 @@ public:
 	PacketBuffer(uint16_t id, uint8_t *data, size_t size)
 	: ByteBuffer(size), op_code(id)
 	{
-		append(data, size);
+		append(&*data, size);
 	}
 
 	PacketBuffer(uint16_t id, size_t reserve = 200)

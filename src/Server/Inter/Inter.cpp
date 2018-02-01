@@ -15,7 +15,7 @@
  ****************************************************/
 
 #include "Inter.hpp"
-#include "InterSocketMgr.hpp"
+#include "Server/Inter/SocketMgr/ClientSocketMgr.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
@@ -37,15 +37,6 @@ Horizon::Inter::InterMain::InterMain() : Server("Inter", "config/", "inter-serve
  */
 Horizon::Inter::InterMain::~InterMain()
 {
-}
-
-/**
- * Prints the header for auth server.
- * @brief Appends the Core header.
- */
-void Horizon::Inter::InterMain::PrintHeader()
-{
-	InterLog->info("Inter Server Initializing...");
 }
 
 /**
@@ -109,11 +100,8 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
  */
 int main(int argc, const char * argv[])
 {
-	/* Header */
-	InterServer->PrintHeader();
-
 	if (argc > 1)
-		InterServer->ParseRuntimeArguments(argv, argc);
+		InterServer->ParseExecArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -132,7 +120,7 @@ int main(int argc, const char * argv[])
 	signals.async_wait(SignalHandler);
 
 	// Start Interacter Network
-	sInterSocketMgr.StartNetwork(*InterServer->getIOService(),
+	ClientSocktMgr->Start(*InterServer->getIOService(),
             InterServer->getNetworkConf().getListenIp(),
             InterServer->getNetworkConf().getListenPort(),
             InterServer->getNetworkConf().getMaxThreads());
@@ -148,7 +136,7 @@ int main(int argc, const char * argv[])
 	InterLog->info("Server shutting down...");
 
 	/* Stop Network */
-	sInterSocketMgr.StopNetwork();
+	ClientSocktMgr->StopNetwork();
 
 	signals.cancel();
 

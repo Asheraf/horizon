@@ -1,20 +1,36 @@
-//
-// Created by SagunKho on 27/01/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #include "PacketHandler.hpp"
 
 #include "Core/Database/MySqlConnection.hpp"
 #include "Libraries/BCrypt/BCrypt.hpp"
-#include "Server/Auth/AuthSession.hpp"
+#include "Server/Auth/Session/Session.hpp"
 #include "Server/Auth/Auth.hpp"
-#include "Server/Inter/PacketHandler/Packets.hpp"
-#include "Server/Auth/AuthSocketMgr.hpp"
+#include "Server/Auth/SocketMgr/InterSocketMgr.hpp"
+#include "Server/Auth/Interface/InterAPI.hpp"
 #include "Server/Auth/PacketHandler/InterPacketHandler.hpp"
+#include "Server/Inter/PacketHandler/Packets.hpp"
+#include "Server/Common/Models/Characters/Group.hpp"
+
 #include <string>
 
-Horizon::Auth::PacketHandler::PacketHandler(std::shared_ptr<AuthSession> session)
-	: _session(session)
+Horizon::Auth::PacketHandler::PacketHandler(std::shared_ptr<Session> session)
+	: Horizon::Base::PacketHandler<Session>(session)
 {
 	// Construct
 	InitializeHandlers();
@@ -25,80 +41,30 @@ Horizon::Auth::PacketHandler::~PacketHandler()
 	// Destruct
 }
 
-bool Horizon::Auth::PacketHandler::HandleIncomingPacket(PacketBuffer &packet)
-{
-	auto opCode = (Horizon::Auth::packets) packet.getOpCode();
-	auto it = _handlers.find(opCode);
-
-	if (it == _handlers.end()) {
-		AuthLog->trace("Unknown packet with ID received: {0:x}", opCode);
-		return false;
-	}
-
-	PacketHandlerFunc func = it->second;
-	func(packet);
-
-	return true;
-}
-
-template <class T>
-void Horizon::Auth::PacketHandler::SendPacket(T pkt)
-{
-	PacketBuffer buf;
-
-	buf << pkt;
-
-	if (!_session->IsOpen())
-		return;
-
-	if (!buf.empty()) {
-		MessageBuffer buffer;
-		buffer.Write(buf.contents(), sizeof(T));
-		_session->QueuePacket(std::move(buffer));
-	}
-}
-
-void Horizon::Auth::PacketHandler::SendPacket(PacketBuffer &buf, std::size_t size)
-{
-	if (!_session->IsOpen())
-		return;
-
-	if (!buf.empty()) {
-		MessageBuffer buffer;
-		buffer.Write(buf.contents(), size);
-		_session->QueuePacket(std::move(buffer));
-	}
-}
-
-void Horizon::Auth::PacketHandler::ProcessAuthentication()
-{
-	Respond_AC_ACCEPT_LOGIN();
-}
-
 bool Horizon::Auth::PacketHandler::ValidateSessionData(uint32_t id, uint32_t client_version, uint8_t client_type)
 {
-	std::shared_ptr<AuthSession> session = AuthServer->getOnlineAccount(id);
-	std::shared_ptr<AuthSession> inter_session = sAuthSocketMgr.BorrowConnectedSession(INTER_SESSION_NAME);
-
-	_session->getGameAccount()->setLastIp(_session->GetRemoteIPAddress().to_string());
-	_session->getGameAccount()->setLastLogin((int) time(nullptr));
-	// Session ID as Game Account Id.
-	_session->getSessionData()->setGameAccountId(_session->getGameAccount()->getId());
-	_session->getSessionData()->setAuthCode(_session->getGameAccount()->getId());
-	_session->getSessionData()->setClientVersion(client_version);
-	_session->getSessionData()->setClientType(client_type);
-
-	// Check if session already exists.
-	if (session != nullptr) {
-		AuthServer->removeOnlineAccount(id);
-		inter_session->getInterPacketHandler()->Respond_SESSION_DEL(_session->getSessionData()->getGameAccountId());
-		sAuthSocketMgr.UnborrowConnectedSession(INTER_SESSION_NAME, inter_session);
+	if (AuthInterAPI->GetSessionFromInter(id) != nullptr) {
+		// @TODO Check if online in char-server & map-server.
+		AuthInterAPI->DeleteSessionFromInter(id);
 		return true;
 	}
 
-	inter_session->getInterPacketHandler()->Respond_SESSION_SET(*_session->getSessionData());
-	sAuthSocketMgr.UnborrowConnectedSession(INTER_SESSION_NAME, inter_session);
-	AuthServer->addOnlineAccount(id, _session);
+	std::shared_ptr<GameAccount> game_account = getSession()->getGameAccount();
+	std::shared_ptr<SessionData> session_data = getSession()->getSessionData();
+	
+	// Game Account Data.
+	game_account->setLastIp(getSession()->getRemoteIPAddress());
+	game_account->setLastLogin((int) time(nullptr));
+	// Session Data.
+	session_data->setAuthCode(game_account->getId()); // @TODO Change to something unique to prevent session hijaking.
+	session_data->setGameAccountId(game_account->getId());
+	session_data->setClientVersion(client_version);
+	session_data->setClientType(client_type);
+	session_data->setCharacterSlots(game_account->getCharacterSlots());
+	session_data->setGroupId(game_account->getGroupId());
+
+	// Send session data to inter.
+	AuthInterAPI->AddSessionToInter(session_data);
 	return false;
 }
 
@@ -106,6 +72,7 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 {
 	PACKET_CA_LOGIN pkt;
 	bool authenticated = false;
+	std::shared_ptr<GameAccount> game_account = getSession()->getGameAccount();
 
 	packet >> pkt;
 
@@ -115,31 +82,38 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 		return;
 	}
 
+	if (!InterSocktMgr->getConnectionPoolSize(INTER_SESSION_NAME)) {
+		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_NONE);
+		AuthLog->info("Authentication of account '{}' rejected. Inter server not available.", pkt.username);
+		return;
+	}
+
 	AuthLog->info("Authentication of account '{}' requested. (Client Version: {}, Type: {})", pkt.username, pkt.version, pkt.client_type);
 
-	switch (AuthServer->getAuthConfig().pass_hash_method)
+	switch (AuthServer->getAuthConfig().getPassHashMethod())
 	{
 	case PASS_HASH_NONE:
 	case PASS_HASH_MD5:
-		authenticated = _session->getGameAccount()->VerifyCredentials(AuthServer, pkt.username, pkt.password);
+		authenticated = game_account->VerifyCredentials(AuthServer, pkt.username, pkt.password);
 		break;
 	case PASS_HASH_BCRYPT:
-		authenticated = _session->getGameAccount()->VerifyCredentialsBCrypt(AuthServer, pkt.username, pkt.password);
+		authenticated = game_account->VerifyCredentialsBCrypt(AuthServer, pkt.username, pkt.password);
 		break;
 	}
 
 	if (authenticated) {
-		if (_session->getGameAccount() == nullptr) {
+		if (getSession()->getGameAccount() == nullptr) {
 			AuthLog->error("nullptr gameaccount!?!?!");
 			return;
 		}
+
 		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
 
-		if (ValidateSessionData(_session->getGameAccount()->getId(), pkt.version, pkt.client_type)) {
+		if (ValidateSessionData(getSession()->getGameAccount()->getId(), pkt.version, pkt.client_type)) {
 			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
 			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
 		} else {
-			ProcessAuthentication();
+			Respond_AC_ACCEPT_LOGIN();
 		}
 	} else {
 		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
@@ -150,7 +124,6 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 void Horizon::Auth::PacketHandler::Handle_CA_REQ_HASH(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_REQ_HASH pkt;
-
 }
 
 void Horizon::Auth::PacketHandler::Handle_CA_LOGIN2(PacketBuffer &/*packet*/)
@@ -221,19 +194,20 @@ void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 	 */
 	if (!max_servers) {
 		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_REJECTED_FROM_SERVER);
+		delete pkt;
 		return;
 	}
 
 	server_list = new PACKET_AC_ACCEPT_LOGIN::character_server_list[max_servers];
 
 	pkt->packet_len = sizeof(*pkt) + (sizeof(struct PACKET_AC_ACCEPT_LOGIN::character_server_list) * max_servers);
-	pkt->auth_code = _session->getSessionData()->getAuthCode();
-	pkt->aid = _session->getGameAccount()->getId();
+	pkt->auth_code = getSession()->getSessionData()->getAuthCode();
+	pkt->aid = getSession()->getGameAccount()->getId();
 	pkt->user_level = 1;
 	pkt->last_login_ip = 0; // not used anymore.
 	memset(pkt->last_login_time, '\0', sizeof(pkt->last_login_time)); // Not used anymore
 
-	pkt->sex = (uint8_t) _session->getGameAccount()->getGender();
+	pkt->sex = (uint8_t) getSession()->getGameAccount()->getGender();
 
 	for (int i = 0; i < max_servers; ++i) {
 		std::shared_ptr<character_server_data> chr;
@@ -287,20 +261,17 @@ void Horizon::Auth::PacketHandler::Respond_CA_CHARSERVERCONNECT()
 
 void Horizon::Auth::PacketHandler::InitializeHandlers()
 {
-	_handlers.insert(std::make_pair(CA_LOGIN, boost::bind(&PacketHandler::Handle_CA_LOGIN, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_REQ_HASH, boost::bind(&PacketHandler::Handle_CA_REQ_HASH, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_LOGIN2, boost::bind(&PacketHandler::Handle_CA_LOGIN2, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_LOGIN3, boost::bind(&PacketHandler::Handle_CA_LOGIN3, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_CONNECT_INFO_CHANGED, boost::bind(&PacketHandler::Handle_CA_CONNECT_INFO_CHANGED, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_EXE_HASHCHECK, boost::bind(&PacketHandler::Handle_CA_EXE_HASHCHECK, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_LOGIN_PCBANG, boost::bind(&PacketHandler::Handle_CA_LOGIN_PCBANG, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_LOGIN4, boost::bind(&PacketHandler::Handle_CA_LOGIN4, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_LOGIN_HAN, boost::bind(&PacketHandler::Handle_CA_LOGIN_HAN, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_SSO_LOGIN_REQ, boost::bind(&PacketHandler::Handle_CA_SSO_LOGIN_REQ, this, boost::placeholders::_1)));
-	_handlers.insert(std::make_pair(CA_LOGIN_OTP, boost::bind(&PacketHandler::Handle_CA_LOGIN_OTP, this, boost::placeholders::_1)));
-}
-
-const PacketHandlerMap &Horizon::Auth::PacketHandler::getHandlers() const
-{
-	return _handlers;
+#define HANDLER_FUNC(packet) addPacketHandler(packet, boost::bind(&PacketHandler::Handle_ ## packet, this, boost::placeholders::_1))
+	HANDLER_FUNC(CA_LOGIN);
+	HANDLER_FUNC(CA_REQ_HASH);
+	HANDLER_FUNC(CA_LOGIN2);
+	HANDLER_FUNC(CA_LOGIN3);
+	HANDLER_FUNC(CA_CONNECT_INFO_CHANGED);
+	HANDLER_FUNC(CA_EXE_HASHCHECK);
+	HANDLER_FUNC(CA_LOGIN_PCBANG);
+	HANDLER_FUNC(CA_LOGIN4);
+	HANDLER_FUNC(CA_LOGIN_HAN);
+	HANDLER_FUNC(CA_SSO_LOGIN_REQ);
+	HANDLER_FUNC(CA_LOGIN_OTP);
+#undef HANDLER_FUNC
 }

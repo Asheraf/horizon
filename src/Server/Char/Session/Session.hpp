@@ -15,13 +15,13 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_CHAR_CHARSESSION_H
-#define HORIZON_CHAR_CHARSESSION_H
+#ifndef HORIZON_CHAR_SESSION_H
+#define HORIZON_CHAR_SESSION_H
 
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
-#include "Common/Packet.hpp"
 
+#include <memory>
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
 
@@ -29,36 +29,38 @@ using boost::asio::ip::tcp;
 
 class SessionData;
 class GameAccount;
+class PacketBuffer;
 
 namespace Horizon
 {
 namespace Char
 {
-
 class PacketHandler;
 class InterPacketHandler;
-
-class CharSession : public Socket<CharSession>
+class Session : public Socket<Session>
 {
-	typedef Socket<CharSession> CharSocket;
+	typedef Socket<Session> CharSocket;
 public:
-	CharSession(std::shared_ptr<tcp::socket> socket);
-	~CharSession() { }
-
+	Session(std::shared_ptr<tcp::socket> socket);
+	~Session() { }
+	/* */
 	void Start() override;
 	bool Update() override;
 
+	/* Char Connect Handler */
+	void ValidateAndHandleConnection(PacketBuffer &buf);
+	/* Packet Handler */
+	const std::shared_ptr<PacketHandler> &getPacketHandler() const;
+	void setPacketHandler(std::shared_ptr<PacketHandler> handler);
+	/* */
 protected:
 	void ReadHandler() override;
 	void OnClose() override;
-
+	/* */
 private:
-	std::shared_ptr<GameAccount> _game_account;
-	std::shared_ptr<SessionData> _session_data;
 	std::shared_ptr<PacketHandler> _packet_handler;
-	std::shared_ptr<InterPacketHandler> _inter_packet_handler;
 };
 }
 }
 
-#endif //HORIZON_CHAR_CHARSESSION_H
+#endif //HORIZON_CHAR_SESSION_H

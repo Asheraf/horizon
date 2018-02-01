@@ -41,7 +41,6 @@ public:
 		return &instance;
 	}
 
-	void PrintHeader();
 	bool ReadConfig();
 	void InitializeCore();
 	void InitializeCLICommands();

@@ -18,11 +18,10 @@
 #ifndef HORIZON_AUTH_MAIN_HPP
 #define HORIZON_AUTH_MAIN_HPP
 
-#include "AuthSession.hpp"
-
 #include "Core/Database/MySqlConnection.hpp"
 #include "Common/Server.hpp"
 #include "Common/Models/Configuration/AuthServerConfiguration.hpp"
+#include "Server/Auth/Session/Session.hpp"
 
 #include <string>
 #include <Server/Common/Models/ServerData.hpp>
@@ -31,7 +30,6 @@ namespace Horizon
 {
 namespace Auth
 {
-typedef std::unordered_map<uint32_t, std::shared_ptr<AuthSession>> OnlineListType;
 /**
  * Main Auth Server Singleton Class.
  */
@@ -47,11 +45,10 @@ public:
 		return &instance;
 	}
 
-	void PrintHeader();
 	bool ReadConfig();
 
 	/* Auth Server Configuration */
-	struct auth_server_config &getAuthConfig() { return auth_config; }
+	struct auth_server_config &getAuthConfig() { return _auth_config; }
 
 	void ConnectWithInterServer();
 
@@ -60,40 +57,26 @@ public:
 	void InitializeCLICommands();
 	bool CLICmd_ReloadConfig();
 
-
-	/* Account Online List */
-	void addOnlineAccount(uint32_t id, std::shared_ptr<AuthSession> session) { account_online_list.insert(std::make_pair(id, session)); }
-	std::shared_ptr<AuthSession> getOnlineAccount(uint32_t id)
-	{
-		auto it = account_online_list.find(id);
-		if (it != account_online_list.end())
-			return it->second;
-		else
-			return nullptr;
-	}
-	void removeOnlineAccount(uint32_t id) { account_online_list.erase(id); }
-
 	void UpdateCharServLoop();
 	void UpdateSessionLoop();
 
 	/* Character Server Handlers */
-	void addCharacterServer(struct character_server_data &serv) { character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv))); }
+	void addCharacterServer(struct character_server_data &serv) { _character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv))); }
 	std::shared_ptr<character_server_data> getCharacterServer(int id)
 	{
-		auto it = character_servers.find(id);
+		auto it = _character_servers.find(id);
 
-		if (it != character_servers.end())
+		if (it != _character_servers.end())
 			return it->second;
 		else
 			return nullptr;
 	}
-	std::size_t totalCharacterServers() { return character_servers.size(); }
+	std::size_t totalCharacterServers() { return _character_servers.size(); }
 
 protected:
 	/* Auth Server Configuration */
-	struct auth_server_config auth_config;
-	std::unordered_map<int, std::shared_ptr<character_server_data>> character_servers;
-	OnlineListType account_online_list;
+	struct auth_server_config _auth_config;
+	std::unordered_map<int, std::shared_ptr<character_server_data>> _character_servers;
 };
 }
 }

@@ -32,7 +32,7 @@ target_link_libraries(auth
         boost
         networking
 	    -lpthread
-	    bcrypt
+	    bcryptcpp
         ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
         ${Readline_LIBRARY}
