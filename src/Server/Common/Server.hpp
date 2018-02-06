@@ -73,6 +73,7 @@ public:
 	void ProcessCLICommands();
 	void QueueCLICommand(CLICommand *cmdMgr) { m_CLICmdQueue.add(cmdMgr); }
 	void addCLIFunction(std::string cmd, std::function<bool(void)> func) { m_CLIFunctionMap.insert(std::make_pair(cmd, func)); };
+	
 	/* CLI Function getter */
 	std::function<bool(void)> getCLIFunc(std::string &cmd)
 	{

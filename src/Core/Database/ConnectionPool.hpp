@@ -113,8 +113,7 @@ public:
 		// Check for a free connection
 		if (this->pool.size() == 0) {
 			// Are there any crashed connections listed as "borrowed"?
-			for (auto it = this->borrowed.begin(); it != this->borrowed.end(); ++it){
-
+			for (auto it = this->borrowed.begin(); it != this->borrowed.end(); ++it) {
 				if ((*it).unique()) {
 					// This connection has been abandoned! Destroy it and create a new connection
 					try {
@@ -127,7 +126,6 @@ public:
 						this->borrowed.insert(conn);
 
 						return boost::static_pointer_cast<T>(conn);
-
 					} catch(std::exception &e) {
 						DBLog->error("Unable to connect.");
 						// Error creating a replacement connection
@@ -141,7 +139,7 @@ public:
 		}
 
 		// Take one off the front
-		boost::shared_ptr<Connection>conn = this->pool.front();
+		boost::shared_ptr<Connection> conn = this->pool.front();
 
 		this->pool.pop_front();
 
@@ -155,7 +153,7 @@ public:
 	 * Unborrow a connection
 	 *
 	 * Only call this if you are returning a working connection.  If the connection was bad, just let it go out of scope (so the connection manager can replace it).
-	 * @param the connection
+	 * @param[in|out] connection to unborrow.
 	 */
 	void unborrow(boost::shared_ptr<T> conn)
 	{

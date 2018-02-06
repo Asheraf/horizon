@@ -66,7 +66,7 @@ int Horizon::Char::Database::Query::AllCharactersByAccount(std::shared_ptr<GameA
 		return 0;
 
 	try {
-		sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(*query);
+		sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(*query);
 		pstmt->setInt(1, account->getID());
 		sql::ResultSet *res = pstmt->executeQuery();
 

@@ -34,7 +34,7 @@ public:
 		bool ret = false;
 
 		try {
-			sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
 			pstmt->setInt(1, char_id);
 			sql::ResultSet *res = pstmt->executeQuery();
 

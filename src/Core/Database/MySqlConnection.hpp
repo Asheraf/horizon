@@ -40,15 +40,25 @@ class MySQLConnection : public Connection
 public:
 	~MySQLConnection()
 	{
-		if (this->sql_connection) {
+		if (this->getConnection() != nullptr) {
 			DBLog->info("Terminating mysql connections.");
-			this->sql_connection->close();
-			this->sql_connection.reset(); 	// Release and destruct
+			this->getConnection()->close();
+			this->getConnection().reset(); 	// Release and destruct
 		}
-
 	};
 
-	boost::shared_ptr<sql::Connection> sql_connection;
+	boost::shared_ptr<sql::Connection> &getConnection()
+	{
+		if (!_connection->isValid())
+			_connection->reconnect();
+
+		return _connection;
+	}
+
+	void setConnection(boost::shared_ptr<sql::Connection> const &conn) { _connection = conn; };
+
+private:
+	boost::shared_ptr<sql::Connection> _connection;
 };
 
 
@@ -75,20 +85,20 @@ public:
 		driver = get_driver_instance();
 
 		// Create the connection
-		boost::shared_ptr<MySQLConnection> conn(new MySQLConnection());
+		boost::shared_ptr<MySQLConnection> sql(new MySQLConnection());
 
 		try {
 			// Connect
-			conn->sql_connection = boost::shared_ptr<sql::Connection>(driver->connect(this->host, this->username, this->password));
+			sql->setConnection(boost::shared_ptr<sql::Connection>(driver->connect(this->host, this->username, this->password)));
 			// Set Default Schema
-			conn->sql_connection->setSchema(database);
+			sql->getConnection()->setSchema(database);
 		} catch (sql::SQLException &e) {
 			DBLog->error("{}", e.what());
 		}
 
 		DBLog->info("Initiated MySQL connection to database '{}' for user '{}' on host '{}'.", this->database, this->username, this->host);
 
-		return boost::static_pointer_cast<Connection>(conn);
+		return boost::static_pointer_cast<Connection>(sql);
 	}
 
 private:

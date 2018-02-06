@@ -110,8 +110,15 @@ public:
 	 */
 	std::size_t SyncRead(MessageBuffer &buf)
 	{
-		std::size_t size = _socket->read_some(boost::asio::buffer(buf.GetWritePointer(), buf.GetRemainingSpace()));
-		buf.WriteCompleted(size);
+		std::size_t size = 0;
+
+		try {
+			size = _socket->read_some(boost::asio::buffer(buf.GetWritePointer(), buf.GetRemainingSpace()));
+			buf.WriteCompleted(size);
+		} catch (boost::system::system_error &e) {
+			CoreLog->info("Error {} while reading data from client at {}.", e.what(), _remote_ip_address);
+		}
+
 		return size;
 	}
 
@@ -122,8 +129,15 @@ public:
 	std::size_t SyncWrite(MessageBuffer &message, std::size_t bytes_to_send)
 	{
 		boost::system::error_code error;
-		std::size_t size = _socket->write_some(boost::asio::buffer(message.GetReadPointer(), bytes_to_send), error);
-		message.ReadCompleted(size);
+		std::size_t size = 0;
+
+		try {
+			size = _socket->write_some(boost::asio::buffer(message.GetReadPointer(), bytes_to_send), error);
+			message.ReadCompleted(size);
+		} catch (boost::system::system_error &e) {
+			CoreLog->info("Error {} while writing data to client at {}.", e.what(), _remote_ip_address);
+		}
+
 		return size;
 	}
 

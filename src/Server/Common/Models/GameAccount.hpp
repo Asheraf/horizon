@@ -70,7 +70,7 @@ public:
 		bool ret = false;
 
 		try {
-			sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
 			pstmt->setString(1, username);
 			pstmt->setString(2, password);
 			sql::ResultSet *res = pstmt->executeQuery();
@@ -100,7 +100,7 @@ public:
 		bool ret = false;
 
 		try {
-			sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
 			pstmt->setString(1, username);
 			sql::ResultSet *res = pstmt->executeQuery();
 

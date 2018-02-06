@@ -23,9 +23,9 @@ public:
 
 	/**
 	 * Load all fields from the database into this instance.
-	 * @param server
-	 * @param char_id
-	 * @return
+	 * @param server    Pointer to the invoking to borrow an sql connection from.
+	 * @param char_id   Id of the character to load the view of.
+	 * @return true on success, false on failure.
 	 */
 	bool LoadFromDatabase(Server *server, uint32_t char_id)
 	{
@@ -34,7 +34,7 @@ public:
 		bool ret = false;
 
 		try {
-			sql::PreparedStatement *pstmt = sql->sql_connection->prepareStatement(query);
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
 			pstmt->setInt(1, char_id);
 			sql::ResultSet *res = pstmt->executeQuery();
 
