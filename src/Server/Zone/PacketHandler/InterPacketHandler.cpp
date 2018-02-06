@@ -15,35 +15,34 @@
  * or viewing without permission.
  **************************************************/
 
-#include "PacketHandler20171113.hpp"
+#include "InterPacketHandler.hpp"
 
 #include "Core/Logging/Logger.hpp"
-#include "Server/Auth/Session/Session.hpp"
+#include "Server/Zone/Zone.hpp"
+#include "Server/Zone/Session/InterSession.hpp"
+#include "Server/Common/Models/SessionData.hpp"
+#include "Server/Inter/PacketHandler/Packets.hpp"
 
 #include <boost/bind.hpp>
 
-Horizon::Auth::PacketHandler20171113::PacketHandler20171113(std::shared_ptr<Session> const &session)
-: Horizon::Auth::PacketHandler20170315(session)
+Horizon::Zone::InterPacketHandler::InterPacketHandler(std::shared_ptr<InterSession> session)
+: Horizon::Base::InterPacketHandler<InterSession>(session, ZoneServer->getNetworkConf().getInterServerPassword())
 {
+	// Construct
 	InitializeHandlers();
 }
 
-Horizon::Auth::PacketHandler20171113::~PacketHandler20171113()
+Horizon::Zone::InterPacketHandler::~InterPacketHandler()
 {
+	// Destruct
 }
 
-void Horizon::Auth::PacketHandler20171113::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
+void Horizon::Zone::InterPacketHandler::InitializeHandlers()
 {
+	Base::InterPacketHandler<InterSession>::InitializeHandlers();
 
+#define HANDLER_FUNC(packet, handler) addPacketHandler(packet, boost::bind(handler, this, boost::placeholders::_1))
+	///
+#undef HANDLER_FUNC
 }
 
-void Horizon::Auth::PacketHandler20171113::Handle_Poly(PacketBuffer &/*buf*/)
-{
-	AuthLog->info("20171113 Poly Overloaded!");
-}
-
-void Horizon::Auth::PacketHandler20171113::InitializeHandlers()
-{
-	PacketHandler20170315::InitializeHandlers();
-	addPacketHandler(CA_LOGIN, boost::bind(&PacketHandler::Handle_CA_LOGIN, this, boost::placeholders::_1));
-}

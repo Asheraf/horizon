@@ -15,8 +15,8 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_PACKETHANDLER_HPP
-#define HORIZON_PACKETHANDLER_HPP
+#ifndef HORIZON_CHAR_PACKETHANDLER_HPP
+#define HORIZON_CHAR_PACKETHANDLER_HPP
 
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Common/Base/PacketHandler/PacketHandler.hpp"
@@ -57,4 +57,4 @@ public:
 }
 }
 
-#endif //HORIZON_PACKETHANDLER_HPP
+#endif // HORIZON_CHAR_PACKETHANDLER_HPP

@@ -42,7 +42,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterId(char_id);
+				setCharacterID(char_id);
 				setFont((uint8_t) res->getUInt("font"));
 				setShowEquip((uint8_t) res->getUInt("show_equip"));
 				setAllowParty((uint8_t) res->getUInt("allow_party"));
@@ -62,8 +62,8 @@ public:
 	}
 
 	/* Character ID */
-	uint32_t getCharacterId() const { return character_id; }
-	void setCharacterId(uint32_t character_id) { UISettings::character_id = character_id; }
+	uint32_t getCharacterID() const { return character_id; }
+	void setCharacterID(uint32_t character_id) { UISettings::character_id = character_id; }
 	/* Font */
 	uint8_t getFont() const { return font; }
 	void setFont(uint8_t font) { UISettings::font = font; }

@@ -83,6 +83,9 @@ void Horizon::Char::Session::ValidateAndHandleConnection(PacketBuffer &buf)
 		return;
 	}
 
+	// Game Account
+	getGameAccount()->setID(pkt.account_id);
+
 	// Create a packet handler for this session.
 	setPacketHandler(PacketHandlerFactory::CreatePacketHandler(shared_from_this(), getSessionData()->getClientVersion()));
 	getPacketHandler()->Handle_CHAR_CONNECT(pkt);

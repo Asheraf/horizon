@@ -14,34 +14,47 @@
  * Under a proprietary license this file is not for use
  * or viewing without permission.
  **************************************************/
-#ifndef HORIZON_BCRYPT_CPP
-#define HORIZON_BCRYPT_CPP
 
-#include "BCrypt.hpp"
-#include <exception>
-#include <string>
+#ifndef HORIZON_CHAR_DATABASE_QUERY_HPP
+#define HORIZON_CHAR_DATABASE_QUERY_HPP
 
-std::string BCrypt::generateHash(const std::string & password, int workload = 12)
+#include "Server/Common/Database/Query.hpp"
+
+#include <map>
+#include <stdio.h>
+
+class GameAccount;
+
+namespace Horizon
 {
-	char salt[BCRYPT_HASHSIZE];
-	char hash[BCRYPT_HASHSIZE];
-	int ret;
-	ret = bcrypt_gensalt(workload, salt);
+namespace Char
+{
+namespace Database
+{
+enum char_query_types
+{
+	SELECT_ALL_CHARS_BY_AID,
+};
+class Query : public Horizon::Common::Database::Query
+{
+public:
+	Query();
+	~Query();
 
-	if (ret != 0)
-		throw std::runtime_error{"bcrypt: can not generate salt"};
+	static Query *getInstance()
+	{
+		static Query query;
+		return &query;
+	}
 
-	 ret = bcrypt_hashpw(password.c_str(), salt, hash);
+	void InitializeQueryStrings();
 
-	 if (ret != 0)
-		throw std::runtime_error{"bcrypt: can not generate hash"};
-
-	 return hash;
+	int AllCharactersByAccount(std::shared_ptr<GameAccount> account);
+};
+}
+}
 }
 
-bool BCrypt::validatePassword(const std::string & password, const std::string & hash)
-{
-	return (bcrypt_checkpw(password.c_str(), hash.c_str()) == 0);
-}
+#define CharQuery Horizon::Char::Database::Query::getInstance()
 
-#endif //HORIZON_BCRYPT_CPP
+#endif /* HORIZON_CHAR_DATABASE_QUERY_HPP */

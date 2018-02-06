@@ -20,19 +20,24 @@ add_subdirectory(Models)
 add_subdirectory(Utilities)
 add_subdirectory(Interfaces)
 add_subdirectory(Base)
+add_subdirectory(Database)
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(COMMON_SOURCES
+set(MAIN_COMMON_SOURCES
 	${DIR}/PacketBuffer.hpp
 	${DIR}/Server.hpp
 	${DIR}/Server.cpp
 	${DIR}/Definitions.hpp
 	${DIR}/Client.hpp
-	${DIR}/Horizon.hpp
+	${DIR}/Horizon.hpp)
+
+set(COMMON_SOURCES
+	${MAIN_COMMON_SOURCES}
 	${CLI_SOURCES}
 	${UTILITIES_SOURCES}
 	${MODELS_SOURCES}
 	${INTERFACE_SOURCES}
 	${BASE_SOURCES}
+	${DATABASE_SOURCES}
 	PARENT_SCOPE)

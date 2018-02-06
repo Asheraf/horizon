@@ -20,6 +20,13 @@
 
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Common/Horizon.hpp"
+#include "Server/Common/Models/Characters/Character.hpp"
+#include "Server/Common/Models/Characters/Status.hpp"
+#include "Server/Common/Models/Characters/View.hpp"
+#include "Server/Common/Models/Characters/Group.hpp"
+#include "Server/Common/Models/Characters/Misc.hpp"
+#include "Server/Common/Models/Characters/Position.hpp"
+#include "Server/Common/Models/Characters/Access.hpp"
 
 namespace Horizon
 {
@@ -129,6 +136,57 @@ struct PACKET_CHAR_ACCOUNT_ID
  */
 struct character_list_data
 {
+	character_list_data() { };
+	
+	void create(std::shared_ptr<Horizon::Models::Characters::Character> c)
+	{
+		std::shared_ptr<Horizon::Models::Characters::Status> status = c->getStatusData();
+		std::shared_ptr<Horizon::Models::Characters::View> view = c->getViewData();
+		std::shared_ptr<Horizon::Models::Characters::Misc> misc = c->getMiscData();
+		std::shared_ptr<Horizon::Models::Characters::Position> position = c->getPositionData();
+		std::shared_ptr<Horizon::Models::Characters::Access> access = c->getAccessData();
+
+		character_id = c->getCharacterID();
+		base_experience = status->getBaseExperience();
+		zeny = status->getZeny();
+		job_experience = status->getJobExperience();
+		job_level = status->getJobLevel();
+		body_state1 = status->getBodyState();
+		virtue = status->getVirtue();
+		honor = status->getHonor();
+		status_points = status->getStatusPoints();
+		hp = status->getHP();
+		maximum_hp = status->getMaximumHP();
+		sp = status->getSP();
+		maximum_sp = status->getMaximumSP();
+		job_class = status->getJobClass();
+		walk_speed = DEFAULT_WALK_SPEED;
+		hair_view_id = view->getHairStyleID();
+		body_view_id = view->getBodyID();
+		weapon_view_id = view->getWeaponID();
+		base_level = status->getBaseLevel();
+		skill_point = status->getSkillPoints();
+		head_bottom_view_id = view->getHeadBottomViewID();
+		shield_id = view->getShieldID();
+		head_top_view_id = view->getHeadTopViewID();
+		head_mid_view_id = view->getHeadMidViewID();
+		hair_color_id = view->getHairColorID();
+		clothes_color_id = view->getClothColorID();
+		strncpy(name, c->getName().c_str(), CHAR_NAME_LENGTH);
+		strength = status->getStrength();
+		agility = status->getAgility();
+		vitality = status->getVitality();
+		intelligence = status->getIntelligence();
+		dexterity = status->getDexterity();
+		luck = status->getLuck();
+		char_slot = c->getSlot();
+		rename_count = misc->getRenameCount();
+		strncpy(map_name, position->getCurrentMap().c_str(), MAP_NAME_LENGTH_EXT);
+		delete_date = access->getDeleteDate();
+		robe_view_id = view->getRobeViewID();
+		change_slot_count = misc->getChangeSlotCount();
+	}
+
 	uint32_t character_id{};      ///< 0
 	uint32_t base_experience{};   ///< 4
 	uint32_t zeny{};              ///< 8
@@ -171,7 +229,7 @@ struct character_list_data
 	uint32_t robe_view_id{};         ///< 134
 	uint32_t change_slot_count{};    ///< 138
 	uint32_t addon_option{};         ///< 142 1: Displays "Addon" on side-bar.
-	uint8_t gender{};                ///< 143 0: Female, 1: Male, 99: Account-based.
+	uint8_t gender{};                ///< 146 0: Female, 1: Male, 99: Account-based.
 };
 
 struct PACKET_CHAR_LIST_ACK : public Packet

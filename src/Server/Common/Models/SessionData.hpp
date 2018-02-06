@@ -39,11 +39,11 @@ public:
 	 */
 	SessionData &operator >> (PACKET_INTER_SESSION &pkt)
 	{
-		pkt.game_account_id = getGameAccountId();
+		pkt.game_account_id = getGameAccountID();
 		pkt.auth_code = getAuthCode();
 		pkt.client_type = getClientType();
 		pkt.client_version = getClientVersion();
-		pkt.group_id = getGroupId();
+		pkt.group_id = getGroupID();
 		pkt.character_slots = getCharacterSlots();
 
 		return *this;
@@ -54,12 +54,12 @@ public:
 	 */
 	SessionData &operator << (PACKET_INTER_SESSION &pkt)
 	{
-		setGameAccountId(pkt.game_account_id);
+		setGameAccountID(pkt.game_account_id);
 		setAuthCode(pkt.auth_code);
 		setClientVersion(pkt.client_version);
 		setClientType(pkt.client_type);
 		setCharacterSlots(pkt.character_slots);
-		setGroupId(pkt.group_id);
+		setGroupID(pkt.group_id);
 		
 		return *this;
 	}
@@ -74,14 +74,14 @@ public:
 	uint8_t getClientType() const { return _client_type; }
 	void setClientType(uint8_t client_type) { SessionData::_client_type = client_type; }
 	/* Game Account ID */
-	uint32_t getGameAccountId() const { return _game_account_id; }
-	void setGameAccountId(uint32_t game_account_id) { SessionData::_game_account_id = game_account_id; }
+	uint32_t getGameAccountID() const { return _game_account_id; }
+	void setGameAccountID(uint32_t game_account_id) { SessionData::_game_account_id = game_account_id; }
 	/* Character Slots */
 	uint32_t getCharacterSlots() const { return _character_slots; }
 	void setCharacterSlots(uint32_t _character_slots) { SessionData::_character_slots = _character_slots; }
 	/* Group ID */
-	uint32_t getGroupId() const { return _group_id; }
-	void setGroupId(uint32_t _group_id) { SessionData::_group_id = _group_id; }
+	uint32_t getGroupID() const { return _group_id; }
+	void setGroupID(uint32_t _group_id) { SessionData::_group_id = _group_id; }
 
 private:
 	uint32_t _auth_code;

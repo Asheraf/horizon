@@ -14,34 +14,33 @@
  * Under a proprietary license this file is not for use
  * or viewing without permission.
  **************************************************/
-#ifndef HORIZON_BCRYPT_CPP
-#define HORIZON_BCRYPT_CPP
 
-#include "BCrypt.hpp"
-#include <exception>
-#include <string>
+#ifndef HORIZON_ZONE_INTERPACKETHANDLER_HPP
+#define HORIZON_ZONE_INTERPACKETHANDLER_HPP
 
-std::string BCrypt::generateHash(const std::string & password, int workload = 12)
+#include "Server/Common/PacketBuffer.hpp"
+#include "Server/Common/Base/PacketHandler/InterPacketHandler.hpp"
+#include <memory>
+
+class SessionData;
+class PacketBuffer;
+
+namespace Horizon
 {
-	char salt[BCRYPT_HASHSIZE];
-	char hash[BCRYPT_HASHSIZE];
-	int ret;
-	ret = bcrypt_gensalt(workload, salt);
+namespace Zone
+{
+class InterSession;
+class InterPacketHandler : public Horizon::Base::InterPacketHandler<InterSession>
+{
+public:
+	InterPacketHandler(std::shared_ptr<InterSession> session);
+	~InterPacketHandler();
 
-	if (ret != 0)
-		throw std::runtime_error{"bcrypt: can not generate salt"};
-
-	 ret = bcrypt_hashpw(password.c_str(), salt, hash);
-
-	 if (ret != 0)
-		throw std::runtime_error{"bcrypt: can not generate hash"};
-
-	 return hash;
+	/* Initializer */
+	void InitializeHandlers() override;
+};
+}
 }
 
-bool BCrypt::validatePassword(const std::string & password, const std::string & hash)
-{
-	return (bcrypt_checkpw(password.c_str(), hash.c_str()) == 0);
-}
+#endif //HORIZON_INTERPACKETHANDLER_HPP
 
-#endif //HORIZON_BCRYPT_CPP

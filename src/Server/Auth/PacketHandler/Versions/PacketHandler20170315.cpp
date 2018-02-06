@@ -22,8 +22,8 @@
 
 #include <boost/bind.hpp>
 
-Horizon::Auth::PacketHandler20170315::PacketHandler20170315(std::shared_ptr<Session> &session)
-: PacketHandler(session)
+Horizon::Auth::PacketHandler20170315::PacketHandler20170315(std::shared_ptr<Session> const &session)
+: Horizon::Auth::PacketHandler(session)
 {
 	InitializeHandlers();
 }

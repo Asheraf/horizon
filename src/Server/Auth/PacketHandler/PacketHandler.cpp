@@ -56,12 +56,12 @@ bool Horizon::Auth::PacketHandler::ValidateSessionData(uint32_t id, uint32_t cli
 	game_account->setLastIp(getSession()->getRemoteIPAddress());
 	game_account->setLastLogin((int) time(nullptr));
 	// Session Data.
-	session_data->setAuthCode(game_account->getId()); // @TODO Change to something unique to prevent session hijaking.
-	session_data->setGameAccountId(game_account->getId());
+	session_data->setAuthCode(game_account->getID()); // @TODO Change to something unique to prevent session hijaking.
+	session_data->setGameAccountID(game_account->getID());
 	session_data->setClientVersion(client_version);
 	session_data->setClientType(client_type);
 	session_data->setCharacterSlots(game_account->getCharacterSlots());
-	session_data->setGroupId(game_account->getGroupId());
+	session_data->setGroupID(game_account->getGroupID());
 
 	// Send session data to inter.
 	AuthInterAPI->AddSessionToInter(session_data);
@@ -109,7 +109,7 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 
 		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
 
-		if (ValidateSessionData(getSession()->getGameAccount()->getId(), pkt.version, pkt.client_type)) {
+		if (ValidateSessionData(getSession()->getGameAccount()->getID(), pkt.version, pkt.client_type)) {
 			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
 			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
 		} else {
@@ -202,7 +202,7 @@ void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 
 	pkt->packet_len = sizeof(*pkt) + (sizeof(struct PACKET_AC_ACCEPT_LOGIN::character_server_list) * max_servers);
 	pkt->auth_code = getSession()->getSessionData()->getAuthCode();
-	pkt->aid = getSession()->getGameAccount()->getId();
+	pkt->aid = getSession()->getGameAccount()->getID();
 	pkt->user_level = 1;
 	pkt->last_login_ip = 0; // not used anymore.
 	memset(pkt->last_login_time, '\0', sizeof(pkt->last_login_time)); // Not used anymore

@@ -107,7 +107,7 @@ public:
 		// Update Session Data.
 		*session_data << pkt;
 
-		CoreLog->info("Updated session data for account : '{}'", session_data->getGameAccountId());
+		CoreLog->info("Updated session data for account : '{}'", session_data->getGameAccountID());
 	}
 
 	/************

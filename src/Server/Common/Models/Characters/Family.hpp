@@ -42,11 +42,11 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterId(char_id);
-				setParterAid(res->getUInt("partner_aid"));
-				setFatherAid(res->getUInt("father_aid"));
-				setMotherAid(res->getUInt("mother_aid"));
-				setChildAid(res->getUInt("child_aid"));
+				setCharacterID(char_id);
+				setParterAID(res->getUInt("partner_aid"));
+				setFatherAID(res->getUInt("father_aid"));
+				setMotherAID(res->getUInt("mother_aid"));
+				setChildAID(res->getUInt("child_aid"));
 				ret = true;
 			}
 
@@ -62,20 +62,20 @@ public:
 	}
 
 	/* Character Id */
-	uint32_t getCharacterId() const { return character_id; }
-	void setCharacterId(uint32_t character_id) { Family::character_id = character_id; }
+	uint32_t getCharacterID() const { return character_id; }
+	void setCharacterID(uint32_t character_id) { Family::character_id = character_id; }
 	/* Parter Account ID */
-	uint32_t getParterAid() const { return parter_aid; }
-	void setParterAid(uint32_t parter_aid) { Family::parter_aid = parter_aid; }
+	uint32_t getParterAID() const { return parter_aid; }
+	void setParterAID(uint32_t parter_aid) { Family::parter_aid = parter_aid; }
 	/* Father Account ID */
-	uint32_t getFatherAid() const { return father_aid; }
-	void setFatherAid(uint32_t father_aid) { Family::father_aid = father_aid; }
+	uint32_t getFatherAID() const { return father_aid; }
+	void setFatherAID(uint32_t father_aid) { Family::father_aid = father_aid; }
 	/* Mother Account ID */
-	uint32_t getMotherAid() const { return mother_aid; }
-	void setMotherAid(uint32_t mother_aid) { Family::mother_aid = mother_aid; }
+	uint32_t getMotherAID() const { return mother_aid; }
+	void setMotherAID(uint32_t mother_aid) { Family::mother_aid = mother_aid; }
 	/* Child Account ID */
-	uint32_t getChildAid() const { return child_aid; }
-	void setChildAid(uint32_t child_aid) { Family::child_aid = child_aid; }
+	uint32_t getChildAID() const { return child_aid; }
+	void setChildAID(uint32_t child_aid) { Family::child_aid = child_aid; }
 
 private:
 	uint32_t character_id;

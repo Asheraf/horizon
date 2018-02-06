@@ -42,7 +42,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterId(char_id);
+				setCharacterID(char_id);
 				setJobClass((uint16_t) res->getUInt("job_class"));
 				setBaseLevel((uint16_t) res->getUInt("base_level"));
 				setJobLevel((uint16_t) res->getUInt("job_level"));
@@ -80,8 +80,8 @@ public:
 	}
 
 	/* Character ID */
-	uint32_t getCharacterId() const { return character_id; }
-	void setCharacterId(uint32_t character_id) { Status::character_id = character_id; }
+	uint32_t getCharacterID() const { return character_id; }
+	void setCharacterID(uint32_t character_id) { Status::character_id = character_id; }
 	/* Job Class */
 	uint16_t getJobClass() const { return job_class; }
 	void setJobClass(uint16_t job_class) { Status::job_class = job_class; }

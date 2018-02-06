@@ -21,6 +21,7 @@
 #include "Server/Char/PacketHandler/Packets.hpp"
 #include "Server/Char/Session/Session.hpp"
 #include "Server/Common/Models/SessionData.hpp"
+#include "Server/Char/Database/Query.hpp"
 
 #include <boost/bind.hpp>
 
@@ -60,6 +61,8 @@ void Horizon::Char::PacketHandler::InitializeHandlers()
  */
 void Horizon::Char::PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pkt*/)
 {
+	CharQuery->AllCharactersByAccount(getSession()->getGameAccount());
+	
 	// Send acceptance notice to client.
 	Respond_CHAR_ACCOUNT_ID();
 
@@ -106,7 +109,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_CONNECT_ERROR(character_connect_
 void Horizon::Char::PacketHandler::Respond_CHAR_ACCOUNT_ID()
 {
 	PACKET_CHAR_ACCOUNT_ID pkt;
-	pkt.account_id = getSession()->getSessionData()->getGameAccountId();
+	pkt.account_id = getSession()->getSessionData()->getGameAccountID();
 	SendPacket(pkt);
 }
 
@@ -122,7 +125,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_SLOT_INFO_ACK()
 	pkt.char_slots_1 = getSession()->getSessionData()->getCharacterSlots();
 	pkt.char_slots_2 = getSession()->getSessionData()->getCharacterSlots();
 	SendPacket(pkt);
-	CharLog->info("Sent character-slot information to AID {}", getSession()->getSessionData()->getGameAccountId());
+	CharLog->info("Sent character-slot information to AID {}", getSession()->getSessionData()->getGameAccountID());
 }
 
 /**
@@ -132,8 +135,31 @@ void Horizon::Char::PacketHandler::Respond_CHAR_SLOT_INFO_ACK()
 void Horizon::Char::PacketHandler::Respond_CHAR_LIST_ACK()
 {
 	PACKET_CHAR_LIST_ACK pkt;
-	SendPacket(pkt);
-	CharLog->info("Sent character-list information to AID {}", getSession()->getSessionData()->getGameAccountId());
+	PacketBuffer buf;
+	std::vector<character_list_data> char_list;
+	int char_list_length = 0;
+
+	for (auto c : getSession()->getGameAccount()->getAllCharacters()) {
+		character_list_data c_data;
+		c_data.create(c.second);
+		c_data.gender = getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_NONE
+			? c.second->getGender()
+			: getSession()->getGameAccount()->getGender();
+		char_list.push_back(c_data);
+		char_list_length += sizeof(c_data);
+	}
+
+	pkt.packet_len += char_list_length;
+
+	buf.append(&pkt, sizeof(pkt));
+
+	for (auto c : char_list) {
+		buf.append(&c, sizeof(c));
+	}
+
+	SendPacket(buf, pkt.packet_len);
+
+	CharLog->info("Sent character-list information to AID {}", getSession()->getSessionData()->getGameAccountID());
 }
 
 /**
@@ -144,7 +170,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_BAN_LIST_ACK()
 {
 	PACKET_CHAR_BAN_LIST_ACK pkt;
 	SendPacket(pkt);
-	CharLog->info("Send character ban-list information to AID {}", getSession()->getGameAccount()->getId());
+	CharLog->info("Send character ban-list information to AID {}", getSession()->getGameAccount()->getID());
 }
 
 /**
@@ -155,7 +181,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_PINCODE_STATE_ACK()
 {
 	PACKET_CHAR_PINCODE_STATE_ACK pkt;
 	pkt.pincode_seed = rand() % 0xFFFF;
-	pkt.account_id = getSession()->getSessionData()->getGameAccountId();
+	pkt.account_id = getSession()->getSessionData()->getGameAccountID();
 	pkt.state = PINCODE_CORRECT;
 	SendPacket(pkt);
 }

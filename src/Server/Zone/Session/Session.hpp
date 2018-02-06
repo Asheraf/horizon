@@ -14,40 +14,51 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONE_ZONESESSION_H
-#define HORIZON_ZONE_ZONESESSION_H
+#ifndef HORIZON_ZONE_SESSION_H
+#define HORIZON_ZONE_SESSION_H
 
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
 
-#include "Common/PacketBuffer.hpp"
-
+#include <memory>
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
 
 using boost::asio::ip::tcp;
 
+class SessionData;
+class GameAccount;
+class PacketBuffer;
+
 namespace Horizon
 {
 namespace Zone
 {
-class ZoneSession : public Socket<ZoneSession>
+class PacketHandler;
+class InterPacketHandler;
+class Session : public Socket<Session>
 {
-	friend class ZoneMain;
-	typedef Socket<ZoneSession> ZoneSocket;
-	typedef void (ZoneSession::*ZonePacketHandler) (PacketBuffer &pkt);
+	typedef Socket<Session> ZoneSocket;
 public:
-	ZoneSession(std::shared_ptr<tcp::socket> socket);
-	~ZoneSession() { }
-
+	Session(std::shared_ptr<tcp::socket> socket);
+	~Session() { }
+	/* */
 	void Start() override;
 	bool Update() override;
 
+	/* Zone Connect Handler */
+	void ValidateAndHandleConnection(PacketBuffer &buf);
+	/* Packet Handler */
+	const std::shared_ptr<PacketHandler> &getPacketHandler() const;
+	void setPacketHandler(std::shared_ptr<PacketHandler> handler);
+	/* */
 protected:
 	void ReadHandler() override;
 	void OnClose() override;
+	/* */
+private:
+	std::shared_ptr<PacketHandler> _packet_handler;
 };
 }
 }
-
 #endif //HORIZON_ZONE_ZONESESSION_H

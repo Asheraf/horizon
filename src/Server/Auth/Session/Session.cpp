@@ -92,7 +92,7 @@ void Horizon::Auth::Session::ReadHandler()
 		 */
 		if (op_code == CA_LOGIN) {
 			int packet_ver = GetPacketVersion(op_code, pkt);
-			setPacketHandler(PacketHandlerFactory::CreateAuthPacketHandler(packet_ver, shared_from_this()));
+			setPacketHandler(PacketHandlerFactory::CreateAuthPacketHandler(shared_from_this(), packet_ver));
 		}
 
 		if (getPacketHandler() == nullptr) {

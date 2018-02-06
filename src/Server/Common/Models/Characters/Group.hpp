@@ -42,9 +42,9 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterId(char_id);
-				setPartyId(res->getUInt("party_id"));
-				setGuildId(res->getUInt("guild_id"));
+				setCharacterID(char_id);
+				setPartyID(res->getUInt("party_id"));
+				setGuildID(res->getUInt("guild_id"));
 				ret = true;
 			}
 
@@ -60,14 +60,14 @@ public:
 	}
 
 	/* Character ID */
-	uint32_t getCharacterId() const { return character_id; }
-	void setCharacterId(uint32_t character_id) { Group::character_id = character_id; }
+	uint32_t getCharacterID() const { return character_id; }
+	void setCharacterID(uint32_t character_id) { Group::character_id = character_id; }
 	/* Party ID */
-	uint32_t getPartyId() const { return party_id; }
-	void setPartyId(uint32_t party_id) { Group::party_id = party_id; }
+	uint32_t getPartyID() const { return party_id; }
+	void setPartyID(uint32_t party_id) { Group::party_id = party_id; }
 	/* Guild ID */
-	uint32_t getGuildId() const { return guild_id; }
-	void setGuildId(uint32_t guild_id) { Group::guild_id = guild_id; }
+	uint32_t getGuildID() const { return guild_id; }
+	void setGuildID(uint32_t guild_id) { Group::guild_id = guild_id; }
 
 private:
 	uint32_t character_id;

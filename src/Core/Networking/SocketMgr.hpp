@@ -122,13 +122,13 @@ public:
 		return min_idx;
 	}
 
-	/*==================================*
+	/**
 	 * @brief On Socket Open / Start Routine.
 	 *        - Move the socket ownership from the caller to a new socket and add it to a thread.
 	 * @param[in|out] conn_name      as the name of the connection.
 	 * @param[in]     socket         shared pointer.
 	 * @param[in]     thread_index   index of the thread that the socket is being moved from.
-	 *==================================*/
+	 */
 	std::shared_ptr<SocketType> OnSocketOpen(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
 	{
 		std::shared_ptr<SocketType> new_session = std::make_shared<SocketType>(std::move(socket));

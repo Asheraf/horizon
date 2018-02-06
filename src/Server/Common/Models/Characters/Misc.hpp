@@ -42,11 +42,11 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterId(char_id);
+				setCharacterID(char_id);
 				setRenameCount((uint8_t) res->getUInt("rename_count"));
 				setUniqueItemCounter(res->getUInt("unique_item_counter"));
-				setHotkeyrowIndex((uint16_t) res->getUInt("hotkey_row_index"));
-				setChangeSlot((uint8_t) res->getUInt("change_slot"));
+				setHotkeyRowIndex((uint16_t) res->getUInt("hotkey_row_index"));
+				setChangeSlotCount((uint8_t) res->getUInt("change_slot"));
 				ret = true;
 			}
 
@@ -61,8 +61,8 @@ public:
 		return ret;
 	}
 	/* Character ID */
-	uint32_t getCharacterId() const { return character_id; }
-	void setCharacterId(uint32_t character_id) { Misc::character_id = character_id; }
+	uint32_t getCharacterID() const { return character_id; }
+	void setCharacterID(uint32_t character_id) { Misc::character_id = character_id; }
 	/* Character Rename Count */
 	uint8_t getRenameCount() const { return rename_count; }
 	void setRenameCount(uint8_t rename_count) { Misc::rename_count = rename_count; }
@@ -71,10 +71,10 @@ public:
 	void setUniqueItemCounter(uint64_t unique_item_counter) { Misc::unique_item_counter = unique_item_counter; }
 	/* Hotkey Row Index */
 	uint8_t getHotkeyRowIndex() const { return hotkey_row_index; }
-	void setHotkeyrowIndex(uint8_t hotkey_row_index) { Misc::hotkey_row_index = hotkey_row_index; }
+	void setHotkeyRowIndex(uint8_t hotkey_row_index) { Misc::hotkey_row_index = hotkey_row_index; }
 	/* Change Slot Count */
 	uint8_t getChangeSlotCount() const { return change_slot_count; }
-	void setChangeSlot(uint8_t change_slot_count) { Misc::change_slot_count = change_slot_count; }
+	void setChangeSlotCount(uint8_t change_slot_count) { Misc::change_slot_count = change_slot_count; }
 private:
 	uint32_t character_id;
 	uint8_t rename_count;

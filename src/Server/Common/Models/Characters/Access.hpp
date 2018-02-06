@@ -42,7 +42,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterId(char_id);
+				setCharacterID(char_id);
 				setUnbanTime(res->getUInt("unban_time"));
 				setDeleteDate(res->getUInt("delete_date"));
 				ret = true;
@@ -60,8 +60,8 @@ public:
 	}
 
 	/* Char ID */
-	uint32_t getCharacterId() const { return character_id; }
-	void setCharacterId(uint32_t character_id) { Access::character_id = character_id; }
+	uint32_t getCharacterID() const { return character_id; }
+	void setCharacterID(uint32_t character_id) { Access::character_id = character_id; }
 	/* Unban Time */
 	uint32_t getUnbanTime() const { return unban_time; }
 	void setUnbanTime(uint32_t unban_time) { Access::unban_time = unban_time; }

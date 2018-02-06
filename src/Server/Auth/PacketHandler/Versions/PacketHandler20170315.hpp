@@ -30,7 +30,7 @@ class Session;
 class PacketHandler20170315 : public PacketHandler
 {
 public:
-	explicit PacketHandler20170315(std::shared_ptr<Session> &session);
+	explicit PacketHandler20170315(std::shared_ptr<Session> const &session);
 	~PacketHandler20170315() override;
 
 	void Respond_AC_ACCEPT_LOGIN() override;

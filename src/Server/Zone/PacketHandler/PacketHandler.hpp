@@ -14,34 +14,40 @@
  * Under a proprietary license this file is not for use
  * or viewing without permission.
  **************************************************/
-#ifndef HORIZON_BCRYPT_CPP
-#define HORIZON_BCRYPT_CPP
 
-#include "BCrypt.hpp"
-#include <exception>
-#include <string>
+#ifndef HORIZON_ZONE_PACKETHANDLER_HPP
+#define HORIZON_ZONE_PACKETHANDLER_HPP
 
-std::string BCrypt::generateHash(const std::string & password, int workload = 12)
+#include "Server/Common/PacketBuffer.hpp"
+#include "Server/Common/Base/PacketHandler/PacketHandler.hpp"
+#include "Server/Zone/PacketHandler/Packets.hpp"
+
+#include <memory>
+
+class PacketBuffer;
+class SessionData;
+
+namespace Horizon
 {
-	char salt[BCRYPT_HASHSIZE];
-	char hash[BCRYPT_HASHSIZE];
-	int ret;
-	ret = bcrypt_gensalt(workload, salt);
+namespace Zone
+{
+class Session;
+class PacketHandler : public Horizon::Base::PacketHandler<Session>
+{
+public:
+	explicit PacketHandler(std::shared_ptr<Session> session);
+	virtual ~PacketHandler();
 
-	if (ret != 0)
-		throw std::runtime_error{"bcrypt: can not generate salt"};
-
-	 ret = bcrypt_hashpw(password.c_str(), salt, hash);
-
-	 if (ret != 0)
-		throw std::runtime_error{"bcrypt: can not generate hash"};
-
-	 return hash;
+	virtual void InitializeHandlers();
+	/**
+	 * Handlers
+	 */
+	/**
+	 * Responders
+	 */
+};
+}
 }
 
-bool BCrypt::validatePassword(const std::string & password, const std::string & hash)
-{
-	return (bcrypt_checkpw(password.c_str(), hash.c_str()) == 0);
-}
+#endif //HORIZON_PACKETHANDLER_HPP
 
-#endif //HORIZON_BCRYPT_CPP

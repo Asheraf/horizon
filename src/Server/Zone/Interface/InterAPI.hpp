@@ -15,36 +15,36 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_HORIZON_H
-#define HORIZON_HORIZON_H
+#ifndef HORIZON_ZONE_INTERFACE_INTERAPI_HPP
+#define HORIZON_ZONE_INTERFACE_INTERAPI_HPP
 
-#include "Definitions.hpp"
-#include "Client.hpp"
+#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Interfaces/InterServerAPI.hpp"
+#include "Server/Zone/Session/InterSession.hpp"
 
-#ifndef MINIMUM_PACKETVER
-	#define MINIMUM_PACKETVER 20141022
-#endif
+namespace Horizon
+{
+namespace Zone
+{
+namespace Interface
+{
+class InterAPI : public Horizon::Interface::InterServerAPI<InterSession>
+{
+public:
+	InterAPI() : InterServerAPI(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME)) {}
+	~InterAPI() {}
 
-#ifndef MAXIMUM_PACKETVER
-	#define MAXIMUM_PACKETVER 20171113
-#endif
+	static InterAPI *getInstance()
+	{
+		static InterAPI inter_api;
+		return &inter_api;
+	}
+};
+}
+}
+}
 
-// DEfault Client Packet Version.
-#ifndef DEFAULT_PACKETVER
-	#define DEFAULT_PACKETVER MINIMUM_PACKETVER
-#endif
+#define ZoneInterAPI Horizon::Zone::Interface::InterAPI::getInstance()
 
-#ifndef INTER_SESSION_NAME
-	#define INTER_SESSION_NAME "inter-server"
-#endif
+#endif // HORIZON_ZONE_INTERFACE_INTERAPI_HPP
 
-/* Maximum Character Slots (in multiples of 3) */
-#ifndef MAX_CHARACTER_SLOTS
-	#define MAX_CHARACTER_SLOTS 9
-#endif
-
-#ifndef DEFAULT_WALK_SPEED
-	#define DEFAULT_WALK_SPEED 150
-#endif
-
-#endif //HORIZON_HORIZON_H

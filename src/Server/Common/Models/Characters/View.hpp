@@ -42,7 +42,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterId(char_id);
+				setCharacterID(char_id);
 				setHairStyleID((uint8_t) res->getInt("hair_style_id"));
 				setHairColorID((uint16_t) res->getUInt("hair_color_id"));
 				setClothColorID((uint16_t) res->getUInt("cloth_color_id"));
@@ -51,8 +51,8 @@ public:
 				setShieldID((uint16_t) res->getUInt("shield_id"));
 				setHeadTopViewID((uint16_t) res->getUInt("head_top_view_id"));
 				setHeadMidViewID((uint16_t) res->getUInt("head_mid_view_id"));
-				setHeadBottomViewId((uint16_t) res->getUInt("head_bottom_view_id"));
-				setRobeViewId((uint16_t) res->getUInt("robe_view_id"));
+				setHeadBottomViewID((uint16_t) res->getUInt("head_bottom_view_id"));
+				setRobeViewID((uint16_t) res->getUInt("robe_view_id"));
 
 				ret = true;
 			}
@@ -69,8 +69,8 @@ public:
 	}
 
 	/* Character Id */
-	uint32_t getCharacterId() const { return character_id; }
-	void setCharacterId(uint32_t character_id) { View::character_id = character_id; }
+	uint32_t getCharacterID() const { return character_id; }
+	void setCharacterID(uint32_t character_id) { View::character_id = character_id; }
 	/* Hair Style ID */
 	uint8_t getHairStyleID() const { return hair_style_id; }
 	void setHairStyleID(uint8_t hair_style_id) { View::hair_style_id = hair_style_id; }
@@ -96,11 +96,11 @@ public:
 	uint16_t getHeadMidViewID() const { return head_mid_view_id; }
 	void setHeadMidViewID(uint16_t head_mid_view_id) { View::head_mid_view_id = head_mid_view_id; }
 	/* Head Bottom View ID */
-	uint16_t getHeadBottomViewId() const { return head_bottom_view_id; }
-	void setHeadBottomViewId(uint16_t head_bottom_view_id) { View::head_bottom_view_id = head_bottom_view_id; }
+	uint16_t getHeadBottomViewID() const { return head_bottom_view_id; }
+	void setHeadBottomViewID(uint16_t head_bottom_view_id) { View::head_bottom_view_id = head_bottom_view_id; }
 	/* Robe View ID */
-	uint16_t getRobeViewId() const { return robe_view_id; }
-	void setRobeViewId(uint16_t robe_view_id) { View::robe_view_id = robe_view_id; }
+	uint16_t getRobeViewID() const { return robe_view_id; }
+	void setRobeViewID(uint16_t robe_view_id) { View::robe_view_id = robe_view_id; }
 private:
 	uint32_t character_id;
 	uint8_t hair_style_id;

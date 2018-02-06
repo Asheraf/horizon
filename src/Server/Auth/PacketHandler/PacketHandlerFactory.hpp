@@ -33,9 +33,16 @@ public:
 	PacketHandlerFactory() { };
 	~PacketHandlerFactory() { };
 
-	static std::shared_ptr<PacketHandler> CreateAuthPacketHandler(int packet_version, std::shared_ptr<Session> session)
+	/**
+	 * @brief Creates a packet handler object for a client connected to the auth-server,
+	 *        based on the connected client's packet version.
+	 * @param[in] session    constant reference to the session in question.
+	 * @param[in] packet_ver version of the client of the connected session.
+	 * @return shared pointer to a new packet handler object for the client version or default.
+	 */
+	static std::shared_ptr<PacketHandler> CreateAuthPacketHandler(std::shared_ptr<Session> const &session, int packet_ver)
 	{
-		switch (packet_version)
+		switch (packet_ver)
 		{
 		case 20170315:
 			return std::make_shared<PacketHandler20170315>(session);
@@ -46,6 +53,11 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Creates a packet handler object for a server connected to the auth-server.
+	 * @param[in] session    constant reference to the session in question.
+	 * @return shared pointer to a new packet handler object.
+	 */
 	static std::shared_ptr<InterPacketHandler> CreateInterPacketHandler(std::shared_ptr<InterSession> session)
 	{
 		return std::make_shared<InterPacketHandler>(session);

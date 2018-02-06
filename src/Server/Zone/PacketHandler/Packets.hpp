@@ -14,8 +14,8 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONE_PACKETS_H
-#define HORIZON_ZONE_PACKETS_H
+#ifndef HORIZON_ZONE_PACKETS_HPP
+#define HORIZON_ZONE_PACKETS_HPP
 
 namespace Horizon
 {
@@ -23,14 +23,8 @@ namespace Zone
 {
 enum packets
 {
-	/**
-	 * Receivable Packets
-	 */
-
-	/**
-	 * Sendable Packets
-	 */
 };
 }
 }
-#endif //HORIZON_ZONEPACKETS_H
+
+#endif // HORIZON_ZONE_PACKETS_HPP

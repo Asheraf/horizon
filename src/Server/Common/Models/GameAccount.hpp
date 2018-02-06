@@ -15,22 +15,34 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_USER_H
-#define HORIZON_USER_H
+#ifndef HORIZON_GAME_ACOUNT_HPP
+#define HORIZON_GAME_ACOUNT_HPP
 
 #include "Server/Common/Server.hpp"
 #include "Libraries/BCrypt/BCrypt.hpp"
 #include "Core/Database/MySqlConnection.hpp"
+#include "Server/Common/Models/Characters/Character.hpp"
 
 #include <cstdint>
 #include <boost/asio/ip/address.hpp>
 #include <cppconn/resultset.h>
 
+namespace Horizon
+{
+	namespace Models
+	{
+		namespace Characters
+		{
+			class Character;
+		}
+	}
+}
+
 enum game_account_gender_types
 {
-	ACCOUNT_MALE,
-	ACCOUNT_FEMALE,
-	ACCOUNT_SERVER
+	ACCOUNT_GENDER_MALE,
+	ACCOUNT_GENDER_FEMALE,
+	ACCOUNT_GENDER_NONE
 };
 
 enum game_account_state_types
@@ -41,6 +53,7 @@ enum game_account_state_types
 
 class GameAccount
 {
+	typedef std::map<uint32_t, std::shared_ptr<Horizon::Models::Characters::Character>> AccountCharacterMapType;
 public:
 	GameAccount()
 	{
@@ -114,7 +127,13 @@ public:
 	{
 		id = res->getInt("id");
 		username = res->getString("username");
-		gender = (game_account_gender_types) res->getInt("gender");
+		std::string account_gender = res->getString("gender");
+		if (account_gender == "M")
+			gender = ACCOUNT_GENDER_MALE;
+		else if (account_gender == "F")
+			gender = ACCOUNT_GENDER_FEMALE;
+		else if (account_gender == "NA")
+			gender = ACCOUNT_GENDER_NONE;
 		email = res->getString("email");
 		group_id = (uint16_t) res->getInt("group_id");
 		state = (game_account_state_types) res->getInt("state");
@@ -129,145 +148,80 @@ public:
 		pincode_expiry = res->getInt64("pincode_expiry");
 	}
 
-	uint32_t getId() const
+	/* Account Id */
+	uint32_t getID() const { return id; }
+	void setID(uint32_t id) { GameAccount::id = id; }
+	/* Username */
+	const std::string &getUsername() const { return username; }
+	void setUsername(const std::string &username) { GameAccount::username = username; }
+	/* Gender */
+	game_account_gender_types getGender() const { return gender; }
+	void setGender(game_account_gender_types gender) { GameAccount::gender = gender; }
+	/* Email */
+	const std::string &getEmail() const { return email; }
+	void setEmail(const std::string &email) { GameAccount::email = email; }
+	/* Group ID */
+	uint16_t getGroupID() const { return group_id; }
+	void setGroupID(uint16_t group_id) { GameAccount::group_id = group_id; }
+	/* State */
+	game_account_state_types getState() const { return state; }
+	void setState(game_account_state_types state) { GameAccount::state = state; }
+	/* Unban Time */
+	time_t getUnbanTime() const { return unban_time; }
+	void setUnbanTime(time_t unban_time) { GameAccount::unban_time = unban_time; }
+	/* Expiration Time */
+	time_t getExpirationTime() const { return expiration_time; }
+	void setExpirationTime(time_t expiration_time) { GameAccount::expiration_time = expiration_time; }
+	/* Last Login */
+	time_t getLastLogin() const { return last_login; }
+	void setLastLogin(time_t last_login) { GameAccount::last_login = last_login; }
+	/* Last IP */
+	const std::string &getLastIp() const { return last_ip; }
+	void setLastIp(const std::string &last_ip) { GameAccount::last_ip = last_ip; }
+	/* Birth Date */
+	const std::string &getBirthDate() const { return birth_date; }
+	void setBirthDate(const std::string &birth_date) { GameAccount::birth_date = birth_date; }
+	/* Character Slots */
+	uint8_t getCharacterSlots() const { return character_slots; }
+	void setCharacterSlots(uint8_t character_slots) { GameAccount::character_slots = character_slots; }
+	/* Pincode */
+	const std::string &getPincode() const { return pincode; }
+	void setPincode(const std::string &pincode) { GameAccount::pincode = pincode; }
+	/* Pincode Expiry */
+	time_t getPincodeExpiry() const { return pincode_expiry; }
+	void setPincodeExpiry(time_t pincode_expiry) { GameAccount::pincode_expiry = pincode_expiry; }
+
+	/* Account Characters */
+	const std::shared_ptr<Horizon::Models::Characters::Character> getCharacter(uint32_t id)
 	{
-		return id;
+		auto it = _characters.find(id);
+
+		if (it != _characters.end())
+			return it->second;
+
+		return nullptr;
 	}
 
-	void setId(uint32_t id)
+	void addCharacter(std::shared_ptr<Horizon::Models::Characters::Character> character)
 	{
-		GameAccount::id = id;
+		auto old_character = getCharacter(character->getCharacterID());
+
+		if (old_character != nullptr)
+			old_character = character;
+		else
+			_characters.insert(std::make_pair(character->getCharacterID(), character));
 	}
 
-	const std::string &getUsername() const
+	void removeCharacter(uint32_t id)
 	{
-		return username;
+		auto character = getCharacter(id);
+
+		if (character != nullptr)
+			_characters.erase(id);
 	}
 
-	void setUsername(const std::string &username)
-	{
-		GameAccount::username = username;
-	}
+	const AccountCharacterMapType &getAllCharacters() const { return _characters; }
 
-	game_account_gender_types getGender() const
-	{
-		return gender;
-	}
-
-	void setGender(game_account_gender_types gender)
-	{
-		GameAccount::gender = gender;
-	}
-
-	const std::string &getEmail() const
-	{
-		return email;
-	}
-
-	void setEmail(const std::string &email)
-	{
-		GameAccount::email = email;
-	}
-
-	uint16_t getGroupId() const
-	{
-		return group_id;
-	}
-
-	void setGroupId(uint16_t group_id)
-	{
-		GameAccount::group_id = group_id;
-	}
-
-	game_account_state_types getState() const
-	{
-		return state;
-	}
-
-	void setState(game_account_state_types state)
-	{
-		GameAccount::state = state;
-	}
-
-	time_t getUnbanTime() const
-	{
-		return unban_time;
-	}
-
-	void setUnbanTime(time_t unban_time)
-	{
-		GameAccount::unban_time = unban_time;
-	}
-
-	time_t getExpirationTime() const
-	{
-		return expiration_time;
-	}
-
-	void setExpirationTime(time_t expiration_time)
-	{
-		GameAccount::expiration_time = expiration_time;
-	}
-
-	time_t getLastLogin() const
-	{
-		return last_login;
-	}
-
-	void setLastLogin(time_t last_login)
-	{
-		GameAccount::last_login = last_login;
-	}
-
-	const std::string &getLastIp() const
-	{
-		return last_ip;
-	}
-
-	void setLastIp(const std::string &last_ip)
-	{
-		GameAccount::last_ip = last_ip;
-	}
-
-	const std::string &getBirthDate() const
-	{
-		return birth_date;
-	}
-
-	void setBirthDate(const std::string &birth_date)
-	{
-		GameAccount::birth_date = birth_date;
-	}
-
-	uint8_t getCharacterSlots() const
-	{
-		return character_slots;
-	}
-
-	void setCharacterSlots(uint8_t character_slots)
-	{
-		GameAccount::character_slots = character_slots;
-	}
-
-	const std::string &getPincode() const
-	{
-		return pincode;
-	}
-
-	void setPincode(const std::string &pincode)
-	{
-		GameAccount::pincode = pincode;
-	}
-
-	time_t getPincodeExpiry() const
-	{
-		return pincode_expiry;
-	}
-
-	void setPincodeExpiry(time_t pincode_expiry)
-	{
-		GameAccount::pincode_expiry = pincode_expiry;
-	}
 
 private:
 	uint32_t id;                                   ///< Account Id
@@ -284,6 +238,9 @@ private:
 	uint8_t character_slots;                       ///< this accounts maximum character slots (maximum is limited to MAX_CHARS define in char server)
 	std::string pincode;                           ///< pincode value
 	time_t pincode_expiry;                         ///< (timestamp): last time of pincode change
+
+	/* Account Characters */
+	AccountCharacterMapType _characters;
 };
 
-#endif //HORIZON_USER_H
+#endif // HORIZON_GAME_ACOUNT_HPP

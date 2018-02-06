@@ -14,16 +14,15 @@
  * or viewing without permission.
  ****************************************************/
 
-#ifndef HORIZON_ZONE_ZONEMAIN_H
-#define HORIZON_ZONE_ZONEMAIN_H
+#ifndef HORIZON_ZONE_ZONEMAIN_HPP
+#define HORIZON_ZONE_ZONEMAIN_HPP
 
-#include "ZoneSession.hpp"
-
-#include "Logging/Logger.hpp"
-#include "Common/Server.hpp"
+#include "Core/Database/MySqlConnection.hpp"
+#include "Core/Logging/Logger.hpp"
+#include "Server/Common/Server.hpp"
+#include "Server/Zone/Session/Session.hpp"
 
 #include <string>
-#include <Core/Database/MySqlConnection.hpp>
 
 namespace Horizon
 {
@@ -55,4 +54,4 @@ private:
 
 #define ZoneServer Horizon::Zone::ZoneMain::getInstance()
 
-#endif //HORIZON_ZONE_ZONEMAIN_H
+#endif // HORIZON_ZONE_ZONEMAIN_HPP

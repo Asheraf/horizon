@@ -32,7 +32,7 @@ class Session;
 class PacketHandler20171113 : public PacketHandler20170315
 {
 public:
-	explicit PacketHandler20171113(std::shared_ptr<Session> session);
+	explicit PacketHandler20171113(std::shared_ptr<Session> const &session);
 	~PacketHandler20171113() override;
 
 	void Handle_CA_LOGIN_OTP(PacketBuffer &buf) override;

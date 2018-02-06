@@ -15,53 +15,46 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_CHAR_SESSION_H
-#define HORIZON_CHAR_SESSION_H
+#ifndef HORIZON_ZONE_INTERSESSION_HPP
+#define HORIZON_ZONE_INTERSESSION_HPP
 
 #include "Core/Networking/Socket.hpp"
-#include "Core/Networking/Buffer/MessageBuffer.hpp"
-#include "Server/Common/Models/Characters/Character.hpp"
 
-#include <memory>
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/optional.hpp>
 
 using boost::asio::ip::tcp;
 
-class SessionData;
-class GameAccount;
-class PacketBuffer;
-
 namespace Horizon
 {
-namespace Char
+namespace Zone
 {
-class PacketHandler;
 class InterPacketHandler;
-class Session : public Socket<Session>
+class InterSession : public Socket<InterSession>
 {
-	typedef Socket<Session> CharSocket;
+	typedef Socket<InterSession> CharSocket;
 public:
-	Session(std::shared_ptr<tcp::socket> socket);
-	~Session() { }
+	explicit InterSession(std::shared_ptr<tcp::socket> socket);
+	~InterSession() { }
+
 	/* */
 	void Start() override;
 	bool Update() override;
 
-	/* Char Connect Handler */
-	void ValidateAndHandleConnection(PacketBuffer &buf);
 	/* Packet Handler */
-	const std::shared_ptr<PacketHandler> &getPacketHandler() const;
-	void setPacketHandler(std::shared_ptr<PacketHandler> handler);
+	const std::shared_ptr<InterPacketHandler> &getPacketHandler() const;
+	void setPacketHandler(std::shared_ptr<InterPacketHandler> handler);
+	/* */
 protected:
-	void ReadHandler() override;
 	void OnClose() override;
+	void ReadHandler() override;
 	/* */
 private:
-	std::shared_ptr<PacketHandler> _packet_handler;
+	std::shared_ptr<InterPacketHandler> _packet_handler;
 };
 }
 }
 
-#endif //HORIZON_CHAR_SESSION_H
+#endif /* HORIZON_ZONE_INTERSESSION_HPP */
+
+

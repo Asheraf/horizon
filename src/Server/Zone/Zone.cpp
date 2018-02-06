@@ -15,7 +15,8 @@
  ****************************************************/
 
 #include "Zone.hpp"
-#include "ZoneSocketMgr.hpp"
+#include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
+#include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
@@ -118,8 +119,8 @@ void Horizon::Zone::ZoneMain::ConnectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
 		try {
-			sZoneSocketMgr->StartNetworkConnection("inter-server", this, getNetworkConf().getInterServerIp(),
-			                                      getNetworkConf().getInterServerPort(), 10);
+			InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(),
+			                                      getNetworkConf().getInterServerPort(), 5);
 		} catch (boost::system::system_error &e) {
 			ZoneLog->error("{}", e.what());
 		}
@@ -165,7 +166,7 @@ int main(int argc, const char * argv[])
 	signals.async_wait(SignalHandler);
 
 	// Start Zoneacter Network
-	sZoneSocketMgr->StartNetwork(*ZoneServer->getIOService(),
+	ClientSocktMgr->Start(*ZoneServer->getIOService(),
             ZoneServer->getNetworkConf().getListenIp(),
             ZoneServer->getNetworkConf().getListenPort(),
             ZoneServer->getNetworkConf().getMaxThreads());
@@ -181,7 +182,8 @@ int main(int argc, const char * argv[])
 	ZoneLog->info("Server shutting down...");
 
 	/* Stop Network */
-	sZoneSocketMgr->StopNetwork();
+	ClientSocktMgr->StopNetwork();
+	InterSocktMgr->StopNetwork();
 
 	signals.cancel();
 
