@@ -18,10 +18,12 @@
 #include "PacketHandler.hpp"
 
 #include "Core/Logging/Logger.hpp"
+#include "Server/Char/Char.hpp"
 #include "Server/Char/PacketHandler/Packets.hpp"
 #include "Server/Char/Session/Session.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Char/Database/Query.hpp"
+#include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 
 #include <boost/bind.hpp>
 
@@ -48,6 +50,7 @@ void Horizon::Char::PacketHandler::InitializeHandlers()
 {
 #define HANDLER_FUNC(packet) addPacketHandler(packet, boost::bind(&PacketHandler::Handle_ ## packet, this, boost::placeholders::_1));
 	HANDLER_FUNC(CHAR_KEEP_ALIVE);
+	HANDLER_FUNC(CHAR_CREATE);
 #undef HANDLER_FUNC
 }
 
@@ -64,15 +67,39 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pk
 	CharQuery->AllCharactersByAccount(getSession()->getGameAccount());
 	
 	// Send acceptance notice to client.
-	Respond_CHAR_ACCOUNT_ID();
-
-	// Never used by client. (Deprecated)
-	Respond_CHAR_SLOT_INFO_ACK();
+	Respond_CHAR_ACCOUNT_ID();         // 1st
 
 	// Send character list info.
-	Respond_CHAR_LIST_ACK();
-	Respond_CHAR_BAN_LIST_ACK();
-	Respond_CHAR_PINCODE_STATE_ACK();
+	Respond_CHAR_SLOT_INFO_ACK();      // 2nd
+	Respond_CHAR_LIST_ACK();           // 3rd
+	Respond_CHAR_BAN_LIST_ACK();       // 4th
+	Respond_CHAR_PINCODE_STATE_ACK();  // 5th
+}
+
+void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
+{
+	PACKET_CHAR_CREATE pkt;
+	buf >> pkt;
+
+	std::shared_ptr<Horizon::Models::Characters::Character> character = std::make_shared<Horizon::Models::Characters::Character>(
+			getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE ? CHARACTER_GENDER_MALE : CHARACTER_GENDER_FEMALE);
+	character->setStatusData(std::make_shared<Horizon::Models::Characters::Status>(
+			CharServer->getCharConfig()->getStartZeny(), pkt.str, pkt.agi, pkt.int_, pkt.vit, pkt.dex, pkt.luk));
+	character->setViewData(std::make_shared<Horizon::Models::Characters::View>(pkt.hair_style, pkt.hair_color));
+	character->setPositionData(std::make_shared<Horizon::Models::Characters::Position>(
+			CharServer->getCharConfig()->getStartMap(), CharServer->getCharConfig()->getStartX(), CharServer->getCharConfig()->getStartY()));
+
+	character->setMiscData(std::make_shared<Horizon::Models::Characters::Misc>());
+	character->setUISettingsData(std::make_shared<Horizon::Models::Characters::UISettings>());
+	character->setAccessData(std::make_shared<Horizon::Models::Characters::Access>());
+	character->setCompanionData(std::make_shared<Horizon::Models::Characters::Companion>());
+	character->setFamilyData(std::make_shared<Horizon::Models::Characters::Family>());
+	character->setGroupData(std::make_shared<Horizon::Models::Characters::Group>());
+	// Add character to account.
+	getSession()->getGameAccount()->addCharacter(character);
+	// Save character to sql.
+	character->saveAll(CharServer);
+	Respond_CHAR_CREATE_ACK(character);
 }
 
 /**
@@ -183,5 +210,17 @@ void Horizon::Char::PacketHandler::Respond_CHAR_PINCODE_STATE_ACK()
 	pkt.pincode_seed = rand() % 0xFFFF;
 	pkt.account_id = getSession()->getSessionData()->getGameAccountID();
 	pkt.state = PINCODE_CORRECT;
+	SendPacket(pkt);
+}
+
+void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character)
+{
+	PACKET_CHAR_CREATE_ACK pkt;
+
+	pkt.data.create(character);
+	pkt.data.gender = getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_NONE
+	? character->getGender()
+	: getSession()->getGameAccount()->getGender();
+
 	SendPacket(pkt);
 }

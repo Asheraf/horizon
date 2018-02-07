@@ -24,6 +24,7 @@
 
 #include <memory>
 
+
 class PacketBuffer;
 class SessionData;
 
@@ -44,6 +45,7 @@ public:
 	 */
 	virtual void Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &pkt);
 	virtual void Handle_CHAR_KEEP_ALIVE(PacketBuffer &buf);
+	virtual void Handle_CHAR_CREATE(PacketBuffer &buf);
 	/**
 	 * Responders
 	 */
@@ -53,6 +55,7 @@ public:
 	virtual void Respond_CHAR_LIST_ACK();
 	virtual void Respond_CHAR_BAN_LIST_ACK();
 	virtual void Respond_CHAR_PINCODE_STATE_ACK();
+	virtual void Respond_CHAR_CREATE_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character);
 };
 }
 }

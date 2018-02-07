@@ -15,8 +15,8 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_AUTHSERVERCONFIGURATION_H
-#define HORIZON_AUTHSERVERCONFIGURATION_H
+#ifndef HORIZON_AUTHSERVERCONFIGURATION_HPP
+#define HORIZON_AUTHSERVERCONFIGURATION_HPP
 
 #include "Common/Horizon.hpp"
 #include "Logging.hpp"
@@ -69,4 +69,4 @@ struct auth_server_config
 	struct auth_server_logging_config logs;
 };
 
-#endif //HORIZON_AUTHSERVERCONFIGURATION_H
+#endif // HORIZON_AUTHSERVERCONFIGURATION_HPP

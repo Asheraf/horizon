@@ -21,13 +21,19 @@ public:
 	Position() {}
 	~Position() {}
 
+	Position(std::string start_map, uint16_t start_x, uint16_t start_y)
+	: saved_map(start_map), saved_x(start_x), saved_y(start_y)
+	{
+		//
+	}
+
 	/**
 	 * Load all fields from the database into this instance.
 	 * @param server
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM character_position_data WHERE char_id = ?";
 		auto sql = server->MySQLBorrow();
@@ -64,6 +70,36 @@ public:
 		return ret;
 	}
 
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "REPLACE INTO `character_position_data` "
+			"(`id`, `current_map`, `current_x`, `current_y`, `saved_map`, `saved_x`, `saved_y`) "
+			"VALUES (?, ?, ?, ?, ?, ?, ?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setString(2, getCurrentMap());
+			pstmt->setInt(3, getCurrentX());
+			pstmt->setInt(4, getCurrentY());
+			pstmt->setString(5, getSavedMap());
+			pstmt->setInt(6, getSavedX());
+			pstmt->setInt(7, getSavedY());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+	}
+
 	/* Character ID */
 	uint32_t getCharacterID() const { return character_id; }
 	void setCharacterID(uint32_t character_id) { Position::character_id = character_id; }
@@ -87,11 +123,11 @@ public:
 	void setSavedY(uint16_t saved_y) { Position::saved_y = saved_y; }
 
 private:
-	uint32_t character_id;
-	std::string current_map;
-	uint16_t current_x, current_y;
-	std::string saved_map;
-	uint16_t saved_x, saved_y;
+	uint32_t character_id{0};
+	std::string current_map{""};
+	uint16_t current_x{0}, current_y{0};
+	std::string saved_map{""};
+	uint16_t saved_x{0}, saved_y{0};
 };
 }
 }

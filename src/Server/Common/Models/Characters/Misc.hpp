@@ -60,6 +60,35 @@ public:
 
 		return ret;
 	}
+
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "REPLACE INTO `character_misc_data` "
+			"(`id`, `rename_count`, `unique_item_counter`, `hotkey_row_index`, `change_slot_count`) "
+			"VALUES (?, ?, ?, ?, ?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setInt(2, getRenameCount());
+			pstmt->setInt64(3, getUniqueItemCounter());
+			pstmt->setInt(4, getHotkeyRowIndex());
+			pstmt->setInt(5, getChangeSlotCount());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+	}
+
 	/* Character ID */
 	uint32_t getCharacterID() const { return character_id; }
 	void setCharacterID(uint32_t character_id) { Misc::character_id = character_id; }
@@ -76,11 +105,11 @@ public:
 	uint8_t getChangeSlotCount() const { return change_slot_count; }
 	void setChangeSlotCount(uint8_t change_slot_count) { Misc::change_slot_count = change_slot_count; }
 private:
-	uint32_t character_id;
-	uint8_t rename_count;
-	uint64_t unique_item_counter;
-	uint8_t hotkey_row_index;
-	uint8_t change_slot_count;
+	uint32_t character_id{0};
+	uint8_t rename_count{0};
+	uint64_t unique_item_counter{0};
+	uint8_t hotkey_row_index{0};
+	uint8_t change_slot_count{0};
 };
 }
 }

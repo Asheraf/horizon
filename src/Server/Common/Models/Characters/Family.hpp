@@ -27,7 +27,7 @@ public:
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM character_family_data WHERE char_id = ?";
 		auto sql = server->MySQLBorrow();
@@ -43,7 +43,7 @@ public:
 				 * Create Game Account Data
 				 */
 				setCharacterID(char_id);
-				setParterAID(res->getUInt("partner_aid"));
+				setPartnerAID(res->getUInt("partner_aid"));
 				setFatherAID(res->getUInt("father_aid"));
 				setMotherAID(res->getUInt("mother_aid"));
 				setChildAID(res->getUInt("child_aid"));
@@ -61,12 +61,39 @@ public:
 		return ret;
 	}
 
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "REPLACE INTO `character_family_data` "
+			"(`id`, `partner_aid`, `father_aid`, `mother_aid`, `child_aid`) VALUES (?, ?, ?, ?, ?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setInt(2, getPartnerAID());
+			pstmt->setInt(3, getFatherAID());
+			pstmt->setInt(4, getMotherAID());
+			pstmt->setInt(5, getChildAID());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+	}
+
 	/* Character Id */
 	uint32_t getCharacterID() const { return character_id; }
 	void setCharacterID(uint32_t character_id) { Family::character_id = character_id; }
 	/* Parter Account ID */
-	uint32_t getParterAID() const { return parter_aid; }
-	void setParterAID(uint32_t parter_aid) { Family::parter_aid = parter_aid; }
+	uint32_t getPartnerAID() const { return parter_aid; }
+	void setPartnerAID(uint32_t parter_aid) { Family::parter_aid = parter_aid; }
 	/* Father Account ID */
 	uint32_t getFatherAID() const { return father_aid; }
 	void setFatherAID(uint32_t father_aid) { Family::father_aid = father_aid; }
@@ -78,11 +105,11 @@ public:
 	void setChildAID(uint32_t child_aid) { Family::child_aid = child_aid; }
 
 private:
-	uint32_t character_id;
-	uint32_t parter_aid;
-	uint32_t father_aid;
-	uint32_t mother_aid;
-	uint32_t child_aid;
+	uint32_t character_id{0};
+	uint32_t parter_aid{0};
+	uint32_t father_aid{0};
+	uint32_t mother_aid{0};
+	uint32_t child_aid{0};
 };
 }
 }

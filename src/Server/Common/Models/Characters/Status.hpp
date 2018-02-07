@@ -21,13 +21,20 @@ public:
 	Status() {}
 	~Status() {}
 
+	Status(uint32_t z, uint8_t str, uint8_t agi, uint8_t int_, uint8_t vit, uint8_t dex, uint8_t luk)
+	:  zeny(z), strength(str), agility(agi), intelligence(int_), vitality(vit), dexterity(dex), luck(luk)
+	{
+		base_level = 1;
+		job_level = 1;
+	}
+
 	/**
 	 * Load all fields from the database into this instance.
 	 * @param server
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM character_status_data WHERE char_id = ?";
 		auto sql = server->MySQLBorrow();
@@ -77,6 +84,56 @@ public:
 		server->MySQLUnborrow(sql);
 
 		return ret;
+	}
+
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "REPLACE INTO `character_status_data` "
+			"(`id`, `job_class`, `base_level`, `job_level`, "
+			"`base_experience`, `job_experience`, `zeny`, "
+			"`strength`, `agility`, `vitality`, `intelligence`, `dexterity`, `luck`, "
+			"`maximum_hp`, `maximum_sp`, `hp`, `sp`, `status_points`, `skill_points`, "
+			"`body_state`, `virtue`, `honor`, `manner`) "
+			"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setInt(2, getJobClass());
+			pstmt->setInt(3, getBaseLevel());
+			pstmt->setInt(4, getJobLevel());
+			pstmt->setInt64(5, getBaseExperience());
+			pstmt->setInt64(6, getJobExperience());
+			pstmt->setInt(7, getZeny());
+			pstmt->setInt(8, getStrength());
+			pstmt->setInt(9, getAgility());
+			pstmt->setInt(10, getVitality());
+			pstmt->setInt(11, getIntelligence());
+			pstmt->setInt(12, getDexterity());
+			pstmt->setInt(13, getLuck());
+			pstmt->setInt(14, getMaximumHP());
+			pstmt->setInt(15, getMaximumSP());
+			pstmt->setInt(16, getSP());
+			pstmt->setInt(17, getHP());
+			pstmt->setInt(18, getStatusPoints());
+			pstmt->setInt(19, getSkillPoints());
+			pstmt->setInt(20, getBodyState());
+			pstmt->setInt(21, getVirtue());
+			pstmt->setInt(22, getHonor());
+			pstmt->setInt(23, getManner());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
 	}
 
 	/* Character ID */
@@ -149,26 +206,26 @@ public:
 	int16_t getManner() const { return manner; }
 	void setManner(int16_t manner) { Status::manner = manner; }
 private:
-	uint32_t character_id;
-	uint16_t job_class;
-	uint16_t base_level;
-	uint16_t job_level;
-	uint64_t base_experience;
-	uint64_t job_experience;
-	uint32_t zeny;
-	uint16_t strength;
-	uint16_t agility;
-	uint16_t vitality;
-	uint16_t intelligence;
-	uint16_t dexterity;
-	uint16_t luck;
-	uint32_t maximum_hp, maximum_sp;
-	uint32_t hp, sp;
-	uint32_t status_points, skill_points;
-	uint32_t body_state;
-	int16_t virtue;
-	uint32_t honor;
-	int16_t manner;
+	uint32_t character_id{0};
+	uint16_t job_class{0};
+	uint16_t base_level{0};
+	uint16_t job_level{0};
+	uint64_t base_experience{0};
+	uint64_t job_experience{0};
+	uint32_t zeny{0};
+	uint16_t strength{0};
+	uint16_t agility{0};
+	uint16_t vitality{0};
+	uint16_t intelligence{0};
+	uint16_t dexterity{0};
+	uint16_t luck{0};
+	uint32_t maximum_hp{0}, maximum_sp{0};
+	uint32_t hp{0}, sp{0};
+	uint32_t status_points{0}, skill_points{0};
+	uint32_t body_state{0};
+	int16_t virtue{0};
+	uint32_t honor{0};
+	int16_t manner{0};
 };
 }
 }

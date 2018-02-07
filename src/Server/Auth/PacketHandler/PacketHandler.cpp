@@ -53,7 +53,7 @@ bool Horizon::Auth::PacketHandler::ValidateSessionData(uint32_t id, uint32_t cli
 	std::shared_ptr<SessionData> session_data = getSession()->getSessionData();
 	
 	// Game Account Data.
-	game_account->setLastIp(getSession()->getRemoteIPAddress());
+	game_account->setLastIP(getSession()->getRemoteIPAddress());
 	game_account->setLastLogin((int) time(nullptr));
 	// Session Data.
 	session_data->setAuthCode(game_account->getID()); // @TODO Change to something unique to prevent session hijaking.

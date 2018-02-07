@@ -7,6 +7,15 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
+#include "Server/Common/Models/Characters/Access.hpp"
+#include "Server/Common/Models/Characters/Companion.hpp"
+#include "Server/Common/Models/Characters/Family.hpp"
+#include "Server/Common/Models/Characters/Group.hpp"
+#include "Server/Common/Models/Characters/Misc.hpp"
+#include "Server/Common/Models/Characters/Position.hpp"
+#include "Server/Common/Models/Characters/Status.hpp"
+#include "Server/Common/Models/Characters/UISettings.hpp"
+#include "Server/Common/Models/Characters/View.hpp"
 
 #include <string>
 
@@ -22,21 +31,17 @@ namespace Models
 {
 namespace Characters
 {
-class Access;
-class Companion;
-class Family;
-class Group;
-class Misc;
-class Position;
-class Status;
-class UISettings;
-class View;
-
 class Character
 {
 public:
 	Character() {}
 	~Character() {}
+
+	Character(int32_t account_id, std::string const &name, uint8_t slot, character_gender_types gender)
+	: _account_id(account_id), _slot(slot), _name(name), _online(false), _gender(gender)
+	{
+		//
+	}
 
 	/**
 	 * Load all fields from the database into this instance.
@@ -44,7 +49,7 @@ public:
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM characters WHERE char_id = ?";
 		auto sql = server->MySQLBorrow();
@@ -63,7 +68,6 @@ public:
 				setAccountID(res->getUInt("account_id"));
 				setSlot((uint16_t) res->getUInt("slot"));
 				setName(res->getString("name"));
-				setOnline(res->getBoolean("online"));
 				setGender((character_gender_types) res->getInt("gender"));
 				ret = true;
 			}
@@ -77,6 +81,99 @@ public:
 		server->MySQLUnborrow(sql);
 
 		return ret;
+	}
+
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+		std::string query = "REPLACE INTO `characters` "
+			"(`id`, `account_id`, `slot`, `name`, `online`, `gender`) "
+			"VALUES (?, ?, ?, ?, ?, ?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setInt(2, getAccountID());
+			pstmt->setInt(3, getSlot());
+			pstmt->setString(4, getName());
+			pstmt->setBoolean(5, isOnline());
+			pstmt->setString(6, (getGender() == CHARACTER_GENDER_MALE ? "M" : "F"));
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+	}
+
+	void saveAll(Server *server)
+	{
+		int char_id = 0;
+
+		if (getCharacterID() == 0) {
+			auto sql = server->MySQLBorrow();
+			std::string query = "SELECT `id` as max_id FROM `characters` ORDER BY `id` DESC LIMIT 1;";
+
+			try {
+				sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+				sql::ResultSet *res = pstmt->executeQuery();
+
+				if (res != nullptr && res->next())
+					char_id = res->getInt("max_id") + 1;
+
+				delete pstmt;
+				delete res;
+			} catch (sql::SQLException &e) {
+				DBLog->error("SQLException: {}", e.what());
+			}
+
+			server->MySQLUnborrow(sql);
+
+			setCharacterID(char_id);
+			getStatusData()->setCharacterID(char_id);
+			getAccessData()->setCharacterID(char_id);
+			getViewData()->setCharacterID(char_id);
+			getFamilyData()->setCharacterID(char_id);
+			getCompanionData()->setCharacterID(char_id);
+			getGroupData()->setCharacterID(char_id);
+			getMiscData()->setCharacterID(char_id);
+			getPositionData()->setCharacterID(char_id);
+			getUISettingsData()->setCharacterID(char_id);
+		}
+
+		save(server);
+
+		if (getStatusData() != nullptr)
+			getStatusData()->save(server);
+
+		if (getAccessData() != nullptr)
+			getAccessData()->save(server);
+
+		if (getViewData() != nullptr)
+			getViewData()->save(server);
+
+		if (getFamilyData() != nullptr)
+			getFamilyData()->save(server);
+
+		if (getCompanionData() != nullptr)
+			getCompanionData()->save(server);
+
+		if (getGroupData() != nullptr)
+			getGroupData()->save(server);
+
+		if (getMiscData() != nullptr)
+			getMiscData()->save(server);
+
+		if (getPositionData() != nullptr)
+			getPositionData()->save(server);
+
+		if (getUISettingsData() != nullptr)
+			getUISettingsData()->save(server);
 	}
 
 	/* Character ID */
@@ -95,9 +192,10 @@ public:
 	const std::string &getName() const { return _name; }
 	void setName(const std::string &name) { _name = name; }
 
-	/* Is Online */
+	/* Online */
 	bool isOnline() const { return _online; }
-	void setOnline(bool online) { _online = online; }
+	void setOnline() { _online = true; }
+	void setOffline() { _online = false; }
 
 	/* Gender */
 	character_gender_types getGender() const { return _gender; }
@@ -140,22 +238,22 @@ public:
 	void setViewData(std::shared_ptr<View> const &view) { _view_data = view; }
 
 private:
-	uint32_t _character_id;
-	uint32_t _account_id;
-	uint16_t _slot;
-	std::string _name;
-	bool _online;
-	character_gender_types _gender;
+	uint32_t _character_id{0};
+	uint32_t _account_id{0};
+	uint16_t _slot{0};
+	std::string _name{""};
+	bool _online{false};
+	character_gender_types _gender{CHARACTER_GENDER_MALE};
 
-	std::shared_ptr<Access> _access_data;
-	std::shared_ptr<Companion> _companion_data;
-	std::shared_ptr<Family> _family_data;
-	std::shared_ptr<Group> _group_data;
-	std::shared_ptr<Misc> _misc_data;
-	std::shared_ptr<Position> _position_data;
-	std::shared_ptr<Status> _status_data;
-	std::shared_ptr<UISettings> _ui_settings;
-	std::shared_ptr<View> _view_data;
+	std::shared_ptr<Access> _access_data{nullptr};
+	std::shared_ptr<Companion> _companion_data{nullptr};
+	std::shared_ptr<Family> _family_data{nullptr};
+	std::shared_ptr<Group> _group_data{nullptr};
+	std::shared_ptr<Misc> _misc_data{nullptr};
+	std::shared_ptr<Position> _position_data{nullptr};
+	std::shared_ptr<Status> _status_data{nullptr};
+	std::shared_ptr<UISettings> _ui_settings{nullptr};
+	std::shared_ptr<View> _view_data{nullptr};
 };
 }
 }

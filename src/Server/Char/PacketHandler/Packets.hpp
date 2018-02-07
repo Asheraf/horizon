@@ -39,11 +39,11 @@ enum packets : short
 	CHAR_CREATE             = 0x67,
 	CHAR_LIST_ACK           = 0x6b,
 	CHAR_CONNECT_ERROR      = 0x6c,
+	CHAR_CREATE_ACK         = 0x6d,
 	CHAR_KEEP_ALIVE         = 0x187,
 	CHAR_BAN_LIST_ACK       = 0x20d,
 	CHAR_SLOT_INFO_ACK      = 0x82d,
 	CHAR_CREATE_2015        = 0xa39,
-	CHAR_CREATE_2012        = 0x970,
 	CHAR_RENAME_1           = 0x8fc,
 	CHAR_RENAME_2           = 0x28d,
 	CHAR_RENAME_CONFIRM     = 0x28f,
@@ -68,76 +68,13 @@ enum packets : short
 
 #pragma pack(push, 1)
 
-struct PACKET_CHAR_CONNECT : public Packet
-{
-	PACKET_CHAR_CONNECT()  : Packet(Horizon::Char::packets::CHAR_CONNECT) {}
-	// 0065 <account id>.L <login id1>.L <login id2>.L <???>.W <sex>.B
-	uint32_t account_id{};
-	uint32_t auth_code{};
-	uint32_t account_level{};
-	uint16_t unknown{};
-	uint8_t gender{};
-};
-
-struct PACKET_CHAR_SELECT : public Packet
-{
-	PACKET_CHAR_SELECT() : Packet(Horizon::Char::packets::CHAR_SELECT) {}
-	uint8_t slot{};
-};
-
-struct PACKET_CHAR_CREATE : public Packet
-{
-	PACKET_CHAR_CREATE() : Packet(Horizon::Char::packets::CHAR_CREATE) {}
-	//S 0067 <name>.24B <str>.B <agi>.B <vit>.B <int>.B <dex>.B <luk>.B <slot>.B <hair color>.W <hair style>.W
-	char name[CHAR_NAME_LENGTH];
-	uint8_t str{};
-	uint8_t agi{};
-	uint8_t vit{};
-	uint8_t int_{};
-	uint8_t dex{};
-	uint8_t luk{};
-	uint8_t slot{};
-	uint16_t hair_color{};
-	uint16_t hair_style{};
-};
-
-enum character_connect_errors : char
-{
-	CHAR_ERR_REJECTED_FROM_SERVER = 0, // 0 = Rejected from server.
-};
-
-struct PACKET_CHAR_CONNECT_ERROR : public Packet
-{
-	PACKET_CHAR_CONNECT_ERROR() : Packet(Horizon::Char::packets::CHAR_CONNECT_ERROR) {}
-	character_connect_errors error;
-};
-
-struct PACKET_CHAR_SLOT_INFO_ACK : public Packet
-{
-	PACKET_CHAR_SLOT_INFO_ACK() : Packet(Horizon::Char::packets::CHAR_SLOT_INFO_ACK) { }
-
-	uint16_t packet_len{sizeof(PACKET_CHAR_SLOT_INFO_ACK)};
-	uint8_t total_slots{MAX_CHARACTER_SLOTS};
-	uint8_t premium_slots{MAX_CHARACTER_SLOTS};
-	uint8_t unknown_byte{0};
-	uint8_t char_slots_1{MAX_CHARACTER_SLOTS};
-	uint8_t char_slots_2{MAX_CHARACTER_SLOTS};
-	uint8_t unknown_bytes[20]{0};
-};
-
-/* Sent without PacketID to the client on char connection. */
-struct PACKET_CHAR_ACCOUNT_ID
-{
-	uint32_t account_id;
-};
-
 /**
  * List assumes that the packetver is >= 20141022
  */
 struct character_list_data
 {
 	character_list_data() { };
-	
+
 	void create(std::shared_ptr<Horizon::Models::Characters::Character> c)
 	{
 		std::shared_ptr<Horizon::Models::Characters::Status> status = c->getStatusData();
@@ -232,6 +169,75 @@ struct character_list_data
 	uint8_t gender{};                ///< 146 0: Female, 1: Male, 99: Account-based.
 };
 
+struct PACKET_CHAR_CONNECT : public Packet
+{
+	PACKET_CHAR_CONNECT()  : Packet(Horizon::Char::packets::CHAR_CONNECT) {}
+	// 0065 <account id>.L <login id1>.L <login id2>.L <???>.W <sex>.B
+	uint32_t account_id{};
+	uint32_t auth_code{};
+	uint32_t account_level{};
+	uint16_t unknown{};
+	uint8_t gender{};
+};
+
+struct PACKET_CHAR_SELECT : public Packet
+{
+	PACKET_CHAR_SELECT() : Packet(Horizon::Char::packets::CHAR_SELECT) {}
+	uint8_t slot{};
+};
+
+struct PACKET_CHAR_CREATE : public Packet
+{
+	PACKET_CHAR_CREATE() : Packet(Horizon::Char::packets::CHAR_CREATE) {}
+	//S 0067 <name>.24B <str>.B <agi>.B <vit>.B <int>.B <dex>.B <luk>.B <slot>.B <hair color>.W <hair style>.W
+	char name[CHAR_NAME_LENGTH];
+	uint8_t str{};
+	uint8_t agi{};
+	uint8_t vit{};
+	uint8_t int_{};
+	uint8_t dex{};
+	uint8_t luk{};
+	uint8_t slot{};
+	uint16_t hair_color{};
+	uint16_t hair_style{};
+};
+
+struct PACKET_CHAR_CREATE_ACK : public Packet
+{
+	PACKET_CHAR_CREATE_ACK() : Packet(Horizon::Char::packets::CHAR_CREATE_ACK) { }
+	character_list_data data;
+};
+
+enum character_connect_errors : char
+{
+	CHAR_ERR_REJECTED_FROM_SERVER = 0, // 0 = Rejected from server.
+};
+
+struct PACKET_CHAR_CONNECT_ERROR : public Packet
+{
+	PACKET_CHAR_CONNECT_ERROR() : Packet(Horizon::Char::packets::CHAR_CONNECT_ERROR) {}
+	character_connect_errors error;
+};
+
+struct PACKET_CHAR_SLOT_INFO_ACK : public Packet
+{
+	PACKET_CHAR_SLOT_INFO_ACK() : Packet(Horizon::Char::packets::CHAR_SLOT_INFO_ACK) { }
+
+	uint16_t packet_len{sizeof(PACKET_CHAR_SLOT_INFO_ACK)};
+	uint8_t total_slots{MAX_CHARACTER_SLOTS};
+	uint8_t premium_slots{MAX_CHARACTER_SLOTS};
+	uint8_t unknown_byte{0};
+	uint8_t char_slots_1{MAX_CHARACTER_SLOTS};
+	uint8_t char_slots_2{MAX_CHARACTER_SLOTS};
+	uint8_t unknown_bytes[20]{0};
+};
+
+/* Sent without PacketID to the client on char connection. */
+struct PACKET_CHAR_ACCOUNT_ID
+{
+	uint32_t account_id;
+};
+
 struct PACKET_CHAR_LIST_ACK : public Packet
 {
 	PACKET_CHAR_LIST_ACK() : Packet(Horizon::Char::packets::CHAR_LIST_ACK) { }
@@ -268,16 +274,6 @@ struct PACKET_CHAR_CREATE_2015 : public Packet
 	uint16_t job_id{};
 	uint8_t unknown_bytes[2];
 	uint8_t gender{};
-};
-
-struct PACKET_CHAR_CREATE_2012 : public Packet
-{
-	PACKET_CHAR_CREATE_2012() : Packet(Horizon::Char::packets::CHAR_CREATE_2012) {}
-	// S 0970 <name>.24B <slot>.B <hair color>.W <hair style>.W
-	char name[CHAR_NAME_LENGTH];
-	uint8_t slot{};
-	uint16_t hair_color{};
-	uint16_t hair_style{};
 };
 
 struct PACKET_CHAR_DELETE : public Packet

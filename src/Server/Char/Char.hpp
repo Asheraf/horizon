@@ -22,6 +22,8 @@
 
 #include <string>
 
+struct character_server_configuration;
+
 namespace Horizon
 {
 namespace Char
@@ -42,6 +44,11 @@ public:
 	void InitializeCLICommands();
 	void ConnectWithInterServer();
 	void InitializeCore();
+
+	std::shared_ptr<character_server_configuration> &getCharConfig() { return _char_server_config; }
+
+private:
+	std::shared_ptr<character_server_configuration> _char_server_config;
 };
 }
 }

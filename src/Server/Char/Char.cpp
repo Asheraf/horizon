@@ -22,6 +22,7 @@
 #include "Server/Char/Session/Session.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Char/SocketMgr/InterSocketMgr.hpp"
+#include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
@@ -35,7 +36,8 @@ using boost::asio::ip::udp;
 /**
  * CharMain Constructor
  */
-Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.yaml")
+Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.yaml"),
+_char_server_config(std::make_shared<character_server_configuration>())
 {
 	//
 }
@@ -89,6 +91,48 @@ bool Horizon::Char::CharMain::ReadConfig()
 	CharLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
 	              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
 	              (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+
+	if (config["new_character"] && config["new_character"].IsMap()) {
+		YAML::Node n = config["new_character"];
+
+		if (n["start_map"] && n["start_map"].IsScalar())
+			getCharConfig()->setStartMap(n["start_map"].as<std::string>());
+		else
+			CharLog->error("Unsupported node type for 'start_map' configuration... using hard-coded defaults.");
+
+		if (n["start_x"] && n["start_x"].IsScalar())
+			getCharConfig()->setStartX(n["start_x"].as<uint16_t>());
+		else
+			CharLog->error("Unsupported node type for 'start_x' configuration... using hard-coded defaults.");
+
+		if (n["start_y"] && n["start_y"].IsScalar())
+			getCharConfig()->setStartY(n["start_y"].as<uint16_t>());
+		else
+			CharLog->error("Unsupported node type for 'start_y' configuration... using hard-coded defaults.");
+
+		if (n["start_zeny"] && n["start_zeny"].IsScalar())
+			getCharConfig()->setStartZeny(n["start_zeny"].as<uint32_t>());
+		else
+			CharLog->error("Unsupported node type for 'start_zeny' configuration... using hard-coded defaults.");
+
+		if (n["start_items"] && n["start_items"].IsMap()) {
+			for (YAML::const_iterator it = n["start_items"].begin(); it != n["start_items"].end(); ++it) {
+				if (!it->first.IsScalar() || !it->second.IsScalar()) {
+					CharLog->error("Unsupported node type for an element in 'start_items' configuration... skipping.");
+				} else {
+					std::make_pair(it->first.as<uint32_t>(), it->second.as<uint32_t>());
+				}
+			}
+		} else {
+			getCharConfig()->addStartItem(std::make_pair(1201, 1));
+			getCharConfig()->addStartItem(std::make_pair(2301, 1));
+		}
+
+	} else {
+		CharLog->error("Unsupported node type for 'new_characters' configuration... using hard-coded defaults.");
+		getCharConfig()->addStartItem(std::make_pair(1201, 1));
+		getCharConfig()->addStartItem(std::make_pair(2301, 1));
+	}
 
 	/**
 	 * Process Configuration that is common between servers.

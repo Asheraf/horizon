@@ -42,15 +42,12 @@ public:
 	 */
 	static std::shared_ptr<PacketHandler> CreateAuthPacketHandler(std::shared_ptr<Session> const &session, int packet_ver)
 	{
-		switch (packet_ver)
-		{
-		case 20170315:
-			return std::make_shared<PacketHandler20170315>(session);
-		case 20171113:
+		if (packet_ver >= 20171113)
 			return std::make_shared<PacketHandler20171113>(session);
-		default: // return common type.
-			return std::make_shared<PacketHandler>(session);
-		}
+		else if (packet_ver >= 20170315)
+			return std::make_shared<PacketHandler20170315>(session);
+
+		return std::make_shared<PacketHandler>(session);
 	}
 
 	/**

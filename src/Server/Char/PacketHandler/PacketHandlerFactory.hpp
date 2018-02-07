@@ -19,6 +19,7 @@
 #define HORIZON_CHAR_PACKETHANDLERFACTORY_HPP
 
 #include "Server/Char/PacketHandler/PacketHandler.hpp"
+#include "Server/Char/PacketHandler/Versions/PacketHandler20120307.hpp"
 #include "Server/Char/PacketHandler/InterPacketHandler.hpp"
 
 #include <memory>
@@ -40,8 +41,11 @@ public:
 	 * @param[in|out] session    shared_ptr to a Session instance.
 	 * @return shared pointer to a new instance of Horizon::Char::PacketHandler.
 	 */
-	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<Session> session, uint32_t /*packet_ver*/)
+	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<Session> session, uint32_t packet_ver)
 	{
+		if (packet_ver >= 20120307)
+			return std::make_shared<PacketHandler20120307>(session);
+
 		return std::make_shared<PacketHandler>(session);
 	}
 

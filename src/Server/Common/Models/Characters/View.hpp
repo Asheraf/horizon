@@ -21,13 +21,19 @@ public:
 	View() {}
 	~View() {}
 
+	View(uint16_t hair_style_id, uint16_t hair_color_id)
+	: hair_style_id(hair_style_id), hair_color_id(hair_color_id)
+	{
+
+	}
+
 	/**
 	 * Load all fields from the database into this instance.
 	 * @param server    Pointer to the invoking to borrow an sql connection from.
 	 * @param char_id   Id of the character to load the view of.
 	 * @return true on success, false on failure.
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM character_view_data WHERE char_id = ?";
 		auto sql = server->MySQLBorrow();
@@ -68,6 +74,40 @@ public:
 		return ret;
 	}
 
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "REPLACE INTO `character_view_data` "
+			"(`id`, `hair_style_id`, `hair_color_id`, `cloth_color_id`, `body_id`, "
+			"`weapon_id`, `shield_id`, `head_top_view_id`, `head_mid_view_id`, `robe_view_id`) "
+			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setInt(2, getHairStyleID());
+			pstmt->setInt(3, getHairColorID());
+			pstmt->setInt(4, getClothColorID());
+			pstmt->setInt(5, getBodyID());
+			pstmt->setInt(6, getWeaponID());
+			pstmt->setInt(7, getShieldID());
+			pstmt->setInt(8, getHeadTopViewID());
+			pstmt->setInt(9, getHeadMidViewID());
+			pstmt->setInt(10, getRobeViewID());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+	}
+
 	/* Character Id */
 	uint32_t getCharacterID() const { return character_id; }
 	void setCharacterID(uint32_t character_id) { View::character_id = character_id; }
@@ -101,18 +141,19 @@ public:
 	/* Robe View ID */
 	uint16_t getRobeViewID() const { return robe_view_id; }
 	void setRobeViewID(uint16_t robe_view_id) { View::robe_view_id = robe_view_id; }
+
 private:
-	uint32_t character_id;
-	uint8_t hair_style_id;
-	uint16_t hair_color_id;
-	uint16_t cloth_color_id;
-	uint16_t body_id;
-	uint16_t weapon_id;
-	uint16_t shield_id;
-	uint16_t head_top_view_id;
-	uint16_t head_mid_view_id;
-	uint16_t head_bottom_view_id;
-	uint16_t robe_view_id;
+	uint32_t character_id{0};
+	uint8_t hair_style_id{0};
+	uint16_t hair_color_id{0};
+	uint16_t cloth_color_id{0};
+	uint16_t body_id{0};
+	uint16_t weapon_id{0};
+	uint16_t shield_id{0};
+	uint16_t head_top_view_id{0};
+	uint16_t head_mid_view_id{0};
+	uint16_t head_bottom_view_id{0};
+	uint16_t robe_view_id{0};
 };
 }
 }

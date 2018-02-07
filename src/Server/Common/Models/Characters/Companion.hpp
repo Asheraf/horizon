@@ -27,7 +27,7 @@ public:
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM character_companion_data WHERE char_id = ?";
 		auto sql = server->MySQLBorrow();
@@ -59,6 +59,33 @@ public:
 
 		return ret;
 	}
+
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "REPLACE INTO `character_companion_data` "
+			"(`id`, `pet_id`, `homun_id`, `elemental_id`) VALUES (?, ?, ?, ?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setInt(2, getPetID());
+			pstmt->setInt(3, getHomunID());
+			pstmt->setInt(4, getElementalID());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+	}
+	
 	/* Character Id */
 	uint32_t getCharacterID() const { return character_id; }
 	void setCharacterID(uint32_t character_id) { Companion::character_id = character_id; }

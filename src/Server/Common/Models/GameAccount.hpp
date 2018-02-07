@@ -63,9 +63,16 @@ public:
 	{
 	}
 
+	/**
+	 * @brief Verifies credentials the plain text password checking.
+	 * @param[in|out]  server    instance to the server object calling this method.
+	 * @param[in]      username  username for the account in question.
+	 * @param[in]      password  password for the account in question.
+	 * @return true on success, false on failure.
+	 */
 	bool VerifyCredentials(Server *server, std::string username, std::string password)
 	{
-		std::string query = "SELECT * FROM game_account WHERE username = ? AND password = ?";
+		std::string query = "SELECT * FROM `game_account` WHERE username = ? AND password = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 
@@ -79,7 +86,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				LoadFromDatabase(res);
+				loadFromResultSet(res);
 				ret = true;
 			}
 
@@ -93,9 +100,16 @@ public:
 		return ret;
 	}
 
+	/**
+	 * @brief Verifies credentials using the bcrypt password hashing algorithm.
+	 * @param[in|out]  server    instance to the server object calling this method.
+	 * @param[in]      username  username for the account in question.
+	 * @param[in]      password  password for the account in question.
+	 * @return true on success, false on failure.
+	 */
 	bool VerifyCredentialsBCrypt(Server *server, std::string username, std::string password)
 	{
-		std::string query = "SELECT * FROM game_account WHERE username = ?";
+		std::string query = "SELECT * FROM `game_account` WHERE username = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 
@@ -109,7 +123,7 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				LoadFromDatabase(res);
+				loadFromResultSet(res);
 				ret = true;
 			}
 
@@ -123,7 +137,11 @@ public:
 		return ret;
 	}
 
-	void LoadFromDatabase(sql::ResultSet *res)
+	/**
+	 * @brief Load data into the model from a result set retrieved from the database.
+	 * @param[in] res   instance of sql::ResultSet loaded from the database.
+	 */
+	void loadFromResultSet(sql::ResultSet *res)
 	{
 		id = res->getInt("id");
 		username = res->getString("username");
@@ -146,6 +164,41 @@ public:
 		character_slots = (uint8_t) res->getInt("character_slots");
 		pincode = res->getInt("pincode");
 		pincode_expiry = res->getInt64("pincode_expiry");
+	}
+
+	/**
+	 * @brief Update this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void update(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "UPDATE `game_account` "
+		"SET `gender` = ?, `email` = ?, `group_id` = ?, `state` = ?, `unban_time` = ?, "
+		"`expiration_time` = ?, `last_login` = ?, `last_ip` = ?, `birth_date` = ?, `character_slots` = ?, `pincode` = ?, `pincode_expiry` = ?) WHERE `id` = ?";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setString(1, (getGender() == ACCOUNT_GENDER_MALE ? "M" : "F"));
+			pstmt->setString(2, getEmail());
+			pstmt->setInt(3, getState());
+			pstmt->setInt(4, getUnbanTime());
+			pstmt->setInt(5, getExpirationTime());
+			pstmt->setInt(6, getLastLogin());
+			pstmt->setString(7, getLastIP());
+			pstmt->setString(8, getBirthDate());
+			pstmt->setInt(9, getCharacterSlots());
+			pstmt->setString(10, getPincode());
+			pstmt->setInt(11, getPincodeExpiry());
+			pstmt->setInt(12, getID());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
 	}
 
 	/* Account Id */
@@ -176,8 +229,8 @@ public:
 	time_t getLastLogin() const { return last_login; }
 	void setLastLogin(time_t last_login) { GameAccount::last_login = last_login; }
 	/* Last IP */
-	const std::string &getLastIp() const { return last_ip; }
-	void setLastIp(const std::string &last_ip) { GameAccount::last_ip = last_ip; }
+	const std::string &getLastIP() const { return last_ip; }
+	void setLastIP(const std::string &last_ip) { GameAccount::last_ip = last_ip; }
 	/* Birth Date */
 	const std::string &getBirthDate() const { return birth_date; }
 	void setBirthDate(const std::string &birth_date) { GameAccount::birth_date = birth_date; }
@@ -191,7 +244,10 @@ public:
 	time_t getPincodeExpiry() const { return pincode_expiry; }
 	void setPincodeExpiry(time_t pincode_expiry) { GameAccount::pincode_expiry = pincode_expiry; }
 
-	/* Account Characters */
+	/**
+	 * @brief Retrieve a character from the account's character list.
+	 * @param[in] id of the character to be retrieved.
+	 */
 	const std::shared_ptr<Horizon::Models::Characters::Character> getCharacter(uint32_t id)
 	{
 		auto it = _characters.find(id);
@@ -202,6 +258,10 @@ public:
 		return nullptr;
 	}
 
+	/**
+	 * @brief Add a character to the account's character list.
+	 * @param[in|out] character  shared_ptr to the character model to be added.
+	 */
 	void addCharacter(std::shared_ptr<Horizon::Models::Characters::Character> character)
 	{
 		auto old_character = getCharacter(character->getCharacterID());
@@ -212,6 +272,10 @@ public:
 			_characters.insert(std::make_pair(character->getCharacterID(), character));
 	}
 
+	/**
+	 * @brief Remove a character from the account's character list.
+	 * @param[in] id of the character to remove.
+	 */
 	void removeCharacter(uint32_t id)
 	{
 		auto character = getCharacter(id);
@@ -220,24 +284,26 @@ public:
 			_characters.erase(id);
 	}
 
+	/**
+	 * @brief retrieve a std::map of all characters from the account.
+	 */
 	const AccountCharacterMapType &getAllCharacters() const { return _characters; }
 
-
 private:
-	uint32_t id;                                   ///< Account Id
-	std::string username;                          ///< Username
-	game_account_gender_types gender;              ///< Gender
-	std::string email;                             ///< e-mail (by default: a@a.com)
-	uint16_t group_id;                             ///< player group id
-	game_account_state_types state;                ///< packet 0x006a value + 1 (0: complete OK)
-	time_t unban_time;                             ///< (timestamp): ban time limit of the account (0 = no ban)
-	time_t expiration_time;                        ///< (timestamp): validity limit of the account (0 = unlimited)
-	time_t last_login;                             ///< date+time of last successful login
-	std::string last_ip;                           ///< save of last IP of connection
-	std::string birth_date;                        ///< assigned birth date (format: YYYY-MM-DD, default: 0000-00-00)
-	uint8_t character_slots;                       ///< this accounts maximum character slots (maximum is limited to MAX_CHARS define in char server)
-	std::string pincode;                           ///< pincode value
-	time_t pincode_expiry;                         ///< (timestamp): last time of pincode change
+	uint32_t id{};                                   ///< Account Id
+	std::string username{};                          ///< Username
+	game_account_gender_types gender{ACCOUNT_GENDER_NONE};              ///< Gender
+	std::string email{};                             ///< e-mail (by default: a@a.com)
+	uint16_t group_id{};                             ///< player group id
+	game_account_state_types state{};                ///< packet 0x006a value + 1 (0: complete OK)
+	time_t unban_time{};                             ///< (timestamp): ban time limit of the account (0 = no ban)
+	time_t expiration_time{};                        ///< (timestamp): validity limit of the account (0 = unlimited)
+	time_t last_login{};                             ///< date+time of last successful login
+	std::string last_ip{};                           ///< save of last IP of connection
+	std::string birth_date{};                        ///< assigned birth date (format: YYYY-MM-DD, default: 0000-00-00)
+	uint8_t character_slots{};                       ///< this accounts maximum character slots (maximum is limited to MAX_CHARS define in char server)
+	std::string pincode{};                           ///< pincode value
+	time_t pincode_expiry{};                         ///< (timestamp): last time of pincode change
 
 	/* Account Characters */
 	AccountCharacterMapType _characters;

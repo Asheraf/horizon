@@ -57,10 +57,125 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 				   "WHERE c.account_id = ?");
 }
 
+std::shared_ptr<Horizon::Models::Characters::Character> Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res)
+{
+	Horizon::Models::Characters::Character c;
+	Horizon::Models::Characters::Status csd;
+	Horizon::Models::Characters::UISettings cus;
+	Horizon::Models::Characters::View cvd;
+	Horizon::Models::Characters::Position cpd;
+	Horizon::Models::Characters::Misc cmd;
+	Horizon::Models::Characters::Group cgd;
+	Horizon::Models::Characters::Family cfd;
+	Horizon::Models::Characters::Companion ccd;
+	Horizon::Models::Characters::Access cad;
+
+	int char_id = res->getInt("id");
+
+	// Character
+	c.setCharacterID(char_id);
+	c.setAccountID(account_id);
+	c.setName(res->getString("name"));
+	c.setSlot(res->getInt("slot"));
+	std::string gender = res->getString("gender");
+	if (gender == "M")
+		c.setGender(CHARACTER_GENDER_MALE);
+	else if (gender == "F")
+		c.setGender(CHARACTER_GENDER_FEMALE);
+	// Status
+	csd.setCharacterID(char_id);
+	csd.setJobClass(res->getInt("job_class"));
+	csd.setBaseLevel(res->getInt("base_level"));
+	csd.setJobLevel(res->getInt("job_level"));
+	csd.setBaseExperience(res->getInt64("base_experience"));
+	csd.setJobExperience(res->getInt64("job_experience"));
+	csd.setZeny(res->getInt("zeny"));
+	csd.setStrength(res->getInt("strength"));
+	csd.setAgility(res->getInt("agility"));
+	csd.setVitality(res->getInt("vitality"));
+	csd.setIntelligence(res->getInt("intelligence"));
+	csd.setDexterity(res->getInt("dexterity"));
+	csd.setLuck(res->getInt("luck"));
+	csd.setMaximumHP(res->getInt("maximum_hp"));
+	csd.setHP(res->getInt("hp"));
+	csd.setMaximumSP(res->getInt("maximum_sp"));
+	csd.setSP(res->getInt("sp"));
+	csd.setStatusPoints(res->getInt("status_points"));
+	csd.setSkillPoints(res->getInt("skill_points"));
+	csd.setBodyState(res->getInt("body_state"));
+	csd.setVirtue(res->getInt("virtue"));
+	csd.setHonor(res->getInt("honor"));
+	csd.setManner(res->getInt("manner"));
+	// UI Settings
+	cus.setCharacterID(char_id);
+	cus.setFont(res->getInt("font"));
+	cus.setShowEquip(res->getInt("show_equip"));
+	cus.setAllowParty(res->getInt("allow_party"));
+	// View
+	cvd.setCharacterID(char_id);
+	cvd.setHairStyleID(res->getInt("hair_style_id"));
+	cvd.setHairColorID(res->getInt("hair_color_id"));
+	cvd.setClothColorID(res->getInt("cloth_color_id"));
+	cvd.setBodyID(res->getInt("body_id"));
+	cvd.setWeaponID(res->getInt("weapon_id"));
+	cvd.setShieldID(res->getInt("shield_id"));
+	cvd.setHeadTopViewID(res->getInt("head_top_view_id"));
+	cvd.setHeadMidViewID(res->getInt("head_mid_view_id"));
+	cvd.setHeadBottomViewID(res->getInt("head_bottom_view_id"));
+	cvd.setRobeViewID(res->getInt("robe_view_id"));
+	// Position
+	cpd.setCharacterID(char_id);
+	cpd.setCurrentMap(res->getString("current_map"));
+	cpd.setCurrentX(res->getInt("current_x"));
+	cpd.setCurrentY(res->getInt("current_y"));
+	cpd.setSavedMap(res->getString("saved_map"));
+	cpd.setSavedX(res->getInt("saved_x"));
+	cpd.setSavedY(res->getInt("saved_y"));
+	// Misc
+	cmd.setCharacterID(char_id);
+	cmd.setRenameCount(res->getInt("rename_count"));
+	cmd.setUniqueItemCounter(res->getInt64("unique_item_counter"));
+	cmd.setHotkeyRowIndex(res->getInt("hotkey_row_index"));
+	cmd.setChangeSlotCount(res->getInt("change_slot_count"));
+	// Group
+	cgd.setCharacterID(char_id);
+	cgd.setPartyID(res->getInt("party_id"));
+	cgd.setGuildID(res->getInt("guild_id"));
+	// Family
+	cfd.setCharacterID(char_id);
+	cfd.setPartnerAID(res->getInt("partner_aid"));
+	cfd.setFatherAID(res->getInt("father_aid"));
+	cfd.setMotherAID(res->getInt("mother_aid"));
+	cfd.setChildAID(res->getInt("child_aid"));
+	// Companion
+	ccd.setCharacterID(char_id);
+	ccd.setPetID(res->getInt("pet_id"));
+	ccd.setHomunID(res->getInt("homun_id"));
+	ccd.setElementalID(res->getInt("elemental_id"));
+	// Access
+	cad.setCharacterID(char_id);
+	cad.setUnbanTime(res->getInt("unban_time"));
+	cad.setDeleteDate(res->getInt("delete_date"));
+
+	// Append to character.
+	c.setStatusData(std::make_shared<Horizon::Models::Characters::Status>(csd));
+	c.setUISettingsData(std::make_shared<Horizon::Models::Characters::UISettings>(cus));
+	c.setViewData(std::make_shared<Horizon::Models::Characters::View>(cvd));
+	c.setPositionData(std::make_shared<Horizon::Models::Characters::Position>(cpd));
+	c.setMiscData(std::make_shared<Horizon::Models::Characters::Misc>(cmd));
+	c.setGroupData(std::make_shared<Horizon::Models::Characters::Group>(cgd));
+	c.setFamilyData(std::make_shared<Horizon::Models::Characters::Family>(cfd));
+	c.setCompanionData(std::make_shared<Horizon::Models::Characters::Companion>(ccd));
+	c.setAccessData(std::make_shared<Horizon::Models::Characters::Access>(cad));
+
+	return std::make_shared<Horizon::Models::Characters::Character>(c);
+}
+
 int Horizon::Char::Database::Query::AllCharactersByAccount(std::shared_ptr<GameAccount> account)
 {
 	auto sql = CharServer->MySQLBorrow();
 	boost::optional<std::string> query = getQueryString(SELECT_ALL_CHARS_BY_AID);
+	int results = 0;
 
 	if (!query)
 		return 0;
@@ -71,121 +186,15 @@ int Horizon::Char::Database::Query::AllCharactersByAccount(std::shared_ptr<GameA
 		sql::ResultSet *res = pstmt->executeQuery();
 
 		while (res != nullptr && res->next()) {
-			Horizon::Models::Characters::Character c;
-			Horizon::Models::Characters::Status csd;
-			Horizon::Models::Characters::UISettings cus;
-			Horizon::Models::Characters::View cvd;
-			Horizon::Models::Characters::Position cpd;
-			Horizon::Models::Characters::Misc cmd;
-			Horizon::Models::Characters::Group cgd;
-			Horizon::Models::Characters::Family cfd;
-			Horizon::Models::Characters::Companion ccd;
-			Horizon::Models::Characters::Access cad;
-
-			int char_id = res->getInt("id");
-
-			// Character
-			c.setCharacterID(char_id);
-			c.setAccountID(account->getID());
-			c.setName(res->getString("name"));
-			c.setSlot(res->getInt("slot"));
-			c.setOnline(res->getBoolean("online"));
-			std::string gender = res->getString("gender");
-			if (gender == "M")
-				c.setGender(CHARACTER_GENDER_MALE);
-			else if (gender == "F")
-				c.setGender(CHARACTER_GENDER_FEMALE);
-			// Status
-			csd.setCharacterID(char_id);
-			csd.setJobClass(res->getInt("job_class"));
-			csd.setBaseLevel(res->getInt("base_level"));
-			csd.setJobLevel(res->getInt("job_level"));
-			csd.setBaseExperience(res->getInt64("base_experience"));
-			csd.setJobExperience(res->getInt64("job_experience"));
-			csd.setZeny(res->getInt("zeny"));
-			csd.setStrength(res->getInt("strength"));
-			csd.setAgility(res->getInt("agility"));
-			csd.setVitality(res->getInt("vitality"));
-			csd.setIntelligence(res->getInt("intelligence"));
-			csd.setDexterity(res->getInt("dexterity"));
-			csd.setLuck(res->getInt("luck"));
-			csd.setMaximumHP(res->getInt("maximum_hp"));
-			csd.setHP(res->getInt("hp"));
-			csd.setMaximumSP(res->getInt("maximum_sp"));
-			csd.setSP(res->getInt("sp"));
-			csd.setStatusPoints(res->getInt("status_points"));
-			csd.setSkillPoints(res->getInt("skill_points"));
-			csd.setBodyState(res->getInt("body_state"));
-			csd.setVirtue(res->getInt("virtue"));
-			csd.setHonor(res->getInt("honor"));
-			csd.setManner(res->getInt("manner"));
-			// UI Settings
-			cus.setCharacterID(char_id);
-			cus.setFont(res->getInt("font"));
-			cus.setShowEquip(res->getInt("show_equip"));
-			cus.setAllowParty(res->getInt("allow_party"));
-			// View
-			cvd.setCharacterID(char_id);
-			cvd.setHairStyleID(res->getInt("hair_style_id"));
-			cvd.setHairColorID(res->getInt("hair_color_id"));
-			cvd.setClothColorID(res->getInt("cloth_color_id"));
-			cvd.setBodyID(res->getInt("body_id"));
-			cvd.setWeaponID(res->getInt("weapon_id"));
-			cvd.setShieldID(res->getInt("shield_id"));
-			cvd.setHeadTopViewID(res->getInt("head_top_view_id"));
-			cvd.setHeadMidViewID(res->getInt("head_mid_view_id"));
-			cvd.setHeadBottomViewID(res->getInt("head_bottom_view_id"));
-			cvd.setRobeViewID(res->getInt("robe_view_id"));
-			// Position
-			cpd.setCharacterID(char_id);
-			cpd.setCurrentMap(res->getString("current_map"));
-			cpd.setCurrentX(res->getInt("current_x"));
-			cpd.setCurrentY(res->getInt("current_y"));
-			cpd.setSavedMap(res->getString("saved_map"));
-			cpd.setSavedX(res->getInt("saved_x"));
-			cpd.setSavedY(res->getInt("saved_y"));
-			// Misc
-			cmd.setCharacterID(char_id);
-			cmd.setRenameCount(res->getInt("rename_count"));
-			cmd.setUniqueItemCounter(res->getInt64("unique_item_counter"));
-			cmd.setHotkeyRowIndex(res->getInt("hotkey_row_index"));
-			cmd.setChangeSlotCount(res->getInt("change_slot_count"));
-			// Group
-			cgd.setCharacterID(char_id);
-			cgd.setPartyID(res->getInt("party_id"));
-			cgd.setGuildID(res->getInt("guild_id"));
-			// Family
-			cfd.setCharacterID(char_id);
-			cfd.setParterAID(res->getInt("partner_aid"));
-			cfd.setFatherAID(res->getInt("father_aid"));
-			cfd.setMotherAID(res->getInt("mother_aid"));
-			cfd.setChildAID(res->getInt("child_aid"));
-			// Companion
-			ccd.setCharacterID(char_id);
-			ccd.setPetID(res->getInt("pet_id"));
-			ccd.setHomunID(res->getInt("homun_id"));
-			ccd.setElementalID(res->getInt("elemental_id"));
-			// Access
-			cad.setCharacterID(char_id);
-			cad.setUnbanTime(res->getInt("unban_time"));
-			cad.setDeleteDate(res->getInt("delete_date"));
-
-			// Append to character.
-			c.setStatusData(std::make_shared<Horizon::Models::Characters::Status>(csd));
-			c.setUISettingsData(std::make_shared<Horizon::Models::Characters::UISettings>(cus));
-			c.setViewData(std::make_shared<Horizon::Models::Characters::View>(cvd));
-			c.setPositionData(std::make_shared<Horizon::Models::Characters::Position>(cpd));
-			c.setMiscData(std::make_shared<Horizon::Models::Characters::Misc>(cmd));
-			c.setGroupData(std::make_shared<Horizon::Models::Characters::Group>(cgd));
-			c.setFamilyData(std::make_shared<Horizon::Models::Characters::Family>(cfd));
-			c.setCompanionData(std::make_shared<Horizon::Models::Characters::Companion>(ccd));
-			c.setAccessData(std::make_shared<Horizon::Models::Characters::Access>(cad));
-
-			account->addCharacter(std::make_shared<Horizon::Models::Characters::Character>(c));
+			account->addCharacter(CreateCharacterModelFromResult(account->getID(), res));
+			++results;
 		}
+		delete pstmt;
+		delete res;
 	} catch (sql::SQLException &e) {
 		DBLog->error("SQLException: {}", e.what());
 	}
 
-	return 0;
+	CharServer->MySQLUnborrow(sql);
+	return results;
 }

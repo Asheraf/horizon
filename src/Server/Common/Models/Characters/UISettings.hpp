@@ -27,7 +27,7 @@ public:
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM character_ui_settings WHERE char_id = ?";
 		auto sql = server->MySQLBorrow();
@@ -61,6 +61,32 @@ public:
 		return ret;
 	}
 
+	/**
+	 * @brief Save this model to the database in its current state.
+	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
+	 */
+	void save(Server *server)
+	{
+		auto sql = server->MySQLBorrow();
+
+		std::string query = "REPLACE INTO `character_ui_settings` "
+		"(`id`, `font`, `show_equip`, `allow_party`) VALUES (?, ?, ?, ?);";
+
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			pstmt->setInt(1, getCharacterID());
+			pstmt->setInt(2, getFont());
+			pstmt->setInt(3, getShowEquip());
+			pstmt->setInt(4, getAllowParty());
+			pstmt->executeUpdate();
+			delete pstmt;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
+		}
+
+		server->MySQLUnborrow(sql);
+	}
+
 	/* Character ID */
 	uint32_t getCharacterID() const { return character_id; }
 	void setCharacterID(uint32_t character_id) { UISettings::character_id = character_id; }
@@ -74,10 +100,10 @@ public:
 	uint8_t getAllowParty() const { return allow_party; }
 	void setAllowParty(uint8_t allow_party) { UISettings::allow_party = allow_party; }
 private:
-	uint32_t character_id;
-	uint8_t font;
-	uint8_t show_equip;
-	uint8_t allow_party;
+	uint32_t character_id{0};
+	uint8_t font{0};
+	uint8_t show_equip{0};
+	uint8_t allow_party{0};
 };
 }
 }
