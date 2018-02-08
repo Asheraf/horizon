@@ -31,6 +31,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <iostream>
 
 using boost::asio::ip::tcp;
@@ -39,8 +41,8 @@ using boost::asio::ip::tcp;
 
 class SocketMgr;
 
-template <class T>
-class Socket : public std::enable_shared_from_this<T>
+template <class SocketType>
+class Socket : public std::enable_shared_from_this<SocketType>
 {
 public:
 	explicit Socket(std::shared_ptr<tcp::socket> &socket)
@@ -90,10 +92,10 @@ public:
 		_readBuffer.EnsureFreeSpace();
 
 		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-				boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
+				boost::bind(&Socket<SocketType>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
-	void AsyncReadWithCallback(void (Socket<T>::*/*callback*/)(boost::system::error_code, std::size_t))
+	void AsyncReadWithCallback(void (Socket<SocketType>::*/*callback*/)(boost::system::error_code, std::size_t))
 	{
 		if (!IsOpen())
 			return;
@@ -101,7 +103,7 @@ public:
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
 		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-		                         boost::bind(&Socket<T>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
+		                         boost::bind(&Socket<SocketType>::ReadHandlerInternal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
 	/**
@@ -178,7 +180,7 @@ public:
 
 	/* Game Account Data */
 	const std::shared_ptr<GameAccount> &getGameAccount() const { return _game_account; }
-	void setGameAccount(std::shared_ptr<GameAccount> &account) { _game_account = account; }
+	void setGameAccount(std::shared_ptr<GameAccount> const &account) { _game_account = account; }
 	/* Session Data */
 	const std::shared_ptr<SessionData> &getSessionData() const { return _session_data; }
 	void setSessionData(std::shared_ptr<SessionData> const &sess) { _session_data = sess; }
@@ -194,7 +196,7 @@ protected:
 
 		_isWritingAsync = true;
 
-		_socket->async_write_some(boost::asio::null_buffers(), boost::bind(&Socket<T>::WriteHandlerWrapper,
+		_socket->async_write_some(boost::asio::null_buffers(), boost::bind(&Socket<SocketType>::WriteHandlerWrapper,
 				this, boost::placeholders::_1, boost::placeholders::_2));
 
 		return true;

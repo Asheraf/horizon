@@ -102,11 +102,11 @@ public:
 					// Start polling thread.
 					std::shared_ptr<std::thread> poll_thread(
 						new std::thread(boost::bind(&Connector::ValidateConnection, this, callback, socket)),
-						[this] (std::thread *thr)
+						[] (std::thread *thr)
 						{
 							if (thr->joinable())
 								thr->join();
-								delete thr;
+							delete thr;
 						});
 
 					_socket_poll_threads.insert(std::make_pair(poll_thread_idx, std::move(poll_thread)));

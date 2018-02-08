@@ -45,6 +45,7 @@ CREATE TABLE `characters` (
   `name` varchar(30) NOT NULL DEFAULT '',
   `online` tinyint(2) NOT NULL DEFAULT 0,
   `gender` enum('M','F','U') NOT NULL DEFAULT 'U',
+  `deleted` tinyint(1) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_key` (`name`),
   CONSTRAINT FOREIGN KEY (account_id) REFERENCES game_account(id)

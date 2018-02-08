@@ -160,7 +160,6 @@ public:
 	uint16_t SendAndReceive(SEND_T &send_pkt, RECV_T *recv_pkt)
 	{
 		PacketBuffer buf;
-		std::size_t send_size = 0, recv_size = 0;
 		uint16_t op_code = 0x0;
 
 		buf << send_pkt;
@@ -169,11 +168,12 @@ public:
 			return false;
 
 		if (!buf.empty()) {
+			std::size_t recv_size = 0;
 			MessageBuffer recv_buf, send_buf;
 			send_buf.Write(buf.contents(), sizeof(SEND_T));
 
 			/* Block until data is sent. */
-			send_size = _session->SyncWrite(send_buf, sizeof(SEND_T));
+			_session->SyncWrite(send_buf, sizeof(SEND_T));
 
 			/* Block until data is received. */
 			recv_size = _session->SyncRead(recv_buf);
@@ -182,11 +182,8 @@ public:
 				op_code = 0x0;
 				memcpy(&op_code, recv_buf.GetReadPointer(), sizeof(uint16_t));
 
-				if (recv_pkt->op_code != op_code) {
-					CoreLog->warn("Inter server sent the wrong packet! received id {}, expected {}", op_code, recv_pkt->op_code);
-				} else {
+				if (recv_pkt->op_code == op_code)
 					memcpy(recv_pkt, (RECV_T *) recv_buf.GetReadPointer(), recv_size);
-				}
 			}
 		}
 

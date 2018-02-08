@@ -44,17 +44,19 @@ Horizon::Char::Database::Query::~Query()
 void Horizon::Char::Database::Query::InitializeQueryStrings()
 {
 	addQueryString(SELECT_ALL_CHARS_BY_AID,
-				   "SELECT * FROM `characters` c "
-				   "INNER JOIN `character_status_data` csd ON c.id = csd.id "
-				   "INNER JOIN `character_ui_settings` cus ON c.id = cus.id "
-				   "INNER JOIN `character_view_data` cvd ON c.id = cvd.id "
-				   "INNER JOIN `character_position_data` cpd ON c.id = cpd.id "
-				   "INNER JOIN `character_misc_data` cmd ON c.id = cmd.id "
-				   "INNER JOIN `character_group_data` cgd ON c.id = cgd.id "
-				   "INNER JOIN `character_family_data` cfd ON c.id = cfd.id "
-				   "INNER JOIN `character_companion_data` ccd ON c.id = ccd.id "
-				   "INNER JOIN `character_access_data` cad ON c.id = cad.id "
-				   "WHERE c.account_id = ?");
+		"SELECT * FROM `characters` c "
+		"INNER JOIN `character_status_data` csd ON c.id = csd.id "
+		"INNER JOIN `character_ui_settings` cus ON c.id = cus.id "
+		"INNER JOIN `character_view_data` cvd ON c.id = cvd.id "
+		"INNER JOIN `character_position_data` cpd ON c.id = cpd.id "
+		"INNER JOIN `character_misc_data` cmd ON c.id = cmd.id "
+		"INNER JOIN `character_group_data` cgd ON c.id = cgd.id "
+		"INNER JOIN `character_family_data` cfd ON c.id = cfd.id "
+		"INNER JOIN `character_companion_data` ccd ON c.id = ccd.id "
+		"INNER JOIN `character_access_data` cad ON c.id = cad.id "
+		"WHERE c.account_id = ? AND c.deleted = 0");
+	addQueryString(CHECK_EXISTING_CHAR_BY_NAME,
+		"SELECT * FROM `characters` WHERE `name` = ?");
 }
 
 std::shared_ptr<Horizon::Models::Characters::Character> Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res)
@@ -197,4 +199,30 @@ int Horizon::Char::Database::Query::AllCharactersByAccount(std::shared_ptr<GameA
 
 	CharServer->MySQLUnborrow(sql);
 	return results;
+}
+
+int Horizon::Char::Database::Query::CheckExistingCharByName(std::string name)
+{
+	auto sql = CharServer->MySQLBorrow();
+	int found = 0;
+	boost::optional<std::string> query = getQueryString(CHECK_EXISTING_CHAR_BY_NAME);
+
+	if (!query)
+		return -1;
+
+	try {
+		sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(*query);
+		pstmt->setString(1, name);
+		sql::ResultSet *res = pstmt->executeQuery();
+
+		if (res != nullptr && res->next())
+			found = 1;
+
+		delete pstmt;
+		delete res;
+	} catch (sql::SQLException &e) {
+		DBLog->error("SQLException: {}", e.what());
+	}
+
+	return found;
 }

@@ -44,7 +44,8 @@ class Session : public Socket<Session>
 	typedef Socket<Session> CharSocket;
 public:
 	Session(std::shared_ptr<tcp::socket> socket);
-	~Session() { }
+	~Session();
+	
 	/* */
 	void Start() override;
 	bool Update() override;

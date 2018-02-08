@@ -31,6 +31,10 @@ Horizon::Char::Session::Session(std::shared_ptr<tcp::socket> socket)
 {
 }
 
+Horizon::Char::Session::~Session()
+{
+}
+
 void Horizon::Char::Session::Start()
 {
 	CharLog->info("Established connection from {}.", getRemoteIPAddress());
@@ -46,6 +50,12 @@ void Horizon::Char::Session::OnClose()
 	 * @brief Perform socket manager cleanup.
 	 */
 	ClientSocktMgr->ClearSession(shared_from_this());
+
+	// Remove all data from Inter.
+	if (getSessionData() != nullptr)
+		CharInterAPI->DeleteSessionFromInter(getSessionData()->getAuthCode());
+	if (getGameAccount() != nullptr)
+		CharInterAPI->DeleteGameAccountFromInter(getGameAccount()->getID());
 }
 
 bool Horizon::Char::Session::Update()
@@ -70,21 +80,23 @@ void Horizon::Char::Session::ValidateAndHandleConnection(PacketBuffer &buf)
 	// Refuse if inter-server is not connected.
 	if (!InterSocktMgr->getConnectionPoolSize(INTER_SESSION_NAME)) {
 		CharLog->info("Rejected connection for account {}, inter-server unavailable.", pkt.account_id);
-		getPacketHandler()->Respond_CHAR_CONNECT_ERROR(CHAR_ERR_REJECTED_FROM_SERVER);
+		getPacketHandler()->Respond_CHAR_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
+		DelayedCloseSocket();
 		return;
 	}
 
 	// Attempt retrieval of session_data from the inter server.
 	setSessionData(CharInterAPI->GetSessionFromInter(pkt.auth_code));
 
+	// Game Account
+	setGameAccount(CharInterAPI->GetGameAccountFromInter(pkt.account_id));
+
 	// No session was found, reject!
-	if (getSessionData() == nullptr) {
-		getPacketHandler()->Respond_CHAR_CONNECT_ERROR(CHAR_ERR_REJECTED_FROM_SERVER);
+	if (getSessionData() == nullptr || getGameAccount() == nullptr) {
+		getPacketHandler()->Respond_CHAR_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
+		DelayedCloseSocket();
 		return;
 	}
-
-	// Game Account
-	getGameAccount()->setID(pkt.account_id);
 
 	// Create a packet handler for this session.
 	setPacketHandler(PacketHandlerFactory::CreatePacketHandler(shared_from_this(), getSessionData()->getClientVersion()));

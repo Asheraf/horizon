@@ -99,10 +99,10 @@ public:
 	uint32_t getElementalID() const { return elemental_id; }
 	void setElementalID(uint32_t elemental_id) { Companion::elemental_id = elemental_id; }
 private:
-	uint32_t character_id;
-	uint32_t pet_id;
-	uint32_t homun_id;
-	uint32_t elemental_id;
+	uint32_t character_id{0};
+	uint32_t pet_id{0};
+	uint32_t homun_id{0};
+	uint32_t elemental_id{0};
 };
 }
 }

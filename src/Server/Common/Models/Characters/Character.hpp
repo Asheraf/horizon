@@ -38,7 +38,7 @@ public:
 	~Character() {}
 
 	Character(int32_t account_id, std::string const &name, uint8_t slot, character_gender_types gender)
-	: _account_id(account_id), _slot(slot), _name(name), _online(false), _gender(gender)
+	: _account_id(account_id), _slot(slot), _name(name), _online(false), _gender(gender), _deleted(false)
 	{
 		//
 	}
@@ -69,6 +69,7 @@ public:
 				setSlot((uint16_t) res->getUInt("slot"));
 				setName(res->getString("name"));
 				setGender((character_gender_types) res->getInt("gender"));
+				setDeleted(res->getBoolean("deleted"));
 				ret = true;
 			}
 
@@ -91,8 +92,8 @@ public:
 	{
 		auto sql = server->MySQLBorrow();
 		std::string query = "REPLACE INTO `characters` "
-			"(`id`, `account_id`, `slot`, `name`, `online`, `gender`) "
-			"VALUES (?, ?, ?, ?, ?, ?);";
+		"(`id`, `account_id`, `slot`, `name`, `online`, `gender`, `deleted`) "
+		"VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
@@ -102,6 +103,7 @@ public:
 			pstmt->setString(4, getName());
 			pstmt->setBoolean(5, isOnline());
 			pstmt->setString(6, (getGender() == CHARACTER_GENDER_MALE ? "M" : "F"));
+			pstmt->setBoolean(7, isDeleted());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
@@ -111,69 +113,76 @@ public:
 		server->MySQLUnborrow(sql);
 	}
 
-	void saveAll(Server *server)
+	void create(Server *server)
 	{
 		int char_id = 0;
+		auto sql = server->MySQLBorrow();
+		std::string query = "SELECT `id` as max_id FROM `characters` ORDER BY `id` DESC LIMIT 1;";
 
-		if (getCharacterID() == 0) {
-			auto sql = server->MySQLBorrow();
-			std::string query = "SELECT `id` as max_id FROM `characters` ORDER BY `id` DESC LIMIT 1;";
+		try {
+			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
+			sql::ResultSet *res = pstmt->executeQuery();
 
-			try {
-				sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-				sql::ResultSet *res = pstmt->executeQuery();
+			if (res != nullptr && res->next())
+				char_id = res->getInt("max_id") + 1;
 
-				if (res != nullptr && res->next())
-					char_id = res->getInt("max_id") + 1;
-
-				delete pstmt;
-				delete res;
-			} catch (sql::SQLException &e) {
-				DBLog->error("SQLException: {}", e.what());
-			}
-
-			server->MySQLUnborrow(sql);
-
-			setCharacterID(char_id);
-			getStatusData()->setCharacterID(char_id);
-			getAccessData()->setCharacterID(char_id);
-			getViewData()->setCharacterID(char_id);
-			getFamilyData()->setCharacterID(char_id);
-			getCompanionData()->setCharacterID(char_id);
-			getGroupData()->setCharacterID(char_id);
-			getMiscData()->setCharacterID(char_id);
-			getPositionData()->setCharacterID(char_id);
-			getUISettingsData()->setCharacterID(char_id);
+			delete pstmt;
+			delete res;
+		} catch (sql::SQLException &e) {
+			DBLog->error("SQLException: {}", e.what());
 		}
 
+		if (char_id == 0) {
+			DBLog->warn("unable to get char_id for new character.");
+			return;
+		}
+
+		server->MySQLUnborrow(sql);
+
+		if (getStatusData() == nullptr)
+			setStatusData(std::make_shared<Status>());
+		if (getAccessData() == nullptr)
+			setAccessData(std::make_shared<Access>());
+		if (getViewData() == nullptr)
+			setViewData(std::make_shared<View>());
+		if (getFamilyData() == nullptr)
+			setFamilyData(std::make_shared<Family>());
+		if (getCompanionData() == nullptr)
+			setCompanionData(std::make_shared<Companion>());
+		if (getGroupData() == nullptr)
+			setGroupData(std::make_shared<Group>());
+		if (getMiscData() == nullptr)
+			setMiscData(std::make_shared<Misc>());
+		if (getPositionData() == nullptr)
+			setPositionData(std::make_shared<Position>());
+		if (getUISettingsData() == nullptr)
+			setUISettingsData(std::make_shared<UISettings>());
+
+		setCharacterID(char_id);
+		getStatusData()->setCharacterID(char_id);
+		getAccessData()->setCharacterID(char_id);
+		getViewData()->setCharacterID(char_id);
+		getFamilyData()->setCharacterID(char_id);
+		getCompanionData()->setCharacterID(char_id);
+		getGroupData()->setCharacterID(char_id);
+		getMiscData()->setCharacterID(char_id);
+		getPositionData()->setCharacterID(char_id);
+		getUISettingsData()->setCharacterID(char_id);
+		saveAll(server);
+	}
+
+	void saveAll(Server *server)
+	{
 		save(server);
-
-		if (getStatusData() != nullptr)
-			getStatusData()->save(server);
-
-		if (getAccessData() != nullptr)
-			getAccessData()->save(server);
-
-		if (getViewData() != nullptr)
-			getViewData()->save(server);
-
-		if (getFamilyData() != nullptr)
-			getFamilyData()->save(server);
-
-		if (getCompanionData() != nullptr)
-			getCompanionData()->save(server);
-
-		if (getGroupData() != nullptr)
-			getGroupData()->save(server);
-
-		if (getMiscData() != nullptr)
-			getMiscData()->save(server);
-
-		if (getPositionData() != nullptr)
-			getPositionData()->save(server);
-
-		if (getUISettingsData() != nullptr)
-			getUISettingsData()->save(server);
+		getStatusData()->save(server);
+		getAccessData()->save(server);
+		getViewData()->save(server);
+		getFamilyData()->save(server);
+		getCompanionData()->save(server);
+		getGroupData()->save(server);
+		getMiscData()->save(server);
+		getPositionData()->save(server);
+		getUISettingsData()->save(server);
 	}
 
 	/* Character ID */
@@ -200,6 +209,10 @@ public:
 	/* Gender */
 	character_gender_types getGender() const { return _gender; }
 	void setGender(character_gender_types gender) { _gender = gender; }
+
+	/* Deleted */
+	void setDeleted(bool deleted) { _deleted = deleted; }
+	bool isDeleted() { return _deleted; }
 
 	/* Access Data*/
 	const std::shared_ptr<Access> getAccessData() const { return _access_data; }
@@ -244,6 +257,7 @@ private:
 	std::string _name{""};
 	bool _online{false};
 	character_gender_types _gender{CHARACTER_GENDER_MALE};
+	bool _deleted;
 
 	std::shared_ptr<Access> _access_data{nullptr};
 	std::shared_ptr<Companion> _companion_data{nullptr};

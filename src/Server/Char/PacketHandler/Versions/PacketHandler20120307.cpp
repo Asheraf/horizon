@@ -47,24 +47,35 @@ void Horizon::Char::PacketHandler20120307::InitializeHandlers()
 void Horizon::Char::PacketHandler20120307::Handle_CHAR_CREATE(PacketBuffer &buf)
 {
 	PacketVer20120307::PACKET_CHAR_CREATE pkt;
+	character_gender_types gender;
 	buf >> pkt;
 
-	std::shared_ptr<Horizon::Models::Characters::Character> character = std::make_shared<Horizon::Models::Characters::Character>(this->getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE ? CHARACTER_GENDER_MALE : CHARACTER_GENDER_FEMALE);
-	std::shared_ptr<Horizon::Models::Characters::Status> status = std::make_shared<Horizon::Models::Characters::Status>();
-	status->setZeny(CharServer->getCharConfig()->getStartZeny());
-	character->setStatusData(status);
+	if (getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE) {
+		gender = CHARACTER_GENDER_MALE;
+	} else {
+		gender = CHARACTER_GENDER_FEMALE;
+	}
+
+	// Check if the name already exists.
+	if (CharQuery->CheckExistingCharByName(pkt.name)) {
+		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_ALREADY_EXISTS);
+		return;
+	}
+
+	// Check if the slot is not a premium.
+	if (pkt.slot > getSession()->getGameAccount()->getCharacterSlots()) {
+		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
+		return;
+	}
+
+	std::shared_ptr<Horizon::Models::Characters::Character> character = std::make_shared<Horizon::Models::Characters::Character>(getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, gender);
+	character->setStatusData(std::make_shared<Horizon::Models::Characters::Status>(CharServer->getCharConfig()->getStartZeny()));
 	character->setViewData(std::make_shared<Horizon::Models::Characters::View>(pkt.hair_style, pkt.hair_color));
 	character->setPositionData(std::make_shared<Horizon::Models::Characters::Position>(CharServer->getCharConfig()->getStartMap(), CharServer->getCharConfig()->getStartX(), CharServer->getCharConfig()->getStartY()));
 
-	character->setMiscData(std::make_shared<Horizon::Models::Characters::Misc>());
-	character->setUISettingsData(std::make_shared<Horizon::Models::Characters::UISettings>());
-	character->setAccessData(std::make_shared<Horizon::Models::Characters::Access>());
-	character->setCompanionData(std::make_shared<Horizon::Models::Characters::Companion>());
-	character->setFamilyData(std::make_shared<Horizon::Models::Characters::Family>());
-	character->setGroupData(std::make_shared<Horizon::Models::Characters::Group>());
-	// Add character to account.
-	this->getSession()->getGameAccount()->addCharacter(character);
 	// Save character to sql.
-	character->saveAll(CharServer);
-	Respond_CHAR_CREATE_ACK(character);
+	character->create(CharServer);
+	// Add character to account.
+	getSession()->getGameAccount()->addCharacter(character);
+	Respond_CHAR_CREATE_SUCCESS_ACK(character);
 }

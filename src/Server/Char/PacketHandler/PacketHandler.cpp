@@ -26,6 +26,7 @@
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 
 #include <boost/bind.hpp>
+#include <string>
 
 /**
  * @brief Packet Handler Constructor.
@@ -51,6 +52,9 @@ void Horizon::Char::PacketHandler::InitializeHandlers()
 #define HANDLER_FUNC(packet) addPacketHandler(packet, boost::bind(&PacketHandler::Handle_ ## packet, this, boost::placeholders::_1));
 	HANDLER_FUNC(CHAR_KEEP_ALIVE);
 	HANDLER_FUNC(CHAR_CREATE);
+	HANDLER_FUNC(CHAR_DELETE_START);
+	HANDLER_FUNC(CHAR_DELETE_CANCEL);
+	HANDLER_FUNC(CHAR_DELETE_ACCEPT);
 #undef HANDLER_FUNC
 }
 
@@ -79,27 +83,138 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pk
 void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 {
 	PACKET_CHAR_CREATE pkt;
+	character_gender_types gender;
 	buf >> pkt;
 
+	if (getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE) {
+		gender = CHARACTER_GENDER_MALE;
+	} else {
+		gender = CHARACTER_GENDER_FEMALE;
+	}
+
+	// Check if the name already exists.
+	if (CharQuery->CheckExistingCharByName(pkt.name)) {
+		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_ALREADY_EXISTS);
+		return;
+	}
+
+	// Check if the slot is not a premium.
+	if (pkt.slot > getSession()->getGameAccount()->getCharacterSlots()) {
+		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
+		return;
+	}
+
 	std::shared_ptr<Horizon::Models::Characters::Character> character = std::make_shared<Horizon::Models::Characters::Character>(
-			getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE ? CHARACTER_GENDER_MALE : CHARACTER_GENDER_FEMALE);
+			getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, gender);
 	character->setStatusData(std::make_shared<Horizon::Models::Characters::Status>(
 			CharServer->getCharConfig()->getStartZeny(), pkt.str, pkt.agi, pkt.int_, pkt.vit, pkt.dex, pkt.luk));
 	character->setViewData(std::make_shared<Horizon::Models::Characters::View>(pkt.hair_style, pkt.hair_color));
 	character->setPositionData(std::make_shared<Horizon::Models::Characters::Position>(
 			CharServer->getCharConfig()->getStartMap(), CharServer->getCharConfig()->getStartX(), CharServer->getCharConfig()->getStartY()));
-
-	character->setMiscData(std::make_shared<Horizon::Models::Characters::Misc>());
-	character->setUISettingsData(std::make_shared<Horizon::Models::Characters::UISettings>());
-	character->setAccessData(std::make_shared<Horizon::Models::Characters::Access>());
-	character->setCompanionData(std::make_shared<Horizon::Models::Characters::Companion>());
-	character->setFamilyData(std::make_shared<Horizon::Models::Characters::Family>());
-	character->setGroupData(std::make_shared<Horizon::Models::Characters::Group>());
+	
+	// Save character to sql.
+	character->create(CharServer);
 	// Add character to account.
 	getSession()->getGameAccount()->addCharacter(character);
-	// Save character to sql.
-	character->saveAll(CharServer);
-	Respond_CHAR_CREATE_ACK(character);
+	Respond_CHAR_CREATE_SUCCESS_ACK(character);
+}
+
+void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
+{
+	PACKET_CHAR_DELETE_START pkt;
+	character_delete_result result;
+
+	buf >> pkt;
+
+	std::shared_ptr<Horizon::Models::Characters::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+
+	if (character == nullptr) {
+		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
+		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_DATABASE_ERR, 0);
+		return;
+	}
+
+	if (character->getAccessData()->getDeleteDate() > 0) {
+		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_UNKNOWN, 0);
+		return;
+	}
+
+	if (character->getGroupData()->getGuildID() > 0) {
+		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_GUILD_ERR, 0);
+		return;
+	}
+
+	if (character->getGroupData()->getPartyID() > 0) {
+		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_PARTY_ERR, 0);
+		return;
+	}
+
+	character->getAccessData()->setDeleteDate(CharServer->getCharConfig()->getCharacterDeletionTime() + time(nullptr));
+	character->getAccessData()->save(CharServer);
+	result = CHAR_DEL_RESULT_SUCCESS;
+	Respond_CHAR_DELETE_START_ACK(character->getCharacterID(), result, character->getAccessData()->getDeleteDate() - time(nullptr));
+}
+
+void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
+{
+	PACKET_CHAR_DELETE_ACCEPT pkt;
+
+	buf >> pkt;
+
+	std::shared_ptr<Horizon::Models::Characters::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+
+	if (character == nullptr) {
+		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
+		Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_UNKNOWN);
+		return;
+	}
+
+	if (character->getAccessData()->getDeleteDate() > time(nullptr)) {
+		CharLog->warn("Attempted to delete character not ready for deletion, for account Id '{}'", getSession()->getGameAccount()->getID());
+		Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_TIME_ERR);
+		return;
+	}
+
+	const char *birth_date = getSession()->getGameAccount()->getBirthDate().c_str();
+	if (std::strncmp(&birth_date[2], &pkt.birthdate[0], 2)        // YY
+		|| std::strncmp(&birth_date[5], &pkt.birthdate[2], 2)     // MM
+		|| std::strncmp(&birth_date[8], &pkt.birthdate[4], 2)) {  // DD
+		Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_BIRTHDAY_ERR);
+		return;
+	}
+
+	Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_SUCCESS);
+
+	getSession()->getGameAccount()->removeCharacter(pkt.character_id);
+	character->setDeleted(true);
+	character->save(CharServer);
+	Respond_CHAR_RESEND_CHAR_LIST();
+}
+
+void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
+{
+	PACKET_CHAR_DELETE_CANCEL pkt;
+
+	buf >> pkt;
+
+	std::shared_ptr<Horizon::Models::Characters::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+
+	if (character == nullptr) {
+		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
+		Respond_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
+		return;
+	}
+
+	if (character->getAccessData()->getDeleteDate() == 0) {
+		CharLog->warn("Attempted to delete character that wasn't set for deletion in account Id '{}'", getSession()->getGameAccount()->getID());
+		Respond_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
+		return;
+	}
+
+	character->getAccessData()->setDeleteDate(0);
+	character->getAccessData()->save(CharServer);
+
+	Respond_CHAR_DELETE_CANCEL_ACK(pkt.character_id, true);
 }
 
 /**
@@ -166,12 +281,10 @@ void Horizon::Char::PacketHandler::Respond_CHAR_LIST_ACK()
 	std::vector<character_list_data> char_list;
 	int char_list_length = 0;
 
-	for (auto c : getSession()->getGameAccount()->getAllCharacters()) {
+	for (auto &c : getSession()->getGameAccount()->getAllCharacters()) {
 		character_list_data c_data;
 		c_data.create(c.second);
-		c_data.gender = getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_NONE
-			? c.second->getGender()
-			: getSession()->getGameAccount()->getGender();
+		c_data.gender = getSession()->getGameAccount()->getGender();
 		char_list.push_back(c_data);
 		char_list_length += sizeof(c_data);
 	}
@@ -187,6 +300,34 @@ void Horizon::Char::PacketHandler::Respond_CHAR_LIST_ACK()
 	SendPacket(buf, pkt.packet_len);
 
 	CharLog->info("Sent character-list information to AID {}", getSession()->getSessionData()->getGameAccountID());
+}
+
+void Horizon::Char::PacketHandler::Respond_CHAR_RESEND_CHAR_LIST()
+{
+	PACKET_CHAR_RESEND_CHAR_LIST pkt;
+	PacketBuffer buf;
+	std::vector<character_list_data> char_list;
+	int char_list_length = 0;
+
+	for (auto &c : getSession()->getGameAccount()->getAllCharacters()) {
+		character_list_data c_data;
+		c_data.create(c.second);
+		c_data.gender = getSession()->getGameAccount()->getGender();
+		char_list.push_back(c_data);
+		char_list_length += sizeof(c_data);
+	}
+
+	pkt.packet_len += char_list_length;
+
+	buf.append(&pkt, sizeof(pkt));
+
+	for (auto c : char_list) {
+		buf.append(&c, sizeof(c));
+	}
+
+	SendPacket(buf, pkt.packet_len);
+
+	CharLog->info("Re-sent character-list information to AID {}", getSession()->getSessionData()->getGameAccountID());
 }
 
 /**
@@ -213,14 +354,48 @@ void Horizon::Char::PacketHandler::Respond_CHAR_PINCODE_STATE_ACK()
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character)
+void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character)
 {
-	PACKET_CHAR_CREATE_ACK pkt;
+	PACKET_CHAR_CREATE_SUCCESS_ACK pkt;
 
 	pkt.data.create(character);
-	pkt.data.gender = getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_NONE
-	? character->getGender()
-	: getSession()->getGameAccount()->getGender();
 
+	if (getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE)
+		pkt.data.gender = CHARACTER_GENDER_MALE;
+	else
+		pkt.data.gender = CHARACTER_GENDER_FEMALE;
+
+	SendPacket(pkt);
+}
+
+void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date)
+{
+	PACKET_CHAR_DELETE_START_ACK pkt;
+	pkt.character_id = character_id;
+	pkt.result = result;
+	pkt.deletion_date = deletion_date;
+	SendPacket(pkt);
+}
+
+void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result)
+{
+	PACKET_CHAR_DELETE_ACCEPT_ACK pkt;
+	pkt.character_id = character_id;
+	pkt.result = result;
+	SendPacket(pkt);
+}
+
+void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success)
+{
+	PACKET_CHAR_DELETE_CANCEL_ACK pkt;
+	pkt.character_id = character_id;
+	pkt.result = success ? 1 : 2;
+	SendPacket(pkt);
+}
+
+void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_ERROR_ACK(char_create_error_types error)
+{
+	PACKET_CHAR_CREATE_ERROR_ACK pkt;
+	pkt.error_code = (uint8_t) error;
 	SendPacket(pkt);
 }

@@ -17,7 +17,9 @@
 
 add_subdirectory(Characters)
 add_subdirectory(Configuration)
+
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(MODELS_SOURCES
 	${CHARACTER_MODEL_SOURCES}
 	${DIR}/GameAccount.hpp

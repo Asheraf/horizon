@@ -56,7 +56,7 @@ Horizon::Char::CharMain::~CharMain()
  */
 bool Horizon::Char::CharMain::ReadConfig()
 {
-	YAML::Node config;
+	YAML::Node config, tmp_config;
 	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
 
 	try {
@@ -70,53 +70,60 @@ bool Horizon::Char::CharMain::ReadConfig()
 	 * Inter Server Settings
 	 * @brief Definitions of the Inter-server networking configuration.
 	 */
-	if (config["InterServer.IP"]) {
-		getNetworkConf().setInterServerIp(config["InterServer.IP"].as<std::string>());
+	tmp_config = config["InterServer.IP"];
+	if (tmp_config && tmp_config.IsScalar()) {
+		getNetworkConf().setInterServerIp(tmp_config.as<std::string>());
 	} else {
 		CharLog->error("Inter-server IP configuration not set, defaulting to '127.0.0.1'.");
 		getNetworkConf().setInterServerIp("127.0.0.1");
 	}
 
-	if (config["InterServer.Port"]) {
-		getNetworkConf().setInterServerPort(config["InterServer.Port"].as<uint16_t>());
+	tmp_config = config["InterServer.Port"];
+	if (tmp_config && tmp_config.IsScalar()) {
+		getNetworkConf().setInterServerPort(tmp_config.as<uint16_t>());
 	} else {
 		CharLog->error("Inter-server Port configuration not set, defaulting to '9998'.");
 		getNetworkConf().setInterServerPort(9998);
 	}
 
-	if (config["InterServer.Password"]) {
-		getNetworkConf().setInterServerPassword(config["InterServer.Password"].as<std::string>());
+	tmp_config = config["InterServer.Password"];
+	if (tmp_config && tmp_config.IsScalar()) {
+		getNetworkConf().setInterServerPassword(tmp_config.as<std::string>());
 	}
 
 	CharLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
 	              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
 	              (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
 
-	if (config["new_character"] && config["new_character"].IsMap()) {
-		YAML::Node n = config["new_character"];
-
-		if (n["start_map"] && n["start_map"].IsScalar())
-			getCharConfig()->setStartMap(n["start_map"].as<std::string>());
+	YAML::Node n = config["new_character"];
+	if (n && n.IsMap()) {
+		tmp_config = n["start_map"];
+		if (tmp_config && tmp_config.IsScalar())
+			getCharConfig()->setStartMap(tmp_config.as<std::string>());
 		else
 			CharLog->error("Unsupported node type for 'start_map' configuration... using hard-coded defaults.");
 
-		if (n["start_x"] && n["start_x"].IsScalar())
-			getCharConfig()->setStartX(n["start_x"].as<uint16_t>());
+		tmp_config = n["start_x"];
+		if (tmp_config && tmp_config.IsScalar())
+			getCharConfig()->setStartX(tmp_config.as<uint16_t>());
 		else
 			CharLog->error("Unsupported node type for 'start_x' configuration... using hard-coded defaults.");
 
-		if (n["start_y"] && n["start_y"].IsScalar())
-			getCharConfig()->setStartY(n["start_y"].as<uint16_t>());
+		tmp_config = n["start_y"];
+		if (tmp_config && tmp_config.IsScalar())
+			getCharConfig()->setStartY(tmp_config.as<uint16_t>());
 		else
 			CharLog->error("Unsupported node type for 'start_y' configuration... using hard-coded defaults.");
 
-		if (n["start_zeny"] && n["start_zeny"].IsScalar())
-			getCharConfig()->setStartZeny(n["start_zeny"].as<uint32_t>());
+		tmp_config = n["start_zeny"];
+		if (tmp_config && tmp_config.IsScalar())
+			getCharConfig()->setStartZeny(tmp_config.as<uint32_t>());
 		else
 			CharLog->error("Unsupported node type for 'start_zeny' configuration... using hard-coded defaults.");
 
-		if (n["start_items"] && n["start_items"].IsMap()) {
-			for (YAML::const_iterator it = n["start_items"].begin(); it != n["start_items"].end(); ++it) {
+		tmp_config = n["start_items"];
+		if (tmp_config && tmp_config.IsMap()) {
+			for (YAML::const_iterator it = tmp_config.begin(); it != tmp_config.end(); ++it) {
 				if (!it->first.IsScalar() || !it->second.IsScalar()) {
 					CharLog->error("Unsupported node type for an element in 'start_items' configuration... skipping.");
 				} else {
@@ -132,6 +139,14 @@ bool Horizon::Char::CharMain::ReadConfig()
 		CharLog->error("Unsupported node type for 'new_characters' configuration... using hard-coded defaults.");
 		getCharConfig()->addStartItem(std::make_pair(1201, 1));
 		getCharConfig()->addStartItem(std::make_pair(2301, 1));
+	}
+
+	tmp_config = config["character_deletion_time"];
+	if (tmp_config && tmp_config.IsScalar()) {
+		getCharConfig()->setCharacterDeletionTime(tmp_config.as<time_t>());
+	} else {
+		CharLog->error("Unsupported or non-existent setting 'character_deletion_time', defaulting to 24 hours.");
+		getCharConfig()->setCharacterDeletionTime(24000);
 	}
 
 	/**

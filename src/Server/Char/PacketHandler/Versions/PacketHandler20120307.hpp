@@ -29,7 +29,7 @@ struct PACKET_CHAR_CREATE : public Packet
 {
 	PACKET_CHAR_CREATE() : Packet(Horizon::Char::PacketVer20120307::CHAR_CREATE) {}
 	// S 0970 <name>.24B <slot>.B <hair color>.W <hair style>.W
-	char name[CHAR_NAME_LENGTH]{0};
+	char name[MAX_CHAR_NAME_LENGTH]{0};
 	uint8_t slot{0};
 	uint16_t hair_color{0};
 	uint16_t hair_style{0};

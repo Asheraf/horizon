@@ -46,6 +46,7 @@ namespace Database
 enum char_query_types
 {
 	SELECT_ALL_CHARS_BY_AID,
+	CHECK_EXISTING_CHAR_BY_NAME,
 };
 class Query : public Horizon::Common::Database::Query
 {
@@ -63,6 +64,7 @@ public:
 
 	int AllCharactersByAccount(std::shared_ptr<GameAccount> account);
 	std::shared_ptr<Horizon::Models::Characters::Character> CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res);
+	int CheckExistingCharByName(std::string name);
 };
 }
 }

@@ -9,6 +9,7 @@
 #include "Server/Common/Base/PacketHandler/PacketHandler.hpp"
 #include "Server/Common/Base/PacketHandler/InterPackets.hpp"
 #include "Server/Common/Models/SessionData.hpp"
+#include "Server/Common/Models/GameAccount.hpp"
 
 #include <memory>
 
@@ -39,6 +40,7 @@ public:
 		HANDLER_FUNC(INTER_CONNECT_INIT);
 		HANDLER_FUNC(INTER_SESSION_GET);
 		HANDLER_FUNC(INTER_ACK_RECEIVED);
+		HANDLER_FUNC(INTER_GAME_ACCOUNT_GET);
 #undef HANDLER_FUNC
 	}
 
@@ -100,14 +102,27 @@ public:
 	virtual void Handle_INTER_SESSION_GET(PacketBuffer &buf)
 	{
 		const std::shared_ptr<SessionData> session_data = this->getSession()->getSessionData();
-		PACKET_INTER_SESSION pkt;
+		PACKET_INTER_SESSION_GET pkt;
 
 		// Deserialize Buffer.
 		buf >> pkt;
 		// Update Session Data.
-		*session_data << pkt;
+		*session_data << pkt.s;
 
 		CoreLog->info("Updated session data for account : '{}'", session_data->getGameAccountID());
+	}
+
+	virtual void Handle_INTER_GAME_ACCOUNT_GET(PacketBuffer &buf)
+	{
+		const std::shared_ptr<GameAccount> game_account = this->getSession()->getGameAccount();
+		PACKET_INTER_GAME_ACCOUNT_GET pkt;
+
+		// Deserialize Buffer.
+		buf >> pkt;
+		// Update Game Account Data.
+		*game_account << pkt.s;
+
+		CoreLog->info("Updated game account data for account : '{}'", game_account->getID());
 	}
 
 	/************
@@ -129,6 +144,7 @@ public:
 		ReceiveAndHandle(recv_buf);
 	}
 
+	// Session Data
 	virtual void Respond_INTER_SESSION_SET(SessionData &session_data)
 	{
 		PACKET_INTER_SESSION_SET pkt;
@@ -147,6 +163,28 @@ public:
 	{
 		PACKET_INTER_SESSION_REQ pkt;
 		pkt.auth_code = auth_code;
+		this->SendSyncPacket(pkt);
+	}
+
+	// Game Account
+	virtual void Respond_INTER_GAME_ACCOUNT_SET(GameAccount &game_account)
+	{
+		PACKET_INTER_GAME_ACCOUNT_SET pkt;
+		game_account >> pkt.s;
+		this->SendSyncPacket(pkt);
+	}
+
+	virtual void Respond_INTER_GAME_ACCOUNT_DEL(uint32_t account_id)
+	{
+		PACKET_INTER_GAME_ACCOUNT_DEL pkt;
+		pkt.account_id = account_id;
+		this->SendSyncPacket(pkt);
+	}
+
+	virtual void Respond_INTER_GAME_ACCOUNT_REQ(uint32_t account_id)
+	{
+		PACKET_INTER_GAME_ACCOUNT_REQ pkt;
+		pkt.account_id = account_id;
 		this->SendSyncPacket(pkt);
 	}
 

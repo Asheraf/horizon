@@ -21,11 +21,16 @@ public:
 	Status() {}
 	~Status() {}
 
-	Status(uint32_t z, uint8_t str, uint8_t agi, uint8_t int_, uint8_t vit, uint8_t dex, uint8_t luk)
-	:  zeny(z), strength(str), agility(agi), intelligence(int_), vitality(vit), dexterity(dex), luck(luk)
+	Status(uint32_t zeny)
+	: base_level(1), job_level(1)
 	{
-		base_level = 1;
-		job_level = 1;
+		//
+	}
+
+	Status(uint32_t z, uint8_t str, uint8_t agi, uint8_t int_, uint8_t vit, uint8_t dex, uint8_t luk)
+	: base_level(1), job_level(1), zeny(z), strength(str), agility(agi), vitality(vit), intelligence(int_), dexterity(dex), luck(luk)
+	{
+		//
 	}
 
 	/**

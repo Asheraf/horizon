@@ -19,6 +19,7 @@
 
 #include "BCrypt.hpp"
 #include <exception>
+#include <stdexcept>
 #include <string>
 
 std::string BCrypt::generateHash(const std::string & password, int workload = 12)

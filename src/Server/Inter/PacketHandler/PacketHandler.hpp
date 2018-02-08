@@ -30,10 +30,14 @@ public:
 	 * Handlers
 	 */
 	void Handle_INTER_CONNECT_AUTH(PacketBuffer &buf);
-	void Handle_INTER_SESSION_GET(PacketBuffer &buf);
+	// Session
 	void Handle_INTER_SESSION_SET(PacketBuffer &buf);
 	void Handle_INTER_SESSION_DEL(PacketBuffer &buf);
 	void Handle_INTER_SESSION_REQ(PacketBuffer &buf);
+	// Game Account
+	void Handle_INTER_GAME_ACCOUNT_SET(PacketBuffer &buf);
+	void Handle_INTER_GAME_ACCOUNT_DEL(PacketBuffer &buf);
+	void Handle_INTER_GAME_ACCOUNT_REQ(PacketBuffer &buf);
 	/**
 	 * Response
 	 */

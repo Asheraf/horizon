@@ -40,12 +40,16 @@ struct character_server_configuration
 	void addStartItem(std::pair<uint32_t, uint32_t> item) { _start_items.push_back(item); }
 	std::pair<uint32_t, uint32_t> &getStartItem(std::size_t index) { return _start_items.at(index); }
 	std::size_t getStartItemCount() { return _start_items.size(); }
+	/* Character Deletion Time */
+	time_t getCharacterDeletionTime() const { return _character_deletion_time; }
+	void setCharacterDeletionTime(time_t time) { _character_deletion_time = time; }
 
 private:
 	std::string _start_map{"new_1-1"};
 	uint16_t _start_x{53}, _start_y{111};
 	uint32_t _start_zeny{0};
 	std::vector<std::pair<uint32_t, uint32_t>> _start_items;
+	time_t _character_deletion_time;
 };
 
 #endif /* HORIZON_CHARSERVERCONFIGURATION_HPP */

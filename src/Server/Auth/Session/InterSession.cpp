@@ -34,8 +34,8 @@ void Horizon::Auth::InterSession::Start()
 	PacketBuffer buf;
 	AuthLog->info("Established connection from {}.", getRemoteIPAddress());
 	setPacketHandler(PacketHandlerFactory::CreateInterPacketHandler(shared_from_this()));
-	getPacketHandler()->ReceiveAndHandle(buf);
 	getPacketHandler()->setClientType(INTER_CONNECT_CLIENT_AUTH);
+	getPacketHandler()->ReceiveAndHandle(buf);
 }
 
 void Horizon::Auth::InterSession::OnClose()

@@ -45,6 +45,7 @@ bool Horizon::Auth::PacketHandler::ValidateSessionData(uint32_t id, uint32_t cli
 {
 	if (AuthInterAPI->GetSessionFromInter(id) != nullptr) {
 		// @TODO Check if online in char-server & map-server.
+		AuthInterAPI->DeleteGameAccountFromInter(id);
 		AuthInterAPI->DeleteSessionFromInter(id);
 		return true;
 	}
@@ -65,6 +66,7 @@ bool Horizon::Auth::PacketHandler::ValidateSessionData(uint32_t id, uint32_t cli
 
 	// Send session data to inter.
 	AuthInterAPI->AddSessionToInter(session_data);
+	AuthInterAPI->AddGameAccountToInter(game_account);
 	return false;
 }
 

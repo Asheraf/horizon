@@ -22,6 +22,7 @@
 #include "Libraries/BCrypt/BCrypt.hpp"
 #include "Core/Database/MySqlConnection.hpp"
 #include "Server/Common/Models/Characters/Character.hpp"
+#include "Server/Common/Base/PacketHandler/InterPackets.hpp"
 
 #include <cstdint>
 #include <boost/asio/ip/address.hpp>
@@ -146,12 +147,14 @@ public:
 		id = res->getInt("id");
 		username = res->getString("username");
 		std::string account_gender = res->getString("gender");
+
 		if (account_gender == "M")
 			gender = ACCOUNT_GENDER_MALE;
 		else if (account_gender == "F")
 			gender = ACCOUNT_GENDER_FEMALE;
 		else if (account_gender == "NA")
 			gender = ACCOUNT_GENDER_NONE;
+
 		email = res->getString("email");
 		group_id = (uint16_t) res->getInt("group_id");
 		state = (game_account_state_types) res->getInt("state");
@@ -199,6 +202,50 @@ public:
 		}
 
 		server->MySQLUnborrow(sql);
+	}
+
+	/**
+	 * Serialize into struct.
+	 */
+	GameAccount &operator >> (PACKET_INTER_GAME_ACCOUNT &pkt)
+	{
+		pkt.id = getID();
+		strncpy(pkt.username, getUsername().c_str(), MAX_USERNAME_LENGTH);
+		pkt.gender = getGender();
+		strncpy(pkt.email, getEmail().c_str(), MAX_EMAIL_LENGTH);
+		pkt.group_id = getGroupID();
+		pkt.state = getState();
+		pkt.unban_time = getUnbanTime();
+		pkt.expiration_time = getExpirationTime();
+		pkt.last_login = getLastLogin();
+		strncpy(pkt.last_ip, getLastIP().c_str(), MAX_IP_ADDRESS_STR_LENGTH);
+		strncpy(pkt.birth_date, getBirthDate().c_str(), MAX_BIRTHDATE_STRING_LENGTH);
+		pkt.character_slots = getCharacterSlots();
+		strncpy(pkt.pincode, getPincode().c_str(), MAX_PINCODE_STRING_LENGTH);
+		pkt.pincode_expiry = getPincodeExpiry();
+		return *this;
+	}
+
+	/**
+	 * Serialize into struct.
+	 */
+	GameAccount &operator << (PACKET_INTER_GAME_ACCOUNT &pkt)
+	{
+		setID(pkt.id);
+		setUsername(pkt.username);
+		setGender(static_cast<game_account_gender_types>(pkt.gender));
+		setEmail(pkt.email);
+		setGroupID(pkt.group_id);
+		setState(static_cast<game_account_state_types>(pkt.state));
+		setUnbanTime(pkt.unban_time);
+		setExpirationTime(pkt.expiration_time);
+		setLastLogin(pkt.last_login);
+		setLastIP(pkt.last_ip);
+		setBirthDate(pkt.birth_date);
+		setCharacterSlots(pkt.character_slots);
+		setPincode(pkt.pincode);
+		setPincodeExpiry(pkt.pincode_expiry);
+		return *this;
 	}
 
 	/* Account Id */
@@ -288,7 +335,7 @@ public:
 	 * @brief retrieve a std::map of all characters from the account.
 	 */
 	const AccountCharacterMapType &getAllCharacters() const { return _characters; }
-
+	
 private:
 	uint32_t id{};                                   ///< Account Id
 	std::string username{};                          ///< Username

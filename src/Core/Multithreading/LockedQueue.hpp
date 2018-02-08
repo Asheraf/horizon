@@ -21,6 +21,7 @@
 
 #include <deque>
 #include <mutex>
+#include <atomic>
 
 /**
  * @brief Thread-safe Locking Queue

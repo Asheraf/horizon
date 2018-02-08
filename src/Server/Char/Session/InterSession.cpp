@@ -34,8 +34,8 @@ void Horizon::Char::InterSession::Start()
 	PacketBuffer buf;
 	CharLog->info("Established connection from {}.", getRemoteIPAddress());
 	setPacketHandler(PacketHandlerFactory::CreateInterPacketHandler(shared_from_this()));
-	getPacketHandler()->ReceiveAndHandle(buf);
 	getPacketHandler()->setClientType(INTER_CONNECT_CLIENT_CHAR);
+	getPacketHandler()->ReceiveAndHandle(buf);
 }
 
 void Horizon::Char::InterSession::OnClose()
