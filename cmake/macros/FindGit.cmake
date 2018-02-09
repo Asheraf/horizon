@@ -1,12 +1,20 @@
-# Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
+###################################################
+#       _   _            _                        #
+#      | | | |          (_)                       #
+#      | |_| | ___  _ __ _ _______  _ __          #
+#      |  _  |/ _ \| '__| |_  / _ \| '_  \        #
+#      | | | | (_) | |  | |/ / (_) | | | |        #
+#      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
+###################################################
+# This file is part of Horizon (c).
+# Copyright (c) 2018 Horizon Dev Team.
 #
-# This file is free software; as a special exception the author gives
-# unlimited permission to copy and/or distribute it, with or without
-# modifications, as long as this notice is preserved.
+# Base Author - Sagun Khosla. (sagunxp@gmail.com)
 #
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# Under a proprietary license this file is not for use
+# or viewing without permission.
+###################################################
+
 include(${CMAKE_SOURCE_DIR}/cmake/macros/EnsureVersion.cmake)
 
 set(_REQUIRED_GIT_VERSION "1.7")

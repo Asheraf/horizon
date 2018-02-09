@@ -1,3 +1,19 @@
+###################################################
+#       _   _            _                        #
+#      | | | |          (_)                       #
+#      | |_| | ___  _ __ _ _______  _ __          #
+#      |  _  |/ _ \| '__| |_  / _ \| '_  \        #
+#      | | | | (_) | |  | |/ / (_) | | | |        #
+#      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
+###################################################
+# This file is part of Horizon (c).
+# Copyright (c) 2018 Horizon Dev Team.
+#
+# Base Author - Sagun Khosla. (sagunxp@gmail.com)
+#
+# Under a proprietary license this file is not for use
+# or viewing without permission.
+###################################################
 # This file defines the following macros for developers to use in ensuring
 # that installed software is of the right version:
 #
@@ -8,7 +24,6 @@
 #                               maximum
 # ENSURE_VERSION2       - deprecated, do not use in new code
 #
-
 # ENSURE_VERSION
 # This macro compares version numbers of the form "x.y.z" or "x.y"
 # ENSURE_VERSION( FOO_MIN_VERSION FOO_VERSION_FOUND FOO_VERSION_OK)

@@ -18,10 +18,10 @@
 #include "InterPacketHandler.hpp"
 
 #include "Core/Logging/Logger.hpp"
-#include "Server/Zone/Zone.hpp"
-#include "Server/Zone/Session/InterSession.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Inter/PacketHandler/Packets.hpp"
+#include "Server/Zone/Zone.hpp"
+#include "Server/Zone/Session/InterSession.hpp"
 
 #include <boost/bind.hpp>
 

@@ -71,3 +71,26 @@ global_io_threads: 2
 # Default: 500ms
 ###################################################
 core_update_interval: 500
+
+###################################################
+# New character settings.
+###################################################
+new_character:
+    start_map: "new_1-1"
+    start_x: 53
+    start_y: 111
+    start_zeny: 0
+    start_items:
+      1201: 1
+      2301: 1
+
+###################################################
+# Interval for character deletion.
+###################################################
+character_deletion_time: 86400
+
+###################################################
+# Zone Server Connection Information.
+###################################################
+ZoneServer.IP: "127.0.0.1"
+ZoneServer.Port: 5121

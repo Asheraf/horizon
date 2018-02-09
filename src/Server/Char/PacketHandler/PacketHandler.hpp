@@ -49,6 +49,7 @@ public:
 	virtual void Handle_CHAR_DELETE_START(PacketBuffer &buf);
 	virtual void Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf);
 	virtual void Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf);
+	virtual void Handle_CHAR_SELECT(PacketBuffer &buf);
 	/**
 	 * Responders
 	 */
@@ -64,6 +65,7 @@ public:
 	virtual void Respond_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result);
 	virtual void Respond_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success);
 	virtual void Respond_CHAR_CREATE_ERROR_ACK(char_create_error_types error);
+	virtual void Respond_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Characters::Character> character);
 };
 }
 }

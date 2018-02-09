@@ -66,4 +66,11 @@ uint16 ntows(uint16 netshort)
 	return (uint16) (((netshort & 0xFF) << 8) | ((netshort & 0xFF00) >> 8));
 }
 
+
+static inline void PackPosition(uint8* p, short x, short y, unsigned char dir) {
+	p[0] = (uint8) (x >> 2);
+	p[1] = (uint8) ((x << 6) | ((y >> 4) & 0x3f));
+	p[2] = (uint8) ((y << 4) | (dir & 0xf));
+}
+
 #endif //HORIZON_UTILITIES_H

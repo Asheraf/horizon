@@ -90,7 +90,7 @@ character_servers:
     1:
         name: "Asgard"
         host: "localhost"
-        port: 5121
+        port: 6121
         type: 0
         isNew: true
 

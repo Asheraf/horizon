@@ -28,6 +28,10 @@ Horizon::Inter::Session::Session(std::shared_ptr<tcp::socket> socket)
 	//
 }
 
+/**
+ * @brief Start method invoked once from the network thread that the socket is in,
+ *        on start of the socket connection.
+ */
 void Horizon::Inter::Session::Start()
 {
 	std::string ip_address = getRemoteIPAddress();
@@ -41,6 +45,9 @@ void Horizon::Inter::Session::Start()
 	AsyncRead();
 }
 
+/**
+ * @brief Socket cleanup method on connection closure.
+ */
 void Horizon::Inter::Session::OnClose()
 {
 	try {
@@ -50,12 +57,15 @@ void Horizon::Inter::Session::OnClose()
 		InterLog->info("Closed a connected session abruptly. Error: {}", error.what());
 	}
 
-	/**
-	 * @brief Perform socket manager cleanup.
-	 */
+
+	/* Perform socket manager cleanup. */
 	ClientSocktMgr->ClearSession(shared_from_this());
 }
 
+/**
+ * @brief Asynchronous update method periodically called from network threads.
+ * @return true on successful update, false on failure.
+ */
 bool Horizon::Inter::Session::Update()
 {
 	return InterSocket::Update();

@@ -17,9 +17,10 @@
 #ifndef HORIZON_COMMON_PACKETBUFFER_H
 #define HORIZON_COMMON_PACKETBUFFER_H
 
+#include "Core/Networking/Buffer/ByteBuffer.hpp"
+
 #include <stdint.h>
 #include <boost/function.hpp>
-#include "Core/Networking/Buffer/ByteBuffer.hpp"
 #include <unordered_map>
 
 class PacketBuffer;

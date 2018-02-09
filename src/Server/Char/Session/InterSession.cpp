@@ -29,6 +29,9 @@ Horizon::Char::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
 {
 }
 
+/**
+ * @brief Initial method invoked once from the network thread that handles the session.
+ */
 void Horizon::Char::InterSession::Start()
 {
 	PacketBuffer buf;
@@ -38,6 +41,9 @@ void Horizon::Char::InterSession::Start()
 	getPacketHandler()->ReceiveAndHandle(buf);
 }
 
+/**
+ * @brief Socket cleanup method on connection closure.
+ */
 void Horizon::Char::InterSession::OnClose()
 {
 	CharLog->info("Closed connection from {}.", getRemoteIPAddress());
@@ -53,6 +59,10 @@ void Horizon::Char::InterSession::ReadHandler()
 	//
 }
 
+/**
+ * @brief Asynchronous update method periodically called from network threads.
+ * @return true on successful update, false on failure.
+ */
 bool Horizon::Char::InterSession::Update()
 {
 	return CharSocket::Update();

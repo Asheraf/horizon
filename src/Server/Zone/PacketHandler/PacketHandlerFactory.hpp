@@ -20,6 +20,7 @@
 
 #include "Server/Zone/PacketHandler/PacketHandler.hpp"
 #include "Server/Zone/PacketHandler/InterPacketHandler.hpp"
+#include "Server/Zone/PacketHandler/Versions/PacketHandler20141022.hpp"
 
 #include <memory>
 
@@ -40,8 +41,11 @@ public:
 	 * @param[in|out] session    shared_ptr to a Session instance.
 	 * @return shared pointer to a new instance of Horizon::Zone::PacketHandler.
 	 */
-	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<Session> session, uint32_t /*packet_ver*/)
+	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<Session> session, uint32_t packet_ver)
 	{
+		if (packet_ver >= 20141022)
+			return std::make_shared<PacketHandler20141022>(session);
+
 		return std::make_shared<PacketHandler>(session);
 	}
 

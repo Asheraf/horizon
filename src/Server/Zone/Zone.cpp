@@ -55,6 +55,7 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 		ZoneLog->error("Unable to read {}. ({})", filepath, err.what());
 		return false;
 	}
+
 	/**
 	 * Inter Server Settings
 	 * @brief Definitions of the Inter-server networking configuration.
@@ -120,7 +121,7 @@ void Horizon::Zone::ZoneMain::ConnectWithInterServer()
 	if (!getGeneralConf().isTestRun()) {
 		try {
 			InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(),
-			                                      getNetworkConf().getInterServerPort(), 5);
+			                                      getNetworkConf().getInterServerPort(), 1);
 		} catch (boost::system::system_error &e) {
 			ZoneLog->error("{}", e.what());
 		}

@@ -28,6 +28,9 @@ Horizon::Auth::Session::Session(std::shared_ptr<tcp::socket> socket)
 {
 }
 
+/**
+ * @brief Initial method invoked once from the network thread that handles the session.
+ */
 void Horizon::Auth::Session::Start()
 {
 	std::string ip_address = getRemoteIPAddress();
@@ -37,14 +40,13 @@ void Horizon::Auth::Session::Start()
 	AsyncRead();
 }
 
+/**
+ * @brief Socket cleanup method on connection closure.
+ */
 void Horizon::Auth::Session::OnClose()
 {
-	try {
-		std::string ip_address = getRemoteIPAddress();
-		AuthLog->info("Closed connection from {}.", ip_address);
-	} catch (boost::system::system_error &error) {
-		AuthLog->info("Closed a connected session abruptly. Error: {}", error.what());
-	}
+
+	AuthLog->info("Closed connection from {}.", getRemoteIPAddress());
 
 	/**
 	 * @brief Perform socket manager cleanup.
@@ -52,6 +54,10 @@ void Horizon::Auth::Session::OnClose()
 	ClientSocktMgr->ClearSession(shared_from_this());
 }
 
+/**
+ * @brief Asynchronous update method periodically called from network threads.
+ * @return true on successful update, false on failure.
+ */
 bool Horizon::Auth::Session::Update()
 {
 	return AuthSocket::Update();

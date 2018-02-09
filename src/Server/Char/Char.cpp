@@ -149,6 +149,22 @@ bool Horizon::Char::CharMain::ReadConfig()
 		getCharConfig()->setCharacterDeletionTime(24000);
 	}
 
+	tmp_config = config["ZoneServer.IP"];
+	if (tmp_config && tmp_config.IsScalar()) {
+		getCharConfig()->setZoneServerIP(tmp_config.as<std::string>());
+	} else {
+		CharLog->error("Unsupported or non-existent setting 'ZoneServer.IP', defaulting to '127.0.0.1'.");
+		getCharConfig()->setZoneServerIP("127.0.0.1");
+	}
+
+	tmp_config = config["ZoneServer.Port"];
+	if (tmp_config && tmp_config.IsScalar()) {
+		getCharConfig()->setZoneServerPort(tmp_config.as<uint16_t>());
+	} else {
+		CharLog->error("Unsupported or non-existent setting 'ZoneServer.Port', defaulting to '5121'.");
+		getCharConfig()->setZoneServerPort(5121);
+	}
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */

@@ -29,6 +29,9 @@ Horizon::Auth::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
 {
 }
 
+/**
+ * @brief Initial method invoked once from the network thread that handles the session.
+ */
 void Horizon::Auth::InterSession::Start()
 {
 	PacketBuffer buf;
@@ -38,6 +41,9 @@ void Horizon::Auth::InterSession::Start()
 	getPacketHandler()->ReceiveAndHandle(buf);
 }
 
+/**
+ * @brief Socket cleanup method on connection closure.
+ */
 void Horizon::Auth::InterSession::OnClose()
 {
 	AuthLog->info("Closed connection from {}.", getRemoteIPAddress());
@@ -50,9 +56,13 @@ void Horizon::Auth::InterSession::OnClose()
 
 void Horizon::Auth::InterSession::ReadHandler()
 {
-	//
+	// Not required for Inter Sessions.
 }
 
+/**
+ * @brief Asynchronous update method periodically called from network threads.
+ * @return true on successful update, false on failure.
+ */
 bool Horizon::Auth::InterSession::Update()
 {
 	return AuthSocket::Update();

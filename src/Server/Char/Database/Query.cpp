@@ -59,7 +59,8 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 		"SELECT * FROM `characters` WHERE `name` = ?");
 }
 
-std::shared_ptr<Horizon::Models::Characters::Character> Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res)
+std::shared_ptr<Horizon::Models::Characters::Character>
+Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res)
 {
 	Horizon::Models::Characters::Character c;
 	Horizon::Models::Characters::Status csd;

@@ -52,9 +52,10 @@ enum game_account_state_types
 	ACCOUNT_STATE_BANNED
 };
 
+typedef std::map<uint32_t, std::shared_ptr<Horizon::Models::Characters::Character>> AccountCharacterMapType;
+
 class GameAccount
 {
-	typedef std::map<uint32_t, std::shared_ptr<Horizon::Models::Characters::Character>> AccountCharacterMapType;
 public:
 	GameAccount()
 	{

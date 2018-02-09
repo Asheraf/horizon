@@ -29,18 +29,24 @@ Horizon::Zone::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
 {
 }
 
+/**
+ * @brief Initial method invoked once from the network thread that handles the session.
+ */
 void Horizon::Zone::InterSession::Start()
 {
 	PacketBuffer buf;
-	CharLog->info("Established connection from {}.", getRemoteIPAddress());
+	ZoneLog->info("Established connection from {}.", getRemoteIPAddress());
 	setPacketHandler(PacketHandlerFactory::CreateInterPacketHandler(shared_from_this()));
+	getPacketHandler()->setClientType(INTER_CONNECT_CLIENT_ZONE);
 	getPacketHandler()->ReceiveAndHandle(buf);
-	getPacketHandler()->setClientType(INTER_CONNECT_CLIENT_CHAR);
 }
 
+/**
+ * @brief Socket cleanup method on connection closure.
+ */
 void Horizon::Zone::InterSession::OnClose()
 {
-	CharLog->info("Closed connection from {}.", getRemoteIPAddress());
+	ZoneLog->info("Closed connection from {}.", getRemoteIPAddress());
 
 	/**
 	 * @brief Perform socket manager cleanup.

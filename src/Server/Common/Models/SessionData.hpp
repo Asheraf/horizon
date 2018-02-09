@@ -66,22 +66,25 @@ public:
 
 	/* Auth Code */
 	uint32_t getAuthCode() const { return _auth_code; }
-	void setAuthCode(uint32_t auth_code) { SessionData::_auth_code = auth_code; }
+	void setAuthCode(uint32_t code) { _auth_code = code; }
 	/* Client Version */
 	uint32_t getClientVersion() const { return _client_version; }
-	void setClientVersion(uint32_t client_version) { SessionData::_client_version = client_version; }
+	void setClientVersion(uint32_t version) { _client_version = version; }
 	/* Client Type */
 	uint8_t getClientType() const { return _client_type; }
-	void setClientType(uint8_t client_type) { SessionData::_client_type = client_type; }
+	void setClientType(uint8_t type) { _client_type = type; }
 	/* Game Account ID */
 	uint32_t getGameAccountID() const { return _game_account_id; }
-	void setGameAccountID(uint32_t game_account_id) { SessionData::_game_account_id = game_account_id; }
+	void setGameAccountID(uint32_t account_id) { _game_account_id = account_id; }
 	/* Character Slots */
 	uint32_t getCharacterSlots() const { return _character_slots; }
-	void setCharacterSlots(uint32_t _character_slots) { SessionData::_character_slots = _character_slots; }
+	void setCharacterSlots(uint32_t slots) { _character_slots = slots; }
 	/* Group ID */
 	uint32_t getGroupID() const { return _group_id; }
-	void setGroupID(uint32_t _group_id) { SessionData::_group_id = _group_id; }
+	void setGroupID(uint32_t id) { _group_id = id; }
+	/* Connect Time (Zone Only) */
+	uint32_t getConnectTime() const { return _connect_time; }
+	void setConnectTime(uint32_t time) { _connect_time = time; }
 
 private:
 	uint32_t _auth_code;
@@ -90,6 +93,7 @@ private:
 	uint8_t _client_type;
 	uint32_t _character_slots;
 	uint32_t _group_id;
+	uint32_t _connect_time;
 };
 
 #endif //HORIZON_SESSIONDATA_H

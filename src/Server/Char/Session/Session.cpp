@@ -35,6 +35,9 @@ Horizon::Char::Session::~Session()
 {
 }
 
+/**
+ * @brief Initial method invoked once from the network thread that handles the session.
+ */
 void Horizon::Char::Session::Start()
 {
 	CharLog->info("Established connection from {}.", getRemoteIPAddress());
@@ -42,22 +45,21 @@ void Horizon::Char::Session::Start()
 	AsyncRead();
 }
 
+/**
+ * @brief Socket cleanup method on connection closure.
+ */
 void Horizon::Char::Session::OnClose()
 {
 	CharLog->info("Closed connection from {}.", getRemoteIPAddress());
 
-	/**
-	 * @brief Perform socket manager cleanup.
-	 */
+	/* Perform socket manager cleanup. */
 	ClientSocktMgr->ClearSession(shared_from_this());
-
-	// Remove all data from Inter.
-	if (getSessionData() != nullptr)
-		CharInterAPI->DeleteSessionFromInter(getSessionData()->getAuthCode());
-	if (getGameAccount() != nullptr)
-		CharInterAPI->DeleteGameAccountFromInter(getGameAccount()->getID());
 }
 
+/**
+ * @brief Asynchronous update method periodically called from network threads.
+ * @return true on successful update, false on failure.
+ */
 bool Horizon::Char::Session::Update()
 {
 	return CharSocket::Update();

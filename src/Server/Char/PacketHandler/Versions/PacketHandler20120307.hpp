@@ -1,12 +1,22 @@
-//
-//  PacketHandler20120307.hpp
-//  char
-//
-//  Created by SagunKho on 08/02/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
-#ifndef PacketHandler20120307_hpp
-#define PacketHandler20120307_hpp
+#ifndef HORIZON_CHAR_PACKETHANDLER20120307_HPP
+#define HORIZON_CHAR_PACKETHANDLER20120307_HPP
 
 #include <stdio.h>
 
@@ -55,4 +65,4 @@ public:
 };
 }
 }
-#endif /* PacketHandler20120307_hpp */
+#endif /* HORIZON_CHAR_PACKETHANDLER20120307_HPP */

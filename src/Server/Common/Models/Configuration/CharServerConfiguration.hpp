@@ -43,6 +43,12 @@ struct character_server_configuration
 	/* Character Deletion Time */
 	time_t getCharacterDeletionTime() const { return _character_deletion_time; }
 	void setCharacterDeletionTime(time_t time) { _character_deletion_time = time; }
+	/* Zone Server IP */
+	const std::string &getZoneServerIP() const { return _zone_server_ip; }
+	void setZoneServerIP(std::string const &ip) { _zone_server_ip = ip; }
+	/* Zone Server Port */
+	uint16_t getZoneServerPort() const { return _zone_server_port; }
+	void setZoneServerPort(uint16_t port) { _zone_server_port = port; }
 
 private:
 	std::string _start_map{"new_1-1"};
@@ -50,6 +56,8 @@ private:
 	uint32_t _start_zeny{0};
 	std::vector<std::pair<uint32_t, uint32_t>> _start_items;
 	time_t _character_deletion_time;
+	std::string _zone_server_ip;
+	uint16_t _zone_server_port;
 };
 
 #endif /* HORIZON_CHARSERVERCONFIGURATION_HPP */

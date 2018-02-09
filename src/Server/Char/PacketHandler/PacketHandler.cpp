@@ -21,9 +21,10 @@
 #include "Server/Char/Char.hpp"
 #include "Server/Char/PacketHandler/Packets.hpp"
 #include "Server/Char/Session/Session.hpp"
-#include "Server/Common/Models/SessionData.hpp"
 #include "Server/Char/Database/Query.hpp"
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
+#include "Server/Common/Models/SessionData.hpp"
+#include "Server/Common/Models/GameAccount.hpp"
 
 #include <boost/bind.hpp>
 #include <string>
@@ -55,6 +56,7 @@ void Horizon::Char::PacketHandler::InitializeHandlers()
 	HANDLER_FUNC(CHAR_DELETE_START);
 	HANDLER_FUNC(CHAR_DELETE_CANCEL);
 	HANDLER_FUNC(CHAR_DELETE_ACCEPT);
+	HANDLER_FUNC(CHAR_SELECT);
 #undef HANDLER_FUNC
 }
 
@@ -215,6 +217,29 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
 	character->getAccessData()->save(CharServer);
 
 	Respond_CHAR_DELETE_CANCEL_ACK(pkt.character_id, true);
+}
+
+void Horizon::Char::PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
+{
+	PACKET_CHAR_SELECT pkt;
+	AccountCharacterMapType characters = getSession()->getGameAccount()->getAllCharacters();
+	std::shared_ptr<Horizon::Models::Characters::Character> character;
+	buf >> pkt;
+
+	if (characters.empty())
+		return;
+
+	for (auto &it : characters) {
+		character = it.second;
+
+		if (character == nullptr)
+			continue;
+
+		if (character->getSlot() == pkt.slot)
+			break;
+	}
+
+	Respond_CHAR_SEND_ZONE_INFO(character);
 }
 
 /**
@@ -397,5 +422,26 @@ void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_ERROR_ACK(char_create_err
 {
 	PACKET_CHAR_CREATE_ERROR_ACK pkt;
 	pkt.error_code = (uint8_t) error;
+	SendPacket(pkt);
+}
+
+void Horizon::Char::PacketHandler::Respond_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Characters::Character> character)
+{
+	PACKET_CHAR_SEND_ZONE_INFO pkt;
+	std::string map_name;
+
+	if ((map_name = character->getPositionData()->getCurrentMap()).empty())
+		if ((map_name = character->getPositionData()->getSavedMap()).empty())
+			map_name = CharServer->getCharConfig()->getStartMap().c_str();
+
+	map_name += ".gat";
+
+	pkt.char_id = character->getCharacterID();
+	pkt.ip_address = inet_addr(CharServer->getCharConfig()->getZoneServerIP().c_str());
+	pkt.port = CharServer->getCharConfig()->getZoneServerPort();
+	strncpy(pkt.mapname,
+			map_name.c_str(),
+			MAP_NAME_LENGTH_EXT);
+
 	SendPacket(pkt);
 }
