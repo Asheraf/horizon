@@ -17,12 +17,12 @@
 
 #include "Server.hpp"
 
+#include "Server/Common/CLI/CommandLineInterface.hpp"
+#include "version.hpp"
+
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include <boost/make_shared.hpp>
-#include <Server/Common/CLI/CommandLineInterface.hpp>
-
-#include "version.hpp"
 
 /* Public */
 Server::Server(std::string /*name*/, std::string config_file_path, std::string config_file_name)
@@ -89,140 +89,114 @@ void Server::ParseExecArguments(const char *argv[], int argc)
 	}
 }
 
-bool Server::ProcessCommonConfiguration(YAML::Node &config)
+#define core_config_error(setting_name, default) \
+CoreLog->error("No setting for '{}' in configuration file, defaulting to {}", setting_name, default);
+
+bool Server::ProcessCommonConfiguration(libconfig::Config &cfg)
 {
-	std::string hostname = "localhost", database = "ragnarok", username = "ragnarok", password = "ragnarok";
-	uint16_t port = 3306;
-	int connection_threads = 2;
+	std::string tmp_string{""};
+	uint32_t tmp_value{0};
 
-	try {
-		/**
-		 * Auth Server Networking
-		 * @brief Definitions of the authentication server networking configuration.
-		 */
-		if (config["BindIP"])
-			getNetworkConf().setListenIp(config["BindIP"].as<std::string>());
+	if (cfg.lookupValue("bind_ip", tmp_string)) {
+		getNetworkConf().setListenIp(tmp_string);
+	} else {
+		core_config_error("bind_ip", "127.0.0.1");
+		getNetworkConf().setListenIp("127.0.0.1");
+	}
 
-		if (config["BindPort"])
-			getNetworkConf().setListenPort(config["BindPort"].as<uint16_t>());
-
-		if (config["Network.Threads"])
-			getNetworkConf().setMaxThreads(config["Network.Threads"].as<uint32_t>());
-
-		CoreLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.",
-		              getNetworkConf().getListenIp(), getNetworkConf().getListenPort(), getNetworkConf().getMaxThreads());
-
-		/**
-		 * Database Configuration
-		 * @brief
-		 */
-		if (!getGeneralConf().isTestRun() && config["database"]) {
-			YAML::Node n = config["database"];
-
-			switch (n.Type())
-			{
-			case YAML::NodeType::Map:
-			{
-				if (!n["hostname"] || !n["hostname"].IsScalar()) {
-					CoreLog->warn("Hostname not provided or invalid. Defaulting to '{}'...", hostname);
-				} else {
-					hostname = n["hostname"].as<std::string>();
-				}
-
-				if (!n["port"] || !n["port"].IsScalar()) {
-					CoreLog->warn("Port not provided or invalid. Defaulting to '{}'...", port);
-				} else {
-					port = n["port"].as<uint16_t>();
-				}
-
-				if (!n["database"] || !n["database"].IsScalar()) {
-					CoreLog->warn("Database not provided or invalid. Defaulting to '{}'...", database);
-				} else {
-					database = n["database"].as<std::string>();
-				}
-
-				if (!n["username"] || !n["username"].IsScalar()) {
-					CoreLog->warn("Username not provided or invalid. Defaulting to '{}'...", username);
-				} else {
-					username = n["username"].as<std::string>();
-				}
-
-				if (!n["password"] || !n["password"].IsScalar()) {
-					CoreLog->warn("Password not provided or invalid. Defaulting to '{}'...", password);
-				} else {
-					password = n["password"].as<std::string>();
-				}
-
-				if (!n["connection_threads"] || !n["connection_threads"].IsScalar()) {
-					CoreLog->warn("Connection Threads not provided or invalid. Defaulting to '{}'...", connection_threads);
-				} else {
-					connection_threads = n["connection_threads"].as<int>();
-				}
-
-				if (n["charset"] || n["charset"].IsScalar()) {
-					std::string charset = n["charset"].as<std::string>();
-
-					std::vector<std::string> sets = {
-						"dec8", "cp850", "hp8", "koi8r", "latin1", "latin2", "swe7", "ascii",
-						"ujis", "sjis", "hebrew", "tis620", "euckr", "koi8u", "gb2312", "greek",
-						"cp1250", "gbk", "latin5", "armscii8", "utf8", "ucs2", "cp866", "keybcs2",
-						"macce", "macroman", "cp852", "latin7", "utf8mb4", "cp1251", "utf16", "cp1256",
-						"cp1257", "utf32", "binary", "geostd8", "cp932", "eucjpms"
-					};
-
-					if (std::find(sets.begin(), sets.end(), charset) == sets.end()) {
-						CoreLog->warn("Invalid charset '{}' provided database. Defaulting to '{}'...", charset, charset);
-					} else {
-						charset = charset;
-					}
-				}
-			}
-				break;
-			default:
-				CoreLog->error("Unsupported node type in element {} for '{}'.", n.as<std::string>());
-				return false;
-			}
-			/**
-			 * Set MySQL Information.
-			 */
-			getDatabaseConf().setHost(hostname);
-			getDatabaseConf().setDatabase(database);
-			getDatabaseConf().setUsername(username);
-			getDatabaseConf().setPassword(password);
-			getDatabaseConf().setMaxThreads(connection_threads);
-		} else if (!getGeneralConf().isTestRun()) {
-			CoreLog->error("Database configuration not provided in '{}'.", getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
-			return false;
-		}
-
-		/**
-		 * Core I/O Thread Count
-		 */
-		if (config["global_io_threads"]) {
-			this->getGeneralConf().setGlobalIOThreads(config["global_io_threads"].as<uint32_t>());
-			CoreLog->info("Using {} threads for working on core-wide I/O Services.", this->getGeneralConf().getGlobalIOThreads());
-		} else {
-			CoreLog->info("I/O Thread configuration not found, defaulting to 2.");
-			this->getGeneralConf().setGlobalIOThreads(2);
-		}
-
-		/**
-		 * Core Update Interval.
-		 */
-		if (config["core_update_interval"]) {
-			this->getGeneralConf().setCoreUpdateInterval(config["core_update_interval"].as<uint32_t>());
-			CoreLog->info("Core update interval set to {}ms.", this->getGeneralConf().getCoreUpdateInterval());
-		} else {
-			CoreLog->info("Core update interval was not defined, defaulting to 500ms.");
-			this->getGeneralConf().setCoreUpdateInterval(500);
-		}
-	} catch (YAML::Exception &e) {
-		CoreLog->error("{}", e.what());
+	if (cfg.lookupValue("bind_port", tmp_value)) {
+		getNetworkConf().setListenPort(tmp_value);
+	} else {
+		AuthLog->error("Invalid or non-existent configuration for 'bind_port', Halting...");
 		return false;
+	}
+
+	if (cfg.lookupValue("network_threads", tmp_value)) {
+		getNetworkConf().setMaxThreads(tmp_value);
+	} else {
+		core_config_error("network_threads", 1);
+		getNetworkConf().setMaxThreads(1);
+	}
+
+	CoreLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.",
+				  getNetworkConf().getListenIp(), getNetworkConf().getListenPort(), getNetworkConf().getMaxThreads());
+
+	/**
+	 * Database Configuration
+	 * @brief
+	 */
+	if (!getGeneralConf().isTestRun()) {
+		const libconfig::Setting &dbconf = cfg.getRoot()["database"];
+
+		if (dbconf.lookupValue("hostname", tmp_string)) {
+			getDatabaseConf().setHost(tmp_string);
+		} else {
+			core_config_error("hostname", "127.0.0.1");
+			getDatabaseConf().setHost("127.0.0.1");
+		}
+
+		if (dbconf.lookupValue("port", tmp_value)) {
+			getDatabaseConf().setPort(tmp_value);
+		} else {
+			core_config_error("hostname", 3306);
+			getDatabaseConf().setPort(3306);
+		}
+
+		if (dbconf.lookupValue("database", tmp_string)) {
+			getDatabaseConf().setDatabase(tmp_string);
+		} else {
+			core_config_error("database", "horizon");
+			getDatabaseConf().setDatabase("horizon");
+		}
+
+		if (dbconf.lookupValue("username", tmp_string)) {
+			getDatabaseConf().setUsername(tmp_string);
+		} else {
+			core_config_error("username", "horizon");
+			getDatabaseConf().setUsername("horizon");
+		}
+
+		if (dbconf.lookupValue("password", tmp_string)) {
+			getDatabaseConf().setPassword(tmp_string);
+		} else {
+			core_config_error("password", "horizon");
+			getDatabaseConf().setPassword("horizon");
+		}
+
+		if (dbconf.lookupValue("connection_threads", tmp_value)) {
+			getDatabaseConf().setMaxThreads(tmp_value);
+		} else {
+			core_config_error("connection_threads", 1);
+			getDatabaseConf().setMaxThreads(1);
+		}
+	}
+
+	/**
+	 * Core I/O Thread Count
+	 */
+	if (cfg.lookupValue("global_io_threads", tmp_value)) {
+		getGeneralConf().setGlobalIOThreads(tmp_value);
+		CoreLog->info("Using {} threads for working on Global I/O Events.", getGeneralConf().getGlobalIOThreads());
+	} else {
+		CoreLog->info("I/O Thread configuration not found, defaulting to 2.");
+		getGeneralConf().setGlobalIOThreads(2);
+	}
+
+	/**
+	 * Core Update Interval.
+	 */
+	if (cfg.lookupValue("core_update_interval", tmp_value)) {
+		getGeneralConf().setCoreUpdateInterval(tmp_value);
+		CoreLog->info("Core update interval set to {}ms.", getGeneralConf().getCoreUpdateInterval());
+	} else {
+		CoreLog->info("Core update interval was not defined, defaulting to 500ms.");
+		getGeneralConf().setCoreUpdateInterval(500);
 	}
 
 	return true;
 }
+
+#undef core_config_error
 
 void Server::InitializeMySQLConnections()
 {

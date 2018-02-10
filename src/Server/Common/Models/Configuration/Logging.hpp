@@ -7,10 +7,11 @@
 
 struct logging
 {
-	bool isEnabled() const { return enabled; }
-	void enable() { enabled = true; }
+	bool isEnabled() const { return _enabled; }
+	void enable() { _enabled = true; }
+	void disable() { _enabled = false; }
 
-	bool enabled = true;
+	bool _enabled = true;
 };
 
 #endif //HORIZON_LOGGING_HPP

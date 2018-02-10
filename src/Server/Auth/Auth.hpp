@@ -26,6 +26,8 @@
 #include <string>
 #include <Server/Common/Models/ServerData.hpp>
 
+typedef std::unordered_map<int, std::shared_ptr<character_server_data>> CharacterServerMapType;
+
 namespace Horizon
 {
 namespace Auth
@@ -61,7 +63,11 @@ public:
 	void UpdateSessionLoop();
 
 	/* Character Server Handlers */
-	void addCharacterServer(struct character_server_data &serv) { _character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv))); }
+	void addCharacterServer(struct character_server_data &serv)
+	{
+		_character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv)));
+	}
+
 	std::shared_ptr<character_server_data> getCharacterServer(int id)
 	{
 		auto it = _character_servers.find(id);
@@ -73,10 +79,12 @@ public:
 	}
 	std::size_t totalCharacterServers() { return _character_servers.size(); }
 
+	const CharacterServerMapType &getCharacterServers() const { return _character_servers; }
+
 protected:
 	/* Auth Server Configuration */
 	struct auth_server_config _auth_config;
-	std::unordered_map<int, std::shared_ptr<character_server_data>> _character_servers;
+	CharacterServerMapType _character_servers;
 };
 }
 }

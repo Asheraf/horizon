@@ -33,7 +33,7 @@ target_link_libraries(inter
         networking
 	    -lpthread
 		bcryptcpp
-        ${YAMLCPP_LIBRARY}
+		${CONFIG++_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
         ${Readline_LIBRARY}
 )
@@ -50,7 +50,7 @@ CollectIncludeDirectories(
 target_include_directories(inter
 	PUBLIC
 		${PUBLIC_INCLUDES}
-        ${YAMLCPP_INCLUDE_DIR}
+		${CONFIG++_INCLUDE_DIR}
         ${MYSQL_CONNECTOR_INCLUDE_DIRS}
         ${Readline_INCLUDE_DIR}
 	PRIVATE
@@ -61,4 +61,4 @@ install(TARGETS inter
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
-install(FILES ${PROJECT_SOURCE_DIR}/config/inter-server.yaml.dist DESTINATION ${CONF_DIR})
+install(FILES ${PROJECT_SOURCE_DIR}/config/inter-server.conf.dist DESTINATION ${CONF_DIR})

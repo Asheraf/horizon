@@ -27,19 +27,20 @@ namespace Zone
 enum packets
 {
 	/* ZC */
-	ZC_ERROR              = 0x006a,
-	ZC_ACCOUNT_ID         = 0x0283,
-	ZC_ACCEPT_CONNECTION  = 0x0a18,
-	ZC_NPCACK_MAPMOVE     = 0x0091,
-	ZC_NOTIFY_TIME        = 0x007f,
-	ZC_ACK_REQNAME        = 0x0095,
-	ZC_ACK_REQNAMEALL     = 0x0195,
+	ZC_ERROR                      = 0x006a,
+	ZC_ACCOUNT_ID                 = 0x0283,
+	ZC_ACCEPT_CONNECTION          = 0x0a18,
+	ZC_NPCACK_MAPMOVE             = 0x0091,
+	ZC_NOTIFY_TIME                = 0x007f,
+	ZC_ACK_REQNAME                = 0x0095,
+	ZC_ACK_REQNAMEALL             = 0x0195,
+	ZC_ACK_GUILD_MENUINTERFACE    = 0x014e,
 
 	/* CZ */
-	CZ_LOGIN_TIMESTAMP    = 0x044a,
-	CZ_MAP_LOAD_END_ACK   = 0x007d,
-	CZ_GUILD_CHECK_MASTER = 0x014d,
-	CZ_GUILD_REQUEST_INFO = 0x014f,
+	CZ_LOGIN_TIMESTAMP            = 0x044a,
+	CZ_MAP_LOAD_END_ACK           = 0x007d,
+	CZ_REQ_GUILD_MENUINTERFACE    = 0x014d,
+	CZ_REQ_GUILD_MENU             = 0x014f,
 };
 }
 }
@@ -120,6 +121,47 @@ struct PACKET_ZC_ACK_REQNAMEALL : public Packet
 	char party_name[MAX_PARTY_NAME_LENGTH];
 	char guild_name[MAX_GUILD_NAME_LENGTH];
 	char guild_position_name[MAX_GUILD_POSITION_NAME_LENGTH];
+};
+
+struct PACKET_CZ_REQ_GUILD_MENUINTERFACE : public Packet
+{
+	PACKET_CZ_REQ_GUILD_MENUINTERFACE() : Packet(Horizon::Zone::packets::CZ_REQ_GUILD_MENUINTERFACE) { }
+};
+
+enum zc_ack_guild_menuinterface_mask_types
+{
+	GMIF_BASIC_INFO     = 0x00,
+	GMIF_MEMBER_MANAGER = 0x01,
+	GMIF_POSITIONS      = 0x02,
+	GMIF_SKILLS         = 0x04,
+	GMIF_EXPULSION_LIST = 0x10,
+	GMIF_ALLGUILDLIST   = 0x40,
+	GMIF_NOTICE         = 0x80,
+	GMIF_MEMBER         = GMIF_ALLGUILDLIST | GMIF_EXPULSION_LIST | GMIF_SKILLS | GMIF_POSITIONS | GMIF_MEMBER_MANAGER,
+	GMIF_MASTER         = GMIF_NOTICE | GMIF_MEMBER,
+};
+
+struct PACKET_ZC_ACK_GUILD_MENUINTERFACE : public Packet
+{
+	PACKET_ZC_ACK_GUILD_MENUINTERFACE() : Packet(Horizon::Zone::packets::ZC_ACK_GUILD_MENUINTERFACE) { }
+	uint32_t menu_interface_mask;
+};
+
+enum cz_req_guild_menu_types
+{
+	CZ_REQ_GUILD_BASIC_INFO     = 0,
+	CZ_REQ_GUILD_MEMBER_MANAGER = 1,
+	CZ_REQ_GUILD_POSITIONS      = 2,
+	CZ_REQ_GUILD_SKILLS         = 3,
+	CZ_REQ_GUILD_EXPULSION_LIST = 4,
+	CZ_REQ_GM_ALLGUILDLIST      = 5,
+	CZ_REQ_GUILD_NOTICE         = 6
+};
+
+struct PACKET_CZ_REQ_GUILD_MENU : public Packet
+{
+	PACKET_CZ_REQ_GUILD_MENU() : Packet(Horizon::Zone::packets::CZ_REQ_GUILD_MENU) { }
+	cz_req_guild_menu_types info_type;
 };
 
 #pragma pack(pop)

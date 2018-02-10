@@ -18,10 +18,10 @@
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
 
-#include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
 #include <iostream>
 #include <boost/make_shared.hpp>
+#include <libconfig.h++>
 
 using namespace std;
 using boost::asio::ip::udp;
@@ -29,7 +29,7 @@ using boost::asio::ip::udp;
 /**
  * Zone Main server constructor.
  */
-Horizon::Zone::ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.yaml")
+Horizon::Zone::ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.conf")
 {
 }
 
@@ -40,19 +40,28 @@ Horizon::Zone::ZoneMain::~ZoneMain()
 {
 }
 
+#define zone_config_error(setting_name, default) \
+	ZoneLog->error("No setting for '{}' in configuration file, defaulting to '{}'.", setting_name, default);
+
 /**
  * Read /config/zone-server.yaml
  * @return false on failure, true on success.
  */
 bool Horizon::Zone::ZoneMain::ReadConfig()
 {
-	YAML::Node config;
-	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
+	libconfig::Config cfg;
+	std::string tmp_string;
+	int tmp_value;
+	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
 
+	// Read the file. If there is an error, report it and exit.
 	try {
-		config = YAML::LoadFile(filepath);
-	} catch (std::exception &err) {
-		ZoneLog->error("Unable to read {}. ({})", filepath, err.what());
+		cfg.readFile(file_path.c_str());
+	} catch(const libconfig::FileIOException &fioex) {
+		ZoneLog->error("I/O error while reading file '{}'.", file_path);
+		return false;
+	} catch(const libconfig::ParseException &pex) {
+		ZoneLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
 		return false;
 	}
 
@@ -60,35 +69,40 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	 * Inter Server Settings
 	 * @brief Definitions of the Inter-server networking configuration.
 	 */
-	if (config["InterServer.IP"]) {
-		getNetworkConf().setInterServerIp(config["InterServer.IP"].as<std::string>());
-	} else {
-		ZoneLog->error("Inter-server IP configuration not set, defaulting to '127.0.0.1'.");
+	const libconfig::Setting &inter_server = cfg.getRoot()["inter_server"];
+
+	if (!inter_server.lookupValue("ip_address", tmp_string)) {
+		zone_config_error("inter_server.ip_address", "127.0.0.1");
 		getNetworkConf().setInterServerIp("127.0.0.1");
-	}
-
-	if (config["InterServer.Port"]) {
-		getNetworkConf().setInterServerPort(config["InterServer.Port"].as<uint16_t>());
 	} else {
-		ZoneLog->error("Inter-server Port configuration not set, defaulting to '9998'.");
-		getNetworkConf().setInterServerPort(9998);
+		getNetworkConf().setInterServerIp(tmp_string);
 	}
 
-	if (config["InterServer.Password"]) {
-		getNetworkConf().setInterServerPassword(config["InterServer.Password"].as<std::string>());
+	if (!inter_server.lookupValue("port", tmp_value)) {
+		zone_config_error("inter_server.port", 9998);
+		getNetworkConf().setInterServerPort(9998);
+	} else {
+		getNetworkConf().setInterServerPort(tmp_value);
+	}
+
+	if (!inter_server.lookupValue("password", tmp_string)) {
+		zone_config_error("inter_server.password", "ABCDEF");
+		getNetworkConf().setInterServerPassword(tmp_string);
+	} else {
+		getNetworkConf().setInterServerPassword(tmp_string);
 	}
 
 	ZoneLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
-	              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
-	              (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+				  getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
+				  (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!ProcessCommonConfiguration(config))
+	if (!ProcessCommonConfiguration(cfg))
 		return false;
 
-	ZoneLog->info("Done reading {} configurations in '{}'.", config.size(), getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
+	ZoneLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
 
 	return true;
 }

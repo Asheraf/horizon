@@ -18,13 +18,13 @@
 #include "Server/Auth/SocketMgr/InterSocketMgr.hpp"
 #include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
 
-#include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
 #include <Server/Common/Server.hpp>
+#include <libconfig.h++>
 
 using boost::asio::ip::udp;
 using namespace std::chrono_literals;
@@ -33,7 +33,7 @@ using namespace std::chrono_literals;
  * AuthMain Constructor.
  */
 Horizon::Auth::AuthMain::AuthMain()
-: Server("Auth", "config/", "auth-server.yaml")
+: Server("Auth", "config/", "auth-server.conf")
 {
 	InitializeCLICommands();
 }
@@ -45,164 +45,173 @@ Horizon::Auth::AuthMain::~AuthMain()
 {
 }
 
+#define auth_config_error(setting_name, default) \
+	AuthLog->error("No setting for '{}' in configuration file, defaulting to {}", setting_name, default);
+
 /**
  * Read /config/auth-server.yaml
  * @return true on success, false on failure.
  */
 bool Horizon::Auth::AuthMain::ReadConfig()
 {
-	YAML::Node config;
-	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
 
+	libconfig::Config cfg;
+	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
+	std::string tmp_string;
+	int tmp_value;
+
+	// Read the file. If there is an error, report it and exit.
 	try {
-		config = YAML::LoadFile(filepath);
-	} catch (std::exception &err) {
-		AuthLog->error("Unable to read {}. ({})", filepath, err.what());
+		cfg.readFile(file_path.c_str());
+	} catch(const libconfig::FileIOException &fioex) {
+		CharLog->error("I/O error while reading file '{}'.", file_path);
+		return false;
+	} catch(const libconfig::ParseException &pex) {
+		AuthLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
 		return false;
 	}
 
-	try {
-		/**
-		 * Inter Server Settings
-		 * @brief Definitions of the Inter-server networking configuration.
-		 */
-		if (config["InterServer.IP"]) {
-			getNetworkConf().setInterServerIp(config["InterServer.IP"].as<std::string>());
+	const libconfig::Setting &inter_server = cfg.getRoot()["inter_server"];
+
+	if (!inter_server.lookupValue("ip_address", tmp_string)) {
+		auth_config_error("inter_server.ip_address", "127.0.0.1");
+		getNetworkConf().setInterServerIp("127.0.0.1");
+	} else {
+		getNetworkConf().setInterServerIp(tmp_string);
+	}
+
+	if (!inter_server.lookupValue("port", tmp_value)) {
+		auth_config_error("inter_server.port", 9998);
+		getNetworkConf().setInterServerPort(9998);
+	} else {
+		getNetworkConf().setInterServerPort(tmp_value);
+	}
+
+	if (!inter_server.lookupValue("password", tmp_string)) {
+		auth_config_error("inter_server.password", "ABCDEF");
+		getNetworkConf().setInterServerPassword(tmp_string);
+	} else {
+		getNetworkConf().setInterServerPassword(tmp_string);
+	}
+
+	AuthLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
+		getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
+		(getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+
+	if (cfg.lookupValue("pass_hash_method", tmp_value)) {
+		HashingMethods hashingMethod = static_cast<HashingMethods>(tmp_value);
+		if (hashingMethod < PASS_HASH_NONE || hashingMethod > PASS_HASH_BCRYPT) {
+			auth_config_error("pass_hash_method", PASS_HASH_NONE);
+			getAuthConfig().setPassHashMethod(PASS_HASH_NONE);
 		} else {
-			AuthLog->error("Inter-server IP configuration not set, defaulting to '127.0.0.1'.");
-			getNetworkConf().setInterServerIp("127.0.0.1");
+			getAuthConfig().setPassHashMethod(hashingMethod);
 		}
+	} else {
+		auth_config_error("pass_hash_method", PASS_HASH_NONE);
+		getAuthConfig().setPassHashMethod(PASS_HASH_NONE);
+	}
 
-		if (config["InterServer.Port"]) {
-			getNetworkConf().setInterServerPort(config["InterServer.Port"].as<uint16_t>());
-		} else {
-			AuthLog->error("Inter-server password not set.");
-		}
+	if (getAuthConfig().getPassHashMethod() == PASS_HASH_NONE)
+		AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
 
-		if (config["InterServer.Password"]) {
-			getNetworkConf().setInterServerPassword(config["InterServer.Password"].as<std::string>());
-		}
+	if (cfg.lookupValue("client_date_format", tmp_string))
+		getAuthConfig().setClientDateFormat(tmp_string);
 
-		AuthLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
-		            getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
-					(getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+	/**
+	 * Logging Configuration
+	 */
+	const libconfig::Setting &log = cfg.getRoot()["log"];
 
-		/**
-		 * Additional Configuration
-		 * @brief
-		 */
-		if (config["pass_hash_method"]) {
-			HashingMethods hashingMethod = static_cast<HashingMethods>(config["pass_hash_method"].as<int>());
-			if (hashingMethod < PASS_HASH_NONE || hashingMethod > PASS_HASH_BCRYPT) {
-				AuthLog->warn("Incorrect value {} given for 'pass_hash_method', defaulting to 0.", hashingMethod);
-				getAuthConfig().setPassHashMethod(PASS_HASH_NONE);
-			} else {
-				getAuthConfig().setPassHashMethod(hashingMethod);
-			}
-		}
-
-		if (this->getAuthConfig().getPassHashMethod() == PASS_HASH_NONE)
-			AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
-
-		/**
-		 * Date Format for clients
-		 * @brief
-		 */
-		if (config["client_date_format"])
-			getAuthConfig().setClientDateFormat(config["client_date_format"].as<std::string>());
-
-		if (config["allowed_client_version"])
-			getAuthConfig().setAllowedClientVersion(config["allowed_client_version"].as<uint32_t>());
-
-		/**
-		 * Logging Configuration
-		 */
-		if (config["log"] && config["log"].as<bool>()) {
+	if (log.isGroup()) {
+		if (log.lookupValue("enable_logging", tmp_value))
 			getAuthConfig().getLogConf().enable();
+		if (log.lookupValue("login_max_tries", tmp_value))
+			getAuthConfig().getLogConf().setLoginMaxTries(tmp_value);
+		if (log.lookupValue("login_fail_ban_time", tmp_value))
+			getAuthConfig().getLogConf().setLoginFailBanTime(tmp_value);
+		if (log.lookupValue("login_fail_check_time", tmp_value))
+			getAuthConfig().getLogConf().setLoginFailCheckTime(tmp_value);
+	} else {
+		AuthLog->warn("Invalid config type for 'log' provided, expected group. Skipping all entries...");
+	}
 
-			if (config["login_max_tries"])
-				getAuthConfig().getLogConf().setLoginMaxTries(config[ "login_max_tries" ].as<uint32_t>());
+	AuthLog->info("Logging is {}.", getAuthConfig().getLogConf().isEnabled() ? "enabled" : "disabled");
+	AuthLog->info("Failed logins exceeding {} tries every {} seconds will be banned for {} seconds.",
+				  getAuthConfig().getLogConf().getLoginFailCheckTime(), getAuthConfig().getLogConf().getLoginMaxTries(), getAuthConfig().getLogConf().getLoginFailBanTime());
 
-			if (config["login_fail_ban_time"])
-				getAuthConfig().getLogConf().setLoginFailBanTime(config["login_fail_ban_time"].as<time_t>());
+	/**
+	 * Character Servers.
+	 * @brief configuration for the connection to character servers.
+	 */
+	const libconfig::Setting &character_servers = cfg.getRoot()["character_servers"];
 
-			if (config["login_fail_check_time"])
-				getAuthConfig().getLogConf().setLoginFailCheckTime(config["login_fail_check_time"].as<time_t>());
-		}
+	if (character_servers.isList()) {
+		for (int i = 0; i < character_servers.getLength(); i++) {
+			const libconfig::Setting &serv = character_servers[i];
+			character_server_data char_serv;
 
-		AuthLog->info("Logging is {}.", getAuthConfig().getLogConf().isEnabled() ? "enabled" : "disabled");
-		AuthLog->info("Failed logins exceeding {} tries every {} seconds will be banned for {} seconds.",
-		              getAuthConfig().getLogConf().getLoginFailCheckTime(), getAuthConfig().getLogConf().getLoginMaxTries(), getAuthConfig().getLogConf().getLoginFailBanTime());
-
-		/**
-		 * Character Servers.
-		 * @brief configuration for the connection to character servers.
-		 */
-		if (config["character_servers"]) {
-			YAML::Node n = config["character_servers"];
-			if (n.IsMap()) {
-				for (std::size_t i = 1; i <= n.size(); ++i) {
-					YAML::Node nn = n[i];
-					character_server_data char_serv;
-					if (nn.IsMap()) {
-						if (nn["name"]) {
-							char_serv.name = nn["name"].as<std::string>();
-						} else {
-							AuthLog->warn("Name for character server at index '{}' not found, defaulting to 'Horizon_{}'.", i, i);
-							char_serv.name = "Horizon_" + std::to_string(i);
-						}
-						if (nn["host"]) {
-							char_serv.ip_address = nn["host"].as<std::string>();
-						} else {
-							AuthLog->warn("IP Address for character server '{}' not found, defaulting to 'localhost'.", char_serv.name);
-							char_serv.ip_address = "localhost";
-						}
-						if (nn["port"]) {
-							char_serv.port = nn["port"].as<uint16_t>();
-						} else {
-							AuthLog->warn("Port for character server '{}' not found, defaulting to '{}'.", char_serv.name, 6121);
-							char_serv.port = 6121;
-						}
-						if (nn["isNew"]) {
-							char_serv.is_new = (int16_t) (nn["isNew"].as<bool>() ? 1 : 0);
-						}
-						if (nn["type"]) {
-							char_serv.server_type = static_cast<character_server_types>(nn["type"].as<uint16_t>());
-							if (char_serv.server_type >= CHAR_SERVER_TYPE_MAX) {
-								AuthLog->error(
-									"Incorrect character server type '{}' given for server #{}, defaulting to 'normal type'.",
-									i, (int) char_serv.server_type);
-								char_serv.server_type = CHAR_SERVER_TYPE_NORMAL;
-							}
-						}
-						char_serv.id = (int) i;
-						addCharacterServer(char_serv); // Add the server in.
-						AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.is_new ? "(new)" : "");
-					} else {
-						AuthLog->warn("Invalid configuration type for sequence {} in 'character_servers', required map.", i);
-					}
-				}
-			} else {
-				AuthLog->warn("Invalid configuration type for character_servers, required nested maps.");
+			if (!serv.lookupValue("id", tmp_value)) {
+				AuthLog->error("Invalid or non-existent 'id' parameter for character server #{}, skipping...", i + 1);
+				continue;
 			}
-		} else {
-			AuthLog->warn("Configurations for character servers were not found!");
+			char_serv.id = tmp_value;
+
+			if (!serv.lookupValue("name", tmp_string)) {
+				AuthLog->error("Invalid or non-existent 'name' parameter for character server #{}, skipping...", i + 1);
+				continue;
+			}
+			char_serv.name = tmp_string;
+
+			if (!serv.lookupValue("host", tmp_string)) {
+				AuthLog->error("Invalid or non-existent 'host' parameter for character server '{}', skipping...", char_serv.name);
+				continue;
+			}
+			char_serv.ip_address = tmp_string;
+
+			if (!serv.lookupValue("port", tmp_value)) {
+				AuthLog->error("Invalid or non-existent 'port' parameter for character server '{}', skipping...", char_serv.name);
+				continue;
+			}
+			char_serv.port = tmp_value;
+
+			if (!serv.lookupValue("type", tmp_value)) {
+				AuthLog->error("Invalid or non-existent 'type' parameter for character server '{}', skipping...", char_serv.name);
+				continue;
+			}
+
+			if (tmp_value < CHAR_SERVER_TYPE_NORMAL || tmp_value >= CHAR_SERVER_TYPE_MAX) {
+				AuthLog->error("Invalid or non-existent 'type' parameter for character server '{}', skipping...", char_serv.name);
+				continue;
+			}
+
+			char_serv.server_type = static_cast<character_server_types>(tmp_value);
+
+			if (!serv.lookupValue("is_new", tmp_value)) {
+				AuthLog->error("Invalid or non-existent 'is_new' parameter for character server '{}', skipping...", char_serv.name);
+				continue;
+			}
+
+			char_serv.is_new = tmp_value ? true : false;
+
+			addCharacterServer(char_serv);
+			AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.is_new ? "(new)" : "");
 		}
-	} catch (YAML::Exception &e) {
-		AuthLog->error("YAML Parse Error: {}", e.what());
-		return false;
+	} else {
+		AuthLog->warn("Invalid config type for 'log' provided, expected group. Skipping all entries...");
 	}
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!ProcessCommonConfiguration(config))
+	if (!ProcessCommonConfiguration(cfg))
 		return false;
 
-	AuthLog->info("Done reading {} configurations in '{}'.", config.size(), getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
+	AuthLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
 
 	return true;
 }
+
+#undef auth_config_error
 
 /**
  * CLI Command: Reload Configuration

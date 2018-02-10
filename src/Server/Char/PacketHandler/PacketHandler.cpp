@@ -109,10 +109,10 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 	std::shared_ptr<Horizon::Models::Characters::Character> character = std::make_shared<Horizon::Models::Characters::Character>(
 			getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, gender);
 	character->setStatusData(std::make_shared<Horizon::Models::Characters::Status>(
-			CharServer->getCharConfig()->getStartZeny(), pkt.str, pkt.agi, pkt.int_, pkt.vit, pkt.dex, pkt.luk));
+			CharServer->getCharConfig().getStartZeny(), pkt.str, pkt.agi, pkt.int_, pkt.vit, pkt.dex, pkt.luk));
 	character->setViewData(std::make_shared<Horizon::Models::Characters::View>(pkt.hair_style, pkt.hair_color));
 	character->setPositionData(std::make_shared<Horizon::Models::Characters::Position>(
-			CharServer->getCharConfig()->getStartMap(), CharServer->getCharConfig()->getStartX(), CharServer->getCharConfig()->getStartY()));
+			CharServer->getCharConfig().getStartMap(), CharServer->getCharConfig().getStartX(), CharServer->getCharConfig().getStartY()));
 	
 	// Save character to sql.
 	character->create(CharServer);
@@ -151,7 +151,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
 		return;
 	}
 
-	character->getAccessData()->setDeleteDate(CharServer->getCharConfig()->getCharacterDeletionTime() + time(nullptr));
+	character->getAccessData()->setDeleteDate(CharServer->getCharConfig().getCharacterDeletionTime() + time(nullptr));
 	character->getAccessData()->save(CharServer);
 	result = CHAR_DEL_RESULT_SUCCESS;
 	Respond_CHAR_DELETE_START_ACK(character->getCharacterID(), result, character->getAccessData()->getDeleteDate() - time(nullptr));
@@ -432,13 +432,13 @@ void Horizon::Char::PacketHandler::Respond_CHAR_SEND_ZONE_INFO(std::shared_ptr<H
 
 	if ((map_name = character->getPositionData()->getCurrentMap()).empty())
 		if ((map_name = character->getPositionData()->getSavedMap()).empty())
-			map_name = CharServer->getCharConfig()->getStartMap().c_str();
+			map_name = CharServer->getCharConfig().getStartMap().c_str();
 
 	map_name += ".gat";
 
 	pkt.char_id = character->getCharacterID();
-	pkt.ip_address = inet_addr(CharServer->getCharConfig()->getZoneServerIP().c_str());
-	pkt.port = CharServer->getCharConfig()->getZoneServerPort();
+	pkt.ip_address = inet_addr(CharServer->getCharConfig().getZoneServerIP().c_str());
+	pkt.port = CharServer->getCharConfig().getZoneServerPort();
 	strncpy(pkt.mapname,
 			map_name.c_str(),
 			MAP_NAME_LENGTH_EXT);

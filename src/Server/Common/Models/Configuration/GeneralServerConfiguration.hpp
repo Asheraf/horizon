@@ -55,6 +55,9 @@ struct database_configuration
 	/* Database Host */
 	const std::string &getHost() const { return host; }
 	void setHost(const std::string &host) { database_configuration::host = host; }
+	/* Port */
+	const uint16_t &getPort() const { return _port; }
+	void setPort(uint16_t port) { _port = port; }
 	/* Username */
 	const std::string &getUsername() const { return username; }
 	void setUsername(const std::string &username) { database_configuration::username = username; }
@@ -71,6 +74,7 @@ struct database_configuration
 	std::string host, username, password;
 	std::string database;
 	int max_threads;
+	uint16_t _port;
 };
 
 struct general_server_configuration
@@ -96,6 +100,12 @@ struct general_server_configuration
 	/* Core Update Interval */
 	int getCoreUpdateInterval() const { return core_update_interval; };
 	void setCoreUpdateInterval(int core_update_interval) { this->core_update_interval = core_update_interval; };
+	/* Minimum Client Version */
+	uint32_t getMinimumClientVersion() const { return _minimum_client_version; }
+	void setMinimumClientVersion(uint32_t version) { _minimum_client_version = version; }
+	/* Maximum Client Version */
+	uint32_t getMaximumClientVersion() const { return _maximum_client_version; }
+	void setMaximumClientVersion(uint32_t version) { _maximum_client_version = version; }
 
 	/* Minimal Test Run Flag */
 	bool minimal;
@@ -106,6 +116,8 @@ struct general_server_configuration
 	int shutdown_signal;                           ///< Shutdown signal.
 	int global_io_threads;                         ///< Maximum amount of Core Threads spawned to perform i/o run.
 	int core_update_interval;                      ///< Core update interval timer.
+	int _minimum_client_version;                   ///< Minimum client version allowed to connect.
+	int _maximum_client_version;                   ///< Maximum client version allowed to connect.
 };
 
 #endif //HORIZON_GENERALSERVERCONFIGURATION_H

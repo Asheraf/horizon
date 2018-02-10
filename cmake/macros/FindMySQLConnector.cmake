@@ -14,7 +14,6 @@
 # Under a proprietary license this file is not for use
 # or viewing without permission.
 ###################################################
-
 FIND_PATH(MYSQL_CONNECTOR_INCLUDE_DIR mysql_driver.h)
 
 IF(WIN32)

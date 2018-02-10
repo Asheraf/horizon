@@ -19,10 +19,9 @@
 #define HORIZON_CHAR_CHARMAIN_H
 
 #include "Server/Common/Server.hpp"
+#include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 
 #include <string>
-
-struct character_server_configuration;
 
 namespace Horizon
 {
@@ -45,10 +44,10 @@ public:
 	void ConnectWithInterServer();
 	void InitializeCore();
 
-	std::shared_ptr<character_server_configuration> &getCharConfig() { return _char_server_config; }
+	character_server_configuration &getCharConfig() { return _char_server_config; }
 
 private:
-	std::shared_ptr<character_server_configuration> _char_server_config;
+	character_server_configuration _char_server_config;
 };
 }
 }

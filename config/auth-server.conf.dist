@@ -20,15 +20,20 @@
 ###################################################
 # IP & Port Settings
 ###################################################
-BindIP: "0.0.0.0"
-BindPort: 6900
+bind_ip: "0.0.0.0"
+bind_port: 6900
 
 ###################################################
-# Inter Server Settings
+# Auth Server Database Settings
 ###################################################
-InterServer.IP: "127.0.0.1"
-InterServer.Port: 9998
-InterServer.Password: "ABCDEF"
+database: {
+    hostname: "localhost"
+    port: 3306
+    database: "horizon"
+    username: "ragnarok"
+    password: "ragnarok"
+    connection_threads: 2
+}
 
 ###################################################
 # network_threads
@@ -36,63 +41,25 @@ InterServer.Password: "ABCDEF"
 # Default:        1 - (Recommended 1 thread per 1000 connections)
 # Note: Cannot be less than 1.
 ###################################################
-Network.Threads: 2
+network_threads: 2
 
 ###################################################
-# MD5 Password Hashing
-# 0 = disabled
-# 1 = MD5 (client sent)
-# 2 = Bcrypt (Server-Side Advanced hashing)
+# Inter Server Settings
 ###################################################
-pass_hash_method: 2
-
-###################################################
-# Auth Server Database Settings
-###################################################
-database:
-    hostname: "localhost"
-    port: 3306
-    database: "horizon"
-    username: "ragnarok"
-    password: "ragnarok"
-    connection_threads: 2
-
-###################################################
-# Log all requests to the login server
-#
-# Required for dynamic password failure ban.
-###################################################
-log: true
-login_max_tries: 3             # Limit of failed logins before a ban is issued.
-login_fail_ban_time: 10        # Time in seconds to ban an account on crossing the limit.
-login_fail_check_time: 600     # Time in seconds to hold failure information.
-
-###################################################
-# Date format used to send time information to the client.
-###################################################
-client_date_format: "%Y-%m-%d %H:%M:%S"
+inter_server: {
+    ip_address: "127.0.0.1"
+    port: 9998
+    password: "ABCDEF"
+}
 
 ###################################################
 # Check the client's version before allowing a connection.
 # Default: 0 (disabled)
 ###################################################
-allowed_client_version: 0
-
-###################################################
-# Character Servers Information
-# Description:
-# Information regarding character servers
-# to connect to.
-# Name - not more than 20 characters.
-# Server Types - 0 = normal, 1 = maintenance, 2 = over 18, 3 = paying, 4 = P2P
-####################################################
-character_servers:
-    1:
-        name: "Asgard"
-        host: "localhost"
-        port: 6121
-        type: 0
-        isNew: true
+client_versions: {
+    min: 20141022
+    max: 20170101
+}
 
 ###################################################
 # Global Thread Pool
@@ -109,3 +76,51 @@ global_io_threads: 2
 # Default: 500ms
 ###################################################
 core_update_interval: 500
+
+
+###################################################
+#! Auth Specific Settings
+###################################################
+
+###################################################
+# MD5 Password Hashing
+# 0 = disabled
+# 1 = MD5 (client sent)
+# 2 = Bcrypt (Server-Side Advanced hashing)
+###################################################
+pass_hash_method: 2
+
+###################################################
+# Log all requests to the login server
+#
+# Required for dynamic password failure ban.
+###################################################
+log: {
+    enable_logging: 1
+    login_max_tries: 3             # Limit of failed logins before a ban is issued.
+    login_fail_ban_time: 10        # Time in seconds to ban an account on crossing the limit.
+    login_fail_check_time: 600     # Time in seconds to hold failure information.
+}
+
+###################################################
+# Date format used to send time information to the client.
+###################################################
+client_date_format: "%Y-%m-%d %H:%M:%S"
+
+###################################################
+# Character Servers Information
+# Description:
+# Information regarding character servers
+# to connect to.
+# Name - not more than 20 characters.
+# Server Types - 0 = normal, 1 = maintenance, 2 = over 18, 3 = paying, 4 = P2P
+####################################################
+character_servers: (
+{
+    name: "Asgard"
+    host: "localhost"
+    port: 6121
+    type: 0
+    is_new: 1
+}
+)

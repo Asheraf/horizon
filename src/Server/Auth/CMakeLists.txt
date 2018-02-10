@@ -33,9 +33,9 @@ target_link_libraries(auth
         networking
 	    -lpthread
 	    bcryptcpp
-        ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
         ${Readline_LIBRARY}
+		${CONFIG++_LIBRARY}
 )
 
 set(INCLUDE_DIRS
@@ -50,9 +50,9 @@ CollectIncludeDirectories(
 target_include_directories(auth
 	PUBLIC
 		${PUBLIC_INCLUDES}
-        ${YAMLCPP_INCLUDE_DIR}
         ${MYSQL_CONNECTOR_INCLUDE_DIRS}
         ${Readline_INCLUDE_DIR}
+		${CONFIG++_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -61,4 +61,4 @@ install(TARGETS auth
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
-install(FILES ${PROJECT_SOURCE_DIR}/config/auth-server.yaml.dist DESTINATION ${CONF_DIR})
+install(FILES ${PROJECT_SOURCE_DIR}/config/auth-server.conf.dist DESTINATION ${CONF_DIR})

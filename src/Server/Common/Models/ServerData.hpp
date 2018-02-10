@@ -33,13 +33,13 @@ enum character_server_types : uint16_t
 
 struct character_server_data
 {
-	int id;
-	std::string name;
-	std::string ip_address;
-	uint16_t port;
-	int user_count;
-	character_server_types server_type;
-	uint16_t is_new;
+	int id{0};
+	std::string name{"Horizon"};
+	std::string ip_address{"127.0.0.1"};
+	uint16_t port{0};
+	int user_count{0};
+	character_server_types server_type{CHAR_SERVER_TYPE_NORMAL};
+	uint16_t is_new{0};
 };
 
 #endif //HORIZON_SERVERDATA_HPP

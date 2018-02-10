@@ -69,9 +69,9 @@ void Horizon::Char::PacketHandler20120307::Handle_CHAR_CREATE(PacketBuffer &buf)
 	}
 
 	std::shared_ptr<Horizon::Models::Characters::Character> character = std::make_shared<Horizon::Models::Characters::Character>(getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, gender);
-	character->setStatusData(std::make_shared<Horizon::Models::Characters::Status>(CharServer->getCharConfig()->getStartZeny()));
+	character->setStatusData(std::make_shared<Horizon::Models::Characters::Status>(CharServer->getCharConfig().getStartZeny()));
 	character->setViewData(std::make_shared<Horizon::Models::Characters::View>(pkt.hair_style, pkt.hair_color));
-	character->setPositionData(std::make_shared<Horizon::Models::Characters::Position>(CharServer->getCharConfig()->getStartMap(), CharServer->getCharConfig()->getStartX(), CharServer->getCharConfig()->getStartY()));
+	character->setPositionData(std::make_shared<Horizon::Models::Characters::Position>(CharServer->getCharConfig().getStartMap(), CharServer->getCharConfig().getStartX(), CharServer->getCharConfig().getStartY()));
 
 	// Save character to sql.
 	character->create(CharServer);

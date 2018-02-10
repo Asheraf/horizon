@@ -35,6 +35,7 @@ target_link_libraries(char
         ${YAMLCPP_LIBRARY}
         ${MYSQL_CONNECTOR_LIBRARIES}
         ${Readline_LIBRARY}
+		${CONFIG++_LIBRARY}
 )
 
 set(INCLUDE_DIRS
@@ -52,6 +53,7 @@ target_include_directories(char
         ${YAMLCPP_INCLUDE_DIR}
         ${MYSQL_CONNECTOR_INCLUDE_DIRS}
         ${Readline_INCLUDE_DIR}
+		${CONFIG++_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -60,4 +62,4 @@ install(TARGETS char
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
-install(FILES ${PROJECT_SOURCE_DIR}/config/char-server.yaml.dist DESTINATION ${CONF_DIR})
+install(FILES ${PROJECT_SOURCE_DIR}/config/char-server.conf.dist DESTINATION ${CONF_DIR})

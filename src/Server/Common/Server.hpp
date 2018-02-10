@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
-#include <yaml-cpp/yaml.h>
+#include <libconfig.h++>
 
 using boost::asio::ip::tcp;
 
@@ -58,7 +58,7 @@ public:
 	 * Processing Functions
 	 */
 	/* Common Configuration */
-	bool ProcessCommonConfiguration(YAML::Node &config);
+	bool ProcessCommonConfiguration(libconfig::Config &cfg);
 	/* Initialize Core */
 	virtual void InitializeCore();
 	/* Mysql Threads */

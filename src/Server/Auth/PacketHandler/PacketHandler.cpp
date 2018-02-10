@@ -186,7 +186,7 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
  */
 void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 {
-	int max_servers = (int) AuthServer->totalCharacterServers();
+	const CharacterServerMapType char_servers = AuthServer->getCharacterServers();
 	auto *pkt = new PACKET_AC_ACCEPT_LOGIN();
 	PACKET_AC_ACCEPT_LOGIN::character_server_list *server_list;
 	PacketBuffer buf;
@@ -194,15 +194,15 @@ void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 	/**
 	 * Reject if no character servers.
 	 */
-	if (!max_servers) {
+	if (char_servers.empty()) {
 		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_REJECTED_FROM_SERVER);
 		delete pkt;
 		return;
 	}
 
-	server_list = new PACKET_AC_ACCEPT_LOGIN::character_server_list[max_servers];
+	server_list = new PACKET_AC_ACCEPT_LOGIN::character_server_list[char_servers.size()];
 
-	pkt->packet_len = sizeof(*pkt) + (sizeof(struct PACKET_AC_ACCEPT_LOGIN::character_server_list) * max_servers);
+	pkt->packet_len = sizeof(*pkt) + (sizeof(struct PACKET_AC_ACCEPT_LOGIN::character_server_list) * char_servers.size());
 	pkt->auth_code = getSession()->getSessionData()->getAuthCode();
 	pkt->aid = getSession()->getGameAccount()->getID();
 	pkt->user_level = 1;
@@ -211,22 +211,19 @@ void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 
 	pkt->sex = (uint8_t) getSession()->getGameAccount()->getGender();
 
-	for (int i = 0; i < max_servers; ++i) {
-		std::shared_ptr<character_server_data> chr;
-
-		if ((chr = AuthServer->getCharacterServer(i + 1)) == nullptr)
-			continue;
-
-		server_list[i].ip = inet_addr(chr->ip_address.c_str());
-		server_list[i].port = chr->port;
-		strncpy(server_list[i].name, chr->name.c_str(), sizeof(server_list[i].name));
-		server_list[i].type = (uint16_t) chr->server_type;
-		server_list[i].is_new = chr->is_new;
+	int i = 0;
+	for (auto &chr : char_servers) {
+		server_list[i].ip = inet_addr(chr.second->ip_address.c_str());
+		server_list[i].port = chr.second->port;
+		strncpy(server_list[i].name, chr.second->name.c_str(), sizeof(server_list[i].name));
+		server_list[i].type = (uint16_t) chr.second->server_type;
+		server_list[i].is_new = chr.second->is_new;
 		server_list[i].usercount = 88;
+		++i;
 	}
 
 	buf.append<PACKET_AC_ACCEPT_LOGIN, PACKET_AC_ACCEPT_LOGIN::character_server_list>
-		(pkt, sizeof(*pkt), server_list, max_servers);
+		(pkt, sizeof(*pkt), server_list, char_servers.size());
 
 	SendPacket(buf, (std::size_t) pkt->packet_len);
 

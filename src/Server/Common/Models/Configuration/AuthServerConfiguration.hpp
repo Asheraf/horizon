@@ -55,16 +55,12 @@ struct auth_server_config
 	/* Client Date Format */
 	const std::string &getClientDateFormat() const { return client_date_format; }
 	void setClientDateFormat(const std::string &date_format) { auth_server_config::client_date_format = date_format; }
-	/* Allowed Client Version */
-	uint32_t getAllowedClientVersion() const { return allowed_client_version; }
-	void setAllowedClientVersion(uint32_t client_version) { auth_server_config::allowed_client_version = client_version; }
 	/* Logs Configuration */
 	auth_server_logging_config &getLogConf() { return logs; }
 
 	/* Member Variables */
 	enum HashingMethods pass_hash_method = PASS_HASH_NONE;                   ///< Password Hashing Method.
-	std::string client_date_format = "%Y-%m-%d %H:%M:%S";                   ///< Date format sent to clients.
-	uint32_t allowed_client_version = 0;                                    ///< Client version to check. (0 = disabled)
+	std::string client_date_format = "%Y-%m-%d %H:%M:%S";                    ///< Date format sent to clients.
 	/* Authentication Server Logging Configuration */
 	struct auth_server_logging_config logs;
 };

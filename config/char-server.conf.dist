@@ -20,15 +20,8 @@
 ###################################################
 # IP & Port Settings
 ###################################################
-BindIP: "0.0.0.0"
-BindPort: 6121
-
-###################################################
-# Inter Server Settings
-###################################################
-InterServer.IP: "127.0.0.1"
-InterServer.Port: 9998
-InterServer.Password: "ABCDEF"
+bind_ip: "0.0.0.0"
+bind_port: 6121
 
 ###################################################
 # network_threads
@@ -36,25 +29,19 @@ InterServer.Password: "ABCDEF"
 # Default:        1 - (Recommended 1 thread per 1000 connections)
 # Note: Cannot be less than 1.
 ###################################################
-Network.Threads: 2
+network_threads: 2
 
 ###################################################
 # Char Server Database Settings
 ###################################################
-database:
+database: {
     hostname: "localhost"
     port: 3306
     database: "horizon"
     username: "ragnarok"
     password: "ragnarok"
     connection_threads: 2
-
-###################################################
-# Log all requests to the character server
-#
-# Required for dynamic password failure ban.
-###################################################
-log: true
+}
 
 ###################################################
 # Global Thread Pool
@@ -73,24 +60,46 @@ global_io_threads: 2
 core_update_interval: 500
 
 ###################################################
+# Inter Server Settings
+###################################################
+inter_server: {
+    ip_address: "127.0.0.1"
+    port: 9998
+    password: "ABCDEF"
+}
+
+###################################################
+# Log all requests to the character server
+#
+# Required for dynamic password failure ban.
+###################################################
+log: {
+    enable_logging: 1
+}
+
+###################################################
 # New character settings.
 ###################################################
-new_character:
+new_character: {
     start_map: "new_1-1"
     start_x: 53
     start_y: 111
     start_zeny: 0
-    start_items:
-      1201: 1
-      2301: 1
+    start_items: {
+      ID1201: 1
+      ID2301: 1
+    }
+}
 
 ###################################################
-# Interval for character deletion.
+# Interval for character deletion. (seconds)
 ###################################################
 character_deletion_time: 86400
 
 ###################################################
 # Zone Server Connection Information.
 ###################################################
-ZoneServer.IP: "127.0.0.1"
-ZoneServer.Port: 5121
+zone_server: {
+    ip_address: "127.0.0.1"
+    port: 5121
+}

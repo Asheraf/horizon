@@ -17,10 +17,10 @@
 #include "Inter.hpp"
 #include "Server/Inter/SocketMgr/ClientSocketMgr.hpp"
 
-#include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
 #include <iostream>
 #include <boost/make_shared.hpp>
+#include <libconfig.h++>
 
 using namespace std;
 using boost::asio::ip::udp;
@@ -28,7 +28,7 @@ using boost::asio::ip::udp;
 /**
  * Inter Main server constructor.
  */
-Horizon::Inter::InterMain::InterMain() : Server("Inter", "config/", "inter-server.yaml")
+Horizon::Inter::InterMain::InterMain() : Server("Inter", "config/", "inter-server.conf")
 {
 }
 
@@ -45,26 +45,31 @@ Horizon::Inter::InterMain::~InterMain()
   */
 bool Horizon::Inter::InterMain::ReadConfig()
 {
-	YAML::Node config;
-	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
+	libconfig::Config cfg;
+	std::string tmp_string;
+	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
 
+	// Read the file. If there is an error, report it and exit.
 	try {
-		config = YAML::LoadFile(filepath);
-	} catch (std::exception &err) {
-		InterLog->error("Unable to read {}. ({})", filepath, err.what());
+		cfg.readFile(file_path.c_str());
+	} catch(const libconfig::FileIOException &fioex) {
+		InterLog->error("I/O error while reading file '{}'.", file_path);
+		return false;
+	} catch(const libconfig::ParseException &pex) {
+		InterLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
 		return false;
 	}
 
-	if (config["Password"])
-		getNetworkConf().setInterServerPassword(config["Password"].as<std::string>());
+	if (cfg.lookupValue("password", tmp_string))
+		getNetworkConf().setInterServerPassword(tmp_string);
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!ProcessCommonConfiguration(config))
+	if (!ProcessCommonConfiguration(cfg))
 		return false;
 
-	InterLog->info("Done reading {} configurations in '{}'.", config.size(), getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
+	InterLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
 
 	return true;
 }

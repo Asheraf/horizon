@@ -25,15 +25,16 @@
 find_path(MYSQL_INCLUDE_DIR mysql.h
         /usr/include/mysql
         /usr/local/include/mysql
-        /opt/mysql/include/mysql
-        )
+        /opt/mysql/include/mysql)
 
 find_library(MYSQL_LIBRARIES NAMES mysqlclient
         PATHS
         /usr/lib/mysql
         /usr/local/lib/mysql
-        /opt/mysql/lib/mysql
-        )
+        /opt/mysql/lib/mysql)
+
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(mysqlclient DEFAULT_MSG MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
 
 if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
     set(MYSQL_FOUND TRUE)

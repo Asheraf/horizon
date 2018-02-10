@@ -6,39 +6,23 @@
 #      | | | | (_) | |  | |/ / (_) | | | |        #
 #      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
 ###################################################
-#         Inter Server Configuration File         #
+#         Zone Server Configuration File          #
 ###################################################
 
 ###################################################
 # IP & Port Settings
 ###################################################
-BindIP: "0.0.0.0"
-BindPort: 9998
-Password: "$2a$12$uAhi4RtvH.UkDhJsfIdZzOgLPhcnHmtbAG56XDyXzaWWPN3S4H0m6"
+bind_ip: "0.0.0.0"
+bind_port: 5121
 
 ###################################################
-# network_threads
-# Description: Number of threads for network.
-# Default:        1 - (Recommended 1 thread per 1000 connections)
-# Note: Cannot be less than 1.
+# Inter Server Settings
 ###################################################
-Network.Threads: 1
-
-###################################################
-# Server Database Settings
-###################################################
-database:
-    hostname: "localhost"
-    port: 3306
-    database: "horizon"
-    username: "ragnarok"
-    password: "ragnarok"
-    connection_threads: 1
-
-###################################################
-# Log all requests to the Inter Server
-###################################################
-log: true
+inter_server: {
+	ip_address: "127.0.0.1"
+	port: 9998
+	password: "ABCDEF"
+}
 
 ###################################################
 # Global Thread Pool
@@ -56,3 +40,29 @@ global_io_threads: 5
 ###################################################
 core_update_interval: 500
 
+###################################################
+# network_threads
+# Description: Number of threads for network.
+# Default:        1 - (Recommended 1 thread per 1000 connections)
+# Note: Cannot be less than 1.
+###################################################
+network_threads: 5
+
+###################################################
+# Zone Server Database Settings
+###################################################
+database: {
+    hostname: "localhost"
+    port: 3306
+    database: "horizon"
+    username: "ragnarok"
+    password: "ragnarok"
+    connection_threads: 5
+}
+
+###################################################
+# Log all requests to the zone server
+###################################################
+log: {
+	enable_logging: 1
+}

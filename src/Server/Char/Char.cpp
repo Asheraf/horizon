@@ -24,7 +24,6 @@
 #include "Server/Char/SocketMgr/InterSocketMgr.hpp"
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 
-#include <yaml-cpp/yaml.h>
 #include <boost/asio.hpp>
 #include <boost/make_shared.hpp>
 #include <iostream>
@@ -36,8 +35,7 @@ using boost::asio::ip::udp;
 /**
  * CharMain Constructor
  */
-Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.yaml"),
-_char_server_config(std::make_shared<character_server_configuration>())
+Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.conf")
 {
 	//
 }
@@ -50,19 +48,28 @@ Horizon::Char::CharMain::~CharMain()
 	//
 }
 
+#define char_config_error(setting_name, default) \
+	CharLog->error("No setting for '{}' in configuration file, defaulting to '{}'.", setting_name, default);
+
 /**
  * Read /config/char-server.yaml
  * @return true on success false on failure.
  */
 bool Horizon::Char::CharMain::ReadConfig()
 {
-	YAML::Node config, tmp_config;
-	std::string filepath = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
+	libconfig::Config cfg;
+	std::string tmp_string;
+	int tmp_value;
+	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
 
+	// Read the file. If there is an error, report it and exit.
 	try {
-		config = YAML::LoadFile(filepath);
-	} catch (std::exception &err) {
-		CharLog->error("Unable to read {}. ({})", filepath, err.what());
+		cfg.readFile(file_path.c_str());
+	} catch(const libconfig::FileIOException &fioex) {
+		CharLog->error("I/O error while reading file '{}'.", file_path);
+		return false;
+	} catch(const libconfig::ParseException &pex) {
+		CharLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
 		return false;
 	}
 
@@ -70,111 +77,116 @@ bool Horizon::Char::CharMain::ReadConfig()
 	 * Inter Server Settings
 	 * @brief Definitions of the Inter-server networking configuration.
 	 */
-	tmp_config = config["InterServer.IP"];
-	if (tmp_config && tmp_config.IsScalar()) {
-		getNetworkConf().setInterServerIp(tmp_config.as<std::string>());
-	} else {
-		CharLog->error("Inter-server IP configuration not set, defaulting to '127.0.0.1'.");
+	const libconfig::Setting &inter_server = cfg.getRoot()["inter_server"];
+
+	if (!inter_server.lookupValue("ip_address", tmp_string)) {
+		char_config_error("inter_server.ip_address", "127.0.0.1");
 		getNetworkConf().setInterServerIp("127.0.0.1");
-	}
-
-	tmp_config = config["InterServer.Port"];
-	if (tmp_config && tmp_config.IsScalar()) {
-		getNetworkConf().setInterServerPort(tmp_config.as<uint16_t>());
 	} else {
-		CharLog->error("Inter-server Port configuration not set, defaulting to '9998'.");
-		getNetworkConf().setInterServerPort(9998);
+		getNetworkConf().setInterServerIp(tmp_string);
 	}
 
-	tmp_config = config["InterServer.Password"];
-	if (tmp_config && tmp_config.IsScalar()) {
-		getNetworkConf().setInterServerPassword(tmp_config.as<std::string>());
+	if (!inter_server.lookupValue("port", tmp_value)) {
+		char_config_error("inter_server.port", 9998);
+		getNetworkConf().setInterServerPort(9998);
+	} else {
+		getNetworkConf().setInterServerPort(tmp_value);
+	}
+
+	if (!inter_server.lookupValue("password", tmp_string)) {
+		char_config_error("inter_server.password", "ABCDEF");
+		getNetworkConf().setInterServerPassword(tmp_string);
+	} else {
+		getNetworkConf().setInterServerPassword(tmp_string);
 	}
 
 	CharLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
-	              getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
-	              (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+				  getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
+				  (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
 
-	YAML::Node n = config["new_character"];
-	if (n && n.IsMap()) {
-		tmp_config = n["start_map"];
-		if (tmp_config && tmp_config.IsScalar())
-			getCharConfig()->setStartMap(tmp_config.as<std::string>());
+	const libconfig::Setting &new_character = cfg.getRoot()["new_character"];
+
+	if (new_character.isGroup()) {
+		if (new_character.lookupValue("start_map", tmp_string))
+			getCharConfig().setStartMap(tmp_string);
 		else
-			CharLog->error("Unsupported node type for 'start_map' configuration... using hard-coded defaults.");
+			char_config_error("start_map", "new_1-1");
 
-		tmp_config = n["start_x"];
-		if (tmp_config && tmp_config.IsScalar())
-			getCharConfig()->setStartX(tmp_config.as<uint16_t>());
+		if (new_character.lookupValue("start_x", tmp_value))
+			getCharConfig().setStartX(tmp_value);
 		else
-			CharLog->error("Unsupported node type for 'start_x' configuration... using hard-coded defaults.");
+			char_config_error("start_x", 53);
 
-		tmp_config = n["start_y"];
-		if (tmp_config && tmp_config.IsScalar())
-			getCharConfig()->setStartY(tmp_config.as<uint16_t>());
+		if (new_character.lookupValue("start_y", tmp_value))
+			getCharConfig().setStartY(tmp_value);
 		else
-			CharLog->error("Unsupported node type for 'start_y' configuration... using hard-coded defaults.");
+			char_config_error("start_y", 111);
 
-		tmp_config = n["start_zeny"];
-		if (tmp_config && tmp_config.IsScalar())
-			getCharConfig()->setStartZeny(tmp_config.as<uint32_t>());
-		else
-			CharLog->error("Unsupported node type for 'start_zeny' configuration... using hard-coded defaults.");
+		if (new_character.lookupValue("start_zeny", tmp_value))
+			getCharConfig().setStartZeny(tmp_value);
 
-		tmp_config = n["start_items"];
-		if (tmp_config && tmp_config.IsMap()) {
-			for (YAML::const_iterator it = tmp_config.begin(); it != tmp_config.end(); ++it) {
-				if (!it->first.IsScalar() || !it->second.IsScalar()) {
-					CharLog->error("Unsupported node type for an element in 'start_items' configuration... skipping.");
-				} else {
-					std::make_pair(it->first.as<uint32_t>(), it->second.as<uint32_t>());
+		try {
+			bool items_not_found = true;
+			if ((items_not_found = new_character.exists("start_items"))) {
+				const libconfig::Setting &items = new_character["start_items"];
+				if (items.isGroup()) {
+					for (int i = 0; i < items.getLength(); ++i) {
+						const libconfig::Setting &item = items[i];
+						std::string name = item.getName();
+						int item_id = atoi(name.substr(2).c_str());
+						int amount = item;
+						getCharConfig().addStartItem(std::make_pair(item_id, amount));
+					}
 				}
 			}
-		} else {
-			getCharConfig()->addStartItem(std::make_pair(1201, 1));
-			getCharConfig()->addStartItem(std::make_pair(2301, 1));
+
+			if (items_not_found) {
+				getCharConfig().addStartItem(std::make_pair(1201, 1));
+				getCharConfig().addStartItem(std::make_pair(2301, 1));
+			}
+		} catch (libconfig::SettingTypeException &e) {
+			CharLog->error("{}", e.what());
 		}
 
 	} else {
-		CharLog->error("Unsupported node type for 'new_characters' configuration... using hard-coded defaults.");
-		getCharConfig()->addStartItem(std::make_pair(1201, 1));
-		getCharConfig()->addStartItem(std::make_pair(2301, 1));
+		CharLog->error("Unsupported setting type for 'new_character' configuration, expected group... using hard-coded defaults.");
 	}
 
-	tmp_config = config["character_deletion_time"];
-	if (tmp_config && tmp_config.IsScalar()) {
-		getCharConfig()->setCharacterDeletionTime(tmp_config.as<time_t>());
+	if (cfg.lookupValue("character_deletion_time", tmp_value)) {
+		getCharConfig().setCharacterDeletionTime(tmp_value);
 	} else {
-		CharLog->error("Unsupported or non-existent setting 'character_deletion_time', defaulting to 24 hours.");
-		getCharConfig()->setCharacterDeletionTime(24000);
+		char_config_error("character_deletion_time", 86400);
+		getCharConfig().setCharacterDeletionTime(86400);
 	}
 
-	tmp_config = config["ZoneServer.IP"];
-	if (tmp_config && tmp_config.IsScalar()) {
-		getCharConfig()->setZoneServerIP(tmp_config.as<std::string>());
+	const libconfig::Setting &zone_server = cfg.getRoot()["zone_server"];
+
+	if (zone_server.lookupValue("ip_address", tmp_string)) {
+		getCharConfig().setZoneServerIP(tmp_string);
 	} else {
-		CharLog->error("Unsupported or non-existent setting 'ZoneServer.IP', defaulting to '127.0.0.1'.");
-		getCharConfig()->setZoneServerIP("127.0.0.1");
+		char_config_error("zone_server.ip_address", "127.0.0.1");
+		getCharConfig().setZoneServerIP("127.0.0.1");
 	}
 
-	tmp_config = config["ZoneServer.Port"];
-	if (tmp_config && tmp_config.IsScalar()) {
-		getCharConfig()->setZoneServerPort(tmp_config.as<uint16_t>());
+	if (zone_server.lookupValue("port", tmp_value)) {
+		getCharConfig().setZoneServerPort(tmp_value);
 	} else {
-		CharLog->error("Unsupported or non-existent setting 'ZoneServer.Port', defaulting to '5121'.");
-		getCharConfig()->setZoneServerPort(5121);
+		char_config_error("zone_server.port", 5121);
+		getCharConfig().setZoneServerPort(5121);
 	}
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!ProcessCommonConfiguration(config))
+	if (!ProcessCommonConfiguration(cfg))
 		return false;
 
-	CharLog->info("Done reading {} configurations in '{}'.", config.size(), getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName());
+	CharLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
 
 	return true;
 }
+
+#undef char_config_error
 
 /* Initialize Char-Server CLI Commands */
 void Horizon::Char::CharMain::InitializeCLICommands()

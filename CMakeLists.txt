@@ -117,32 +117,32 @@ endif()
 #################
 # SPDLog Library
 #################
+set(spdlog_FIND_REQUIRED true)
 include(FindSPDLog)
-if (spdlog_FOUND)
-    message(STATUS "Found SPDLog: ${spdlog_INCLUDE_DIR}")
-else()
-    message(FATAL_ERROR " SPDLog not found!")
-endif()
-
-#################
-# YAML CPP Library
-#################
-include(FindYAMLCpp)
 
 #################
 # MySQL Library
 #################
+set (MYSQL_FIND_REQUIRED true)
 include(FindMySQL)
 
 #################
 # Readline Library
 #################
+set (Readline_FIND_REQUIRED true)
 include(FindReadline)
 
 #################
 # MySQL CPP Connector
 #################
+set (mysqlcppconn_FIND_REQUIRED true)
 include(FindMySQLConnector)
+
+#################
+# Find Libconfig++
+#################
+set (Config++_FIND_REQUIRED true)
+include(FindConfig++)
 
 #################
 # Horizon Project Source
