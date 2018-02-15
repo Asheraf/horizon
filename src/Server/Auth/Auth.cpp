@@ -54,7 +54,6 @@ Horizon::Auth::AuthMain::~AuthMain()
  */
 bool Horizon::Auth::AuthMain::ReadConfig()
 {
-
 	libconfig::Config cfg;
 	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
 	std::string tmp_string;

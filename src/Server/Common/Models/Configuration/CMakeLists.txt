@@ -16,7 +16,7 @@
 ###################################################
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(MODELS_SOURCES
+set(CONFIGURATION_MODELS_SOURCES
 	${DIR}/AuthServerConfiguration.hpp
 	${DIR}/GeneralServerConfiguration.hpp
 	${DIR}/Logging.hpp

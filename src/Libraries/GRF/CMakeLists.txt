@@ -14,5 +14,3 @@
 # Under a proprietary license this file is not for use
 # or viewing without permission.
 ###################################################
-add_subdirectory(BCrypt)
-add_subdirectory(GRF)

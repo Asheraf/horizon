@@ -84,9 +84,9 @@ check_cxx_source_compiles("
 set(BOOST_REQUIRED_VERSION 1.60)
 
 if (STD_HAS_WORKING_WREGEX)
-    find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams)
+    find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread locale program_options iostreams)
 else()
-    find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams regex)
+    find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread locale program_options iostreams regex)
 endif()
 add_library(boost INTERFACE)
 
@@ -144,6 +144,14 @@ include(FindMySQLConnector)
 set (Config++_FIND_REQUIRED true)
 include(FindConfig++)
 
+if (WITH_TOOLS)
+    find_package(ZLIB REQUIRED)
+    if (NOT ZLIB_FOUND)
+        message(FATAL_ERROR "zlib was not found and is required.")
+    else()
+        message("-- zlib version ${ZLIB_VERSION_STRING} found.")
+    endif()
+endif (WITH_TOOLS)
 #################
 # Horizon Project Source
 #################

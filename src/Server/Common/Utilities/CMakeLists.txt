@@ -19,4 +19,6 @@ set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(UTILITIES_SOURCES
 	${DIR}/Utilities.hpp
+	${DIR}/Utilities.cpp
+	${DIR}/StrUtils.hpp
 	PARENT_SCOPE)

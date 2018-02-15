@@ -15,62 +15,33 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_UTILITIES_H
-#define HORIZON_UTILITIES_H
+#ifndef HORIZON_UTILITIES_UTILITIES_HPP
+#define HORIZON_UTILITIES_UTILITIES_HPP
 
-#include <chrono>
-#include <cstring>
-#include "Common/Horizon.hpp"
+#include <cstdint>
+#include <ctime>
 
-inline uint32_t getMSTime()
-{
-	using namespace std::chrono;
-
-	static const steady_clock::time_point ApplicationStartTime = steady_clock::now();
-
-	return uint32_t(duration_cast<milliseconds>(steady_clock::now() - ApplicationStartTime).count());
-}
-
-inline uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime)
-{
-	// getMSTime() have limited data range and this is case when it overflow in this tick
-	if (oldMSTime > newMSTime)
-		return (0xFFFFFFFF - oldMSTime) + newMSTime;
-	else
-		return newMSTime - oldMSTime;
-}
-
-inline uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
-{
-	return getMSTimeDiff(oldMSTime, getMSTime());
-}
-
-inline const char *TimeStamp2String(char *str, size_t size, time_t timestamp, const char *format)
-{
-	size_t len = 0;
-
-	if (str == nullptr)
-		return nullptr;
-
-	len = strftime(str, size, format, localtime(&timestamp));
-
-	memset(str + len, '\0', size - len);
-
-	return str;
-}
-
+inline uint32_t getMSTime();
+inline uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime);
+inline uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime);
+inline const char *TimeStamp2String(char *str, std::size_t size, time_t timestamp, const char *format);
 // Reorders bytes from network to little endian (Windows).
 // Necessary for sending port numbers to the RO client until Gravity notices that they forgot ntohs() calls.
-uint16 ntows(uint16 netshort)
-{
-	return (uint16) (((netshort & 0xFF) << 8) | ((netshort & 0xFF00) >> 8));
-}
+uint16_t ntows(uint16_t netshort);
+inline void PackPosition(uint8_t *p, short x, short y, unsigned char dir);
+// little endian char array to uint conversion
+unsigned int GetULong(unsigned char* p);
+// Reads a float (32 bits) from the buffer
+float GetFloat(const unsigned char* buf);
+// Converts an int16 from current machine order to little-endian
+int16_t MakeShortLE(int16_t val);
+// Converts an int32 from current machine order to little-endian
+int32_t MakeLongLE(int32_t val);
+// Reads an uint16 in little-endian from the buffer
+uint16_t GetUShort(const unsigned char* buf);
+// Reads an uint32 in little-endian from the buffer
+uint32_t GetULong(const unsigned char* buf);
+// Reads an int32 in little-endian from the buffer
+int32_t GetLong(const unsigned char *buf);
 
-
-static inline void PackPosition(uint8* p, short x, short y, unsigned char dir) {
-	p[0] = (uint8) (x >> 2);
-	p[1] = (uint8) ((x << 6) | ((y >> 4) & 0x3f));
-	p[2] = (uint8) ((y << 4) | (dir & 0xf));
-}
-
-#endif //HORIZON_UTILITIES_H
+#endif // HORIZON_UTILITIES_HPP

@@ -22,6 +22,8 @@ build/
 xcode-build/
 version.hpp
 bin
+resources/
+
 
 # Skip objects and static libraries.
 *.o

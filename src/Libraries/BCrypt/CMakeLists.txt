@@ -35,10 +35,3 @@ set_target_properties(bcryptcpp
         FOLDER
         "BCrypt")
 
-target_include_directories(bcryptcpp
-	PUBLIC
-        ${CMAKE_BINARY_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}
-        PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR})
-
