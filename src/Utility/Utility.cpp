@@ -15,10 +15,7 @@
  * or viewing without permission.
  **************************************************/
 
-#include "Utilities.hpp"
-
-#include <chrono>
-#include <cstring>
+#include "Utility.hpp"
 
 inline uint32_t getMSTime()
 {
@@ -64,13 +61,12 @@ uint16_t ntows(uint16_t netshort)
 	return (uint16_t) (((netshort & 0xFF) << 8) | ((netshort & 0xFF00) >> 8));
 }
 
-
-inline void PackPosition(uint8_t *p, short x, short y, unsigned char dir) {
+void PackPosition(uint8_t *p, short x, short y, unsigned char dir)
+{
 	p[0] = (uint8_t) (x >> 2);
 	p[1] = (uint8_t) ((x << 6) | ((y >> 4) & 0x3f));
 	p[2] = (uint8_t) ((y << 4) | (dir & 0xf));
 }
-
 
 // little endian char array to uint conversion
 unsigned int GetULong(unsigned char* p)

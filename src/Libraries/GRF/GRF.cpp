@@ -16,8 +16,8 @@
  **************************************************/
 
 #include "GRF.hpp"
-#include "Server/Common/Utilities/Utilities.hpp"
-#include "Server/Common/Utilities/StrUtils.hpp"
+#include "Utility/Utility.hpp"
+#include "Utility/StrUtils.hpp"
 
 #include <iostream>
 #include <zlib.h>
@@ -235,8 +235,11 @@ grf_load_result_types GRF::load()
 	uint8_t *compressed_buf = new uint8_t[compressed_size];	// Get a Read Size
 	uint8_t *decompressed_buf = new uint8_t[decompressed_size];	// Get a Extend Size
 
-	if (!grf_ifs.read((char *) compressed_buf, compressed_size))
+	if (!grf_ifs.read((char *) compressed_buf, compressed_size)) {
+		delete[] decompressed_buf;
+		delete[] compressed_buf;
 		return GRF_LOAD_READ_ERROR;
+	}
 
 	unpack(decompressed_buf, &decompressed_size, compressed_buf, compressed_size);
 

@@ -17,7 +17,6 @@
 
 add_subdirectory(CLI)
 add_subdirectory(Models)
-add_subdirectory(Utilities)
 add_subdirectory(Interfaces)
 add_subdirectory(Base)
 add_subdirectory(Database)
@@ -38,6 +37,5 @@ set(COMMON_SOURCES
 	${MODELS_SOURCES}
 	${INTERFACE_SOURCES}
 	${DATABASE_SOURCES}
-	${UTILITIES_SOURCES}
 	${CLI_SOURCES}
 	PARENT_SCOPE)

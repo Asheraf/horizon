@@ -25,7 +25,8 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(zone
 	${PRIVATE_SOURCES}
 	${COMMON_SOURCES}
-	${CORE_SOURCES})
+	${CORE_SOURCES}
+	${UTILITY_SOURCES})
 
 target_link_libraries(zone
 	PUBLIC

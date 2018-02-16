@@ -23,21 +23,15 @@ CollectSourceFiles(
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(mapcache
-	${PRIVATE_SOURCES}
-	${PROJECT_SOURCE_DIR}/src/Server/Common/Utilities/StrUtils.hpp
-	${PROJECT_SOURCE_DIR}/src/Server/Common/Utilities/Utilities.cpp
-	${PROJECT_SOURCE_DIR}/src/Server/Common/Utilities/Utilities.hpp
-	${PROJECT_SOURCE_DIR}/src/Libraries/GRF/GRF.cpp
-	${PROJECT_SOURCE_DIR}/src/Libraries/GRF/GRF.hpp
-	${PROJECT_SOURCE_DIR}/src/Libraries/GRF/DES.cpp
-	${PROJECT_SOURCE_DIR}/src/Libraries/GRF/DES.hpp)
+	${UTILITY_SOURCES}
+	${PRIVATE_SOURCES})
 
 target_link_libraries(mapcache
 	PUBLIC
+		grf
 		${ZLIB_LIBRARIES}
 		${Boost_LIBRARIES}
-		${CONFIG++_LIBRARY}
-)
+		${CONFIG++_LIBRARY})
 
 set(INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/src

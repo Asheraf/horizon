@@ -18,7 +18,7 @@
 #include "MapCache.hpp"
 
 #include "Server/Common/Client.hpp"
-#include "Server/Common/Utilities/Utilities.hpp"
+#include "Utility/Utility.hpp"
 
 #include <iostream>
 #include <cstring>

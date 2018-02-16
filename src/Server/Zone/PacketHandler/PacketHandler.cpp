@@ -22,7 +22,7 @@
 #include "Server/Zone/Session/Session.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
-#include "Server/Common/Utilities/Utilities.hpp"
+#include "Utility/Utility.hpp"
 
 #include <boost/bind.hpp>
 
