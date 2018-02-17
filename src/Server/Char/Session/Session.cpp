@@ -38,17 +38,17 @@ Horizon::Char::Session::~Session()
 /**
  * @brief Initial method invoked once from the network thread that handles the session.
  */
-void Horizon::Char::Session::Start()
+void Horizon::Char::Session::start()
 {
 	CharLog->info("Established connection from {}.", getRemoteIPAddress());
 
-	AsyncRead();
+	asyncRead();
 }
 
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void Horizon::Char::Session::OnClose()
+void Horizon::Char::Session::onClose()
 {
 	CharLog->info("Closed connection from {}.", getRemoteIPAddress());
 
@@ -60,16 +60,16 @@ void Horizon::Char::Session::OnClose()
  * @brief Asynchronous update method periodically called from network threads.
  * @return true on successful update, false on failure.
  */
-bool Horizon::Char::Session::Update()
+bool Horizon::Char::Session::update()
 {
-	return CharSocket::Update();
+	return CharSocket::update();
 }
 
 /**
  * @brief Validate and handle the initial char-server connection (Packet CHAR_CONNECT)
  * @param[in] buf   Copied instance of the PacketBuffer.
  */
-void Horizon::Char::Session::ValidateAndHandleConnection(PacketBuffer &buf)
+void Horizon::Char::Session::validateAndHandleConnection(PacketBuffer &buf)
 {
 	PACKET_CHAR_CONNECT pkt;
 
@@ -82,8 +82,8 @@ void Horizon::Char::Session::ValidateAndHandleConnection(PacketBuffer &buf)
 	// Refuse if inter-server is not connected.
 	if (!InterSocktMgr->getConnectionPoolSize(INTER_SESSION_NAME)) {
 		CharLog->info("Rejected connection for account {}, inter-server unavailable.", pkt.account_id);
-		getPacketHandler()->Respond_CHAR_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
-		DelayedCloseSocket();
+		getPacketHandler()->Send_CHAR_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
+		delayedCloseSocket();
 		return;
 	}
 
@@ -95,8 +95,8 @@ void Horizon::Char::Session::ValidateAndHandleConnection(PacketBuffer &buf)
 
 	// No session was found, reject!
 	if (getSessionData() == nullptr || getGameAccount() == nullptr) {
-		getPacketHandler()->Respond_CHAR_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
-		DelayedCloseSocket();
+		getPacketHandler()->Send_CHAR_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
+		delayedCloseSocket();
 		return;
 	}
 
@@ -108,21 +108,21 @@ void Horizon::Char::Session::ValidateAndHandleConnection(PacketBuffer &buf)
 /**
  * Incoming buffer read handler.
  */
-void Horizon::Char::Session::ReadHandler()
+void Horizon::Char::Session::readHandler()
 {
-	while (GetReadBuffer().GetActiveSize()) {
+	while (getReadBuffer().GetActiveSize()) {
 		uint16_t op_code = 0x0;
-		memcpy(&op_code, GetReadBuffer().GetReadPointer(), sizeof(uint16_t));
+		memcpy(&op_code, getReadBuffer().getReadPointer(), sizeof(uint16_t));
 
-		PacketBuffer buf(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
-		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
+		PacketBuffer buf(op_code, getReadBuffer().getReadPointer(), getReadBuffer().GetActiveSize());
+		getReadBuffer().readCompleted(getReadBuffer().GetActiveSize());
 
 		/**
 		 * Devise the a suitable packet handler
 		 * based on the client's packet version.
 		 */
 		if (op_code == CHAR_CONNECT) {
-			ValidateAndHandleConnection(buf);
+			validateAndHandleConnection(buf);
 			return;
 		}
 
@@ -132,12 +132,12 @@ void Horizon::Char::Session::ReadHandler()
 		}
 
 		if (!getPacketHandler()->HandleReceivedPacket(buf))
-			GetReadBuffer().Reset();
+			getReadBuffer().Reset();
 	}
 }
 
 
-const std::shared_ptr<Horizon::Char::PacketHandler> &Horizon::Char::Session::getPacketHandler() const
+std::shared_ptr<Horizon::Char::PacketHandler> Horizon::Char::Session::getPacketHandler()
 {
 	return _packet_handler;
 }

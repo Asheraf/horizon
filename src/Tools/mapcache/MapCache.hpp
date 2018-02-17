@@ -105,7 +105,7 @@ public:
 	bool Exists();
 	bool ParseLoadResult(grf_load_result_types result);
 	bool ParseGRFReadResult(std::string const &filename, grf_read_error_types error);
-	void ParseExecArguments(int argc, const char *argv[]);
+	void parseExecArguments(int argc, const char *argv[]);
 
 	void ImportFromCacheFile();
 

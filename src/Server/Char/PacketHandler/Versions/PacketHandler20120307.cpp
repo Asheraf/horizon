@@ -58,13 +58,13 @@ void Horizon::Char::PacketHandler20120307::Handle_CHAR_CREATE(PacketBuffer &buf)
 
 	// Check if the name already exists.
 	if (CharQuery->CheckExistingCharByName(pkt.name)) {
-		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_ALREADY_EXISTS);
+		Send_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_ALREADY_EXISTS);
 		return;
 	}
 
 	// Check if the slot is not a premium.
 	if (pkt.slot > getSession()->getGameAccount()->getCharacterSlots()) {
-		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
+		Send_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
 		return;
 	}
 
@@ -77,5 +77,5 @@ void Horizon::Char::PacketHandler20120307::Handle_CHAR_CREATE(PacketBuffer &buf)
 	character->create(CharServer);
 	// Add character to account.
 	getSession()->getGameAccount()->addCharacter(character);
-	Respond_CHAR_CREATE_SUCCESS_ACK(character);
+	Send_CHAR_CREATE_SUCCESS_ACK(character);
 }

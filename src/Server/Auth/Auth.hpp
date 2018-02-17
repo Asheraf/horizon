@@ -52,11 +52,12 @@ public:
 	/* Auth Server Configuration */
 	struct auth_server_config &getAuthConfig() { return _auth_config; }
 
-	void ConnectWithInterServer();
+	void connectWithInterServer();
+	void connectionKeepAliveLoop();
 
-	void InitializeCore();
+	void initializeCore();
 	/* CLI */
-	void InitializeCLICommands();
+	void initializeCLICommands();
 	bool CLICmd_ReloadConfig();
 
 	void UpdateCharServLoop();

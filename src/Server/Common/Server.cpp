@@ -50,7 +50,7 @@ Server::~Server()
 {
 }
 
-void Server::ParseExecArguments(const char *argv[], int argc)
+void Server::parseExecArguments(const char *argv[], int argc)
 {
 	if (strcmp(argv[1], "--test-run") == 0) {
 		CoreLog->info("Test run initiated.");
@@ -213,10 +213,10 @@ void Server::InitializeCLI()
 	}
 
 	m_CLIThread = std::thread(std::bind(&CLIThreadStart, this));
-	InitializeCLICommands();
+	initializeCLICommands();
 }
 
-void Server::InitializeCLICommands()
+void Server::initializeCLICommands()
 {
 	addCLIFunction("shutdown", std::bind(&Server::CLICmd_Shutdown, this));
 }
@@ -242,7 +242,7 @@ void Server::ProcessCLICommands()
 	}
 }
 
-void Server::InitializeCore()
+void Server::initializeCore()
 {
 	std::shared_ptr<boost::asio::io_service> io_service = getIOService();
 	std::shared_ptr<std::vector<std::thread>> thread_pool(new std::vector<std::thread>(), [io_service] (std::vector<std::thread> *del)
@@ -271,7 +271,7 @@ void Server::InitializeCore()
 	 */
 	InitializeCLI();
 
-	while (!IsShuttingDown() && !getGeneralConf().isTestRun()) {
+	while (!isShuttingDown() && !getGeneralConf().isTestRun()) {
 		ProcessCLICommands();
 		std::this_thread::sleep_for(std::chrono::milliseconds(getGeneralConf().getCoreUpdateInterval()));
 	}
@@ -286,7 +286,7 @@ void Server::IOServiceLoop()
 	getIOService()->run();
 }
 
-const std::shared_ptr<boost::asio::io_service> &Server::getIOService() const
+const std::shared_ptr<boost::asio::io_service> Server::getIOService() const
 {
 	return this->io_service;
 }

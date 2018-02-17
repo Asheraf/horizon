@@ -17,13 +17,14 @@
 #include "Auth.hpp"
 #include "Server/Auth/SocketMgr/InterSocketMgr.hpp"
 #include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
+#include "Server/Auth/Interface/InterAPI.hpp"
+#include "Server/Common/Server.hpp"
 
 #include <boost/asio.hpp>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
-#include <Server/Common/Server.hpp>
 #include <libconfig.h++>
 
 using boost::asio::ip::udp;
@@ -35,7 +36,7 @@ using namespace std::chrono_literals;
 Horizon::Auth::AuthMain::AuthMain()
 : Server("Auth", "config/", "auth-server.conf")
 {
-	InitializeCLICommands();
+	initializeCLICommands();
 }
 
 /**
@@ -229,22 +230,22 @@ bool Horizon::Auth::AuthMain::CLICmd_ReloadConfig()
 /**
  * Initialize CLI Comamnds
  */
-void Horizon::Auth::AuthMain::InitializeCLICommands()
+void Horizon::Auth::AuthMain::initializeCLICommands()
 {
 	addCLIFunction("reloadconf", std::bind(&AuthMain::CLICmd_ReloadConfig, this));
 
-	Server::InitializeCLICommands();
+	Server::initializeCLICommands();
 }
 
-void Horizon::Auth::AuthMain::InitializeCore()
+void Horizon::Auth::AuthMain::initializeCore()
 {
 	/**
 	 * Establish a connection to the inter-server.
 	 */
-	std::thread inter_conn_thread(std::bind(&AuthMain::ConnectWithInterServer, this));
+	std::thread inter_conn_thread(std::bind(&AuthMain::connectWithInterServer, this));
 
 	// Initialize Main Core.
-	Server::InitializeCore();
+	Server::initializeCore();
 
 	// Join connection thread on end.
 	inter_conn_thread.join();
@@ -253,12 +254,20 @@ void Horizon::Auth::AuthMain::InitializeCore()
 /**
  * Connect with Inter Server
  */
-void Horizon::Auth::AuthMain::ConnectWithInterServer()
+void Horizon::Auth::AuthMain::connectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
-		try {
-			InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1);
-		} catch (boost::system::system_error &e) {
+		if (InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1)) {
+			AuthInterAPI->setInterSession(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME));
+
+			do {
+				std::this_thread::sleep_for(std::chrono::seconds(2));
+			} while (!isShuttingDown() && AuthInterAPI->pingInterServer());
+
+			if (!isShuttingDown()) {
+				InterSocktMgr->closeConnection(INTER_SESSION_NAME);
+				connectWithInterServer();
+			}
 		}
 	}
 }
@@ -286,7 +295,7 @@ void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const b
 int main(int argc, const char * argv[])
 {
 	if (argc > 1)
-		AuthServer->ParseExecArguments(argv, argc);
+		AuthServer->parseExecArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -313,7 +322,7 @@ int main(int argc, const char * argv[])
 	/**
 	 * Initialize the Common Core
 	 */
-	AuthServer->InitializeCore();
+	AuthServer->initializeCore();
 
 	/*
 	 * Core Cleanup

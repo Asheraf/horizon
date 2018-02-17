@@ -20,12 +20,12 @@
 
 #include "Core/Logging/Logger.hpp"
 
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/deadline_timer.hpp>
 #include <thread>
 #include <atomic>
 #include <mutex>
 #include <cassert>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/deadline_timer.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -41,6 +41,7 @@ namespace Networking
 template <class SocketType>
 class NetworkThread
 {
+	typedef std::vector<std::shared_ptr<SocketType>> SocketContainer;
 public:
 	NetworkThread()
 	: _connections(0), _stopped(false), _updateTimer(_io_service)
@@ -75,12 +76,12 @@ public:
 	 * @brief Initializes the network thread and runs.
 	 * @return true on success, false if thread is a nullptr.
 	 */
-	bool Start()
+	bool start()
 	{
 		if (_thread != nullptr)
 			return false;
 
-		_thread.reset(new std::thread(&NetworkThread::Run, this));
+		_thread.reset(new std::thread(&NetworkThread::run, this));
 		return true;
 	}
 
@@ -96,7 +97,7 @@ public:
 	/**
 	 * @brief Adds a new socket to a queue that is processed
 	 *        frequently within this network thread. The method
-	 *        Update() is called regularly to add new sockets
+	 *        update() is called regularly to add new sockets
 	 *        to the thread's active socket list.
 	 */
 	virtual void AddSocket(std::shared_ptr<SocketType> sock)
@@ -134,13 +135,13 @@ protected:
 	/**
 	 * @brief Run the I/O Service loop within this network thread.
 	 *        Before running, this method gives the I/O service some work
-	 *        by asynchronously running a deadline timer on @see Update()
+	 *        by asynchronously running a deadline timer on @see update()
 	 */
-	void Run()
+	void run()
 	{
 		CoreLog->trace("Thread for new I/O service initiated.");
 		_updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
-		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::Update, this));
+		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
 
 		_io_service.run();
 
@@ -152,34 +153,37 @@ protected:
 	 * @brief Updates the network thread and schedules a recursive call to itself.
 	 *        This method is responsible for the following tasks -
 	 *        1) Issuing a routine to process the new sockets queue.
-	 *        2) Closes sockets that cannot be updated. @see Socket<SocketType>::Update()
+	 *        2) Closes sockets that cannot be updated. @see Socket<SocketType>::update()
 	 */
-	void Update()
+	void update()
 	{
 		if (_stopped)
 			return;
 
 		_updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
-		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::Update, this));
+		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
 
 		AddNewSockets();
 
-		_active_sockets.erase(std::remove_if(_active_sockets.begin(), _active_sockets.end(), [this] (std::shared_ptr<SocketType> sock)
-			{
-			  if (!sock->Update()) {
-				  if (sock->IsOpen())
-					  sock->CloseSocket();
+		_active_sockets.erase(std::remove_if(_active_sockets.begin(), _active_sockets.end(),
+			[this] (std::shared_ptr<SocketType> sock)
+				{
+					if (sock == nullptr || !sock->update()) {
 
-				  this->SocketRemoved(sock);
-				  --this->_connections;
+						if (sock != nullptr && sock->isOpen()) {
+							sock->closeSocket();
+							this->SocketRemoved(sock);
+						}
 
-				  CoreLog->trace("Socket closed in a networking thread. (Thread Connections: {})", this->_connections);
+						--this->_connections;
 
-				  return true;
-			  }
+						CoreLog->trace("Socket closed in a networking thread. (Thread Connections: {})", this->_connections);
 
-			  return false;
-			}), _active_sockets.end());
+						return true;
+					}
+
+					return false;
+				}), _active_sockets.end());
 	}
 
 	/**
@@ -187,7 +191,7 @@ protected:
 	 *        This method is responsible for -
 	 *        1) Processing the entire list of new sockets and clearing it on every call.
 	 *        2) removing / closing new sockets that are not open.
-	 *        3) Starting the new socket once added to the container. (@see Socket<SocketType>::Start())
+	 *        3) Starting the new socket once added to the container. (@see Socket<SocketType>::start())
 	 */
 	void AddNewSockets()
 	{
@@ -197,13 +201,13 @@ protected:
 			return;
 
 		for (std::shared_ptr<SocketType> sock : _new_socket_queue) {
-			if (!sock->IsOpen()) {
+			if (!sock->isOpen()) {
 				SocketRemoved(sock);
 				--_connections;
 			} else {
 				_active_sockets.push_back(sock);
 				// Start receiving from the socket.
-				sock->Start();
+				sock->start();
 			}
 		}
 
@@ -211,8 +215,6 @@ protected:
 	}
 
 private:
-	typedef std::vector<std::shared_ptr<SocketType>> SocketContainer;
-
 	std::atomic<int32_t> _connections;
 	std::atomic<bool> _stopped;
 

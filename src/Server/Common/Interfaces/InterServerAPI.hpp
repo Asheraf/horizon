@@ -1,9 +1,19 @@
-//
-//  InterServerQuery.hpp
-//  Horizon
-//
-//  Created by SagunKho on 02/02/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_INTERFACES_INTERSERVERAPI_HPP
 #define HORIZON_INTERFACES_INTERSERVERAPI_HPP
@@ -50,8 +60,8 @@ public:
 
 		send_pkt.auth_code = auth_code;
 
-		if (_inter_session != nullptr
-			&& _inter_session->getPacketHandler()->SendAndReceive(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_SESSION_GET) {
+		if (getInterSession() != nullptr
+			&& getInterSession()->getPacketHandler()->sendAndReceive(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_SESSION_GET) {
 			*session_data << recv_pkt.s;
 			return session_data;
 		}
@@ -66,8 +76,8 @@ public:
 	 */
 	void DeleteSessionFromInter(uint32_t auth_code)
 	{
-		if (_inter_session != nullptr)
-			_inter_session->getPacketHandler()->Respond_INTER_SESSION_DEL(auth_code);
+		if (getInterSession() != nullptr)
+			getInterSession()->getPacketHandler()->Send_INTER_SESSION_DEL(auth_code);
 	}
 
 	/**
@@ -76,8 +86,8 @@ public:
 	 */
 	void AddSessionToInter(std::shared_ptr<SessionData> const &session_data)
 	{
-		if (_inter_session != nullptr)
-			_inter_session->getPacketHandler()->Respond_INTER_SESSION_SET(*session_data);
+		if (getInterSession() != nullptr)
+			getInterSession()->getPacketHandler()->Send_INTER_SESSION_SET(*session_data);
 	}
 
 	/**
@@ -95,8 +105,8 @@ public:
 
 		send_pkt.account_id = account_id;
 
-		if (_inter_session != nullptr
-			&& _inter_session->getPacketHandler()->SendAndReceive(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_GAME_ACCOUNT_GET) {
+		if (getInterSession() != nullptr
+			&& getInterSession()->getPacketHandler()->sendAndReceive(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_GAME_ACCOUNT_GET) {
 			*game_account << recv_pkt.s;
 			return game_account;
 		}
@@ -111,8 +121,8 @@ public:
 	 */
 	void DeleteGameAccountFromInter(uint32_t account_id)
 	{
-		if (_inter_session != nullptr)
-			_inter_session->getPacketHandler()->Respond_INTER_GAME_ACCOUNT_DEL(account_id);
+		if (getInterSession() != nullptr)
+			getInterSession()->getPacketHandler()->Send_INTER_GAME_ACCOUNT_DEL(account_id);
 	}
 
 	/**
@@ -121,13 +131,33 @@ public:
 	 */
 	void AddGameAccountToInter(std::shared_ptr<GameAccount> const &game_account)
 	{
-		if (_inter_session != nullptr)
-			_inter_session->getPacketHandler()->Respond_INTER_GAME_ACCOUNT_SET(*game_account);
+		if (getInterSession() != nullptr)
+			getInterSession()->getPacketHandler()->Send_INTER_GAME_ACCOUNT_SET(*game_account);
+	}
+
+	bool pingInterServer()
+	{
+		PACKET_INTER_PING send_pkt;
+		PACKET_INTER_PONG recv_pkt;
+
+		if (getInterSession() != nullptr
+			&& getInterSession()->getPacketHandler()->sendAndReceive(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_PONG)
+			return true;
+
+		return false;
 	}
 
 	/* Inter Session Ptr */
-	void setInterSession(std::shared_ptr<SessionType> inter_session) { _inter_session.reset(inter_session); }
-	const std::shared_ptr<SessionType> getInterSession() { return _inter_session; }
+	void setInterSession(std::shared_ptr<SessionType> inter_session)
+	{
+		_inter_session = inter_session;
+	}
+	
+	std::shared_ptr<SessionType> getInterSession()
+	{
+		return _inter_session;
+	}
+
 private:
 	std::shared_ptr<SessionType> _inter_session;
 };

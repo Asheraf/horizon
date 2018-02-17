@@ -21,6 +21,7 @@
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
 #include <map>
+#include <boost/thread.hpp>
 
 namespace Horizon
 {
@@ -45,6 +46,8 @@ public:
 	 */
 	void add(uint32_t id, StorageType &data)
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_storage_lock);
+
 		findAndRemove(id);
 		_storage.insert(std::make_pair(id, std::make_shared<StorageType>(data)));
 	}
@@ -55,6 +58,8 @@ public:
 	 */
 	void remove(uint32_t id)
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_storage_lock);
+
 		findAndRemove(id);
 	}
 
@@ -65,10 +70,12 @@ public:
 	 */
 	std::shared_ptr<StorageType> get(uint32_t id)
 	{
+		boost::shared_lock<boost::shared_mutex> lock(_storage_lock);
+		
 		auto it = _storage.find(id);
 
 		if (it != _storage.end())
-			return _storage.at(id);
+			return it->second;
 		else
 			return nullptr;
 	}
@@ -88,15 +95,19 @@ private:
 	 */
 	bool findAndRemove(uint32_t id)
 	{
-		if (get(id) != nullptr) {
+		auto it = _storage.find(id);
+
+		if (it != _storage.end()) {
 			_storage.erase(id);
 			return true;
 		}
+
 		return false;
 	}
 
 	// Storage Map
 	std::map<uint32_t, std::shared_ptr<StorageType>> _storage;
+	boost::shared_mutex _storage_lock;
 };
 }
 }

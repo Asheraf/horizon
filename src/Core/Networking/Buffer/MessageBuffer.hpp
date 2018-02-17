@@ -57,36 +57,36 @@ public:
 
 	uint8_t* GetBasePointer() { return _storage.data(); }
 
-	uint8_t* GetReadPointer() { return GetBasePointer() + _rpos; }
+	uint8_t* getReadPointer() { return GetBasePointer() + _rpos; }
 
-	uint8_t* GetWritePointer() { return GetBasePointer() + _wpos; }
+	uint8_t* getWritePointer() { return GetBasePointer() + _wpos; }
 
-	void ReadCompleted(size_type bytes) { _rpos += bytes; }
+	void readCompleted(size_type bytes) { _rpos += bytes; }
 
-	void WriteCompleted(size_type bytes) { _wpos += bytes; }
+	void writeCompleted(size_type bytes) { _wpos += bytes; }
 
 	size_type GetActiveSize() const { return _wpos - _rpos; }
 
-	size_type GetRemainingSpace() const { return _storage.size() - _wpos; }
+	size_type getRemainingSpace() const { return _storage.size() - _wpos; }
 
 	size_type GetBufferSize() const { return _storage.size(); }
 
 	// Discards inactive data
-	void Normalize()
+	void normalize()
 	{
 		if (_rpos) {
 			if (_rpos != _wpos)
-				memmove(GetBasePointer(), GetReadPointer(), GetActiveSize());
+				memmove(GetBasePointer(), getReadPointer(), GetActiveSize());
 			_wpos -= _rpos;
 			_rpos = 0;
 		}
 	}
 
-	// Ensures there's "some" free space, make sure to call Normalize() before this
-	void EnsureFreeSpace()
+	// Ensures there's "some" free space, make sure to call normalize() before this
+	void ensureFreeSpace()
 	{
 		// resize buffer if it's already full
-		if (GetRemainingSpace() == 0)
+		if (getRemainingSpace() == 0)
 			_storage.resize(_storage.size() * 3 / 2);
 	}
 
@@ -94,8 +94,8 @@ public:
 	{
 		if (size)
 		{
-			memcpy(GetWritePointer(), data, size);
-			WriteCompleted(size);
+			memcpy(getWritePointer(), data, size);
+			writeCompleted(size);
 		}
 	}
 

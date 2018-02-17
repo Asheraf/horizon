@@ -73,13 +73,13 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pk
 	CharQuery->AllCharactersByAccount(getSession()->getGameAccount());
 	
 	// Send acceptance notice to client.
-	Respond_CHAR_ACCOUNT_ID();         // 1st
+	Send_CHAR_ACCOUNT_ID();         // 1st
 
 	// Send character list info.
-	Respond_CHAR_SLOT_INFO_ACK();      // 2nd
-	Respond_CHAR_LIST_ACK();           // 3rd
-	Respond_CHAR_BAN_LIST_ACK();       // 4th
-	Respond_CHAR_PINCODE_STATE_ACK();  // 5th
+	Send_CHAR_SLOT_INFO_ACK();      // 2nd
+	Send_CHAR_LIST_ACK();           // 3rd
+	Send_CHAR_BAN_LIST_ACK();       // 4th
+	Send_CHAR_PINCODE_STATE_ACK();  // 5th
 }
 
 void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
@@ -96,13 +96,13 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 
 	// Check if the name already exists.
 	if (CharQuery->CheckExistingCharByName(pkt.name)) {
-		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_ALREADY_EXISTS);
+		Send_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_ALREADY_EXISTS);
 		return;
 	}
 
 	// Check if the slot is not a premium.
 	if (pkt.slot > getSession()->getGameAccount()->getCharacterSlots()) {
-		Respond_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
+		Send_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
 		return;
 	}
 
@@ -118,7 +118,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 	character->create(CharServer);
 	// Add character to account.
 	getSession()->getGameAccount()->addCharacter(character);
-	Respond_CHAR_CREATE_SUCCESS_ACK(character);
+	Send_CHAR_CREATE_SUCCESS_ACK(character);
 }
 
 void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
@@ -132,29 +132,29 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
-		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_DATABASE_ERR, 0);
+		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_DATABASE_ERR, 0);
 		return;
 	}
 
 	if (character->getAccessData()->getDeleteDate() > 0) {
-		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_UNKNOWN, 0);
+		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_UNKNOWN, 0);
 		return;
 	}
 
 	if (character->getGroupData()->getGuildID() > 0) {
-		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_GUILD_ERR, 0);
+		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_GUILD_ERR, 0);
 		return;
 	}
 
 	if (character->getGroupData()->getPartyID() > 0) {
-		Respond_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_PARTY_ERR, 0);
+		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_PARTY_ERR, 0);
 		return;
 	}
 
 	character->getAccessData()->setDeleteDate(CharServer->getCharConfig().getCharacterDeletionTime() + time(nullptr));
 	character->getAccessData()->save(CharServer);
 	result = CHAR_DEL_RESULT_SUCCESS;
-	Respond_CHAR_DELETE_START_ACK(character->getCharacterID(), result, character->getAccessData()->getDeleteDate() - time(nullptr));
+	Send_CHAR_DELETE_START_ACK(character->getCharacterID(), result, character->getAccessData()->getDeleteDate() - time(nullptr));
 }
 
 void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
@@ -167,13 +167,13 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
-		Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_UNKNOWN);
+		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_UNKNOWN);
 		return;
 	}
 
 	if (character->getAccessData()->getDeleteDate() > time(nullptr)) {
 		CharLog->warn("Attempted to delete character not ready for deletion, for account Id '{}'", getSession()->getGameAccount()->getID());
-		Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_TIME_ERR);
+		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_TIME_ERR);
 		return;
 	}
 
@@ -181,16 +181,16 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
 	if (std::strncmp(&birth_date[2], &pkt.birthdate[0], 2)        // YY
 		|| std::strncmp(&birth_date[5], &pkt.birthdate[2], 2)     // MM
 		|| std::strncmp(&birth_date[8], &pkt.birthdate[4], 2)) {  // DD
-		Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_BIRTHDAY_ERR);
+		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_BIRTHDAY_ERR);
 		return;
 	}
 
-	Respond_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_SUCCESS);
+	Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_SUCCESS);
 
 	getSession()->getGameAccount()->removeCharacter(pkt.character_id);
 	character->setDeleted(true);
 	character->save(CharServer);
-	Respond_CHAR_RESEND_CHAR_LIST();
+	Send_CHAR_RESEND_CHAR_LIST();
 }
 
 void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
@@ -203,20 +203,20 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
-		Respond_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
+		Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
 		return;
 	}
 
 	if (character->getAccessData()->getDeleteDate() == 0) {
 		CharLog->warn("Attempted to delete character that wasn't set for deletion in account Id '{}'", getSession()->getGameAccount()->getID());
-		Respond_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
+		Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
 		return;
 	}
 
 	character->getAccessData()->setDeleteDate(0);
 	character->getAccessData()->save(CharServer);
 
-	Respond_CHAR_DELETE_CANCEL_ACK(pkt.character_id, true);
+	Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, true);
 }
 
 void Horizon::Char::PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
@@ -239,7 +239,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
 			break;
 	}
 
-	Respond_CHAR_SEND_ZONE_INFO(character);
+	Send_CHAR_SEND_ZONE_INFO(character);
 }
 
 /**
@@ -254,14 +254,14 @@ void Horizon::Char::PacketHandler::Handle_CHAR_KEEP_ALIVE(PacketBuffer &/*buf*/)
 }
 
 /*==============*
- * Responder Methods
+ * Sender Methods
  *==============*/
 
 /**
- * @brief Respond to the client with the CHAR_CONNECT_ERROR packet.
+ * @brief Send to the client with the CHAR_CONNECT_ERROR packet.
  * @param[in] error    error code to be sent, @see character_connect_errors.
  */
-void Horizon::Char::PacketHandler::Respond_CHAR_CONNECT_ERROR(character_connect_errors error)
+void Horizon::Char::PacketHandler::Send_CHAR_CONNECT_ERROR(character_connect_errors error)
 {
 	PACKET_CHAR_CONNECT_ERROR pkt;
 	pkt.error = error;
@@ -269,11 +269,11 @@ void Horizon::Char::PacketHandler::Respond_CHAR_CONNECT_ERROR(character_connect_
 }
 
 /**
- * @brief Respond to the client with the Account ID to initiate client connection.
+ * @brief Send to the client with the Account ID to initiate client connection.
  * @note This packet has no ID but is required by the client.
  * @param[in] account_id   Account ID of the session.
  */
-void Horizon::Char::PacketHandler::Respond_CHAR_ACCOUNT_ID()
+void Horizon::Char::PacketHandler::Send_CHAR_ACCOUNT_ID()
 {
 	PACKET_CHAR_ACCOUNT_ID pkt;
 	pkt.account_id = getSession()->getSessionData()->getGameAccountID();
@@ -281,10 +281,10 @@ void Horizon::Char::PacketHandler::Respond_CHAR_ACCOUNT_ID()
 }
 
 /**
- * @brief Respond to the client with the CHAR_SLOT_INFO_ACK packet on client connection.
+ * @brief Send to the client with the CHAR_SLOT_INFO_ACK packet on client connection.
  * @see Horizon::Char::packets
  */
-void Horizon::Char::PacketHandler::Respond_CHAR_SLOT_INFO_ACK()
+void Horizon::Char::PacketHandler::Send_CHAR_SLOT_INFO_ACK()
 {
 	PACKET_CHAR_SLOT_INFO_ACK pkt;
 	pkt.total_slots = MAX_CHARACTER_SLOTS;
@@ -296,10 +296,10 @@ void Horizon::Char::PacketHandler::Respond_CHAR_SLOT_INFO_ACK()
 }
 
 /**
- * @brief Respond to the client with the CHAR_LIST_ACK packet on client connection.
+ * @brief Send to the client with the CHAR_LIST_ACK packet on client connection.
  * @see Horizon::Char::packets
  */
-void Horizon::Char::PacketHandler::Respond_CHAR_LIST_ACK()
+void Horizon::Char::PacketHandler::Send_CHAR_LIST_ACK()
 {
 	PACKET_CHAR_LIST_ACK pkt;
 	PacketBuffer buf;
@@ -327,7 +327,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_LIST_ACK()
 	CharLog->info("Sent character-list information to AID {}", getSession()->getSessionData()->getGameAccountID());
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_RESEND_CHAR_LIST()
+void Horizon::Char::PacketHandler::Send_CHAR_RESEND_CHAR_LIST()
 {
 	PACKET_CHAR_RESEND_CHAR_LIST pkt;
 	PacketBuffer buf;
@@ -356,10 +356,10 @@ void Horizon::Char::PacketHandler::Respond_CHAR_RESEND_CHAR_LIST()
 }
 
 /**
- * @brief Respond to the client with the CHAR_BAN_LIST_ACK packet on client connection.
+ * @brief Send to the client with the CHAR_BAN_LIST_ACK packet on client connection.
  * @see Horizon::Char::packets
  */
-void Horizon::Char::PacketHandler::Respond_CHAR_BAN_LIST_ACK()
+void Horizon::Char::PacketHandler::Send_CHAR_BAN_LIST_ACK()
 {
 	PACKET_CHAR_BAN_LIST_ACK pkt;
 	SendPacket(pkt);
@@ -367,10 +367,10 @@ void Horizon::Char::PacketHandler::Respond_CHAR_BAN_LIST_ACK()
 }
 
 /**
- * @brief Respond to the client with the CHAR_PINCODE_STATE_ACK packet on client connection.
+ * @brief Send to the client with the CHAR_PINCODE_STATE_ACK packet on client connection.
  * @see Horizon::Char::packets
  */
-void Horizon::Char::PacketHandler::Respond_CHAR_PINCODE_STATE_ACK()
+void Horizon::Char::PacketHandler::Send_CHAR_PINCODE_STATE_ACK()
 {
 	PACKET_CHAR_PINCODE_STATE_ACK pkt;
 	pkt.pincode_seed = rand() % 0xFFFF;
@@ -379,7 +379,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_PINCODE_STATE_ACK()
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character)
+void Horizon::Char::PacketHandler::Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character)
 {
 	PACKET_CHAR_CREATE_SUCCESS_ACK pkt;
 
@@ -393,7 +393,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_SUCCESS_ACK(std::shared_p
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date)
+void Horizon::Char::PacketHandler::Send_CHAR_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date)
 {
 	PACKET_CHAR_DELETE_START_ACK pkt;
 	pkt.character_id = character_id;
@@ -402,7 +402,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_START_ACK(uint32_t charac
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result)
+void Horizon::Char::PacketHandler::Send_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result)
 {
 	PACKET_CHAR_DELETE_ACCEPT_ACK pkt;
 	pkt.character_id = character_id;
@@ -410,7 +410,7 @@ void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_ACCEPT_ACK(uint32_t chara
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success)
+void Horizon::Char::PacketHandler::Send_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success)
 {
 	PACKET_CHAR_DELETE_CANCEL_ACK pkt;
 	pkt.character_id = character_id;
@@ -418,14 +418,14 @@ void Horizon::Char::PacketHandler::Respond_CHAR_DELETE_CANCEL_ACK(uint32_t chara
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_CREATE_ERROR_ACK(char_create_error_types error)
+void Horizon::Char::PacketHandler::Send_CHAR_CREATE_ERROR_ACK(char_create_error_types error)
 {
 	PACKET_CHAR_CREATE_ERROR_ACK pkt;
 	pkt.error_code = (uint8_t) error;
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Respond_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Characters::Character> character)
+void Horizon::Char::PacketHandler::Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Characters::Character> character)
 {
 	PACKET_CHAR_SEND_ZONE_INFO pkt;
 	std::string map_name;

@@ -1,6 +1,19 @@
-//
-// Created by SagunKho on 31/01/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_BASE_INTERPACKETHANDLER_HPP
 #define HORIZON_BASE_INTERPACKETHANDLER_HPP
@@ -24,8 +37,8 @@ template <class SocketType>
 class InterPacketHandler : public PacketHandler<SocketType>
 {
 public:
-	InterPacketHandler(std::shared_ptr<SocketType> session, std::string const &password)
-	: PacketHandler<SocketType>(session), _inter_password(password)
+	InterPacketHandler(std::shared_ptr<SocketType> session, std::string const &password, inter_connect_client_types client_type)
+	: PacketHandler<SocketType>(session), _client_type(client_type), _inter_password(password)
 	{
 		InitializeHandlers();
 	}
@@ -41,6 +54,7 @@ public:
 		HANDLER_FUNC(INTER_SESSION_GET);
 		HANDLER_FUNC(INTER_ACK_RECEIVED);
 		HANDLER_FUNC(INTER_GAME_ACCOUNT_GET);
+		HANDLER_FUNC(INTER_PONG);
 #undef HANDLER_FUNC
 	}
 
@@ -50,13 +64,18 @@ public:
 		MessageBuffer buf;
 		int op_code = 0x0;
 
-		recv_size = this->getSession()->SyncRead(buf);
+		if (!this->getSession()->isOpen()) {
+			this->getSession()->closeSocket();
+			return false;
+		}
+
+		recv_size = this->getSession()->syncRead(buf, buf.getRemainingSpace());
 
 		if (!recv_size)
 			return false;
 
-		memcpy(&op_code, buf.GetReadPointer(), sizeof(uint16_t));
-		PacketBuffer recv_pkt(op_code, buf.GetReadPointer(), buf.GetActiveSize());
+		memcpy(&op_code, buf.getReadPointer(), sizeof(uint16_t));
+		PacketBuffer recv_pkt(op_code, buf.getReadPointer(), recv_size);
 		pkt_buf = recv_pkt;
 
 		return true;
@@ -84,7 +103,7 @@ public:
 				CoreLog->info("Connection to inter server authorized.");
 			} else {
 				CoreLog->info("Connection to inter server not authorized.");
-				this->getSession()->CloseSocket();
+				this->getSession()->closeSocket();
 			}
 			break;
 		default:
@@ -96,7 +115,7 @@ public:
 	virtual void Handle_INTER_CONNECT_INIT(PacketBuffer &/*buf*/)
 	{
 		// Start authentication with inter-server using passwords.
-		Respond_INTER_CONNECT_AUTH();
+		Send_INTER_CONNECT_AUTH();
 	}
 
 	virtual void Handle_INTER_SESSION_GET(PacketBuffer &buf)
@@ -125,10 +144,15 @@ public:
 		CoreLog->info("Updated game account data for account : '{}'", game_account->getID());
 	}
 
+	virtual void Handle_INTER_PONG(PacketBuffer &buf)
+	{
+		//
+	}
+
 	/************
-	 * Responders
+	 * Senders
 	 ************/
-	virtual void Respond_INTER_CONNECT_AUTH()
+	virtual void Send_INTER_CONNECT_AUTH()
 	{
 		PacketBuffer send_buf, recv_buf;
 
@@ -145,21 +169,21 @@ public:
 	}
 
 	// Session Data
-	virtual void Respond_INTER_SESSION_SET(SessionData &session_data)
+	virtual void Send_INTER_SESSION_SET(SessionData &session_data)
 	{
 		PACKET_INTER_SESSION_SET pkt;
 		session_data >> pkt.s;
 		this->SendSyncPacket(pkt);
 	}
 
-	virtual void Respond_INTER_SESSION_DEL(uint32_t auth_code)
+	virtual void Send_INTER_SESSION_DEL(uint32_t auth_code)
 	{
 		PACKET_INTER_SESSION_DEL pkt;
 		pkt.auth_code = auth_code;
 		this->SendSyncPacket(pkt);
 	}
 
-	virtual void Respond_INTER_SESSION_REQ(uint32_t auth_code)
+	virtual void Send_INTER_SESSION_REQ(uint32_t auth_code)
 	{
 		PACKET_INTER_SESSION_REQ pkt;
 		pkt.auth_code = auth_code;
@@ -167,24 +191,30 @@ public:
 	}
 
 	// Game Account
-	virtual void Respond_INTER_GAME_ACCOUNT_SET(GameAccount &game_account)
+	virtual void Send_INTER_GAME_ACCOUNT_SET(GameAccount &game_account)
 	{
 		PACKET_INTER_GAME_ACCOUNT_SET pkt;
 		game_account >> pkt.s;
 		this->SendSyncPacket(pkt);
 	}
 
-	virtual void Respond_INTER_GAME_ACCOUNT_DEL(uint32_t account_id)
+	virtual void Send_INTER_GAME_ACCOUNT_DEL(uint32_t account_id)
 	{
 		PACKET_INTER_GAME_ACCOUNT_DEL pkt;
 		pkt.account_id = account_id;
 		this->SendSyncPacket(pkt);
 	}
 
-	virtual void Respond_INTER_GAME_ACCOUNT_REQ(uint32_t account_id)
+	virtual void Send_INTER_GAME_ACCOUNT_REQ(uint32_t account_id)
 	{
 		PACKET_INTER_GAME_ACCOUNT_REQ pkt;
 		pkt.account_id = account_id;
+		this->SendSyncPacket(pkt);
+	}
+
+	virtual void Send_INTER_PING()
+	{
+		PACKET_INTER_PING pkt;
 		this->SendSyncPacket(pkt);
 	}
 
@@ -192,15 +222,15 @@ public:
 	 * @brief Set the session client type for the handler.
 	 * @param[in] type  type of the session.
 	 */
-	void setClientType(inter_connect_client_type type) { _client_type = type; }
+	void setClientType(inter_connect_client_types type) { _client_type = type; }
 	/**
 	 * @brief Get the session client type.
-	 * @return type of the client for inter-server identification. @see inter_connect_client_type
+	 * @return type of the client for inter-server identification. @see inter_connect_client_types
 	 */
-	inter_connect_client_type getClientType() { return _client_type; }
+	inter_connect_client_types getClientType() { return _client_type; }
 
 private:
-	inter_connect_client_type _client_type;
+	inter_connect_client_types _client_type;
 	std::string _inter_password;
 };
 }

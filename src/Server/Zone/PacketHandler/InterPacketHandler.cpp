@@ -26,7 +26,7 @@
 #include <boost/bind.hpp>
 
 Horizon::Zone::InterPacketHandler::InterPacketHandler(std::shared_ptr<InterSession> session)
-: Horizon::Base::InterPacketHandler<InterSession>(session, ZoneServer->getNetworkConf().getInterServerPassword())
+: Horizon::Base::InterPacketHandler<InterSession>(session, ZoneServer->getNetworkConf().getInterServerPassword(), INTER_CONNECT_CLIENT_ZONE)
 {
 	// Construct
 	InitializeHandlers();

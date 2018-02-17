@@ -82,9 +82,9 @@ bool Horizon::Inter::InterMain::CLICmd_SendAuthPacket()
 /**
  * Initialize Inter-Server CLI Commands.
  */
-void Horizon::Inter::InterMain::InitializeCLICommands()
+void Horizon::Inter::InterMain::initializeCLICommands()
 {
-	Server::InitializeCLICommands();
+	Server::initializeCLICommands();
 }
 
 /**
@@ -98,6 +98,15 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 	}
 }
 
+void Horizon::Inter::InterMain::initializeCore()
+{
+	// Main Runtime Routine
+	Server::initializeCore();
+
+	// Close all connections.
+	
+}
+
 /**
  * Main entry point of the char-server application.
  * @param argc
@@ -107,7 +116,7 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 int main(int argc, const char * argv[])
 {
 	if (argc > 1)
-		InterServer->ParseExecArguments(argv, argc);
+		InterServer->parseExecArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -134,7 +143,7 @@ int main(int argc, const char * argv[])
 	/**
 	 * Initialize the Common Core
 	 */
-	InterServer->InitializeCore();
+	InterServer->initializeCore();
 
 	/*
 	 * Core Cleanup

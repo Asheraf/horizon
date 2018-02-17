@@ -32,11 +32,11 @@ Horizon::Auth::PacketHandler20170315::~PacketHandler20170315()
 {
 }
 
-void Horizon::Auth::PacketHandler20170315::Respond_AC_ACCEPT_LOGIN()
+void Horizon::Auth::PacketHandler20170315::Send_AC_ACCEPT_LOGIN()
 {
 	// Override common handler.
 	AuthLog->info("Overloaded!");
-	Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
+	Send_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
 }
 
 void Horizon::Auth::PacketHandler20170315::Handle_TEST_POLY(PacketBuffer &buf)
@@ -45,7 +45,7 @@ void Horizon::Auth::PacketHandler20170315::Handle_TEST_POLY(PacketBuffer &buf)
 	buf >> pkt;
 
 	AuthLog->info("poly working {}", pkt.version);
-	Respond_AC_ACCEPT_LOGIN();
+	Send_AC_ACCEPT_LOGIN();
 }
 
 void Horizon::Auth::PacketHandler20170315::InitializeHandlers()

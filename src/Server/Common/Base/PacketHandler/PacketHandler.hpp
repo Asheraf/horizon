@@ -1,9 +1,20 @@
-//
-//  PacketHandler.h
-//  Horizon
-//
-//  Created by SagunKho on 02/02/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
+
 #ifndef HORIZON_BASE_PACKETHANDLER_HPP
 #define HORIZON_BASE_PACKETHANDLER_HPP
 
@@ -74,13 +85,13 @@ public:
 
 		buf << pkt;
 
-		if (!_session->IsOpen())
+		if (!getSession()->isOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
 			buffer.Write(buf.contents(), sizeof(T));
-			_session->QueuePacket(std::move(buffer));
+			getSession()->queuePacket(std::move(buffer));
 		}
 	}
 
@@ -94,13 +105,13 @@ public:
 	 */
 	void SendPacket(PacketBuffer &buf, std::size_t size)
 	{
-		if (!_session->IsOpen())
+		if (!getSession()->isOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
 			buffer.Write(buf.contents(), size);
-			_session->QueuePacket(std::move(buffer));
+			getSession()->queuePacket(std::move(buffer));
 		}
 	}
 
@@ -119,13 +130,13 @@ public:
 
 		buf << pkt;
 
-		if (!_session->IsOpen())
+		if (!getSession()->isOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
 			buffer.Write(buf.contents(), size);
-			_session->SyncWrite(buffer, size);
+			getSession()->syncWrite(buffer, size);
 		}
 	}
 
@@ -137,13 +148,13 @@ public:
 	 */
 	void SendSyncPacket(PacketBuffer &buf, std::size_t size)
 	{
-		if (!_session->IsOpen())
+		if (!getSession()->isOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
 			buffer.Write(buf.contents(), size);
-			_session->SyncWrite(buffer, size);
+			getSession()->syncWrite(buffer, size);
 		}
 	}
 
@@ -157,15 +168,15 @@ public:
 	 * @param[in|out] send_pkt
 	 */
 	template <typename SEND_T, typename RECV_T>
-	uint16_t SendAndReceive(SEND_T &send_pkt, RECV_T *recv_pkt)
+	uint16_t sendAndReceive(SEND_T &send_pkt, RECV_T *recv_pkt)
 	{
 		PacketBuffer buf;
 		uint16_t op_code = 0x0;
 
 		buf << send_pkt;
 
-		if (!_session->IsOpen())
-			return false;
+		if (!getSession()->isOpen())
+			return 0;
 
 		if (!buf.empty()) {
 			std::size_t recv_size = 0;
@@ -173,17 +184,17 @@ public:
 			send_buf.Write(buf.contents(), sizeof(SEND_T));
 
 			/* Block until data is sent. */
-			_session->SyncWrite(send_buf, sizeof(SEND_T));
+			getSession()->syncWrite(send_buf, sizeof(SEND_T));
 
 			/* Block until data is received. */
-			recv_size = _session->SyncRead(recv_buf);
+			recv_size = getSession()->syncRead(recv_buf, sizeof(RECV_T));
 
 			if (recv_size > 0) {
 				op_code = 0x0;
-				memcpy(&op_code, recv_buf.GetReadPointer(), sizeof(uint16_t));
+				memcpy(&op_code, recv_buf.getReadPointer(), sizeof(uint16_t));
 
 				if (recv_pkt->op_code == op_code)
-					memcpy(recv_pkt, (RECV_T *) recv_buf.GetReadPointer(), recv_size);
+					memcpy(recv_pkt, (RECV_T *) recv_buf.getReadPointer(), recv_size);
 			}
 		}
 
@@ -229,7 +240,7 @@ public:
 	 * @brief Retrieves the session from this handler instance.
 	 * @return shared_ptr to an object of the session type.
 	 */
-	const std::shared_ptr<SocketType> &getSession() const { return _session; }
+	std::shared_ptr<SocketType> getSession() { return _session; }
 
 	/**
 	 * @brief Pure virtual handler initializer on construction.

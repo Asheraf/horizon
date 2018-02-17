@@ -47,7 +47,7 @@ public:
 		}
 	};
 
-	boost::shared_ptr<sql::Connection> &getConnection()
+	boost::shared_ptr<sql::Connection> getConnection()
 	{
 		if (!_connection->isValid())
 			_connection->reconnect();

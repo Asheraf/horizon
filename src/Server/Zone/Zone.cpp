@@ -16,6 +16,8 @@
  **************************************************/
 
 #include "Zone.hpp"
+
+#include "Server/Zone/Interface/InterAPI.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
 
@@ -108,14 +110,14 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	return true;
 }
 
-void Horizon::Zone::ZoneMain::InitializeCore()
+void Horizon::Zone::ZoneMain::initializeCore()
 {
 	/**
 	 * Inter-connection thread.
 	 */
-	std::thread inter_conn_thread(std::bind(&ZoneMain::ConnectWithInterServer, this));
+	std::thread inter_conn_thread(std::bind(&ZoneMain::connectWithInterServer, this));
 
-	Server::InitializeCore();
+	Server::initializeCore();
 
 	inter_conn_thread.join();
 }
@@ -123,22 +125,28 @@ void Horizon::Zone::ZoneMain::InitializeCore()
 /**
  * Initialize Zone-Server CLI Commands.
  */
-void Horizon::Zone::ZoneMain::InitializeCLICommands()
+void Horizon::Zone::ZoneMain::initializeCLICommands()
 {
-	Server::InitializeCLICommands();
+	Server::initializeCLICommands();
 }
 
 /**
  * Create connection-pool of Inter-server connections.
  */
-void Horizon::Zone::ZoneMain::ConnectWithInterServer()
+void Horizon::Zone::ZoneMain::connectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
-		try {
-			InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(),
-			                                      getNetworkConf().getInterServerPort(), 1);
-		} catch (boost::system::system_error &e) {
-			ZoneLog->error("{}", e.what());
+		if (InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1)) {
+			ZoneInterAPI->setInterSession(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME));
+
+			do {
+				std::this_thread::sleep_for(std::chrono::seconds(2));
+			} while (!isShuttingDown() && ZoneInterAPI->pingInterServer());
+
+			if (!isShuttingDown()) {
+				InterSocktMgr->closeConnection(INTER_SESSION_NAME);
+				connectWithInterServer();
+			}
 		}
 	}
 }
@@ -163,7 +171,7 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 int main(int argc, const char * argv[])
 {
 	if (argc > 1)
-		ZoneServer->ParseExecArguments(argv, argc);
+		ZoneServer->parseExecArguments(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -190,7 +198,7 @@ int main(int argc, const char * argv[])
 	/**
 	 * Initialize the Common Core
 	 */
-	ZoneServer->InitializeCore();
+	ZoneServer->initializeCore();
 
 	/*
 	 * Core Cleanup

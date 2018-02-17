@@ -88,9 +88,6 @@ struct general_server_configuration
 	/* Configuration File Name */
 	const std::string &getConfigFileName() const { return config_file_name; };
 	void setConfigFileName(const std::string &config_file_name) { this->config_file_name = config_file_name; };
-	/* Shutting Down Flags */
-	bool IsShuttingDown() const { return is_shutting_down; };
-	void setShuttingDown(int signal) { this->is_shutting_down = true; this->shutdown_signal = signal; };
 	/* Shut Down Signal */
 	int getShutdownSignal() const { return shutdown_signal; };
 	void setShutdownSignal(int shutdown_signal) { this->shutdown_signal = shutdown_signal; };
@@ -112,7 +109,6 @@ struct general_server_configuration
 	/* Configuration Files */
 	std::string config_file_path;
 	std::string config_file_name;
-	bool is_shutting_down;                         ///< Flagged for a shutdown.
 	int shutdown_signal;                           ///< Shutdown signal.
 	int global_io_threads;                         ///< Maximum amount of Core Threads spawned to perform i/o run.
 	int core_update_interval;                      ///< Core update interval timer.

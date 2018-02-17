@@ -33,7 +33,7 @@ public:
 	explicit PacketHandler20170315(std::shared_ptr<Session> const &session);
 	~PacketHandler20170315() override;
 
-	void Respond_AC_ACCEPT_LOGIN() override;
+	void Send_AC_ACCEPT_LOGIN() override;
 	void Handle_TEST_POLY(PacketBuffer &pkt);
 	void InitializeHandlers() override;
 };

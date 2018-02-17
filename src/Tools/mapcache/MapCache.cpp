@@ -410,7 +410,7 @@ bool Horizon::Tools::MapCache::GetMapFromGRF(std::string const &name)
 	return true;
 }
 
-void Horizon::Tools::MapCache::ParseExecArguments(int argc, const char *argv[])
+void Horizon::Tools::MapCache::parseExecArguments(int argc, const char *argv[])
 {
 	for (int i = 1; i < argc; ++i) {
 		std::string arg(argv[i]);
@@ -463,7 +463,7 @@ int main(int argc, const char * argv[])
 
 	Horizon::Tools::MapCache m;
 
-	m.ParseExecArguments(argc, argv);
+	m.parseExecArguments(argc, argv);
 
 	if (!m.Initialize()) {
 		printf("Error: Map Cache module failed to initialize.\n");

@@ -22,6 +22,7 @@
 
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/thread.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -38,19 +39,20 @@ public:
 	~InterSession() { }
 
 	/* */
-	void Start() override;
-	bool Update() override;
+	void start() override;
+	bool update() override;
 
 	/* Packet Handler */
-	const std::shared_ptr<InterPacketHandler> &getPacketHandler() const;
+	std::shared_ptr<InterPacketHandler> getPacketHandler();
 	void setPacketHandler(std::shared_ptr<InterPacketHandler> handler);
 	/* */
 protected:
-	void OnClose() override;
-	void ReadHandler() override;
+	void onClose() override;
+	void readHandler() override;
 	/* */
 private:
 	std::shared_ptr<InterPacketHandler> _packet_handler;
+	boost::shared_mutex _handler_lock;
 };
 }
 }

@@ -66,7 +66,7 @@ void Horizon::Zone::PacketHandler::Handle_CZ_REQUEST_TIME(PacketBuffer &buf)
 {
 	PACKET_CZ_REQUEST_TIME pkt(buf.getOpCode());
 	buf >> pkt;
-	Respond_ZC_NOTIFY_TIME();
+	Send_ZC_NOTIFY_TIME();
 }
 
 void Horizon::Zone::PacketHandler::Handle_CZ_REQNAME(PacketBuffer &buf)
@@ -77,23 +77,23 @@ void Horizon::Zone::PacketHandler::Handle_CZ_REQNAME(PacketBuffer &buf)
 }
 
 /*==============*
- * Responder Methods
+ * Sender Methods
  *==============*/
-void Horizon::Zone::PacketHandler::Respond_ZC_ERROR(zone_server_reject_types error)
+void Horizon::Zone::PacketHandler::Send_ZC_ERROR(zone_server_reject_types error)
 {
 	PACKET_ZC_ERROR pkt;
 	pkt.error = error;
 	SendPacket(pkt);
 }
 
-void Horizon::Zone::PacketHandler::Respond_ZC_ACCOUNT_ID()
+void Horizon::Zone::PacketHandler::Send_ZC_ACCOUNT_ID()
 {
 	PACKET_ZC_ACCOUNT_ID pkt;
 	pkt.account_id = getSession()->getGameAccount()->getID();
 	SendPacket(pkt);
 }
 
-void Horizon::Zone::PacketHandler::Respond_ZC_ACCEPT_CONNECTION()
+void Horizon::Zone::PacketHandler::Send_ZC_ACCEPT_CONNECTION()
 {
 	PACKET_ZC_ACCEPT_CONNECTION pkt;
 	pkt.start_time = time(nullptr);
@@ -104,7 +104,7 @@ void Horizon::Zone::PacketHandler::Respond_ZC_ACCEPT_CONNECTION()
 	SendPacket(pkt);
 }
 
-void Horizon::Zone::PacketHandler::Respond_ZC_NPCACK_MAPMOVE(std::string const &map_name, uint16_t x, uint16_t y)
+void Horizon::Zone::PacketHandler::Send_ZC_NPCACK_MAPMOVE(std::string const &map_name, uint16_t x, uint16_t y)
 {
 	PACKET_ZC_NPCACK_MAPMOVE pkt;
 	strncpy(pkt.map_name, map_name.c_str(), MAP_NAME_LENGTH_EXT);
@@ -113,7 +113,7 @@ void Horizon::Zone::PacketHandler::Respond_ZC_NPCACK_MAPMOVE(std::string const &
 	SendPacket(pkt);
 }
 
-void Horizon::Zone::PacketHandler::Respond_ZC_NOTIFY_TIME()
+void Horizon::Zone::PacketHandler::Send_ZC_NOTIFY_TIME()
 {
 	PACKET_ZC_NOTIFY_TIME pkt;
 	pkt.timestamp = time(nullptr);

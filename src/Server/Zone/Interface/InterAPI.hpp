@@ -20,6 +20,8 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Interfaces/InterServerAPI.hpp"
+#include "Server/Zone/PacketHandler/InterPacketHandler.hpp"
+#include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
 #include "Server/Zone/Session/InterSession.hpp"
 
 namespace Horizon

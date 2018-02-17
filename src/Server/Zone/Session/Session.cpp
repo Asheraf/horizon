@@ -35,17 +35,17 @@ Horizon::Zone::Session::Session(std::shared_ptr<tcp::socket> socket)
 /**
  * @brief Initial method invoked once from the network thread that handles the session.
  */
-void Horizon::Zone::Session::Start()
+void Horizon::Zone::Session::start()
 {
 	ZoneLog->info("Established connection from {}.", getRemoteIPAddress());
 
-	AsyncRead();
+	asyncRead();
 }
 
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void Horizon::Zone::Session::OnClose()
+void Horizon::Zone::Session::onClose()
 {
 	ZoneLog->info("Closed connection from {}.", getRemoteIPAddress());
 
@@ -57,16 +57,16 @@ void Horizon::Zone::Session::OnClose()
  * @brief Asynchronous update method periodically called from network threads.
  * @return true on successful update, false on failure.
  */
-bool Horizon::Zone::Session::Update()
+bool Horizon::Zone::Session::update()
 {
-	return ZoneSocket::Update();
+	return ZoneSocket::update();
 }
 
 /**
  * @brief Validate and handle the initial char-server connection (Packet CZ_ENTER)
  * @param[in] buf   Copied instance of the PacketBuffer.
  */
-void Horizon::Zone::Session::ValidateAndHandleConnection(PacketBuffer &buf)
+void Horizon::Zone::Session::validateAndHandleConnection(PacketBuffer &buf)
 {
 	uint32_t account_id, char_id, auth_code;
 
@@ -90,20 +90,20 @@ void Horizon::Zone::Session::ValidateAndHandleConnection(PacketBuffer &buf)
 	setSessionData(ZoneInterAPI->GetSessionFromInter(auth_code));
 	if (getSessionData() == nullptr) {
 		ZoneLog->info("New connection attempt from unauthorized session '{}'.", auth_code);
-		getPacketHandler()->Respond_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
+		getPacketHandler()->Send_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
 		return;
 	}
 
 	setGameAccount(ZoneInterAPI->GetGameAccountFromInter(account_id));
 	if (getGameAccount() == nullptr) {
 		ZoneLog->info("New connection attempt from unknown account '{}'.", account_id);
-		getPacketHandler()->Respond_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
+		getPacketHandler()->Send_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
 		return;
 	}
 
-	getPacketHandler()->Respond_ZC_ACCOUNT_ID();
-	getPacketHandler()->Respond_ZC_ACCEPT_CONNECTION();
-	//getPacketHandler()->Respond_ZC_NPCACK_MAPMOVE("prontera", 101, 120);
+	getPacketHandler()->Send_ZC_ACCOUNT_ID();
+	getPacketHandler()->Send_ZC_ACCEPT_CONNECTION();
+	//getPacketHandler()->Send_ZC_NPCACK_MAPMOVE("prontera", 101, 120);
 	ZoneLog->info("New connection established for account '{}' using version '{}' from '{}'.",
 				  account_id, getSessionData()->getClientVersion(), getRemoteIPAddress());
 }
@@ -111,14 +111,14 @@ void Horizon::Zone::Session::ValidateAndHandleConnection(PacketBuffer &buf)
 /**
  * Incoming buffer read handler.
  */
-void Horizon::Zone::Session::ReadHandler()
+void Horizon::Zone::Session::readHandler()
 {
-	while (GetReadBuffer().GetActiveSize()) {
+	while (getReadBuffer().GetActiveSize()) {
 		uint16_t op_code = 0x0;
-		memcpy(&op_code, GetReadBuffer().GetReadPointer(), sizeof(uint16_t));
+		memcpy(&op_code, getReadBuffer().getReadPointer(), sizeof(uint16_t));
 
-		PacketBuffer buf(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
-		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
+		PacketBuffer buf(op_code, getReadBuffer().getReadPointer(), getReadBuffer().GetActiveSize());
+		getReadBuffer().readCompleted(getReadBuffer().GetActiveSize());
 
 		/**
 		 * Devise a suitable packet handler
@@ -126,7 +126,7 @@ void Horizon::Zone::Session::ReadHandler()
 		 * (CZ_ENTER) is handled separately.
 		 */
 		if (getPacketHandler() == nullptr) {
-			ValidateAndHandleConnection(buf);
+			validateAndHandleConnection(buf);
 			return;
 		}
 
@@ -136,12 +136,12 @@ void Horizon::Zone::Session::ReadHandler()
 		}
 
 		if (!getPacketHandler()->HandleReceivedPacket(buf))
-			GetReadBuffer().Reset();
+			getReadBuffer().Reset();
 	}
 }
 
 
-const std::shared_ptr<Horizon::Zone::PacketHandler> &Horizon::Zone::Session::getPacketHandler() const
+std::shared_ptr<Horizon::Zone::PacketHandler> Horizon::Zone::Session::getPacketHandler()
 {
 	return _packet_handler;
 }

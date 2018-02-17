@@ -47,17 +47,17 @@ public:
 	~Session();
 	
 	/* */
-	void Start() override;
-	bool Update() override;
+	void start() override;
+	bool update() override;
 
 	/* Char Connect Handler */
-	void ValidateAndHandleConnection(PacketBuffer &buf);
+	void validateAndHandleConnection(PacketBuffer &buf);
 	/* Packet Handler */
-	const std::shared_ptr<PacketHandler> &getPacketHandler() const;
+	std::shared_ptr<PacketHandler> getPacketHandler();
 	void setPacketHandler(std::shared_ptr<PacketHandler> handler);
 protected:
-	void ReadHandler() override;
-	void OnClose() override;
+	void readHandler() override;
+	void onClose() override;
 	/* */
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;

@@ -23,6 +23,7 @@
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Char/SocketMgr/InterSocketMgr.hpp"
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
+#include "Server/Char/Interface/InterAPI.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/make_shared.hpp>
@@ -189,17 +190,17 @@ bool Horizon::Char::CharMain::ReadConfig()
 #undef char_config_error
 
 /* Initialize Char-Server CLI Commands */
-void Horizon::Char::CharMain::InitializeCLICommands()
+void Horizon::Char::CharMain::initializeCLICommands()
 {
-	Server::InitializeCLICommands();
+	Server::initializeCLICommands();
 }
 
-void Horizon::Char::CharMain::InitializeCore()
+void Horizon::Char::CharMain::initializeCore()
 {
 	/* Inter-server connection thread. */
-	std::thread inter_conn_thread(std::bind(&CharMain::ConnectWithInterServer, this));
+	std::thread inter_conn_thread(std::bind(&CharMain::connectWithInterServer, this));
 
-	Server::InitializeCore();
+	Server::initializeCore();
 
 	inter_conn_thread.join();
 }
@@ -207,14 +208,20 @@ void Horizon::Char::CharMain::InitializeCore()
 /**
  * Connect with the Inter-server.
  */
-void Horizon::Char::CharMain::ConnectWithInterServer()
+void Horizon::Char::CharMain::connectWithInterServer()
 {
 	if (!getGeneralConf().isTestRun()) {
-		try {
-			InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(),
-			                                      getNetworkConf().getInterServerPort(), 1);
-		} catch (boost::system::system_error &e) {
-			CharLog->error("{}", e.what());
+		if (InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1)) {
+			CharInterAPI->setInterSession(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME));
+
+			do {
+				std::this_thread::sleep_for(std::chrono::seconds(2));
+			} while (!isShuttingDown() && CharInterAPI->pingInterServer());
+
+			if (!isShuttingDown()) {
+				InterSocktMgr->closeConnection(INTER_SESSION_NAME);
+				connectWithInterServer();
+			}
 		}
 	}
 }
@@ -241,7 +248,7 @@ int main(int argc, const char * argv[])
 {
 	/* Parse Command Line Arguments */
 	if (argc > 1)
-		CharServer->ParseExecArguments(argv, argc);
+		CharServer->parseExecArguments(argv, argc);
 
 	/* Read Char Configuration */
 	if (!CharServer->ReadConfig())
@@ -258,7 +265,7 @@ int main(int argc, const char * argv[])
             CharServer->getNetworkConf().getMaxThreads());
 
 	/* Initialize the Common Core */
-	CharServer->InitializeCore();
+	CharServer->initializeCore();
 
 	/* Core Cleanup */
 	CharLog->info("Server shutting down...");

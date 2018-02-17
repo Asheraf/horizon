@@ -32,7 +32,7 @@ void CLIThreadStart(Server *serv)
 	printf("\a");
 	printf(TERMINAL_STR);
 
-	while (!serv->IsShuttingDown())
+	while (!serv->isShuttingDown())
 	{
 
 		char *command_str;

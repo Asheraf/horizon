@@ -19,6 +19,7 @@
 #define HORIZON_NETWORKING_CONNECTSOCKETMGR_HPP
 
 #include "Core/Networking/SocketMgr.hpp"
+#include <boost/thread.hpp>
 
 namespace Horizon
 {
@@ -83,7 +84,10 @@ public:
 	 */
 	void StopNetwork() override
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+
 		SocketMgr<SocketType>::StopNetwork();
+
 		_network_connector_pool.clear();
 	}
 
@@ -94,6 +98,8 @@ public:
 	 */
 	void AddToConnectorPool(std::string const &conn_name, std::shared_ptr<Connector> const &connector)
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+
 		auto it = _network_connector_pool.find(conn_name);
 
 		if (it != _network_connector_pool.end()) {
@@ -112,6 +118,8 @@ public:
 	 */
 	void AddSessionToConnectorPool(std::string const &conn_name, std::shared_ptr<SocketType> const &session)
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+
 		auto it = _network_connector_pool.find(conn_name);
 
 		if (it != _network_connector_pool.end())
@@ -124,6 +132,8 @@ public:
 	 */
 	std::size_t getConnectionPoolSize(std::string const &conn_name)
 	{
+		boost::shared_lock<boost::shared_mutex> lock(_socket_mtx);
+
 		auto it = _network_connector_pool.find(conn_name);
 
 		if (it != _network_connector_pool.end())
@@ -138,6 +148,8 @@ public:
 	 */
 	std::shared_ptr<SocketType> getConnectedSession(std::string const &conn_name)
 	{
+		boost::shared_lock<boost::shared_mutex> lock(_socket_mtx);
+		
 		auto it = _network_connector_pool.find(conn_name);
 
 		if (it != _network_connector_pool.end() && it->second.sessions.size() > 0) {
@@ -157,6 +169,8 @@ public:
 	 */
 	void RemoveConnectedSession(std::string const &conn_name, std::shared_ptr<SocketType> const &session)
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+
 		auto it = _network_connector_pool.find(conn_name);
 
 		if (it != _network_connector_pool.end()) {
@@ -185,14 +199,24 @@ public:
 	 */
 	void ClearSession(std::string const &conn_name, std::shared_ptr<SocketType> session)
 	{
-		std::mutex clear_mtx;
-		std::lock_guard<std::mutex> clearGuard(clear_mtx);
-
 		RemoveConnectedSession(conn_name, session);
+	}
+
+	void closeConnection(std::string const &conn_name)
+	{
+		auto it = _network_connector_pool.find(conn_name);
+
+		if (it != _network_connector_pool.end()) {
+			for (auto sock : it->second.sessions) {
+				if (sock != nullptr)
+					sock->closeSocket(); // Set for closing by the network thread.
+			}
+		}
 	}
 
 private:
 	NetworkConnectorPool _network_connector_pool;
+	boost::shared_mutex _socket_mtx;
 };
 }
 }

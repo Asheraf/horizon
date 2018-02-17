@@ -31,19 +31,19 @@ Horizon::Auth::Session::Session(std::shared_ptr<tcp::socket> socket)
 /**
  * @brief Initial method invoked once from the network thread that handles the session.
  */
-void Horizon::Auth::Session::Start()
+void Horizon::Auth::Session::start()
 {
 	std::string ip_address = getRemoteIPAddress();
 
 	AuthLog->info("Established connection from {}.", ip_address);
 
-	AsyncRead();
+	asyncRead();
 }
 
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void Horizon::Auth::Session::OnClose()
+void Horizon::Auth::Session::onClose()
 {
 
 	AuthLog->info("Closed connection from {}.", getRemoteIPAddress());
@@ -58,9 +58,9 @@ void Horizon::Auth::Session::OnClose()
  * @brief Asynchronous update method periodically called from network threads.
  * @return true on successful update, false on failure.
  */
-bool Horizon::Auth::Session::Update()
+bool Horizon::Auth::Session::update()
 {
-	return AuthSocket::Update();
+	return AuthSocket::update();
 }
 
 int Horizon::Auth::Session::GetPacketVersion(uint16_t op_code, PacketBuffer buf)
@@ -83,14 +83,14 @@ int Horizon::Auth::Session::GetPacketVersion(uint16_t op_code, PacketBuffer buf)
 	return packet_ver;
 }
 
-void Horizon::Auth::Session::ReadHandler()
+void Horizon::Auth::Session::readHandler()
 {
-	while (GetReadBuffer().GetActiveSize()) {
+	while (getReadBuffer().GetActiveSize()) {
 		uint16_t op_code = 0x0;
-		memcpy(&op_code, GetReadBuffer().GetReadPointer(), sizeof(uint16_t));
+		memcpy(&op_code, getReadBuffer().getReadPointer(), sizeof(uint16_t));
 
-		PacketBuffer pkt(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
-		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
+		PacketBuffer pkt(op_code, getReadBuffer().getReadPointer(), getReadBuffer().GetActiveSize());
+		getReadBuffer().readCompleted(getReadBuffer().GetActiveSize());
 
 		/**
 		 * Devise the a suitable packet handler
@@ -107,11 +107,11 @@ void Horizon::Auth::Session::ReadHandler()
 		}
 
 		if (!getPacketHandler()->HandleReceivedPacket(pkt))
-			GetReadBuffer().Reset();
+			getReadBuffer().Reset();
 	}
 }
 
-std::shared_ptr<Horizon::Auth::PacketHandler> &Horizon::Auth::Session::getPacketHandler()
+std::shared_ptr<Horizon::Auth::PacketHandler> Horizon::Auth::Session::getPacketHandler()
 {
 	return _packet_handler;
 }

@@ -63,7 +63,7 @@ public:
 
 			_thread_map.insert(std::make_pair(i, network_thr));
 
-			network_thr->Start();
+			network_thr->start();
 		}
 
 		return true;

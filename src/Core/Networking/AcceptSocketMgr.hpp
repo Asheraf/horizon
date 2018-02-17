@@ -21,6 +21,7 @@
 #include "Core/Networking/SocketMgr.hpp"
 
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
 
 namespace Horizon
 {
@@ -78,6 +79,8 @@ public:
 	 */
 	void StopNetwork() override
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+
 		BaseSocketMgr::StopNetwork();
 
 		_acceptor->Close();
@@ -91,6 +94,8 @@ public:
 	 */
 	std::shared_ptr<SocketType> GetSession(uint32_t session_id)
 	{
+		boost::shared_lock<boost::shared_mutex> lock(_socket_mtx);
+
 		auto it = _session_map.find(session_id);
 
 		if (it != _session_map.end())
@@ -106,7 +111,9 @@ public:
 	 */
 	void RemoveSession(uint32_t session_id)
 	{
-		if (GetSession(session_id) != nullptr) {
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+
+		if (_session_map.find(session_id) != _session_map.end()) {
 			_session_map.erase(session_id);
 			CoreLog->info("SocketMgr::RemoveClientSession: successfully removed session ID - {}.", session_id);
 		}
@@ -120,6 +127,8 @@ public:
 	 */
 	void OnSocketOpen(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+		
 		std::shared_ptr<SocketType> session = BaseSocketMgr::OnSocketOpen(std::move(socket), thread_index);
 		_session_map.insert(std::make_pair(session->getSocketId(), session));
 	}
@@ -130,15 +139,13 @@ public:
 	 */
 	void ClearSession(std::shared_ptr<SocketType> session)
 	{
-		std::mutex clear_mtx;
-		std::lock_guard<std::mutex> clearGuard(clear_mtx);
-
 		RemoveSession(session->getSocketId());
 	}
 
 private:
 	std::unique_ptr<AsyncAcceptor> _acceptor;       ///< unique pointer to an AsyncAcceptor object.
 	SessionMap _session_map;                        ///< std::map of all connected and handled sessions.
+	boost::shared_mutex _socket_mtx;
 };
 }
 }

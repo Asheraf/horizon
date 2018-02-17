@@ -32,19 +32,18 @@ Horizon::Zone::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
 /**
  * @brief Initial method invoked once from the network thread that handles the session.
  */
-void Horizon::Zone::InterSession::Start()
+void Horizon::Zone::InterSession::start()
 {
 	PacketBuffer buf;
 	ZoneLog->info("Established connection from {}.", getRemoteIPAddress());
 	setPacketHandler(PacketHandlerFactory::CreateInterPacketHandler(shared_from_this()));
-	getPacketHandler()->setClientType(INTER_CONNECT_CLIENT_ZONE);
 	getPacketHandler()->ReceiveAndHandle(buf);
 }
 
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void Horizon::Zone::InterSession::OnClose()
+void Horizon::Zone::InterSession::onClose()
 {
 	ZoneLog->info("Closed connection from {}.", getRemoteIPAddress());
 
@@ -54,23 +53,25 @@ void Horizon::Zone::InterSession::OnClose()
 	InterSocktMgr->ClearSession(INTER_SESSION_NAME, shared_from_this());
 }
 
-void Horizon::Zone::InterSession::ReadHandler()
+void Horizon::Zone::InterSession::readHandler()
 {
 	//
 }
 
-bool Horizon::Zone::InterSession::Update()
+bool Horizon::Zone::InterSession::update()
 {
-	return CharSocket::Update();
+	return CharSocket::update();
 }
 
-const std::shared_ptr<Horizon::Zone::InterPacketHandler> &Horizon::Zone::InterSession::getPacketHandler() const
+std::shared_ptr<Horizon::Zone::InterPacketHandler> Horizon::Zone::InterSession::getPacketHandler()
 {
+	boost::shared_lock<boost::shared_mutex> lock(_handler_lock);
 	return _packet_handler;
 }
 
 void Horizon::Zone::InterSession::setPacketHandler(std::shared_ptr<InterPacketHandler> handler)
 {
+	boost::unique_lock<boost::shared_mutex> lock(_handler_lock);
 	_packet_handler = handler;
 }
 

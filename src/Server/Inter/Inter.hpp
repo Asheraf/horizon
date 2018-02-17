@@ -41,9 +41,11 @@ public:
 		return &instance;
 	}
 
+	void initializeCore();
+	
 	bool ReadConfig();
 	bool CLICmd_SendAuthPacket();
-	void InitializeCLICommands();
+	void initializeCLICommands();
 private:
 	struct {
 		bool enabled;

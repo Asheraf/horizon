@@ -42,9 +42,9 @@ public:
 	}
 
 	bool ReadConfig();
-	void InitializeCore();
-	void InitializeCLICommands();
-	void ConnectWithInterServer();
+	void initializeCore();
+	void initializeCLICommands();
+	void connectWithInterServer();
 private:
 	struct {
 		bool enabled;

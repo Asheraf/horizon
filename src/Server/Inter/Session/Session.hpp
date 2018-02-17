@@ -40,24 +40,24 @@ public:
 	Session(std::shared_ptr<tcp::socket> socket);
 	~Session() { }
 
-	void Start() override;
-	bool Update() override;
+	void start() override;
+	bool update() override;
 
 	/* Packet Handler */
-	const std::shared_ptr<PacketHandler> &getPacketHandler() const { return _packet_handler; }
-	void setPacketHandler(const std::shared_ptr<PacketHandler> &packet_handler) { Session::_packet_handler = packet_handler; }
+	std::shared_ptr<PacketHandler> getPacketHandler() { return _packet_handler; }
+	void setPacketHandler(std::shared_ptr<PacketHandler> packet_handler) { Session::_packet_handler = packet_handler; }
 
 	/* Client Type */
-	inter_connect_client_type getClientType() const { return _client_type; }
-	void setClientType(inter_connect_client_type type) { _client_type = type; }
+	inter_connect_client_types getClientType() const { return _client_type; }
+	void setClientType(inter_connect_client_types type) { _client_type = type; }
 
 protected:
-	void ReadHandler() override;
-	void OnClose() override;
+	void readHandler() override;
+	void onClose() override;
 
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
-	inter_connect_client_type _client_type;
+	inter_connect_client_types _client_type;
 };
 }
 }

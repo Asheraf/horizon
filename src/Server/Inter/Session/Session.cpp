@@ -33,7 +33,7 @@ Horizon::Inter::Session::Session(std::shared_ptr<tcp::socket> socket)
  * @brief Start method invoked once from the network thread that the socket is in,
  *        on start of the socket connection.
  */
-void Horizon::Inter::Session::Start()
+void Horizon::Inter::Session::start()
 {
 	std::string ip_address = getRemoteIPAddress();
 
@@ -41,55 +41,49 @@ void Horizon::Inter::Session::Start()
 
 	if (getPacketHandler() == nullptr) {
 		setPacketHandler(PacketHandlerFactory::CreatePacketHandler(shared_from_this()));
-		getPacketHandler()->Respond_INTER_CONNECT_INIT();
+		getPacketHandler()->Send_INTER_CONNECT_INIT();
 	}
-	AsyncRead();
+	asyncRead();
 }
 
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void Horizon::Inter::Session::OnClose()
+void Horizon::Inter::Session::onClose()
 {
-	try {
-		std::string ip_address = getRemoteIPAddress();
-		InterLog->info("Closed connection from {}.", ip_address);
-	} catch (boost::system::system_error &error) {
-		InterLog->info("Closed a connected session abruptly. Error: {}", error.what());
-	}
-
+	InterLog->info("Closed connection from {}.", getRemoteIPAddress());
 
 	/* Perform socket manager cleanup. */
 	ClientSocktMgr->ClearSession(shared_from_this());
 }
 
 /**
- * @brief Asynchronous update method periodically called from network threads.
+ * @brief Asynchronous update() method periodically called from network threads.
  * @return true on successful update, false on failure.
  */
-bool Horizon::Inter::Session::Update()
+bool Horizon::Inter::Session::update()
 {
-	return InterSocket::Update();
+	return InterSocket::update();
 }
 
 /**
  * Incoming buffer read handler.
  */
-void Horizon::Inter::Session::ReadHandler()
+void Horizon::Inter::Session::readHandler()
 {
-	while (GetReadBuffer().GetActiveSize()) {
+	while (getReadBuffer().GetActiveSize()) {
 		uint16_t op_code;
-		memcpy(&op_code, GetReadBuffer().GetReadPointer(), sizeof(uint16_t));
+		memcpy(&op_code, getReadBuffer().getReadPointer(), sizeof(uint16_t));
 
-		PacketBuffer pkt(op_code, GetReadBuffer().GetReadPointer(), GetReadBuffer().GetActiveSize());
-		GetReadBuffer().ReadCompleted(GetReadBuffer().GetActiveSize());
+		PacketBuffer pkt(op_code, getReadBuffer().getReadPointer(), getReadBuffer().GetActiveSize());
+		getReadBuffer().readCompleted(getReadBuffer().GetActiveSize());
 
 		if (getPacketHandler() == nullptr) {
 			setPacketHandler(PacketHandlerFactory::CreatePacketHandler(shared_from_this()));
-			getPacketHandler()->Respond_INTER_CONNECT_INIT();
+			getPacketHandler()->Send_INTER_CONNECT_INIT();
 		}
 
 		if (!getPacketHandler()->HandleReceivedPacket(pkt))
-			GetReadBuffer().Reset();
+			getReadBuffer().Reset();
 	}
 }

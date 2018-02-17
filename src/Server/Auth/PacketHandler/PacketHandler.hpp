@@ -64,12 +64,12 @@ public:
 	/**
 	 * Auth To Client
 	 */
-	virtual void Respond_AC_ACCEPT_LOGIN();
-	virtual void Respond_AC_REFUSE_LOGIN(login_error_codes error_code);
-	virtual void Respond_SC_NOTIFY_BAN();
-	virtual void Respond_AC_ACK_HASH();
-	virtual void Respond_AC_REFUSE_LOGIN_R2();
-	virtual void Respond_CA_CHARSERVERCONNECT();
+	virtual void Send_AC_ACCEPT_LOGIN();
+	virtual void Send_AC_REFUSE_LOGIN(login_error_codes error_code);
+	virtual void Send_SC_NOTIFY_BAN();
+	virtual void Send_AC_ACK_HASH();
+	virtual void Send_AC_REFUSE_LOGIN_R2();
+	virtual void Send_CA_CHARSERVERCONNECT();
 
 	virtual void InitializeHandlers();
 };

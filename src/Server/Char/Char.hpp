@@ -40,9 +40,9 @@ public:
 	}
 	
 	bool ReadConfig();
-	void InitializeCLICommands();
-	void ConnectWithInterServer();
-	void InitializeCore();
+	void initializeCLICommands();
+	void connectWithInterServer();
+	void initializeCore();
 
 	character_server_configuration &getCharConfig() { return _char_server_config; }
 

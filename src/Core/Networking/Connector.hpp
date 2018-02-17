@@ -60,9 +60,6 @@ public:
 	 */
 	Connector()
 	{
-		for (auto &thr : _socket_poll_threads)
-			thr.second->join();
-		_socket_poll_threads.clear();
 	}
 
 	/**
@@ -76,7 +73,7 @@ public:
 	 */
 	void ConnectWithCallback(ConnectorCallback callback, int connections = 1)
 	{
-		for (int i = 0; i < connections && !server->IsShuttingDown(); i++) {
+		for (int i = 0; i < connections && !server->isShuttingDown(); i++) {
 			std::shared_ptr<tcp::socket> socket;
 			uint32_t network_thread_idx;
 			boost::system::error_code error;
@@ -97,51 +94,10 @@ public:
 					error.clear();
 				} else {
 					callback(_connection_name, socket, network_thread_idx);
-					uint64_t poll_thread_idx = ++_socket_poll_thread_index;
-
-					// Start polling thread.
-					std::shared_ptr<std::thread> poll_thread(
-						new std::thread(boost::bind(&Connector::ValidateConnection, this, callback, socket)),
-						[] (std::thread *thr)
-						{
-							if (thr->joinable())
-								thr->join();
-							delete thr;
-						});
-
-					_socket_poll_threads.insert(std::make_pair(poll_thread_idx, std::move(poll_thread)));
 					CoreLog->info("Successfully connected to '{}' at endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 				}
-			} while (!socket->is_open() && !server->IsShuttingDown());
+			} while (!socket->is_open() && !server->isShuttingDown());
 		}
-	}
-
-	/**
-	 * @brief Performs validations of the socket's state by blocking the thread for
-	 */
-	void ValidateConnection(ConnectorCallback &callback, std::shared_ptr<tcp::socket> const &socket)
-	{
-		do {
-			// Connection is alive, sleep for 10 seconds.
-			std::this_thread::sleep_for(std::chrono::seconds(10));
-		} while (socket->is_open() && !server->IsShuttingDown());
-
-		// Re-connection issue.
-		if (!server->IsShuttingDown())
-			ConnectWithCallback(callback, 1);
-	}
-
-	/**
-	 * @brief Finalises all socket polling threads.
-	 */
-	void Close()
-	{
-		for (auto &it : _socket_poll_threads) {
-			if (it.second->joinable())
-				it.second->join();
-		}
-
-		_socket_poll_threads.clear();
 	}
 
 	/**
@@ -156,8 +112,6 @@ private:
 	std::string _connection_name;
 	tcp::endpoint _endpoint;
 	std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> _socket_factory;
-	std::unordered_map<uint64_t, std::shared_ptr<std::thread>> _socket_poll_threads;
-	std::atomic<uint64_t> _socket_poll_thread_index;
 };
 }
 }

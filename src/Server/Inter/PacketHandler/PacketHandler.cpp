@@ -1,6 +1,19 @@
-//
-// Created by SagunKho on 29/01/2018.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2018 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #include "PacketHandler.hpp"
 
@@ -41,6 +54,7 @@ void Horizon::Inter::PacketHandler::InitializeHandlers()
 	HANDLER_FUNC(INTER_GAME_ACCOUNT_DEL);
 	HANDLER_FUNC(INTER_GAME_ACCOUNT_SET);
 	HANDLER_FUNC(INTER_GAME_ACCOUNT_REQ);
+	HANDLER_FUNC(INTER_PING);
 #undef HANDLER_FUNC
 }
 
@@ -59,14 +73,14 @@ void Horizon::Inter::PacketHandler::Handle_INTER_CONNECT_AUTH(PacketBuffer &buf)
 	if (!(success = BCrypt::validatePassword(pass, InterServer->getNetworkConf().getInterServerPassword()))) {
 		std::string password = pass;
 		InterLog->info("Connection refused for endpoint {}, incorrect password {}.", getSession()->getRemoteIPAddress(), password);
-		getSession()->CloseSocket();
+		getSession()->closeSocket();
 	} else {
 		InterLog->info("Connection successfully authorized for endpoint {}.", getSession()->getRemoteIPAddress());
 	}
 	
 	getSession()->setClientType(pkt.client_type);
 
-	Respond_INTER_ACK_RECEIVED(pkt.op_code, (uint8_t) success);
+	Send_INTER_ACK_RECEIVED(pkt.op_code, (uint8_t) success);
 }
 
 /**
@@ -79,6 +93,7 @@ void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_SET(PacketBuffer &buf)
 	buf >> pkt;
 	session_data << pkt.s;
 	SessionStore->add(pkt.s.auth_code, session_data);
+	InterLog->info("Added session data for id {} requested by server {}.", pkt.s.auth_code, (int) getSession()->getClientType());
 }
 
 void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_DEL(PacketBuffer &buf)
@@ -86,6 +101,7 @@ void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_DEL(PacketBuffer &buf)
 	PACKET_INTER_SESSION_DEL pkt;
 	buf >> pkt;
 	SessionStore->remove(pkt.auth_code);
+	InterLog->info("Removed session data for id {} requested by server {}.", pkt.auth_code, (int) getSession()->getClientType());
 }
 
 void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_REQ(PacketBuffer &buf)
@@ -103,9 +119,14 @@ void Horizon::Inter::PacketHandler::Handle_INTER_SESSION_REQ(PacketBuffer &buf)
 		SendPacket(send_pkt);
 		InterLog->info("Found session data for id {} requested by server {}.", pkt.auth_code, (int) getSession()->getClientType());
 	} else {
-		Respond_INTER_ACK_RECEIVED(pkt.op_code, false);
+		Send_INTER_ACK_RECEIVED(pkt.op_code, false);
 		InterLog->info("Not found session data for id {} requested by server {}.", pkt.auth_code, (int) getSession()->getClientType());
 	}
+}
+
+void Horizon::Inter::PacketHandler::Handle_INTER_PING(PacketBuffer &buf)
+{
+	Send_INTER_PONG();
 }
 
 /**
@@ -118,6 +139,7 @@ void Horizon::Inter::PacketHandler::Handle_INTER_GAME_ACCOUNT_SET(PacketBuffer &
 	buf >> pkt;
 	game_account << pkt.s;
 	AccountStore->add(pkt.s.id, game_account);
+	InterLog->info("Added account data for id {} requested by server {}.", pkt.s.id, (int) getSession()->getClientType());
 }
 
 void Horizon::Inter::PacketHandler::Handle_INTER_GAME_ACCOUNT_DEL(PacketBuffer &buf)
@@ -125,6 +147,7 @@ void Horizon::Inter::PacketHandler::Handle_INTER_GAME_ACCOUNT_DEL(PacketBuffer &
 	PACKET_INTER_GAME_ACCOUNT_DEL pkt;
 	buf >> pkt;
 	AccountStore->remove(pkt.account_id);
+	InterLog->info("Removed account data for id {} requested by server {}.", pkt.account_id, (int) getSession()->getClientType());
 }
 
 void Horizon::Inter::PacketHandler::Handle_INTER_GAME_ACCOUNT_REQ(PacketBuffer &buf)
@@ -142,15 +165,15 @@ void Horizon::Inter::PacketHandler::Handle_INTER_GAME_ACCOUNT_REQ(PacketBuffer &
 		SendPacket(send_pkt);
 		InterLog->info("Found game account data for id {} requested by server {}.", pkt.account_id, (int) getSession()->getClientType());
 	} else {
-		Respond_INTER_ACK_RECEIVED(pkt.op_code, false);
+		Send_INTER_ACK_RECEIVED(pkt.op_code, false);
 		InterLog->info("Not found game account data for id {} requested by server {}.", pkt.account_id, (int) getSession()->getClientType());
 	}
 }
 
 /**
- * Responders
+ * Senders
  */
-void Horizon::Inter::PacketHandler::Respond_INTER_ACK_RECEIVED(uint16_t packet_id, uint8_t response)
+void Horizon::Inter::PacketHandler::Send_INTER_ACK_RECEIVED(uint16_t packet_id, uint8_t response)
 {
 	PACKET_INTER_ACK_RECEIVED pkt;
 
@@ -160,7 +183,12 @@ void Horizon::Inter::PacketHandler::Respond_INTER_ACK_RECEIVED(uint16_t packet_i
 	SendPacket(pkt);
 }
 
-void Horizon::Inter::PacketHandler::Respond_INTER_CONNECT_INIT()
+void Horizon::Inter::PacketHandler::Send_INTER_CONNECT_INIT()
 {
 	SendPacket(PACKET_INTER_CONNECT_INIT());
+}
+
+void Horizon::Inter::PacketHandler::Send_INTER_PONG()
+{
+	SendPacket(PACKET_INTER_PONG());
 }

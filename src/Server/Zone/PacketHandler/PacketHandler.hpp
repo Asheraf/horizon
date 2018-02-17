@@ -46,13 +46,13 @@ public:
 	virtual void Handle_CZ_REQUEST_TIME(PacketBuffer &buf);
 	virtual void Handle_CZ_REQNAME(PacketBuffer &buf);
 	/**
-	 * Responders
+	 * Senders
 	 */
-	virtual void Respond_ZC_ERROR(zone_server_reject_types error);
-	virtual void Respond_ZC_ACCOUNT_ID();
-	virtual void Respond_ZC_ACCEPT_CONNECTION();
-	virtual void Respond_ZC_NPCACK_MAPMOVE(std::string const &map_name, uint16_t x, uint16_t y);
-	virtual void Respond_ZC_NOTIFY_TIME();
+	virtual void Send_ZC_ERROR(zone_server_reject_types error);
+	virtual void Send_ZC_ACCOUNT_ID();
+	virtual void Send_ZC_ACCEPT_CONNECTION();
+	virtual void Send_ZC_NPCACK_MAPMOVE(std::string const &map_name, uint16_t x, uint16_t y);
+	virtual void Send_ZC_NOTIFY_TIME();
 };
 }
 }

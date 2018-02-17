@@ -37,15 +37,21 @@ public:
 	Server(std::string name, std::string config_file_path, std::string config_file_name);
 	~Server();
 
-	void ParseExecArguments(const char *argv[], int argc);
+	void parseExecArguments(const char *argv[], int argc);
 
-	/* Shutdown Handlers */
-	void shutdown(int signal) { getGeneralConf().setShuttingDown(signal); }
-	bool IsShuttingDown() { return getGeneralConf().IsShuttingDown(); }
+	/* Shutting Down Flags */
+	bool isShuttingDown() const { return _shut_down; };
+	void shutdown(int signal) {
+		if (_shut_down.exchange(true))
+			return;
+
+		_shutdown_signal.exchange(signal);
+	};
+
 	void IOServiceLoop();
 
 	/* Core I/O Service*/
-	const std::shared_ptr<boost::asio::io_service> &getIOService() const;
+	const std::shared_ptr<boost::asio::io_service> getIOService() const;
 	/* General Configuration */
 	struct general_server_configuration &getGeneralConf() { return this->general_config; }
 	/* Network Configuration */
@@ -60,7 +66,7 @@ public:
 	/* Common Configuration */
 	bool ProcessCommonConfiguration(libconfig::Config &cfg);
 	/* Initialize Core */
-	virtual void InitializeCore();
+	virtual void initializeCore();
 	/* Mysql Threads */
 	void InitializeMySQLConnections();
 	boost::shared_ptr<MySQLConnection> MySQLBorrow() { return mysql_pool->borrow(); }
@@ -68,7 +74,7 @@ public:
 	/* Command Line Interface */
 	void InitializeCLI();
 
-	virtual void InitializeCLICommands();
+	virtual void initializeCLICommands();
 	void InitializeCommonCLICommands();
 	void ProcessCLICommands();
 	void QueueCLICommand(CLICommand *cmdMgr) { m_CLICmdQueue.add(cmdMgr); }
@@ -99,6 +105,8 @@ protected:
 	// CLI command holder to be thread safe
 	LockedQueue<CLICommand *> m_CLICmdQueue;
 	std::thread m_CLIThread;
+	std::atomic<bool> _shut_down;
+	std::atomic<int> _shutdown_signal;
 	std::unordered_map<std::string, std::function<bool(void)>> m_CLIFunctionMap;
 	/**
 	 * Core IO Service

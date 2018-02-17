@@ -44,16 +44,16 @@ public:
 	explicit Session(std::shared_ptr<tcp::socket> socket);
 	~Session() { }
 	/* */
-	void Start() override;
-	bool Update() override;
+	void start() override;
+	bool update() override;
 
 	/* Packet Handler */
-	std::shared_ptr<PacketHandler> &getPacketHandler();
+	std::shared_ptr<PacketHandler> getPacketHandler();
 	void setPacketHandler(std::shared_ptr<PacketHandler> handler);
 	/* */
 protected:
-	void ReadHandler() override;
-	void OnClose() override;
+	void readHandler() override;
+	void onClose() override;
 	/* */
 	int GetPacketVersion(uint16_t op_code, PacketBuffer buf);
 	/* */

@@ -79,13 +79,13 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 	packet >> pkt;
 
 	if (pkt.version < MINIMUM_PACKETVER || pkt.version > MAXIMUM_PACKETVER) {
-		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
+		Send_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
 		AuthLog->info("Authentication of account '{}' rejected. Unsupported Version.", pkt.username, pkt.version);
 		return;
 	}
 
 	if (!InterSocktMgr->getConnectionPoolSize(INTER_SESSION_NAME)) {
-		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_NONE);
+		Send_AC_REFUSE_LOGIN(login_error_codes::ERR_NONE);
 		AuthLog->info("Authentication of account '{}' rejected. Inter server not available.", pkt.username);
 		return;
 	}
@@ -112,13 +112,13 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
 
 		if (ValidateSessionData(getSession()->getGameAccount()->getID(), pkt.version, pkt.client_type)) {
-			Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
+			Send_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
 			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
 		} else {
-			Respond_AC_ACCEPT_LOGIN();
+			Send_AC_ACCEPT_LOGIN();
 		}
 	} else {
-		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
+		Send_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
 		AuthLog->info("Rejected unknown account '{}' or incorrect password.", pkt.username);
 	}
 }
@@ -184,7 +184,7 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
 /**
  * Auth To Client
  */
-void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
+void Horizon::Auth::PacketHandler::Send_AC_ACCEPT_LOGIN()
 {
 	const CharacterServerMapType char_servers = AuthServer->getCharacterServers();
 	auto *pkt = new PACKET_AC_ACCEPT_LOGIN();
@@ -195,7 +195,7 @@ void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 	 * Reject if no character servers.
 	 */
 	if (char_servers.empty()) {
-		Respond_AC_REFUSE_LOGIN(login_error_codes::ERR_REJECTED_FROM_SERVER);
+		Send_AC_REFUSE_LOGIN(login_error_codes::ERR_REJECTED_FROM_SERVER);
 		delete pkt;
 		return;
 	}
@@ -231,29 +231,29 @@ void Horizon::Auth::PacketHandler::Respond_AC_ACCEPT_LOGIN()
 	delete pkt;
 }
 
-void Horizon::Auth::PacketHandler::Respond_AC_REFUSE_LOGIN(login_error_codes error_code)
+void Horizon::Auth::PacketHandler::Send_AC_REFUSE_LOGIN(login_error_codes error_code)
 {
 	PACKET_AC_REFUSE_LOGIN pkt;
 	pkt.error_code = (uint8_t) error_code;
 	SendPacket(pkt);
 }
 
-void Horizon::Auth::PacketHandler::Respond_SC_NOTIFY_BAN()
+void Horizon::Auth::PacketHandler::Send_SC_NOTIFY_BAN()
 {
 
 }
 
-void Horizon::Auth::PacketHandler::Respond_AC_ACK_HASH()
+void Horizon::Auth::PacketHandler::Send_AC_ACK_HASH()
 {
 
 }
 
-void Horizon::Auth::PacketHandler::Respond_AC_REFUSE_LOGIN_R2()
+void Horizon::Auth::PacketHandler::Send_AC_REFUSE_LOGIN_R2()
 {
 
 }
 
-void Horizon::Auth::PacketHandler::Respond_CA_CHARSERVERCONNECT()
+void Horizon::Auth::PacketHandler::Send_CA_CHARSERVERCONNECT()
 {
 
 }

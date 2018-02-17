@@ -25,7 +25,7 @@
 #include <boost/bind.hpp>
 
 Horizon::Auth::InterPacketHandler::InterPacketHandler(std::shared_ptr<InterSession> session)
-: Horizon::Base::InterPacketHandler<InterSession>(session, AuthServer->getNetworkConf().getInterServerPassword())
+: Horizon::Base::InterPacketHandler<InterSession>(session, AuthServer->getNetworkConf().getInterServerPassword(), INTER_CONNECT_CLIENT_AUTH)
 {
 	// Construct
 	InitializeHandlers();

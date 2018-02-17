@@ -21,11 +21,13 @@ enum inter_packets
 	INTER_GAME_ACCOUNT_REQ      = 0x09,
 	INTER_GAME_ACCOUNT_DEL      = 0x0a,
 	INTER_GAME_ACCOUNT_GET      = 0x0b,
+	INTER_PING                  = 0xfe,
+	INTER_PONG                  = 0xff,
 };
 }
 }
 
-enum inter_connect_client_type : char
+enum inter_connect_client_types : char
 {
 	INTER_CONNECT_CLIENT_AUTH = 0,
 	INTER_CONNECT_CLIENT_CHAR = 1,
@@ -43,7 +45,7 @@ struct PACKET_INTER_CONNECT_AUTH : public Packet
 	PACKET_INTER_CONNECT_AUTH() : Packet(Horizon::Base::inter_packets::INTER_CONNECT_AUTH) {}
 
 	uint16_t packet_len{};
-	inter_connect_client_type client_type;
+	inter_connect_client_types client_type;
 	unsigned char password[];
 };
 
@@ -135,6 +137,15 @@ struct PACKET_INTER_GAME_ACCOUNT_GET : public Packet
 	PACKET_INTER_GAME_ACCOUNT s{};
 };
 
+struct PACKET_INTER_PING : public Packet
+{
+	PACKET_INTER_PING() : Packet(Horizon::Base::inter_packets::INTER_PING) { }
+};
+
+struct PACKET_INTER_PONG : public Packet
+{
+	PACKET_INTER_PONG() : Packet(Horizon::Base::inter_packets::INTER_PONG) { }
+};
 #pragma pack(pop)
 
 #endif // HORIZON_BASE_INTERPACKETS_HPP
