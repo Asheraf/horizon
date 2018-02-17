@@ -83,11 +83,18 @@ check_cxx_source_compiles("
 #################################
 set(BOOST_REQUIRED_VERSION 1.60)
 
+set(BOOST_COMPONENTS system filesystem thread locale program_options iostreams)
+
 if (STD_HAS_WORKING_WREGEX)
-    find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread locale program_options iostreams)
-else()
-    find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread locale program_options iostreams regex)
+    set(BOOST_COMPONENTS ${BOOST_COMPONENTS} regex)
 endif()
+
+if (WITH_TESTS)
+    set(BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
+endif()
+
+find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED ${BOOST_COMPONENTS})
+
 add_library(boost INTERFACE)
 
 target_link_libraries(boost
@@ -152,10 +159,10 @@ if (WITH_TOOLS)
         message("-- zlib version ${ZLIB_VERSION_STRING} found.")
     endif()
 endif (WITH_TOOLS)
+
 #################
 # Horizon Project Source
 #################
 add_subdirectory(src)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)
-

@@ -1,31 +1,43 @@
 # Setup CMake to run tests
 enable_testing()
 
-# Prep ourselves for compiling boost
-find_package(Boost COMPONENTS unit_test_framework REQUIRED system filesystem thread program_options iostreams regex)
-include_directories (${Boost_INCLUDE_DIRS})
+CollectSourceFiles(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+	TEST_SOURCES
+)
 
-# I like to keep test files in a separate source directory called test
-file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
-# Run through each source
-foreach(TEST_SOURCES ${TEST_SRCS})
-        # Extract the filename without an extension (NAME_WE)
-        get_filename_component(TEST ${TEST_SOURCES} NAME_WE)
+foreach(TEST_SOURCE ${TEST_SOURCES})
+	# Extract the filename without an extension (NAME_WE)
+	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 
-        # Add compile target
-        add_executable(${TEST} ${TEST_SOURCES})
+	if (TEST_NAME STREQUAL "BCryptTest")
+		set (ADD_LIBS bcryptcpp)
+	endif ()
 
-        # link to Boost libraries AND your targets and dependencies
-        target_link_libraries(${TEST} ${Boost_LIBRARIES} networking bcryptcpp)
+	# Add compile target
+	add_executable(${TEST_NAME} ${TEST_SOURCE})
 
-        # Move testing binaries into a bin sub-directory
-        set_target_properties(${TEST} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_INSTALL_PREFIX}/bin)
+	# link to Boost libraries AND your targets and dependencies
+	target_link_libraries(${TEST_NAME}
+		PUBLIC
+		${Boost_LIBRARIES}
+		${ADD_LIBS})
 
-        # Finally add it to test execution -
-        # Notice the WORKING_DIRECTORY and COMMAND
-        add_test(NAME ${TEST}
-                 WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin
-                 COMMAND ${CMAKE_INSTALL_PREFIX}/bin/${TEST})
-endforeach(TEST_SOURCES)
+	target_include_directories(${TEST_NAME}
+		PUBLIC
+			${PROJECT_SOURCE_DIR}/src
+			${Boost_INCLUDE_DIRS})
+
+	# I like to move testing binaries into a testBin directory
+	set_target_properties(${TEST_NAME} PROPERTIES
+	    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_INSTALL_PREFIX}/test)
+
+	# Finally add it to test execution -
+	# Notice the WORKING_DIRECTORY and COMMAND
+	add_test(NAME ${TEST_NAME}
+				WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/test
+				COMMAND ${CMAKE_INSTALL_PREFIX}/test/${TEST_NAME})
+
+endforeach(TEST_SOURCE)

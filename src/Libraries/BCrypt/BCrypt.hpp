@@ -25,7 +25,7 @@ public:
 	BCrypt() {}
 	~BCrypt() {}
 
-	static std::string generateHash(const std::string & password, int workload);
+	static std::string generateHash(const std::string & password, int workload = 12);
 	static bool validatePassword(const std::string & password, const std::string & hash);
 };
 

@@ -3,6 +3,13 @@ add_subdirectory(Core)
 add_subdirectory(Libraries)
 add_subdirectory(Server)
 
+if (WITH_TESTS)
+	#################
+	# Horizon Project Tests
+	#################
+	add_subdirectory(Tests)
+endif (WITH_TESTS)
+
 #################
 # Horizon Project Tools
 #################

@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <string>
 
-std::string BCrypt::generateHash(const std::string & password, int workload = 12)
+std::string BCrypt::generateHash(const std::string & password, int workload)
 {
 	char salt[BCRYPT_HASHSIZE];
 	char hash[BCRYPT_HASHSIZE];
