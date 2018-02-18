@@ -24,20 +24,20 @@ public:
     bool valid() const { return (e_next != nullptr && e_prev != nullptr); }
 
     /* Next Element Accessor */
-    Element *next() { return hasNext() ? e_next : nullptr; }
-    Element const *next() const { return hasNext() ? e_next : nullptr; }
-    Element *raw_next() { return e_next; }
-    Element const *raw_next() const { return e_next; }
-    void setNext(Element *n) { e_next = n; }
+    virtual Element *next() { return hasNext() ? e_next : nullptr; }
+    virtual Element const *next() const { return hasNext() ? e_next : nullptr; }
+    virtual Element *raw_next() { return e_next; }
+    virtual Element const *raw_next() const { return e_next; }
+    virtual void setNext(Element *n) { e_next = n; }
 
     /* Previous Element Accessor */
-    Element *prev() { return hasPrev() ? e_prev : nullptr; }
-    Element const *prev() const { return hasPrev() ? e_prev : nullptr; }
-    Element *raw_prev() { return e_prev; }
-    Element const *raw_prev() const { return e_prev; }
-    void setPrev(Element *p) { e_prev = p; }
+    virtual Element *prev() { return hasPrev() ? e_prev : nullptr; }
+    virtual Element const *prev() const { return hasPrev() ? e_prev : nullptr; }
+    virtual Element *raw_prev() { return e_prev; }
+    virtual Element const *raw_prev() const { return e_prev; }
+    virtual void setPrev(Element *p) { e_prev = p; }
 
-    void erase()
+    virtual void erase()
     {
         if (!valid())
             return;
@@ -66,7 +66,7 @@ public:
     }
 
 protected:
-    ~Element()
+    virtual ~Element()
     {
         erase();
     }

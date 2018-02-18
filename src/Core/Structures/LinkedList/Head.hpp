@@ -26,13 +26,13 @@ public:
         _e_last.setPrev(&_e_first);
     }
 
-    bool empty() const { return !_e_first.next()->valid(); }
+    bool empty() const { return !(_e_first.next() && _e_first.next()->valid()); }
 
-    Element *first() { return (empty() ? nullptr : _e_first.next()); }
-    Element const *first() const { return (empty() ? nullptr : _e_first.next()); }
+    virtual Element *first() { return (empty() ? nullptr : _e_first.next()); }
+    virtual Element const *first() const { return (empty() ? nullptr : _e_first.next()); }
 
-    Element *last() { return(empty() ? nullptr : _e_last.prev()); }
-    Element const *last() const { return(empty() ? nullptr : _e_last.prev()); }
+    virtual Element *last() { return(empty() ? nullptr : _e_last.prev()); }
+    virtual Element const *last() const { return(empty() ? nullptr : _e_last.prev()); }
 
     void push_front(Element *e)
     {
@@ -47,7 +47,7 @@ public:
     uint32_t size() const
     {
         if (!_list_size) {
-            uint32_t result = 1;
+            uint32_t result = 0;
             Element const *e = first();
 
             while (e) {
@@ -85,13 +85,13 @@ public:
             {                                           // construct with node pointer _Pnode
             }
 
-            Iterator& operator=(Iterator const &_Right)
+            Iterator &operator=(Iterator const &_Right)
             {
                 _Ptr = _Right._Ptr;
                 return *this;
             }
 
-            Iterator& operator=(const_pointer const &_Right)
+            Iterator &operator=(const_pointer const &_Right)
             {
                 _Ptr = pointer(_Right);
                 return *this;
@@ -109,26 +109,26 @@ public:
 
             Iterator &operator++ ()
             {                                           // preincrement
-                _Ptr = (_Ty *) _Ptr->next();
+                _Ptr = static_cast<_Ty *>(_Ptr->next());
                 return (*this);
             }
 
             Iterator operator++(int)
             {                                           // postincrement
-                iterator _Tmp = *this;
+                Iterator<_Ty> _Tmp = (*this);
                 ++*this;
                 return (_Tmp);
             }
 
-            Iterator& operator--()
+            Iterator &operator--()
             {                                           // predecrement
-                _Ptr = _Ptr->prev();
+                _Ptr = (_Ty *) _Ptr->prev();
                 return (*this);
             }
 
             Iterator operator--(int)
             {                                           // postdecrement
-                iterator _Tmp = *this;
+                Iterator<_Ty> _Tmp = (*this);
                 --*this;
                 return (_Tmp);
             }
@@ -174,12 +174,12 @@ public:
 
     typedef Iterator<Element> iterator;
 
+protected:
+	~Head() { }
+
 private:
     Head(Head const &) = delete;
-    Head &operator=(Head const&) = delete;
-
-protected:
-    ~Head() { }
+    Head &operator=(Head const &) = delete;
 };
 }
 }
