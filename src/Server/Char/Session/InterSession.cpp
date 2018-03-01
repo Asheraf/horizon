@@ -69,13 +69,11 @@ bool Horizon::Char::InterSession::update()
 
 std::shared_ptr<Horizon::Char::InterPacketHandler> Horizon::Char::InterSession::getPacketHandler()
 {
-	boost::shared_lock<boost::shared_mutex> lock(_handler_lock);
-	return _packet_handler;
+	return std::atomic_load(&_packet_handler);
 }
 
 void Horizon::Char::InterSession::setPacketHandler(std::shared_ptr<InterPacketHandler> handler)
 {
-	boost::unique_lock<boost::shared_mutex> lock(_handler_lock);
-	_packet_handler = handler;
+	std::atomic_store(&_packet_handler, handler);
 }
 

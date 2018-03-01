@@ -22,7 +22,6 @@
 
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/thread.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -52,7 +51,6 @@ protected:
 	/* */
 private:
 	std::shared_ptr<InterPacketHandler> _packet_handler;
-	boost::shared_mutex _handler_lock;
 };
 }
 }
