@@ -36,7 +36,7 @@ public:
 	TestListElem const *last() const { return static_cast<TestListElem const *> (Head::last()); }
 
 	iterator begin() { return iterator(first()); }
-	iterator end()   { return iterator(nullptr); }
+	iterator end()   { return iterator(last()); }
 };
 
 BOOST_AUTO_TEST_CASE(LinkedListTest)
@@ -47,13 +47,25 @@ BOOST_AUTO_TEST_CASE(LinkedListTest)
 	std::shared_ptr<TestListElem> t[100];
 
 	for (int i = 0; i < 100; i++) {
-		var[i] = rand() % 100;
+		var[i] = i;
 		t[i] = std::make_shared<TestListElem>(var[i]);
 		h.push_front(t[i].get());
-		BOOST_CHECK(h.first()->getVar() == var[i]);
+		BOOST_CHECK_EQUAL(h.first()->getVar(), var[i]);
 	}
 
 	int idx = 99;
-	for (TestListHead::iterator it = h.begin(); it != h.end(); ++it)
-		BOOST_CHECK(it->getVar() == var[idx--]);
+	for (TestListHead::iterator it = h.begin(); it != TestListHead::iterator(nullptr); ++it)
+		BOOST_CHECK_EQUAL(it->getVar(), var[idx--]);
+
+	idx = 99;
+	for (TestListHead::iterator it = h.begin(); it != TestListHead::iterator(nullptr); it++)
+		BOOST_CHECK_EQUAL(it->getVar(), var[idx--]);
+
+	idx = 0;
+	for (TestListHead::iterator it = h.end(); it != TestListHead::iterator(nullptr); --it)
+		BOOST_CHECK_EQUAL(it->getVar(), var[idx++]);
+
+	idx = 0;
+	for (TestListHead::iterator it = h.end(); it != TestListHead::iterator(nullptr); it--)
+		BOOST_CHECK_EQUAL(it->getVar(), var[idx++]);
 }
