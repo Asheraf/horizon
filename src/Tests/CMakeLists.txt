@@ -32,7 +32,8 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 
 	# I like to move testing binaries into a testBin directory
 	set_target_properties(${TEST_NAME} PROPERTIES
-	    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_INSTALL_PREFIX}/test)
+	    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_INSTALL_PREFIX}/test
+		FOLDER "Tests")
 
 	# Finally add it to test execution -
 	# Notice the WORKING_DIRECTORY and COMMAND
