@@ -3,7 +3,7 @@
 //
 
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "LinkedListTest"
+#define BOOST_TEST_MODULE "ReferenceListTest"
 
 #include "Core/Structures/LinkedList/ReferenceList/Reference.hpp"
 #include "Core/Structures/LinkedList/ReferenceList/RefManager.hpp"
@@ -108,37 +108,47 @@ private:
 	int _id;
 };
 
+#define MAX_LIMIT 10
+
 BOOST_AUTO_TEST_CASE(ReferenceListTest)
 {
 	TestRefManager<Player> playerRefMgr;
-	std::shared_ptr<TestObject<Player>> player[10000];
-	int var[10000];
+	std::shared_ptr<TestObject<Player>> player[MAX_LIMIT];
+	int var[MAX_LIMIT];
 
-	for (int i = 0; i < 10000; i++) {
-		var[i] = rand() % 10000;
+	for (int i = 0; i < MAX_LIMIT; i++) {
+		var[i] = i;
 		player[i] = std::make_shared<TestObject<Player>>();
 		player[i]->addReference(playerRefMgr);
 		player[i]->getReference().source()->setId(var[i]);
 		BOOST_TEST(player[i]->valid());
 	}
 
-	int ofs = 9999;
-	for (auto it = playerRefMgr.begin(); it != playerRefMgr.end(); it++)
+	int ofs = MAX_LIMIT - 1;
+	for (auto it = playerRefMgr.begin(); it != TestRefManager<Player>::iterator(nullptr); it++)
+		BOOST_TEST(it->source()->getId() == var[ofs--]);
+
+	ofs = MAX_LIMIT - 1;
+	for (auto it = playerRefMgr.begin(); it != TestRefManager<Player>::iterator(nullptr); ++it)
 		BOOST_TEST(it->source()->getId() == var[ofs--]);
 
 	ofs = 0;
-	for (auto it = playerRefMgr.end(); it != playerRefMgr.begin(); it--)
+	for (auto it = playerRefMgr.end(); it != TestRefManager<Player>::iterator(nullptr); it--)
 		BOOST_TEST(it->source()->getId() == var[ofs++]);
 
-	BOOST_TEST(playerRefMgr.size() == 10000);
+	ofs = 0;
+	for (auto it = playerRefMgr.end(); it != TestRefManager<Player>::iterator(nullptr); --it)
+		BOOST_TEST(it->source()->getId() == var[ofs++]);
 
-	BOOST_TEST(playerRefMgr.first()->source()->getId() == var[9999]);
+	BOOST_TEST(playerRefMgr.size() == MAX_LIMIT);
+
+	BOOST_TEST(playerRefMgr.first()->source()->getId() == var[MAX_LIMIT - 1]);
 	BOOST_TEST(playerRefMgr.last()->source()->getId() == var[0]);
 
 	BOOST_TEST(playerRefMgr.first()->prev() == nullptr);
 	BOOST_TEST(playerRefMgr.last()->next() == nullptr);
 
-	for (int i = 0; i < 10000; i++)
+	for (int i = 0; i < MAX_LIMIT; i++)
 		player[i]->removeReference();
 
 	BOOST_TEST(playerRefMgr.size() == 0);
