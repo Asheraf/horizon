@@ -9,9 +9,6 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2018 Horizon Dev Team.
  *
- * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
- *
  * Under a proprietary license this file is not for use
  * or viewing without permission.
  **************************************************/
