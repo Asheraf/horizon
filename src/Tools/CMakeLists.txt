@@ -15,4 +15,4 @@
 # or viewing without permission.
 ###################################################
 
-add_subdirectory(mapcache)
+add_subdirectory(MapCache)

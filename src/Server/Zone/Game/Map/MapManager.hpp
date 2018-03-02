@@ -15,20 +15,20 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_GAME_MAP_MAPMGR_HPP
-#define HORIZON_GAME_MAP_MAPMGR_HPP
+#ifndef HORIZON_ZONE_GAME_MAPMGR_HPP
+#define HORIZON_ZONE_GAME_MAPMGR_HPP
 
 namespace Horizon
 {
+namespace Zone
+{
 namespace Game
 {
-namespace Map
-{
-class MapMgr
+class MapManager
 {
 public:
-	MapMgr() { };
-	~MapMgr() { };
+	MapManager() { };
+	~MapManager() { };
 
 	static MapMgr *getInstance()
 	{
@@ -36,13 +36,12 @@ public:
 		return &map_mgr;
 	}
 
-private:
-	std::map<uint32_t, std::shared_ptr<Map>> _maps;
-}
+	bool LoadMapCache();
+};
 }
 }
 }
 
-#define ZoneMapMgr Horizon::Game::Map::MapMgr::getInstance()
+#define MapMgr Horizon::Game::Map::MapMgr::getInstance()
 
 #endif /* HORIZON_GAME_MAP_MAPMGR_HPP */

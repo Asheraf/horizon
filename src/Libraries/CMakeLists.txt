@@ -16,3 +16,4 @@
 ###################################################
 add_subdirectory(BCrypt)
 add_subdirectory(GRF)
+add_subdirectory(MapCache)

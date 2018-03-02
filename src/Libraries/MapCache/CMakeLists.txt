@@ -16,18 +16,23 @@
 ###################################################
 
 CollectSourceFiles(
-	${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE_SOURCES
 )
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(mapcache
+add_library(mcache
+	STATIC
+	${UTILITY_SOURCES}
 	${PRIVATE_SOURCES})
 
-target_link_libraries(mapcache
+target_link_libraries(mcache
 	PUBLIC
-		mcache)
+		grf
+		${ZLIB_LIBRARIES}
+		${Boost_LIBRARIES}
+		${CONFIG++_LIBRARY})
 
 set(INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/src
@@ -38,14 +43,13 @@ CollectIncludeDirectories(
 	PUBLIC_INCLUDES
 )
 
-target_include_directories(mapcache
+target_include_directories(mcache
 	PUBLIC
 		${PUBLIC_INCLUDES}
+		${ZLIB_INCLUDE_DIRS}
 		${Boost_INCLUDE_DIRS}
+		${CONFIG++_INCLUDE_DIR}
 	PRIVATE
-		${CMAKE_CURRENT_BINARY_DIR})
-
-install(TARGETS mapcache
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/tools
-    CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+		${CMAKE_CURRENT_BINARY_DIR}
+)
 
