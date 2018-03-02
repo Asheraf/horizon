@@ -20,6 +20,7 @@
 
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
+#include "Core/Multithreading/ThreadSafeQueue.hpp"
 #include "Server/Common/Models/Characters/Character.hpp"
 
 #include <memory>
@@ -61,6 +62,7 @@ protected:
 	/* */
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
+	ThreadSafeQueue<PacketBuffer> _packet_queue;
 };
 }
 }

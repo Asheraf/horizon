@@ -60,6 +60,11 @@ void Horizon::Auth::Session::onClose()
  */
 bool Horizon::Auth::Session::update()
 {
+	std::shared_ptr<PacketBuffer> buf;
+	while ((buf = _packet_queue.try_pop()))
+		if (!getPacketHandler()->HandleReceivedPacket(*buf))
+			getReadBuffer().Reset();
+
 	return AuthSocket::update();
 }
 
@@ -106,8 +111,7 @@ void Horizon::Auth::Session::readHandler()
 			return;
 		}
 
-		if (!getPacketHandler()->HandleReceivedPacket(pkt))
-			getReadBuffer().Reset();
+		_packet_queue.push(std::move(pkt));
 	}
 }
 

@@ -19,12 +19,12 @@
 #define HORIZON_AUTH_SESSION_HPP
 
 #include "Server/Common/Horizon.hpp"
-#include "Core/Multithreading/LockedQueue.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
 #include "Core/Networking/Socket.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Models/SessionData.hpp"
+#include "Core/Multithreading/ThreadSafeQueue.hpp"
 
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
@@ -59,6 +59,7 @@ protected:
 	/* */
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
+	ThreadSafeQueue<PacketBuffer> _packet_queue;
 };
 }
 }

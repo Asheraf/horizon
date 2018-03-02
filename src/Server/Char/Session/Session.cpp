@@ -62,6 +62,11 @@ void Horizon::Char::Session::onClose()
  */
 bool Horizon::Char::Session::update()
 {
+	std::shared_ptr<PacketBuffer> buf;
+	while ((buf = _packet_queue.try_pop()))
+		if (!getPacketHandler()->HandleReceivedPacket(*buf))
+			getReadBuffer().Reset();
+
 	return CharSocket::update();
 }
 
@@ -131,8 +136,7 @@ void Horizon::Char::Session::readHandler()
 			return;
 		}
 
-		if (!getPacketHandler()->HandleReceivedPacket(buf))
-			getReadBuffer().Reset();
+		_packet_queue.push(std::move(buf));
 	}
 }
 

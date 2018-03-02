@@ -55,10 +55,17 @@ void Horizon::Zone::Session::onClose()
 
 /**
  * @brief Asynchronous update method periodically called from network threads.
+ * @thread NetworkThread
  * @return true on successful update, false on failure.
  */
 bool Horizon::Zone::Session::update()
 {
+	std::shared_ptr<PacketBuffer> buf;
+
+	while ((buf = _packet_queue.try_pop()))
+		if (!getPacketHandler()->HandleReceivedPacket(*buf))
+			getReadBuffer().Reset();
+
 	return ZoneSocket::update();
 }
 
@@ -135,8 +142,7 @@ void Horizon::Zone::Session::readHandler()
 			return;
 		}
 
-		if (!getPacketHandler()->HandleReceivedPacket(buf))
-			getReadBuffer().Reset();
+		_packet_queue.push(std::move(buf));
 	}
 }
 
