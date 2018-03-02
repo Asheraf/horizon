@@ -223,9 +223,9 @@ void Server::initializeCLICommands()
 
 void Server::ProcessCLICommands()
 {
-	CLICommand *command = nullptr;
+	std::shared_ptr<CLICommand> command;
 
-	while (m_CLICmdQueue.next(command)) {
+	while ((command = m_CLICmdQueue.try_pop())) {
 		bool ret = false;
 		std::function<bool(void)> cmd_func = getCLIFunc(command->m_command);
 
@@ -237,8 +237,6 @@ void Server::ProcessCLICommands()
 
 		if (command->m_finish_func != nullptr)
 			command->m_finish_func(command, ret);
-
-		delete command;
 	}
 }
 

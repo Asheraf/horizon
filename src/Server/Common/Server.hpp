@@ -21,7 +21,7 @@
 #include "Logging/Logger.hpp"
 #include "CLI/CLICommand.hpp"
 #include "Core/Database/MySqlConnection.hpp"
-#include "Core/Multithreading/LockedQueue.hpp"
+#include "Core/Multithreading/ThreadSafeQueue.hpp"
 #include "Models/Configuration/GeneralServerConfiguration.hpp"
 
 #include <cstdio>
@@ -77,7 +77,7 @@ public:
 	virtual void initializeCLICommands();
 	void InitializeCommonCLICommands();
 	void ProcessCLICommands();
-	void QueueCLICommand(CLICommand *cmdMgr) { m_CLICmdQueue.add(cmdMgr); }
+	void QueueCLICommand(CLICommand &&cmdMgr) { m_CLICmdQueue.push(std::move(cmdMgr)); }
 	void addCLIFunction(std::string cmd, std::function<bool(void)> func) { m_CLIFunctionMap.insert(std::make_pair(cmd, func)); };
 	
 	/* CLI Function getter */
@@ -103,7 +103,7 @@ protected:
 	boost::shared_ptr<MySQLConnectionFactory> mysql_connection_factory;
 	boost::shared_ptr<ConnectionPool<MySQLConnection>> mysql_pool;
 	// CLI command holder to be thread safe
-	LockedQueue<CLICommand *> m_CLICmdQueue;
+	ThreadSafeQueue<CLICommand> m_CLICmdQueue;
 	std::thread m_CLIThread;
 	std::atomic<bool> _shut_down;
 	std::atomic<int> _shutdown_signal;

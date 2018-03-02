@@ -22,7 +22,7 @@
 
 #define TERMINAL_STR "Horizon $> "
 
-void command_complete(CLICommand */*cmd*/, bool /*success*/)
+void command_complete(std::shared_ptr<CLICommand> /*cmd*/, bool /*success*/)
 {
 	fflush(stdout);
 }
@@ -30,14 +30,11 @@ void command_complete(CLICommand */*cmd*/, bool /*success*/)
 void CLIThreadStart(Server *serv)
 {
 	printf("\a");
-	printf(TERMINAL_STR);
 
 	while (!serv->isShuttingDown())
 	{
 
 		char *command_str;
-
-		fflush(stdout);
 
 		command_str = readline(TERMINAL_STR);
 		rl_bind_key('\t', rl_complete);
@@ -51,11 +48,12 @@ void CLIThreadStart(Server *serv)
 
 			if (!*command_str) {
 				free(command_str);
+				fflush(stdout);
 				continue;
 			}
 
 			fflush(stdout);
-			serv->QueueCLICommand(new CLICommand(serv, command_str, &command_complete));
+			serv->QueueCLICommand(CLICommand(serv, command_str, &command_complete));
 			add_history(command_str);
 			free(command_str);
 			std::this_thread::sleep_for(std::chrono::milliseconds(serv->getGeneralConf().getCoreUpdateInterval() + 100)); // Sleep until core has updated.

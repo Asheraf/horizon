@@ -23,7 +23,7 @@ class Server;
 class CLICommand
 {
 public:
-	typedef void (*FinishFunc) (CLICommand *cmd, bool success);
+	typedef void (*FinishFunc) (std::shared_ptr<CLICommand> cmd, bool success);
 
 	CLICommand(Server *server, char *command, FinishFunc finish_func)
 	: m_Server(server), m_command(command), m_finish_func(finish_func)
@@ -39,9 +39,5 @@ public:
 	std::string m_command;            ///< Command string.
 	FinishFunc m_finish_func;         ///< Completion handler function.
 	bool terminal_shutdown_signal;    ///< Terminal shutdown signal.
-
-private:
-	CLICommand (CLICommand const &right) = delete;
-	CLICommand &operator = (CLICommand const &right) = delete;
 };
 #endif //HORIZON_CLICOMMAND_HPP
