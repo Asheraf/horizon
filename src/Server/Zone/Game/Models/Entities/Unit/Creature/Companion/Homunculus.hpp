@@ -9,9 +9,11 @@ namespace Zone
 {
 namespace Game
 {
+template<class T>
+class GridObject;
 namespace Entities
 {
-class Homunculus : public Creature
+class Homunculus : public Creature, public GridObject<Homunculus>
 {
 public:
 	Homunculus(uint32_t guid);

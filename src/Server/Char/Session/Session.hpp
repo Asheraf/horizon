@@ -21,7 +21,7 @@
 #include "Core/Networking/Socket.hpp"
 #include "Core/Networking/Buffer/MessageBuffer.hpp"
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
-#include "Server/Common/Models/Characters/Character.hpp"
+#include "Server/Common/Models/Character/Character.hpp"
 
 #include <memory>
 #include <cstdio>

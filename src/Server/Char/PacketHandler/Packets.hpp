@@ -20,13 +20,13 @@
 
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Common/Horizon.hpp"
-#include "Server/Common/Models/Characters/Character.hpp"
-#include "Server/Common/Models/Characters/Status.hpp"
-#include "Server/Common/Models/Characters/View.hpp"
-#include "Server/Common/Models/Characters/Group.hpp"
-#include "Server/Common/Models/Characters/Misc.hpp"
-#include "Server/Common/Models/Characters/Position.hpp"
-#include "Server/Common/Models/Characters/Access.hpp"
+#include "Server/Common/Models/Character/Character.hpp"
+#include "Server/Common/Models/Character/Status.hpp"
+#include "Server/Common/Models/Character/View.hpp"
+#include "Server/Common/Models/Character/Group.hpp"
+#include "Server/Common/Models/Character/Misc.hpp"
+#include "Server/Common/Models/Character/Position.hpp"
+#include "Server/Common/Models/Character/Access.hpp"
 
 namespace Horizon
 {

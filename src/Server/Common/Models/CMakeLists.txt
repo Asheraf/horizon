@@ -15,7 +15,7 @@
 # or viewing without permission.
 ###################################################
 
-add_subdirectory(Characters)
+add_subdirectory(Character)
 add_subdirectory(Configuration)
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})

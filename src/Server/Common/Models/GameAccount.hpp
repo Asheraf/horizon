@@ -21,7 +21,7 @@
 #include "Server/Common/Server.hpp"
 #include "Libraries/BCrypt/BCrypt.hpp"
 #include "Core/Database/MySqlConnection.hpp"
-#include "Server/Common/Models/Characters/Character.hpp"
+#include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/Base/PacketHandler/InterPackets.hpp"
 
 #include <cstdint>

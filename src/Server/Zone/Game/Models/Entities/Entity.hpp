@@ -3,6 +3,8 @@
 #define HORIZON_ZONE_GAME_ENTITIES_ENTITY_HPP
 
 #include "Server/Common/Horizon.hpp"
+#include "Server/Zone/Game/Models/Entities/GridObject.hpp"
+
 #include <stdlib.h>
 #include <memory>
 

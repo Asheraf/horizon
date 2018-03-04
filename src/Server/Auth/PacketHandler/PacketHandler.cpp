@@ -25,7 +25,7 @@
 #include "Server/Auth/Interface/InterAPI.hpp"
 #include "Server/Auth/PacketHandler/InterPacketHandler.hpp"
 #include "Server/Inter/PacketHandler/Packets.hpp"
-#include "Server/Common/Models/Characters/Group.hpp"
+#include "Server/Common/Models/Character/Group.hpp"
 
 #include <string>
 

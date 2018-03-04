@@ -87,8 +87,6 @@ void Horizon::Zone::Game::Map::ensureAllGrids()
 
 			while (workers < MAX_THREADS && y < _grid_height)
 				fut[workers++].wait();
-
-			workers = 0;
 		}
 	}
 #undef MAX_THREADS
