@@ -20,6 +20,7 @@
 
 #include "Core/Database/MySqlConnection.hpp"
 #include "Core/Logging/Logger.hpp"
+#include "Server/Common/Models/Configuration/ZoneServerConfiguration.hpp"
 #include "Server/Common/Server.hpp"
 #include "Server/Zone/Session/Session.hpp"
 
@@ -45,10 +46,11 @@ public:
 	void initializeCore();
 	void initializeCLICommands();
 	void connectWithInterServer();
+
+	zone_server_configuration &getZoneConfig() { return _zone_server_config; }
+
 private:
-	struct {
-		bool enabled;
-	} logs;
+	zone_server_configuration _zone_server_config;
 };
 }
 }

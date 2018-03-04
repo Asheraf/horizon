@@ -18,6 +18,8 @@
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CONFIGURATION_MODELS_SOURCES
 	${DIR}/AuthServerConfiguration.hpp
+	${DIR}/CharServerConfiguration.hpp
+	${DIR}/ZoneServerConfiguration.hpp
 	${DIR}/GeneralServerConfiguration.hpp
 	${DIR}/Logging.hpp
 	PARENT_SCOPE)

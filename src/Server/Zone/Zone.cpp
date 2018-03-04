@@ -20,6 +20,7 @@
 #include "Server/Zone/Interface/InterAPI.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
+#include "Server/Zone/Game/Map/MapManager.hpp"
 
 #include <boost/asio.hpp>
 #include <iostream>
@@ -99,6 +100,14 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 				  getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
 				  (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
 
+	if (cfg.lookupValue("static_db_path", tmp_string))
+		getZoneConfig().setDatabasePath(tmp_string);
+
+	ZoneLog->info("Static database path set to '{}'", getZoneConfig().getDatabasePath());
+
+	if (cfg.lookupValue("map_cache_file_name", tmp_string))
+		getZoneConfig().setMapCacheFileName(tmp_string);
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -116,6 +125,11 @@ void Horizon::Zone::ZoneMain::initializeCore()
 	 * Inter-connection thread.
 	 */
 	std::thread inter_conn_thread(std::bind(&ZoneMain::connectWithInterServer, this));
+
+	/**
+	 * Map Manager.
+	 */
+	MapMgr->Initialize();
 
 	Server::initializeCore();
 

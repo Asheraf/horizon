@@ -33,6 +33,7 @@ target_link_libraries(zone
         boost
         networking
 	    -lpthread
+		mcache
         ${MYSQL_CONNECTOR_LIBRARIES}
         ${Readline_LIBRARY}
 		${CONFIG++_LIBRARY}

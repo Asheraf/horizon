@@ -66,3 +66,9 @@ database: {
 log: {
 	enable_logging: 1
 }
+
+###################################################
+# Static Database Settings
+###################################################
+static_db_path: "../db/"
+map_cache_file_name: "maps.dat"
