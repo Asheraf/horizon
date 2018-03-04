@@ -121,3 +121,11 @@ int32_t GetLong(const unsigned char *buf)
 {
 	return (int32_t) GetULong(buf);
 }
+
+uint32_t Concatenate(uint32_t a, uint32_t b)
+{
+	uint32_t magnitude = 1;
+	while(magnitude <= b)
+		magnitude *= 10;
+	return magnitude * a + b;
+}

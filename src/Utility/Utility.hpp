@@ -52,4 +52,5 @@ uint32_t GetULong(const unsigned char* buf);
 // Reads an int32 in little-endian from the buffer
 int32_t GetLong(const unsigned char *buf);
 
+uint32_t Concatenate(uint32_t a, uint32_t b);
 #endif // HORIZON_UTILITY_UTILITY_HPP
