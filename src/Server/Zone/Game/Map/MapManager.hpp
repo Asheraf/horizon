@@ -15,8 +15,11 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_ZONE_GAME_MAPMGR_HPP
-#define HORIZON_ZONE_GAME_MAPMGR_HPP
+#ifndef HORIZON_ZONE_GAME_MAPMANAGER_HPP
+#define HORIZON_ZONE_GAME_MAPMANAGER_HPP
+
+#include "Core/Multithreading/LockedLookupTable.hpp"
+#include "Tools/MapCache/MapCache.hpp"
 
 namespace Horizon
 {
@@ -24,24 +27,29 @@ namespace Zone
 {
 namespace Game
 {
+class Map;
 class MapManager
 {
 public:
 	MapManager() { };
 	~MapManager() { };
 
-	static MapMgr *getInstance()
+	static MapManager *getInstance()
 	{
-		static MapMgr map_mgr;
+		static MapManager map_mgr;
 		return &map_mgr;
 	}
 
+	bool Initialize();
 	bool LoadMapCache();
+
+private:
+	LockedLookupTable<std::string, std::shared_ptr<Map>> _map_data_db;
 };
 }
 }
 }
 
-#define MapMgr Horizon::Game::Map::MapMgr::getInstance()
+#define MapMgr Horizon::Zone::Game::MapManager::getInstance()
 
 #endif /* HORIZON_GAME_MAP_MAPMGR_HPP */

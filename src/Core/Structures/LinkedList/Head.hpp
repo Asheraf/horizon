@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <iterator>
 
+#include "Element.hpp"
+
 namespace Horizon
 {
 namespace Structures
