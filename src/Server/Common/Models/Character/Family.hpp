@@ -26,7 +26,7 @@ namespace Horizon
 {
 namespace Models
 {
-namespace Characters
+namespace Character
 {
 class Family
 {
@@ -66,7 +66,7 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Characters::Family::LoadFromDatabase: {}", e.what());
+			DBLog->error("Models::Character::Family::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);

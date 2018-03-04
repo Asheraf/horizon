@@ -59,19 +59,19 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 		"SELECT * FROM `characters` WHERE `name` = ?");
 }
 
-std::shared_ptr<Horizon::Models::Characters::Character>
+std::shared_ptr<Horizon::Models::Character::Character>
 Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res)
 {
-	Horizon::Models::Characters::Character c;
-	Horizon::Models::Characters::Status csd;
-	Horizon::Models::Characters::UISettings cus;
-	Horizon::Models::Characters::View cvd;
-	Horizon::Models::Characters::Position cpd;
-	Horizon::Models::Characters::Misc cmd;
-	Horizon::Models::Characters::Group cgd;
-	Horizon::Models::Characters::Family cfd;
-	Horizon::Models::Characters::Companion ccd;
-	Horizon::Models::Characters::Access cad;
+	Horizon::Models::Character::Character c;
+	Horizon::Models::Character::Status csd;
+	Horizon::Models::Character::UISettings cus;
+	Horizon::Models::Character::View cvd;
+	Horizon::Models::Character::Position cpd;
+	Horizon::Models::Character::Misc cmd;
+	Horizon::Models::Character::Group cgd;
+	Horizon::Models::Character::Family cfd;
+	Horizon::Models::Character::Companion ccd;
+	Horizon::Models::Character::Access cad;
 
 	int char_id = res->getInt("id");
 
@@ -161,17 +161,17 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 	cad.setDeleteDate(res->getInt("delete_date"));
 
 	// Append to character.
-	c.setStatusData(std::make_shared<Horizon::Models::Characters::Status>(csd));
-	c.setUISettingsData(std::make_shared<Horizon::Models::Characters::UISettings>(cus));
-	c.setViewData(std::make_shared<Horizon::Models::Characters::View>(cvd));
-	c.setPositionData(std::make_shared<Horizon::Models::Characters::Position>(cpd));
-	c.setMiscData(std::make_shared<Horizon::Models::Characters::Misc>(cmd));
-	c.setGroupData(std::make_shared<Horizon::Models::Characters::Group>(cgd));
-	c.setFamilyData(std::make_shared<Horizon::Models::Characters::Family>(cfd));
-	c.setCompanionData(std::make_shared<Horizon::Models::Characters::Companion>(ccd));
-	c.setAccessData(std::make_shared<Horizon::Models::Characters::Access>(cad));
+	c.setStatusData(std::make_shared<Horizon::Models::Character::Status>(csd));
+	c.setUISettingsData(std::make_shared<Horizon::Models::Character::UISettings>(cus));
+	c.setViewData(std::make_shared<Horizon::Models::Character::View>(cvd));
+	c.setPositionData(std::make_shared<Horizon::Models::Character::Position>(cpd));
+	c.setMiscData(std::make_shared<Horizon::Models::Character::Misc>(cmd));
+	c.setGroupData(std::make_shared<Horizon::Models::Character::Group>(cgd));
+	c.setFamilyData(std::make_shared<Horizon::Models::Character::Family>(cfd));
+	c.setCompanionData(std::make_shared<Horizon::Models::Character::Companion>(ccd));
+	c.setAccessData(std::make_shared<Horizon::Models::Character::Access>(cad));
 
-	return std::make_shared<Horizon::Models::Characters::Character>(c);
+	return std::make_shared<Horizon::Models::Character::Character>(c);
 }
 
 int Horizon::Char::Database::Query::AllCharactersByAccount(std::shared_ptr<GameAccount> account)

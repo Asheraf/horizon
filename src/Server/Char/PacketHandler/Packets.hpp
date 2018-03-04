@@ -78,13 +78,13 @@ struct character_list_data
 {
 	character_list_data() { };
 
-	void create(std::shared_ptr<Horizon::Models::Characters::Character> c)
+	void create(std::shared_ptr<Horizon::Models::Character::Character> c)
 	{
-		std::shared_ptr<Horizon::Models::Characters::Status> status = c->getStatusData();
-		std::shared_ptr<Horizon::Models::Characters::View> view = c->getViewData();
-		std::shared_ptr<Horizon::Models::Characters::Misc> misc = c->getMiscData();
-		std::shared_ptr<Horizon::Models::Characters::Position> position = c->getPositionData();
-		std::shared_ptr<Horizon::Models::Characters::Access> access = c->getAccessData();
+		std::shared_ptr<Horizon::Models::Character::Status> status = c->getStatusData();
+		std::shared_ptr<Horizon::Models::Character::View> view = c->getViewData();
+		std::shared_ptr<Horizon::Models::Character::Misc> misc = c->getMiscData();
+		std::shared_ptr<Horizon::Models::Character::Position> position = c->getPositionData();
+		std::shared_ptr<Horizon::Models::Character::Access> access = c->getAccessData();
 
 		character_id = c->getCharacterID();
 		base_experience = status->getBaseExperience();

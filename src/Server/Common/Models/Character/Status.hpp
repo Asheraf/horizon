@@ -26,7 +26,7 @@ namespace Horizon
 {
 namespace Models
 {
-namespace Characters
+namespace Character
 {
 class Status
 {
@@ -96,7 +96,7 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Characters::Status::LoadFromDatabase: {}", e.what());
+			DBLog->error("Models::Character::Status::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);

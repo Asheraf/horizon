@@ -26,7 +26,7 @@ namespace Horizon
 {
 namespace Models
 {
-namespace Characters
+namespace Character
 {
 class Access
 {
@@ -64,7 +64,7 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Characters::Access::LoadFromDatabase: {}", e.what());
+			DBLog->error("Models::Character::Access::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);

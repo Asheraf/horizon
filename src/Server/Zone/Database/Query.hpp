@@ -30,7 +30,7 @@ namespace Horizon
 {
 	namespace Models
 	{
-		namespace Characters
+		namespace Character
 		{
 			class Character;
 		}
@@ -62,7 +62,7 @@ namespace Horizon
 
 				void InitializeQueryStrings();
 
-				std::shared_ptr<Horizon::Models::Characters::Character> CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res);
+				std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res);
 			};
 		}
 	}

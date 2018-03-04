@@ -18,7 +18,7 @@ namespace Horizon
 	}
 	namespace Models
 	{
-		namespace Characters
+		namespace Character
 		{
 			class Character;
 		}
@@ -43,6 +43,7 @@ public:
 	/* Character */
 	void setCharacter(std::shared_ptr<Character> c) { _character = c; }
 	std::shared_ptr<Character> getCharacter() { return _character; }
+	
 	/* Session */
 	void setSession(std::shared_ptr<Horizon::Zone::Session> s) { _session = s; }
 	std::shared_ptr<Horizon::Zone::Session> getSession() { return _session; }

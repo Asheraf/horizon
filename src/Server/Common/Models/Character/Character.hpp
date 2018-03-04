@@ -42,7 +42,7 @@ namespace Horizon
 {
 namespace Models
 {
-namespace Characters
+namespace Character
 {
 class Character
 {
@@ -89,7 +89,7 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Characters::GameAccount::LoadFromDatabase: {}", e.what());
+			DBLog->error("Models::Character::GameAccount::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);

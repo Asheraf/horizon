@@ -32,7 +32,7 @@ namespace Horizon
 {
 	namespace Models
 	{
-		namespace Characters
+		namespace Character
 		{
 			class Character;
 		}
@@ -52,7 +52,7 @@ enum game_account_state_types
 	ACCOUNT_STATE_BANNED
 };
 
-typedef std::map<uint32_t, std::shared_ptr<Horizon::Models::Characters::Character>> AccountCharacterMapType;
+typedef std::map<uint32_t, std::shared_ptr<Horizon::Models::Character::Character>> AccountCharacterMapType;
 
 class GameAccount
 {
@@ -296,7 +296,7 @@ public:
 	 * @brief Retrieve a character from the account's character list.
 	 * @param[in] id of the character to be retrieved.
 	 */
-	const std::shared_ptr<Horizon::Models::Characters::Character> getCharacter(uint32_t id)
+	const std::shared_ptr<Horizon::Models::Character::Character> getCharacter(uint32_t id)
 	{
 		auto it = _characters.find(id);
 
@@ -310,7 +310,7 @@ public:
 	 * @brief Add a character to the account's character list.
 	 * @param[in|out] character  shared_ptr to the character model to be added.
 	 */
-	void addCharacter(std::shared_ptr<Horizon::Models::Characters::Character> character)
+	void addCharacter(std::shared_ptr<Horizon::Models::Character::Character> character)
 	{
 		auto old_character = getCharacter(character->getCharacterID());
 

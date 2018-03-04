@@ -74,7 +74,7 @@ bool Horizon::Char::Session::update()
  * @brief Validate and handle the initial char-server connection (Packet CHAR_CONNECT)
  * @param[in] buf   Copied instance of the PacketBuffer.
  */
-void Horizon::Char::Session::validateAndHandleConnection(PacketBuffer &buf)
+void Horizon::Char::Session::handleNewConnection(PacketBuffer &buf)
 {
 	PACKET_CHAR_CONNECT pkt;
 
@@ -127,7 +127,7 @@ void Horizon::Char::Session::readHandler()
 		 * based on the client's packet version.
 		 */
 		if (op_code == CHAR_CONNECT) {
-			validateAndHandleConnection(buf);
+			handleNewConnection(buf);
 			return;
 		}
 

@@ -106,12 +106,12 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 		return;
 	}
 
-	std::shared_ptr<Horizon::Models::Characters::Character> character = std::make_shared<Horizon::Models::Characters::Character>(
+	std::shared_ptr<Horizon::Models::Character::Character> character = std::make_shared<Horizon::Models::Character::Character>(
 			getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, gender);
-	character->setStatusData(std::make_shared<Horizon::Models::Characters::Status>(
+	character->setStatusData(std::make_shared<Horizon::Models::Character::Status>(
 			CharServer->getCharConfig().getStartZeny(), pkt.str, pkt.agi, pkt.int_, pkt.vit, pkt.dex, pkt.luk));
-	character->setViewData(std::make_shared<Horizon::Models::Characters::View>(pkt.hair_style, pkt.hair_color));
-	character->setPositionData(std::make_shared<Horizon::Models::Characters::Position>(
+	character->setViewData(std::make_shared<Horizon::Models::Character::View>(pkt.hair_style, pkt.hair_color));
+	character->setPositionData(std::make_shared<Horizon::Models::Character::Position>(
 			CharServer->getCharConfig().getStartMap(), CharServer->getCharConfig().getStartX(), CharServer->getCharConfig().getStartY()));
 	
 	// Save character to sql.
@@ -128,7 +128,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
 
 	buf >> pkt;
 
-	std::shared_ptr<Horizon::Models::Characters::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+	std::shared_ptr<Horizon::Models::Character::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
@@ -163,7 +163,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
 
 	buf >> pkt;
 
-	std::shared_ptr<Horizon::Models::Characters::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+	std::shared_ptr<Horizon::Models::Character::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
@@ -199,7 +199,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
 
 	buf >> pkt;
 
-	std::shared_ptr<Horizon::Models::Characters::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+	std::shared_ptr<Horizon::Models::Character::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
@@ -223,7 +223,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
 {
 	PACKET_CHAR_SELECT pkt;
 	AccountCharacterMapType characters = getSession()->getGameAccount()->getAllCharacters();
-	std::shared_ptr<Horizon::Models::Characters::Character> character;
+	std::shared_ptr<Horizon::Models::Character::Character> character;
 	buf >> pkt;
 
 	if (characters.empty())
@@ -379,7 +379,7 @@ void Horizon::Char::PacketHandler::Send_CHAR_PINCODE_STATE_ACK()
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character)
+void Horizon::Char::PacketHandler::Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Character::Character> character)
 {
 	PACKET_CHAR_CREATE_SUCCESS_ACK pkt;
 
@@ -425,7 +425,7 @@ void Horizon::Char::PacketHandler::Send_CHAR_CREATE_ERROR_ACK(char_create_error_
 	SendPacket(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Characters::Character> character)
+void Horizon::Char::PacketHandler::Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Character::Character> character)
 {
 	PACKET_CHAR_SEND_ZONE_INFO pkt;
 	std::string map_name;

@@ -26,7 +26,7 @@ namespace Horizon
 {
 namespace Models
 {
-namespace Characters
+namespace Character
 {
 class UISettings
 {
@@ -66,7 +66,7 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Characters::Misc::LoadFromDatabase: {}", e.what());
+			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);

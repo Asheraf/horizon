@@ -30,7 +30,7 @@ namespace Horizon
 {
 	namespace Models
 	{
-		namespace Characters
+		namespace Character
 		{
 			class Character;
 		}
@@ -63,7 +63,7 @@ public:
 	void InitializeQueryStrings();
 
 	int AllCharactersByAccount(std::shared_ptr<GameAccount> account);
-	std::shared_ptr<Horizon::Models::Characters::Character> CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res);
+	std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res);
 	int CheckExistingCharByName(std::string name);
 };
 }

@@ -60,12 +60,12 @@ public:
 	virtual void Send_CHAR_RESEND_CHAR_LIST();
 	virtual void Send_CHAR_BAN_LIST_ACK();
 	virtual void Send_CHAR_PINCODE_STATE_ACK();
-	virtual void Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Characters::Character> character);
+	virtual void Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Character::Character> character);
 	virtual void Send_CHAR_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date);
 	virtual void Send_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result);
 	virtual void Send_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success);
 	virtual void Send_CHAR_CREATE_ERROR_ACK(char_create_error_types error);
-	virtual void Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Characters::Character> character);
+	virtual void Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Character::Character> character);
 };
 }
 }

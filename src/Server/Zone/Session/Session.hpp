@@ -49,7 +49,7 @@ public:
 	bool update() override;
 
 	/* Zone Connect Handler */
-	void validateAndHandleConnection(PacketBuffer &buf);
+	void handleNewConnection(PacketBuffer &buf);
 	/* Packet Handler */
 	std::shared_ptr<PacketHandler> getPacketHandler();
 	void setPacketHandler(std::shared_ptr<PacketHandler> handler);

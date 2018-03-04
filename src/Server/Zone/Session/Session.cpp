@@ -17,6 +17,7 @@
 
 #include "Session.hpp"
 
+#include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
@@ -73,8 +74,9 @@ bool Horizon::Zone::Session::update()
  * @brief Validate and handle the initial char-server connection (Packet CZ_ENTER)
  * @param[in] buf   Copied instance of the PacketBuffer.
  */
-void Horizon::Zone::Session::validateAndHandleConnection(PacketBuffer &buf)
+void Horizon::Zone::Session::handleNewConnection(PacketBuffer &buf)
 {
+	std::shared_ptr<Horizon::Models::Character::Character> character;
 	uint32_t account_id, char_id, auth_code;
 
 	switch (buf.getOpCode())
@@ -133,7 +135,7 @@ void Horizon::Zone::Session::readHandler()
 		 * (CZ_ENTER) is handled separately.
 		 */
 		if (getPacketHandler() == nullptr) {
-			validateAndHandleConnection(buf);
+			handleNewConnection(buf);
 			return;
 		}
 
