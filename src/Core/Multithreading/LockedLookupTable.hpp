@@ -26,12 +26,6 @@
 #include <list>
 #include <vector>
 
-enum lookup_table_insert_type
-{
-	LTI_ADDED,
-	LTI_UPDATED,
-};
-
 template <typename Key, typename Value, typename Hash=std::hash<Key>>
 class LockedLookupTable
 {
@@ -56,9 +50,9 @@ public:
 		return get_bucket(key).at(key, default_value);
 	}
 
-	lookup_table_insert_type insert(const Key &key, const Value &value)
+	void insert(const Key &key, const Value &value)
 	{
-		return get_bucket(key).insert(key, value);
+		get_bucket(key).insert(key, value);
 	}
 
 	void erase(const Key &key)
@@ -86,7 +80,24 @@ public:
 	}
 
 	int max_collisions() { return buckets[0]->data.size() ? buckets[0]->data.size() - 1 : 0; }
+	std::size_t size()
+	{
+		std::vector<boost::unique_lock<boost::shared_mutex>> locks;
+		std::size_t count = 0;
 
+		for (unsigned i = 0;  i < buckets.size(); ++i)
+			locks.push_back(boost::unique_lock<boost::shared_mutex>(buckets[i]->_mutex));
+
+		for (unsigned i = 0; i < buckets.size(); ++i) {
+			for (typename bucket_type::bucket_iterator it = buckets[i]->data.begin();
+				 it != buckets[i]->data.end();
+				 ++it) {
+				count++;
+			}
+		}
+
+		return count;
+	}
 private:
 	std::vector<std::unique_ptr<bucket_type>> buckets;
 	Hash hasher;
@@ -101,8 +112,10 @@ private:
 	{
 		typedef std::pair<Key, Value> bucket_value;
 		typedef std::list<bucket_value> bucket_data;
+	
 	public:
 		typedef typename bucket_data::iterator bucket_iterator;
+
 		Value at(Key const &key, Value const &default_value)
 		{
 			boost::shared_lock<boost::shared_mutex> lock(_mutex);
@@ -110,17 +123,15 @@ private:
 			return (found_entry == data.end()) ? default_value : found_entry->second;
 		}
 
-		lookup_table_insert_type insert(Key const &key, Value const &value)
+		void insert(Key const &key, Value const &value)
 		{
 			std::unique_lock<boost::shared_mutex> lock(_mutex);
 			bucket_iterator found_entry = find_entry_for(key);
-			if (found_entry == data.end()) {
-				data.push_back(bucket_value(key, value));
-				return LTI_ADDED;
-			} else {
-				found_entry->second = value;
-				return LTI_UPDATED;
-			}
+			
+			if (found_entry != data.end())
+				data.erase(found_entry);
+
+			data.push_back(bucket_value(key, value));
 		}
 
 		void erase(Key const &key)
@@ -133,6 +144,7 @@ private:
 
 		bucket_data data;
 		mutable boost::shared_mutex _mutex;
+
 	private:
 		bucket_iterator find_entry_for(Key const &key)
 		{

@@ -16,20 +16,28 @@
  **************************************************/
 
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "BCryptTest"
+#define BOOST_TEST_MODULE "WorkerThreadPoolTest"
 
-#include "Libraries/BCrypt/BCrypt.hpp"
+#include "Core/Multithreading/WorkerThreadPool.hpp"
 #include <boost/test/unit_test.hpp>
 #include <cstring>
+#include <thread>
+#include <cstdio>
+#include <iostream>
 
-
-BOOST_AUTO_TEST_CASE(BCryptTest)
+int work_1(int num = 10)
 {
-	BCrypt bcrypt;
-	std::string pass = "hi,mom";
-	std::string hash;
+	for (int i = 0; i < 100000000; i += num)
+		;
+	return num;
+}
 
-	BOOST_CHECK(bcrypt.validatePassword(pass, "$2a$10$VEVmGHy4F4XQMJ3eOZJAUeb.MedU0W10pTPCuf53eHdKJPiSE8sMK"));
-	hash = bcrypt.generateHash(pass);
-	BOOST_CHECK(bcrypt.validatePassword(pass, hash));
+BOOST_AUTO_TEST_CASE(WorkerThreadPoolTest)
+{
+	WorkerThreadPool pool;
+
+	for (int i = 0; i < 1000; i++) {
+		std::future<typename std::result_of<std::function<void()>()>::type> fut = pool.submit([i]() { if (work_1(10)) std::cout << i << std::endl; });
+		fut.wait();
+	}
 }

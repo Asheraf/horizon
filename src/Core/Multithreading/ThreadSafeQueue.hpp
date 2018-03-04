@@ -17,7 +17,7 @@
 #define HORIZON_CORE_MULTITHREADING_THREADSAFEQUEUE_HPP
 
 #include <memory>
-#include <mutex>
+#include <boost/thread.hpp>
 
 template<typename T>
 class ThreadSafeQueue
@@ -29,20 +29,21 @@ private:
         std::unique_ptr<node> next;
     };
 
-    std::mutex head_mutex;
+    boost::mutex head_mutex;
     std::unique_ptr<node> head;
-    std::mutex tail_mutex;
+    boost::mutex tail_mutex;
     node *tail;
 
     node *get_tail()
     {
-        std::lock_guard<std::mutex> tail_lock(tail_mutex);
+		boost::unique_lock<boost::mutex> tail_lock(tail_mutex);
         return tail;
     }
 
     std::unique_ptr<node> pop_head()
     {
-        std::lock_guard<std::mutex> head_lock(head_mutex);
+        boost::unique_lock<boost::mutex> head_lock(head_mutex);
+
         if(head.get() == get_tail())
             return nullptr;
 
@@ -79,7 +80,7 @@ public:
             std::make_shared<T>(std::move(new_value)));
         std::unique_ptr<node> p(new node);
 		node *new_tail = p.get();
-        std::lock_guard<std::mutex> tail_lock(tail_mutex);
+        boost::unique_lock<boost::mutex> tail_lock(tail_mutex);
         tail->data = new_data;
         tail->next = std::move(p);
         tail = new_tail;
@@ -88,8 +89,8 @@ public:
 	std::size_t size()
 	{
 		int count = 0;
-		std::lock_guard<std::mutex> head_lock(head_mutex);
-		std::lock_guard<std::mutex> tail_lock(tail_mutex);
+		boost::unique_lock<boost::mutex> head_lock(head_mutex);
+		boost::unique_lock<boost::mutex> tail_lock(tail_mutex);
 		node const *n = head.get();
 
 		while ((n = n->next.get())) {
