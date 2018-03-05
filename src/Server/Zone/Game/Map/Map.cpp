@@ -53,7 +53,9 @@ bool Horizon::Zone::Game::Map::ensureGrid(GridCoords coords)
 	if (unusable_cells == MAX_CELLS_PER_GRID * MAX_CELLS_PER_GRID)
 		return false;
 
+	_grid_init_mutex.lock();
 	_grid.initializeGrid(coords);
+	_grid_init_mutex.unlock();
 
 	return true;
 }

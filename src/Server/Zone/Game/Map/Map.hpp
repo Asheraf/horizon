@@ -58,7 +58,7 @@ private:
 	uint16_t _grid_width{0}, _grid_height{0};
 	boost::multi_array<std::shared_ptr<Cell>, 2> _cells;
 	GridHolderType _grid;
-	boost::mutex _grid_link_mutex;
+	boost::mutex _grid_init_mutex;
 };
 }
 }

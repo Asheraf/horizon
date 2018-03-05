@@ -37,7 +37,7 @@ public:
 		assert(coords.x() < _width);
 		assert(coords.y() < _height);
 
-		_grids[coords.x()][coords.y()] = std::make_shared<GridType>();
+		_grids[coords.x()][coords.y()] = std::move(std::make_shared<GridType>());
 	}
 
 	uint16_t height() { return _height; }
