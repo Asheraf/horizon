@@ -204,6 +204,8 @@ public:
 
 	void closeConnection(std::string const &conn_name)
 	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+		
 		auto it = _network_connector_pool.find(conn_name);
 
 		if (it != _network_connector_pool.end()) {
