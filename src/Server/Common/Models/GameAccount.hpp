@@ -74,7 +74,7 @@ public:
 	 */
 	bool VerifyCredentials(Server *server, std::string username, std::string password)
 	{
-		std::string query = "SELECT * FROM `game_account` WHERE username = ? AND password = ?";
+		std::string query = "SELECT * FROM `game_account` WHERE `username` = ? AND `password` = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 

@@ -40,9 +40,9 @@ public:
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM character_misc_data WHERE char_id = ?";
+		std::string query = "SELECT * FROM `character_misc_data` WHERE `id` = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 
@@ -59,7 +59,7 @@ public:
 				setRenameCount((uint8_t) res->getUInt("rename_count"));
 				setUniqueItemCounter(res->getUInt("unique_item_counter"));
 				setHotkeyRowIndex((uint16_t) res->getUInt("hotkey_row_index"));
-				setChangeSlotCount((uint8_t) res->getUInt("change_slot"));
+				setChangeSlotCount((uint8_t) res->getUInt("change_slot_count"));
 				ret = true;
 			}
 

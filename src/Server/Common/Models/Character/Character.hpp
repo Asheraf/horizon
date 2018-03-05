@@ -64,7 +64,7 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM characters WHERE char_id = ?";
+		std::string query = "SELECT * FROM characters WHERE id = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 
@@ -89,12 +89,58 @@ public:
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::GameAccount::LoadFromDatabase: {}", e.what());
+			DBLog->error("Models::Character::Character::LoadFromDatabase: {}", e.what());
 		}
 
 		server->MySQLUnborrow(sql);
 
 		return ret;
+	}
+
+	bool loadAll(Server *server, uint32_t char_id)
+	{
+		if (!load(server, char_id))
+			return false;
+
+		if (getStatusData() == nullptr)
+			setStatusData(std::make_shared<Status>());
+		if (getAccessData() == nullptr)
+			setAccessData(std::make_shared<Access>());
+		if (getViewData() == nullptr)
+			setViewData(std::make_shared<View>());
+		if (getFamilyData() == nullptr)
+			setFamilyData(std::make_shared<Family>());
+		if (getCompanionData() == nullptr)
+			setCompanionData(std::make_shared<Companion>());
+		if (getGroupData() == nullptr)
+			setGroupData(std::make_shared<Group>());
+		if (getMiscData() == nullptr)
+			setMiscData(std::make_shared<Misc>());
+		if (getPositionData() == nullptr)
+			setPositionData(std::make_shared<Position>());
+		if (getUISettingsData() == nullptr)
+			setUISettingsData(std::make_shared<UISettings>());
+
+		if (!getStatusData()->load(server, char_id))
+			return false;
+		if (!getAccessData()->load(server, char_id))
+			return false;
+		if (!getViewData()->load(server, char_id))
+			return false;
+		if (!getFamilyData()->load(server, char_id))
+			return false;
+		if (!getCompanionData()->load(server, char_id))
+			return false;
+		if (!getGroupData()->load(server, char_id))
+			return false;
+		if (!getMiscData()->load(server, char_id))
+			return false;
+		if (!getPositionData()->load(server, char_id))
+			return false;
+		if (!getUISettingsData()->load(server, char_id))
+			return false;
+
+		return true;
 	}
 
 	/**

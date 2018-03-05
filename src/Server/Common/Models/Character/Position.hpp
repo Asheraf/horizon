@@ -34,8 +34,8 @@ public:
 	Position() {}
 	~Position() {}
 
-	Position(std::string start_map, uint16_t start_x, uint16_t start_y)
-	: saved_map(start_map), saved_x(start_x), saved_y(start_y)
+	Position(std::string const &start_map, uint16_t start_x, uint16_t start_y)
+	: _saved_map(start_map), _saved_x(start_x), _saved_y(start_y)
 	{
 		//
 	}
@@ -48,7 +48,7 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM character_position_data WHERE char_id = ?";
+		std::string query = "SELECT * FROM `character_position_data` WHERE `id` = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 
@@ -114,33 +114,33 @@ public:
 	}
 
 	/* Character ID */
-	uint32_t getCharacterID() const { return character_id; }
-	void setCharacterID(uint32_t character_id) { Position::character_id = character_id; }
+	uint32_t getCharacterID() const { return _character_id; }
+	void setCharacterID(uint32_t id) { _character_id = id; }
 	/* Current Map */
-	const std::string &getCurrentMap() const { return current_map; }
-	void setCurrentMap(const std::string &current_map) { Position::current_map = current_map; }
+	const std::string &getCurrentMap() const { return _current_map; }
+	void setCurrentMap(const std::string &map) { _current_map = map; }
 	/* Current X */
-	uint16_t getCurrentX() const { return current_x; }
-	void setCurrentX(uint16_t current_x) { Position::current_x = current_x; }
+	uint16_t getCurrentX() const { return _current_x; }
+	void setCurrentX(uint16_t current_x) { _current_x = current_x; }
 	/* Current Y */
-	uint16_t getCurrentY() const { return current_y; }
-	void setCurrentY(uint16_t current_y) { Position::current_y = current_y; }
+	uint16_t getCurrentY() const { return _current_y; }
+	void setCurrentY(uint16_t current_y) { _current_y = current_y; }
 	/* Saved Map */
-	const std::string &getSavedMap() const { return saved_map; }
-	void setSavedMap(const std::string &saved_map) { Position::saved_map = saved_map; }
+	const std::string &getSavedMap() const { return _saved_map; }
+	void setSavedMap(const std::string &saved_map) { _saved_map = saved_map; }
 	/* Saved X */
-	uint16_t getSavedX() const { return saved_x; }
-	void setSavedX(uint16_t saved_x) { Position::saved_x = saved_x; }
+	uint16_t getSavedX() const { return _saved_x; }
+	void setSavedX(uint16_t saved_x) { _saved_x = saved_x; }
 	/* Saved Y */
-	uint16_t getSavedY() const { return saved_y; }
-	void setSavedY(uint16_t saved_y) { Position::saved_y = saved_y; }
+	uint16_t getSavedY() const { return _saved_y; }
+	void setSavedY(uint16_t saved_y) { _saved_y = saved_y; }
 
 private:
-	uint32_t character_id{0};
-	std::string current_map{""};
-	uint16_t current_x{0}, current_y{0};
-	std::string saved_map{""};
-	uint16_t saved_x{0}, saved_y{0};
+	uint32_t _character_id{0};
+	std::string _current_map{""};
+	uint16_t _current_x{0}, _current_y{0};
+	std::string _saved_map{""};
+	uint16_t _saved_x{0}, _saved_y{0};
 };
 }
 }

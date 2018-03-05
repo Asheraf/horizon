@@ -48,7 +48,7 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM character_view_data WHERE char_id = ?";
+		std::string query = "SELECT * FROM `character_view_data` WHERE `id` = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 

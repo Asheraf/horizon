@@ -40,9 +40,9 @@ public:
 	 * @param char_id
 	 * @return
 	 */
-	bool LoadFromDatabase(Server *server, uint32_t char_id)
+	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM character_access_data WHERE char_id = ?";
+		std::string query = "SELECT * FROM `character_access_data` WHERE `id` = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 
@@ -98,19 +98,19 @@ public:
 	}
 
 	/* Char ID */
-	uint32_t getCharacterID() const { return character_id; }
-	void setCharacterID(uint32_t character_id) { Access::character_id = character_id; }
+	uint32_t getCharacterID() const { return _character_id; }
+	void setCharacterID(uint32_t character_id) { _character_id = character_id; }
 	/* Unban Time */
-	uint32_t getUnbanTime() const { return unban_time; }
-	void setUnbanTime(uint32_t unban_time) { Access::unban_time = unban_time; }
+	uint32_t getUnbanTime() const { return _unban_time; }
+	void setUnbanTime(uint32_t unban_time) { _unban_time = unban_time; }
 	/* Account Delete Date */
-	uint32_t getDeleteDate() const { return delete_date; }
-	void setDeleteDate(uint32_t delete_date) { Access::delete_date = delete_date; }
+	uint32_t getDeleteDate() const { return _delete_date; }
+	void setDeleteDate(uint32_t delete_date) { _delete_date = delete_date; }
 
 private:
-	uint32_t character_id{0};        ///< Character ID
-	uint32_t unban_time{0};          ///< Time until character is unbanned.
-	uint32_t delete_date{0};         ///< Date when the character may be deleted, if set for deletion.
+	uint32_t _character_id{0};        ///< Character ID
+	uint32_t _unban_time{0};          ///< Time until character is unbanned.
+	uint32_t _delete_date{0};         ///< Date when the character may be deleted, if set for deletion.
 };
 }
 }

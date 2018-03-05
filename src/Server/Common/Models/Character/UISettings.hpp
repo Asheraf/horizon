@@ -42,7 +42,7 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM character_ui_settings WHERE char_id = ?";
+		std::string query = "SELECT * FROM `character_ui_settings` WHERE `id` = ?";
 		auto sql = server->MySQLBorrow();
 		bool ret = false;
 
