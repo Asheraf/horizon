@@ -151,10 +151,10 @@ CREATE TABLE `character_view_data` (
 
 CREATE TABLE `character_position_data` (
   `id` int(11) unsigned NOT NULL,
-  `current_map` varchar(11) NOT NULL DEFAULT '',
+  `current_map` varchar(11) NOT NULL DEFAULT 'new_1-1',
   `current_x` smallint(4) unsigned NOT NULL DEFAULT 53,
   `current_y` smallint(4) unsigned NOT NULL DEFAULT 111,
-  `saved_map` varchar(11) NOT NULL DEFAULT '',
+  `saved_map` varchar(11) NOT NULL DEFAULT 'new_1-1',
   `saved_x` smallint(4) unsigned NOT NULL DEFAULT 53,
   `saved_y` smallint(4) unsigned NOT NULL DEFAULT 111,
   PRIMARY KEY (`id`),
