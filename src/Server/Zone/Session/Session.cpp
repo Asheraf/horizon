@@ -18,10 +18,10 @@
 #include "Session.hpp"
 
 #include "Server/Common/Models/Character/Character.hpp"
+#include "Server/Zone/Game/Models/Entities/Unit/Player/Player.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
-#include "Server/Zone/Interface/InterAPI.hpp"
 #include "Server/Zone/PacketHandler/Packets.hpp"
 #include "Server/Zone/PacketHandler/PacketHandlerFactory.hpp"
 #include "Server/Zone/PacketHandler/PacketHandler.hpp"
@@ -76,45 +76,16 @@ bool Horizon::Zone::Session::update()
  */
 void Horizon::Zone::Session::handleNewConnection(PacketBuffer &buf)
 {
-	std::shared_ptr<Horizon::Models::Character::Character> character;
-	uint32_t account_id, char_id, auth_code;
-
 	switch (buf.getOpCode())
 	{
 	case PacketVer20141022::CZ_ENTER:
 	{
-		PacketVer20141022::PACKET_CZ_ENTER pkt;
-		buf >> pkt;
-		account_id = pkt.account_id;
-		char_id = pkt.char_id;
-		auth_code = pkt.auth_code;
 		setPacketHandler(PacketHandlerFactory::CreatePacketHandler(shared_from_this(), 20141022));
 		break;
 	}
 	default:
 		ZoneLog->info("New connection attempt from unknown client version. Packet Id: '{0:x}'.", buf.getOpCode());
-		return;
 	}
-
-	setSessionData(ZoneInterAPI->GetSessionFromInter(auth_code));
-	if (getSessionData() == nullptr) {
-		ZoneLog->info("New connection attempt from unauthorized session '{}'.", auth_code);
-		getPacketHandler()->Send_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
-		return;
-	}
-
-	setGameAccount(ZoneInterAPI->GetGameAccountFromInter(account_id));
-	if (getGameAccount() == nullptr) {
-		ZoneLog->info("New connection attempt from unknown account '{}'.", account_id);
-		getPacketHandler()->Send_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
-		return;
-	}
-
-	getPacketHandler()->Send_ZC_ACCOUNT_ID();
-	getPacketHandler()->Send_ZC_ACCEPT_CONNECTION();
-	//getPacketHandler()->Send_ZC_NPCACK_MAPMOVE("prontera", 101, 120);
-	ZoneLog->info("New connection established for account '{}' using version '{}' from '{}'.",
-				  account_id, getSessionData()->getClientVersion(), getRemoteIPAddress());
 }
 
 /**
@@ -132,12 +103,9 @@ void Horizon::Zone::Session::readHandler()
 		/**
 		 * Devise a suitable packet handler
 		 * based on the client's packet version.
-		 * (CZ_ENTER) is handled separately.
 		 */
-		if (getPacketHandler() == nullptr) {
+		if (getPacketHandler() == nullptr)
 			handleNewConnection(buf);
-			return;
-		}
 
 		if (getPacketHandler() == nullptr) {
 			ZoneLog->error("Packet handler was null!");
@@ -148,7 +116,9 @@ void Horizon::Zone::Session::readHandler()
 	}
 }
 
-
+/**
+ * Packet Handler
+ */
 std::shared_ptr<Horizon::Zone::PacketHandler> Horizon::Zone::Session::getPacketHandler()
 {
 	return _packet_handler;
@@ -157,4 +127,30 @@ std::shared_ptr<Horizon::Zone::PacketHandler> Horizon::Zone::Session::getPacketH
 void Horizon::Zone::Session::setPacketHandler(std::shared_ptr<PacketHandler> handler)
 {
 	_packet_handler = handler;
+}
+
+/**
+ * Character
+ */
+std::shared_ptr<Character> Horizon::Zone::Session::getCharacter()
+{
+	return _character;
+}
+
+void Horizon::Zone::Session::setCharacter(std::shared_ptr<Character> const &c)
+{
+	_character = c;
+}
+
+/**
+ * Player
+ */
+std::shared_ptr<Player> Horizon::Zone::Session::getPlayer()
+{
+	return _player;
+}
+
+void Horizon::Zone::Session::setPlayer(std::shared_ptr<Player> const &p)
+{
+	_player = p;
 }

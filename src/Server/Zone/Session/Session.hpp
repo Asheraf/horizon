@@ -34,6 +34,31 @@ class PacketBuffer;
 
 namespace Horizon
 {
+	namespace Models
+	{
+		namespace Character
+		{
+			class Character;
+		}
+	}
+	
+	namespace Zone
+	{
+		namespace Game
+		{
+			namespace Entities
+			{
+				class Player;
+			}
+		}
+	}
+}
+
+using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Models::Character;
+
+namespace Horizon
+{
 namespace Zone
 {
 class PacketHandler;
@@ -53,6 +78,12 @@ public:
 	/* Packet Handler */
 	std::shared_ptr<PacketHandler> getPacketHandler();
 	void setPacketHandler(std::shared_ptr<PacketHandler> handler);
+	/* Character */
+	std::shared_ptr<Character> getCharacter();
+	void setCharacter(std::shared_ptr<Character> const &c);
+	/* Player */
+	std::shared_ptr<Player> getPlayer();
+	void setPlayer(std::shared_ptr<Player> const &p);
 	/* */
 protected:
 	void readHandler() override;
@@ -61,6 +92,8 @@ protected:
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
 	ThreadSafeQueue<PacketBuffer> _packet_queue;
+	std::shared_ptr<Player> _player;
+	std::shared_ptr<Character> _character;
 };
 }
 }
