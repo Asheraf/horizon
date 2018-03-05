@@ -1,7 +1,7 @@
 #ifndef HORIZON_ZONE_GAME_ENTITIES_CREATURE_HPP
 #define HORIZON_ZONE_GAME_ENTITIES_CREATURE_HPP
 
-#include "Server/Zone/Game/Models/Entities/Entity.hpp"
+#include "Server/Zone/Game/Models/Entities/Unit/Unit.hpp"
 
 namespace Horizon
 {
@@ -11,7 +11,7 @@ namespace Game
 {
 namespace Entities
 {
-class Creature : public Entity
+class Creature : public Unit
 {
 public:
 	Creature(uint32_t guid);

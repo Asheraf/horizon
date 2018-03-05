@@ -2,7 +2,7 @@
 #ifndef HORIZON_ZONE_GAME_ENTITIES_SKILL_HPP
 #define HORIZON_ZONE_GAME_ENTITIES_SKILL_HPP
 
-#include "Server/Zone/Game/Models/Entities/Entity.hpp"
+#include "Server/Zone/Game/Models/Entities/Unit/Unit.hpp"
 
 namespace Horizon
 {
@@ -14,7 +14,7 @@ template<class T>
 class GridObject;
 namespace Entities
 {
-class Skill : public Entity, public GridObject<Skill>
+class Skill : public Unit, public GridObject<Skill>
 {
 public:
 	Skill(uint32_t guid);

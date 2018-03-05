@@ -2,7 +2,7 @@
 #ifndef HORIZON_ZONE_GAME_ENTITIES_PLAYER_HPP
 #define HORIZON_ZONE_GAME_ENTITIES_PLAYER_HPP
 
-#include "Server/Zone/Game/Models/Entities/Entity.hpp"
+#include "Server/Zone/Game/Models/Entities/Unit/Unit.hpp"
 
 namespace Horizon
 {
@@ -24,7 +24,8 @@ namespace Horizon
 		}
 	}
 }
-using namespace Horizon::Models::Characters;
+
+using namespace Horizon::Models::Character;
 
 namespace Horizon
 {
@@ -34,7 +35,7 @@ namespace Game
 {
 namespace Entities
 {
-class Player : public Entity, public GridObject<Player>
+class Player : public Unit, public GridObject<Player>
 {
 public:
 	Player(uint32_t guid, std::shared_ptr<Character> c);
@@ -43,7 +44,7 @@ public:
 	/* Character */
 	void setCharacter(std::shared_ptr<Character> c) { _character = c; }
 	std::shared_ptr<Character> getCharacter() { return _character; }
-	
+
 	/* Session */
 	void setSession(std::shared_ptr<Horizon::Zone::Session> s) { _session = s; }
 	std::shared_ptr<Horizon::Zone::Session> getSession() { return _session; }

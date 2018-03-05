@@ -1,7 +1,7 @@
 #ifndef HORIZON_ZONE_GAME_ENTITIES_NPC_HPP
 #define HORIZON_ZONE_GAME_ENTITIES_NPC_HPP
 
-#include "Server/Zone/Game/Models/Entities/Entity.hpp"
+#include "Server/Zone/Game/Models/Entities/Unit/Unit.hpp"
 
 namespace Horizon
 {
@@ -13,7 +13,7 @@ template<class T>
 class GridObject;
 namespace Entities
 {
-class NPC : public Entity, public GridObject<NPC>
+class NPC : public Unit, public GridObject<NPC>
 {
 public:
 	NPC(uint32_t guid);
