@@ -61,21 +61,31 @@ uint16_t ntows(uint16_t netshort)
 	return (uint16_t) (((netshort & 0xFF) << 8) | ((netshort & 0xFF00) >> 8));
 }
 
-void PackPosition(uint8_t *p, short x, short y, unsigned char dir)
+void PackPosition(uint8_t *p, uint16_t x, uint16_t y, uint8_t dir)
 {
 	p[0] = (uint8_t) (x >> 2);
 	p[1] = (uint8_t) ((x << 6) | ((y >> 4) & 0x3f));
 	p[2] = (uint8_t) ((y << 4) | (dir & 0xf));
 }
 
+void UnpackPosition(const uint8_t *p, uint16_t *x, uint16_t *y, uint8_t *dir)
+{
+	if (x != nullptr)
+		*x = ((p[0] & 0xff) << 2) | (p[1] >> 6);
+	if (y != nullptr)
+		*y = ((p[1] & 0x3f) << 4) | (p[2] >> 4);
+	if (dir != nullptr)
+		*dir = (p[2] & 0x0f);
+}
+
 // little endian char array to uint conversion
-unsigned int GetULong(unsigned char* p)
+unsigned int GetULong(unsigned char *p)
 {
 	return (p[0] << 0 | p[1] << 8 | p[2] << 16 | p[3] << 24);
 }
 
 // Reads a float (32 bits) from the buffer
-float GetFloat(const unsigned char* buf)
+float GetFloat(const unsigned char *buf)
 {
 	uint32_t val = GetULong((unsigned char *) buf);
 	return *((float *) (void *) &val);
