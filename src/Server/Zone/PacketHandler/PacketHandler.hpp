@@ -42,9 +42,12 @@ public:
 	/**
 	 * Handlers
 	 */
+	virtual void Handle_CZ_ENTER(PacketBuffer &buf);
 	virtual void Handle_CZ_LOGIN_TIMESTAMP(PacketBuffer &buf);
 	virtual void Handle_CZ_REQUEST_TIME(PacketBuffer &buf);
 	virtual void Handle_CZ_REQNAME(PacketBuffer &buf);
+	virtual void Handle_CZ_REQUEST_ACT(PacketBuffer &buf);
+	virtual void Handle_CZ_REQUEST_MOVE(PacketBuffer &buf);
 	/**
 	 * Senders
 	 */

@@ -34,14 +34,12 @@ void Horizon::Zone::PacketHandler20141022::InitializeHandlers()
 	PacketHandler::InitializeHandlers();
 
 #define HANDLER_FUNC(packet) addPacketHandler(PacketVer20141022::packets::packet, boost::bind(&PacketHandler20141022::Handle_ ## packet, this, boost::placeholders::_1));
+	HANDLER_FUNC(CZ_ENTER);
 	HANDLER_FUNC(CZ_REQUEST_TIME);
 	HANDLER_FUNC(CZ_REQNAME);
+	HANDLER_FUNC(CZ_REQUEST_ACT);
+	HANDLER_FUNC(CZ_REQUEST_MOVE);
 #undef HANDLER_FUNC
-}
-
-void Horizon::Zone::PacketHandler20141022::Handle_CZ_ENTER(PacketVer20141022::PACKET_CZ_ENTER &pkt)
-{
-
 }
 
 

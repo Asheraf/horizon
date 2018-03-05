@@ -43,10 +43,29 @@ enum packets
 	CZ_REQ_GUILD_MENUINTERFACE    = 0x014d,
 	CZ_REQ_GUILD_MENU             = 0x014f,
 };
-}
-}
-
+	
 #pragma pack(push, 1)
+struct PACKET_CZ_ENTER : public Packet
+{
+	PACKET_CZ_ENTER(uint16_t id) : Packet(id) { }
+	uint32_t account_id;
+	uint32_t char_id;
+	uint32_t auth_code;
+	uint32_t client_time;
+	uint8_t gender;
+};
+struct PACKET_CZ_REQUEST_ACT : public Packet
+{
+	PACKET_CZ_REQUEST_ACT(uint16_t id) : Packet(id) { }
+	uint32_t target_guid;
+	uint8_t action;
+};
+struct PACKET_CZ_REQUEST_MOVE : public Packet
+{
+	PACKET_CZ_REQUEST_MOVE(uint16_t id) : Packet(id) { }
+	uint8_t packed_destination[3];
+};
+
 enum zone_server_reject_types : uint8_t
 {
 	ZONE_SERV_ERROR_REJECT = 3,
@@ -166,5 +185,8 @@ struct PACKET_CZ_REQ_GUILD_MENU : public Packet
 };
 
 #pragma pack(pop)
+}
+}
+
 
 #endif // HORIZON_ZONE_PACKETS_HPP
