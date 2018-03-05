@@ -68,7 +68,7 @@ namespace Horizon
 	}
 }
 
-#define CharQuery Horizon::Zone::Database::Query::getInstance()
+#define ZoneQuery Horizon::Zone::Database::Query::getInstance()
 
 #endif /* HORIZON_ZONE_DATABASE_QUERY_HPP */
 
