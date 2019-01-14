@@ -96,6 +96,7 @@ void Unit::move()
 				_walk_path.erase(_walk_path.begin());
 
 				if (_dest_changed_pos != MapCoords(0, 0)) {
+					getScheduler().CancelGroup(ENTITY_SCHEDULE_WALK);
 					_walk_path.clear();
 					schedule_movement(_dest_changed_pos);
 				} else if (_walk_path.size()) {
@@ -113,12 +114,6 @@ void Unit::move()
 bool Unit::move_to_pos(uint16_t x, uint16_t y)
 {
 	_dest_pos = {x, y};
-	return true;
-}
-
-void Unit::update(uint32_t diff)
-{
-	Entity::update(diff);
 
 	if (_dest_pos != _current_dest_pos) {
 		if (getScheduler().Count(ENTITY_SCHEDULE_WALK)) {
@@ -130,6 +125,13 @@ void Unit::update(uint32_t diff)
 
 	if (!getScheduler().Count(ENTITY_SCHEDULE_WALK) && _current_dest_pos != get_map_coords())
 		schedule_movement(_current_dest_pos);
+
+	return true;
+}
+
+void Unit::update(uint32_t diff)
+{
+	Entity::update(diff);
 }
 
 // Called from a network thread through initialize()
