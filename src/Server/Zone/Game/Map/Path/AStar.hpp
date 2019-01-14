@@ -41,7 +41,7 @@ public:
 	struct node
 	{
 		uint32_t _g{0}, _h{0};
-		coords _coords{{0}};
+		coords _coords{0};
 		node *_parent{nullptr};
 
 		node(coords c, node *p = nullptr)

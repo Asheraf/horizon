@@ -19,6 +19,7 @@
 #define MessageBuffer_hpp
 
 #include <cstring>
+#include <cstdint>
 #include <vector>
 
 class MessageBuffer

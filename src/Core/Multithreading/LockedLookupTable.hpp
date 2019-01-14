@@ -125,7 +125,7 @@ private:
 
 		void insert(Key const &key, Value const &value)
 		{
-			std::unique_lock<boost::shared_mutex> lock(_mutex);
+			boost::unique_lock<boost::shared_mutex> lock(_mutex);
 			bucket_iterator found_entry = find_entry_for(key);
 			
 			if (found_entry != data.end())
@@ -136,7 +136,7 @@ private:
 
 		void erase(Key const &key)
 		{
-			std::unique_lock<boost::shared_mutex> lock(_mutex);
+			boost::unique_lock<boost::shared_mutex> lock(_mutex);
 			bucket_iterator const found_entry = find_entry_for(key);
 			if (found_entry != data.end())
 				data.erase(found_entry);
