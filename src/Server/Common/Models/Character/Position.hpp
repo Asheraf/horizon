@@ -49,7 +49,7 @@ public:
 	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM `character_position_data` WHERE `id` = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -61,13 +61,13 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterID(char_id);
-				setCurrentMap(res->getString("current_map"));
-				setCurrentX((uint16_t) res->getInt("current_x"));
-				setCurrentY((uint16_t) res->getInt("current_y"));
-				setSavedMap(res->getString("saved_map"));
-				setSavedX((uint16_t) res->getInt("saved_x"));
-				setSavedY((uint16_t) res->getInt("saved_y"));
+				set_character_id(char_id);
+				set_current_map(res->getString("current_map"));
+				set_current_x((uint16_t) res->getInt("current_x"));
+				set_current_y((uint16_t) res->getInt("current_y"));
+				set_saved_map(res->getString("saved_map"));
+				set_saved_x((uint16_t) res->getInt("saved_x"));
+				set_saved_y((uint16_t) res->getInt("saved_y"));
 
 				ret = true;
 			}
@@ -78,7 +78,7 @@ public:
 			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
 		return ret;
 	}
@@ -89,7 +89,7 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 
 		std::string query = "REPLACE INTO `character_position_data` "
 			"(`id`, `current_map`, `current_x`, `current_y`, `saved_map`, `saved_x`, `saved_y`) "
@@ -97,43 +97,43 @@ public:
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, getCharacterID());
-			pstmt->setString(2, getCurrentMap());
-			pstmt->setInt(3, getCurrentX());
-			pstmt->setInt(4, getCurrentY());
-			pstmt->setString(5, getSavedMap());
-			pstmt->setInt(6, getSavedX());
-			pstmt->setInt(7, getSavedY());
+			pstmt->setInt(1, get_character_id());
+			pstmt->setString(2, get_current_map());
+			pstmt->setInt(3, get_current_x());
+			pstmt->setInt(4, get_current_y());
+			pstmt->setString(5, get_saved_map());
+			pstmt->setInt(6, get_saved_x());
+			pstmt->setInt(7, get_saved_y());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */
-	uint32_t getCharacterID() const { return _character_id; }
-	void setCharacterID(uint32_t id) { _character_id = id; }
+	uint32_t get_character_id() const { return _character_id; }
+	void set_character_id(uint32_t id) { _character_id = id; }
 	/* Current Map */
-	const std::string &getCurrentMap() const { return _current_map; }
-	void setCurrentMap(const std::string &map) { _current_map = map; }
+	const std::string &get_current_map() const { return _current_map; }
+	void set_current_map(const std::string &map) { _current_map = map; }
 	/* Current X */
-	uint16_t getCurrentX() const { return _current_x; }
-	void setCurrentX(uint16_t current_x) { _current_x = current_x; }
+	uint16_t get_current_x() const { return _current_x; }
+	void set_current_x(uint16_t current_x) { _current_x = current_x; }
 	/* Current Y */
-	uint16_t getCurrentY() const { return _current_y; }
-	void setCurrentY(uint16_t current_y) { _current_y = current_y; }
+	uint16_t get_current_y() const { return _current_y; }
+	void set_current_y(uint16_t current_y) { _current_y = current_y; }
 	/* Saved Map */
-	const std::string &getSavedMap() const { return _saved_map; }
-	void setSavedMap(const std::string &saved_map) { _saved_map = saved_map; }
+	const std::string &get_saved_map() const { return _saved_map; }
+	void set_saved_map(const std::string &saved_map) { _saved_map = saved_map; }
 	/* Saved X */
-	uint16_t getSavedX() const { return _saved_x; }
-	void setSavedX(uint16_t saved_x) { _saved_x = saved_x; }
+	uint16_t get_saved_x() const { return _saved_x; }
+	void set_saved_x(uint16_t saved_x) { _saved_x = saved_x; }
 	/* Saved Y */
-	uint16_t getSavedY() const { return _saved_y; }
-	void setSavedY(uint16_t saved_y) { _saved_y = saved_y; }
+	uint16_t get_saved_y() const { return _saved_y; }
+	void set_saved_y(uint16_t saved_y) { _saved_y = saved_y; }
 
 private:
 	uint32_t _character_id{0};

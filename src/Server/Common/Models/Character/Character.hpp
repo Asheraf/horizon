@@ -65,7 +65,7 @@ public:
 	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM characters WHERE id = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -77,12 +77,12 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterID(char_id);
-				setAccountID(res->getUInt("account_id"));
-				setSlot((uint16_t) res->getUInt("slot"));
-				setName(res->getString("name"));
-				setGender((character_gender_types) res->getInt("gender"));
-				setDeleted(res->getBoolean("deleted"));
+				set_character_id(char_id);
+				set_account_id(res->getUInt("account_id"));
+				set_slot((uint16_t) res->getUInt("slot"));
+				set_name(res->getString("name"));
+				set_gender((character_gender_types) res->getInt("gender"));
+				set_deleted(res->getBoolean("deleted"));
 				ret = true;
 			}
 
@@ -92,52 +92,52 @@ public:
 			DBLog->error("Models::Character::Character::LoadFromDatabase: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
 		return ret;
 	}
 
-	bool loadAll(Server *server, uint32_t char_id)
+	bool load_all(Server *server, uint32_t char_id)
 	{
 		if (!load(server, char_id))
 			return false;
 
-		if (getStatusData() == nullptr)
-			setStatusData(std::make_shared<Status>());
-		if (getAccessData() == nullptr)
-			setAccessData(std::make_shared<Access>());
-		if (getViewData() == nullptr)
-			setViewData(std::make_shared<View>());
-		if (getFamilyData() == nullptr)
-			setFamilyData(std::make_shared<Family>());
-		if (getCompanionData() == nullptr)
-			setCompanionData(std::make_shared<Companion>());
-		if (getGroupData() == nullptr)
-			setGroupData(std::make_shared<Group>());
-		if (getMiscData() == nullptr)
-			setMiscData(std::make_shared<Misc>());
-		if (getPositionData() == nullptr)
-			setPositionData(std::make_shared<Position>());
-		if (getUISettingsData() == nullptr)
-			setUISettingsData(std::make_shared<UISettings>());
+		if (get_status_data() == nullptr)
+			set_status_data(std::make_shared<Status>());
+		if (get_access_data() == nullptr)
+			set_access_data(std::make_shared<Access>());
+		if (get_view_data() == nullptr)
+			set_view_data(std::make_shared<View>());
+		if (get_family_data() == nullptr)
+			set_family_data(std::make_shared<Family>());
+		if (get_companion_data() == nullptr)
+			set_companion_data(std::make_shared<Companion>());
+		if (get_group_data() == nullptr)
+			set_group_data(std::make_shared<Group>());
+		if (get_misc_data() == nullptr)
+			set_misc_data(std::make_shared<Misc>());
+		if (get_position_data() == nullptr)
+			set_position_data(std::make_shared<Position>());
+		if (get_ui_settings() == nullptr)
+			set_ui_settings(std::make_shared<UISettings>());
 
-		if (!getStatusData()->load(server, char_id))
+		if (!get_status_data()->load(server, char_id))
 			return false;
-		if (!getAccessData()->load(server, char_id))
+		if (!get_access_data()->load(server, char_id))
 			return false;
-		if (!getViewData()->load(server, char_id))
+		if (!get_view_data()->load(server, char_id))
 			return false;
-		if (!getFamilyData()->load(server, char_id))
+		if (!get_family_data()->load(server, char_id))
 			return false;
-		if (!getCompanionData()->load(server, char_id))
+		if (!get_companion_data()->load(server, char_id))
 			return false;
-		if (!getGroupData()->load(server, char_id))
+		if (!get_group_data()->load(server, char_id))
 			return false;
-		if (!getMiscData()->load(server, char_id))
+		if (!get_misc_data()->load(server, char_id))
 			return false;
-		if (!getPositionData()->load(server, char_id))
+		if (!get_position_data()->load(server, char_id))
 			return false;
-		if (!getUISettingsData()->load(server, char_id))
+		if (!get_ui_settings()->load(server, char_id))
 			return false;
 
 		return true;
@@ -149,33 +149,33 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		std::string query = "REPLACE INTO `characters` "
 		"(`id`, `account_id`, `slot`, `name`, `online`, `gender`, `deleted`) "
 		"VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, getCharacterID());
-			pstmt->setInt(2, getAccountID());
-			pstmt->setInt(3, getSlot());
-			pstmt->setString(4, getName());
-			pstmt->setBoolean(5, isOnline());
-			pstmt->setString(6, (getGender() == CHARACTER_GENDER_MALE ? "M" : "F"));
-			pstmt->setBoolean(7, isDeleted());
+			pstmt->setInt(1, get_character_id());
+			pstmt->setInt(2, get_account_id());
+			pstmt->setInt(3, get_slot());
+			pstmt->setString(4, get_name());
+			pstmt->setBoolean(5, is_online());
+			pstmt->setString(6, (get_gender() == CHARACTER_GENDER_MALE ? "M" : "F"));
+			pstmt->setBoolean(7, is_deleted());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 
 	void create(Server *server)
 	{
 		int char_id = 0;
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		std::string query = "SELECT `id` as max_id FROM `characters` ORDER BY `id` DESC LIMIT 1;";
 
 		try {
@@ -196,124 +196,124 @@ public:
 			return;
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
-		if (getStatusData() == nullptr)
-			setStatusData(std::make_shared<Status>());
-		if (getAccessData() == nullptr)
-			setAccessData(std::make_shared<Access>());
-		if (getViewData() == nullptr)
-			setViewData(std::make_shared<View>());
-		if (getFamilyData() == nullptr)
-			setFamilyData(std::make_shared<Family>());
-		if (getCompanionData() == nullptr)
-			setCompanionData(std::make_shared<Companion>());
-		if (getGroupData() == nullptr)
-			setGroupData(std::make_shared<Group>());
-		if (getMiscData() == nullptr)
-			setMiscData(std::make_shared<Misc>());
-		if (getPositionData() == nullptr)
-			setPositionData(std::make_shared<Position>());
-		if (getUISettingsData() == nullptr)
-			setUISettingsData(std::make_shared<UISettings>());
+		if (get_status_data() == nullptr)
+			set_status_data(std::make_shared<Status>());
+		if (get_access_data() == nullptr)
+			set_access_data(std::make_shared<Access>());
+		if (get_view_data() == nullptr)
+			set_view_data(std::make_shared<View>());
+		if (get_family_data() == nullptr)
+			set_family_data(std::make_shared<Family>());
+		if (get_companion_data() == nullptr)
+			set_companion_data(std::make_shared<Companion>());
+		if (get_group_data() == nullptr)
+			set_group_data(std::make_shared<Group>());
+		if (get_misc_data() == nullptr)
+			set_misc_data(std::make_shared<Misc>());
+		if (get_position_data() == nullptr)
+			set_position_data(std::make_shared<Position>());
+		if (get_ui_settings() == nullptr)
+			set_ui_settings(std::make_shared<UISettings>());
 
-		setCharacterID(char_id);
-		getStatusData()->setCharacterID(char_id);
-		getAccessData()->setCharacterID(char_id);
-		getViewData()->setCharacterID(char_id);
-		getFamilyData()->setCharacterID(char_id);
-		getCompanionData()->setCharacterID(char_id);
-		getGroupData()->setCharacterID(char_id);
-		getMiscData()->setCharacterID(char_id);
-		getPositionData()->setCharacterID(char_id);
-		getUISettingsData()->setCharacterID(char_id);
-		saveAll(server);
+		set_character_id(char_id);
+		get_status_data()->set_character_id(char_id);
+		get_access_data()->set_character_id(char_id);
+		get_view_data()->set_character_id(char_id);
+		get_family_data()->set_character_id(char_id);
+		get_companion_data()->set_character_id(char_id);
+		get_group_data()->set_character_id(char_id);
+		get_misc_data()->set_character_id(char_id);
+		get_position_data()->set_character_id(char_id);
+		get_ui_settings()->set_character_id(char_id);
+		save_all(server);
 	}
 
-	void saveAll(Server *server)
+	void save_all(Server *server)
 	{
 		save(server);
-		getStatusData()->save(server);
-		getAccessData()->save(server);
-		getViewData()->save(server);
-		getFamilyData()->save(server);
-		getCompanionData()->save(server);
-		getGroupData()->save(server);
-		getMiscData()->save(server);
-		getPositionData()->save(server);
-		getUISettingsData()->save(server);
+		get_status_data()->save(server);
+		get_access_data()->save(server);
+		get_view_data()->save(server);
+		get_family_data()->save(server);
+		get_companion_data()->save(server);
+		get_group_data()->save(server);
+		get_misc_data()->save(server);
+		get_position_data()->save(server);
+		get_ui_settings()->save(server);
 	}
 
 	/* Character ID */
-	uint32_t getCharacterID() const
+	uint32_t get_character_id() const
 	{
 		return _character_id;
 	}
-	void setCharacterID(uint32_t id)
+	void set_character_id(uint32_t id)
 	{
 		_character_id = id;
 	}
 
 	/* Account ID */
-	uint32_t getAccountID() const { return _account_id; }
-	void setAccountID(uint32_t id) { _account_id = id; }
+	uint32_t get_account_id() const { return _account_id; }
+	void set_account_id(uint32_t id) { _account_id = id; }
 
 	/* Slot */
-	uint16_t getSlot() const { return _slot; }
-	void setSlot(uint16_t slot) { _slot = slot; }
+	uint16_t get_slot() const { return _slot; }
+	void set_slot(uint16_t slot) { _slot = slot; }
 
 	/* Name */
-	const std::string &getName() const { return _name; }
-	void setName(const std::string &name) { _name = name; }
+	const std::string &get_name() const { return _name; }
+	void set_name(const std::string &name) { _name = name; }
 
 	/* Online */
-	bool isOnline() const { return _online; }
-	void setOnline() { _online = true; }
-	void setOffline() { _online = false; }
+	bool is_online() const { return _online; }
+	void set_online() { _online = true; }
+	void set_offline() { _online = false; }
 
 	/* Gender */
-	character_gender_types getGender() const { return _gender; }
-	void setGender(character_gender_types gender) { _gender = gender; }
+	character_gender_types get_gender() const { return _gender; }
+	void set_gender(character_gender_types gender) { _gender = gender; }
 
 	/* Deleted */
-	void setDeleted(bool deleted) { _deleted = deleted; }
-	bool isDeleted() { return _deleted; }
+	void set_deleted(bool deleted) { _deleted = deleted; }
+	bool is_deleted() { return _deleted; }
 
 	/* Access Data*/
-	const std::shared_ptr<Access> getAccessData() const { return _access_data; }
-	void setAccessData(std::shared_ptr<Access> const &access) { _access_data = access; }
+	const std::shared_ptr<Access> get_access_data() const { return _access_data; }
+	void set_access_data(std::shared_ptr<Access> const &access) { _access_data = access; }
 
 	/* Companion Data*/
-	const std::shared_ptr<Companion> getCompanionData() const { return _companion_data; }
-	void setCompanionData(std::shared_ptr<Companion> const &companion) { _companion_data = companion; }
+	const std::shared_ptr<Companion> get_companion_data() const { return _companion_data; }
+	void set_companion_data(std::shared_ptr<Companion> const &companion) { _companion_data = companion; }
 
 	/* Family Data*/
-	const std::shared_ptr<Family> getFamilyData() const { return _family_data; }
-	void setFamilyData(std::shared_ptr<Family> const &family) { _family_data = family; }
+	const std::shared_ptr<Family> get_family_data() const { return _family_data; }
+	void set_family_data(std::shared_ptr<Family> const &family) { _family_data = family; }
 
 	/* Group Data*/
-	const std::shared_ptr<Group> getGroupData() const { return _group_data; }
-	void setGroupData(std::shared_ptr<Group> const &group) { _group_data = group; }
+	const std::shared_ptr<Group> get_group_data() const { return _group_data; }
+	void set_group_data(std::shared_ptr<Group> const &group) { _group_data = group; }
 
 	/* Misc Data*/
-	const std::shared_ptr<Misc> getMiscData() const { return _misc_data; }
-	void setMiscData(std::shared_ptr<Misc> const &misc) { _misc_data = misc; }
+	const std::shared_ptr<Misc> get_misc_data() const { return _misc_data; }
+	void set_misc_data(std::shared_ptr<Misc> const &misc) { _misc_data = misc; }
 
 	/* Position Data*/
-	const std::shared_ptr<Position> getPositionData() const { return _position_data; }
-	void setPositionData(std::shared_ptr<Position> const &position) { _position_data = position; }
+	const std::shared_ptr<Position> get_position_data() const { return _position_data; }
+	void set_position_data(std::shared_ptr<Position> const &position) { _position_data = position; }
 
 	/* Status Data*/
-	const std::shared_ptr<Status> getStatusData() const { return _status_data; }
-	void setStatusData(std::shared_ptr<Status> const &status) { _status_data = status; }
+	const std::shared_ptr<Status> get_status_data() const { return _status_data; }
+	void set_status_data(std::shared_ptr<Status> const &status) { _status_data = status; }
 
 	/* UISettings Data*/
-	const std::shared_ptr<UISettings> getUISettingsData() const { return _ui_settings; }
-	void setUISettingsData(std::shared_ptr<UISettings> const &settings) { _ui_settings = settings; }
+	const std::shared_ptr<UISettings> get_ui_settings() const { return _ui_settings; }
+	void set_ui_settings(std::shared_ptr<UISettings> const &settings) { _ui_settings = settings; }
 
 	/* View Data*/
-	const std::shared_ptr<View> getViewData() const { return _view_data; }
-	void setViewData(std::shared_ptr<View> const &view) { _view_data = view; }
+	const std::shared_ptr<View> get_view_data() const { return _view_data; }
+	void set_view_data(std::shared_ptr<View> const &view) { _view_data = view; }
 
 private:
 	uint32_t _character_id{0};

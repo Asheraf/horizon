@@ -30,9 +30,9 @@ public:
 	PacketHandlerFactory() { };
 	~PacketHandlerFactory() { };
 
-	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<Session> session)
+	static std::shared_ptr<PacketHandler> create_packet_handler(std::shared_ptr<InterSocket> socket)
 	{
-		return std::make_shared<PacketHandler>(session);
+		return std::make_shared<PacketHandler>(socket);
 	}
 };
 }

@@ -72,7 +72,7 @@ public:
 	/**
 	 * @brief Stops network threads and clears the thread map.
 	 */
-	virtual void StopNetwork()
+	virtual void stop_network()
 	{
 		CoreLog->info("Stopped {} network threads.", _thread_map.size());
 
@@ -116,7 +116,7 @@ public:
 		uint32_t min_idx = 0;
 
 		for (auto &thr : _thread_map)
-			if (thr.second->GetConnectionCount() < NetworkThreadPtr(_thread_map.at(min_idx))->GetConnectionCount())
+			if (thr.second->connection_count() < NetworkThreadPtr(_thread_map.at(min_idx))->connection_count())
 				min_idx = thr.first;
 
 		return min_idx;
@@ -129,13 +129,13 @@ public:
 	 * @param[in]     socket         shared pointer.
 	 * @param[in]     thread_index   index of the thread that the socket is being moved from.
 	 */
-	std::shared_ptr<SocketType> OnSocketOpen(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
+	std::shared_ptr<SocketType> on_socket_open(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
 	{
 		std::shared_ptr<SocketType> new_session = std::make_shared<SocketType>(std::move(socket));
 
 		try {
 			// Set Socket data
-			new_session->setSocketId(++_last_socket_id);
+			new_session->set_socket_id(++_last_socket_id);
 			// Add socket to thread.
 			NetworkThreadPtr(_thread_map.at(thread_index))->AddSocket(new_session);
 		} catch (boost::system::system_error const &error) {
@@ -149,10 +149,10 @@ public:
 	 * @brief Get a socket from the thread for new server connection.
 	 * @return std::pair of the socket and index of the thread it was taken from.
 	 */
-	std::pair<std::shared_ptr<tcp::socket>, uint32_t> GetSocketForNewConnection()
+	std::pair<std::shared_ptr<tcp::socket>, uint32_t> get_new_socket()
 	{
 		int min_idx = SelectThreadWithMinConnections();
-		return std::make_pair(NetworkThreadPtr(_thread_map.at(min_idx))->GetSocketForNewConnection(), min_idx);
+		return std::make_pair(NetworkThreadPtr(_thread_map.at(min_idx))->get_new_socket(), min_idx);
 	}
 
 private:

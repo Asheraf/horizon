@@ -30,9 +30,9 @@ class Session;
  * Auth Accept Socket Manager for clients.
  * @brief Singleton class
  */
-class ClientSocketMgr : public Horizon::Networking::AcceptSocketMgr<Session>
+class ClientSocketMgr : public Horizon::Networking::AcceptSocketMgr<InterSocket>
 {
-	typedef Horizon::Networking::AcceptSocketMgr<Session> BaseSocketMgr;
+	typedef Horizon::Networking::AcceptSocketMgr<InterSocket> BaseSocketMgr;
 public:
 	static ClientSocketMgr *getInstance()
 	{
@@ -40,9 +40,9 @@ public:
 		return &instance;
 	}
 
-	bool Start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1)
+	bool start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1)
 	{
-		if (!BaseSocketMgr::Start(io_service, listen_ip, port, threads))
+		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
 
 		return true;

@@ -3,6 +3,7 @@
 
 #include "Core/Structures/TypeList.hpp"
 #include "Server/Zone/Game/Map/Coordinates.hpp"
+#include "Grid/Container/GridReferenceContainer.hpp"
 
 namespace Horizon
 {
@@ -43,5 +44,7 @@ typedef GridHolder<Player, AllEntityTypes> GridHolderType;
 
 typedef Coordinates<MAX_GRIDS_PER_MAP> GridCoords;
 typedef Coordinates<MAX_CELLS_PER_MAP> MapCoords;
+
+typedef GridReferenceContainer<AllEntityTypes> MapEntityContainer;
 
 #endif /* HORIZON_ZONE_GAME_GRIDDEFINITIONS_HPP */

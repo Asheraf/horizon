@@ -35,7 +35,7 @@ class AsyncAcceptor;
 template <class SocketType>
 class AcceptSocketMgr : public SocketMgr<SocketType>
 {
-	typedef std::map<uint32_t, std::shared_ptr<SocketType>> SessionMap;
+	typedef std::map<uint32_t, std::shared_ptr<SocketType>> SocketMap;
 	typedef SocketMgr<SocketType> BaseSocketMgr;
 public:
 	AcceptSocketMgr() { }
@@ -50,7 +50,7 @@ public:
 	 * @param[in]     threads      number of network acceptor threads to start and run.
 	 * @return true on success, false on failure.
 	 */
-	virtual bool Start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1)
+	virtual bool start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1)
 	{
 		try {
 			_acceptor = std::make_unique<AsyncAcceptor>(io_service, listen_ip, port);
@@ -66,8 +66,8 @@ public:
 
 		CoreLog->trace("Max allowed socket connections {}", (int) boost::asio::socket_base::max_connections);
 
-		_acceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForNewConnection, this));
-		_acceptor->AsyncAcceptWithCallback(boost::bind(&AcceptSocketMgr<SocketType>::OnSocketOpen, this, boost::placeholders::_1, boost::placeholders::_2));
+		_acceptor->set_socket_factory(std::bind(&BaseSocketMgr::get_new_socket, this));
+		_acceptor->async_accept_with_callback(boost::bind(&AcceptSocketMgr<SocketType>::on_socket_open, this, boost::placeholders::_1, boost::placeholders::_2));
 
 		CoreLog->info("Networking initialized, listening on {} {} (Maximum Threads: {})", listen_ip, port, threads);
 
@@ -75,16 +75,18 @@ public:
 	}
 
 	/**
-	 * @brief Stop the Acceptor network and clear the client session map.
+	 * @brief Stop the Acceptor network and clear the client socket map.
 	 */
-	void StopNetwork() override
+	virtual void stop_network() override
 	{
 		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
 
-		BaseSocketMgr::StopNetwork();
+		BaseSocketMgr::stop_network();
 
-		_acceptor->Close();
-		_session_map.clear();
+		if (_acceptor->is_open())
+			_acceptor->close();
+		
+		_socket_map.clear();
 	}
 	
 	/**
@@ -92,14 +94,14 @@ public:
 	 * @param[in] session_id Id of the session to get.
 	 * @return shared_ptr to the session.
 	 */
-	std::shared_ptr<SocketType> GetSession(uint32_t session_id)
+	std::shared_ptr<SocketType> get_socket(uint32_t session_id)
 	{
 		boost::shared_lock<boost::shared_mutex> lock(_socket_mtx);
 
-		auto it = _session_map.find(session_id);
+		auto it = _socket_map.find(session_id);
 
-		if (it != _session_map.end())
-			return _session_map.at(session_id);
+		if (it != _socket_map.end())
+			return _socket_map.at(session_id);
 
 		return nullptr;
 	}
@@ -109,12 +111,12 @@ public:
 	 * @param[in] session_id Id of the session to get.
 	 * @return shared_ptr to the session.
 	 */
-	void RemoveSession(uint32_t session_id)
+	void remove_socket(uint32_t session_id)
 	{
 		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
 
-		if (_session_map.find(session_id) != _session_map.end()) {
-			_session_map.erase(session_id);
+		if (_socket_map.find(session_id) != _socket_map.end()) {
+			_socket_map.erase(session_id);
 			CoreLog->info("SocketMgr::RemoveClientSession: successfully removed session ID - {}.", session_id);
 		}
 	}
@@ -125,26 +127,35 @@ public:
 	 * @param[in]     socket         shared pointer.
 	 * @param[in]     thread_index   index of the thread that the socket is being moved from.
 	 */
-	void OnSocketOpen(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
+	void on_socket_open(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
 	{
 		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
 		
-		std::shared_ptr<SocketType> session = BaseSocketMgr::OnSocketOpen(std::move(socket), thread_index);
-		_session_map.insert(std::make_pair(session->getSocketId(), session));
+		std::shared_ptr<SocketType> new_socket = BaseSocketMgr::on_socket_open(std::move(socket), thread_index);
+		_socket_map.insert(std::make_pair(new_socket->get_socket_id(), new_socket));
 	}
 
 	/**
 	 * @brief Routine called from an implemented socket when finalising / closing.
 	 * @param[in|out] session pointer to the session that the socket belongs to.
 	 */
-	void ClearSession(std::shared_ptr<SocketType> session)
+	void clear_socket(std::shared_ptr<SocketType> socket)
 	{
-		RemoveSession(session->getSocketId());
+		remove_socket(socket->get_socket_id());
+	}
+
+	void update_socket_sessions(uint32_t diff)
+	{
+		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+
+		for (auto sock : _socket_map)
+			if (sock.second->get_session() != nullptr)
+				sock.second->get_session()->update(diff);
 	}
 
 private:
 	std::unique_ptr<AsyncAcceptor> _acceptor;       ///< unique pointer to an AsyncAcceptor object.
-	SessionMap _session_map;                        ///< std::map of all connected and handled sessions.
+	SocketMap _socket_map;                          ///< std::map of all connected and handled sockets.
 	boost::shared_mutex _socket_mtx;
 };
 }

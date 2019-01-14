@@ -16,12 +16,12 @@
  **************************************************/
 
 #include "PacketHandler20141022.hpp"
-#include "Server/Zone/Session/Session.hpp"
+#include "Server/Zone/Socket/ZoneSocket.hpp"
 
-Horizon::Zone::PacketHandler20141022::PacketHandler20141022(std::shared_ptr<Session> session)
-: Horizon::Zone::PacketHandler(session)
+Horizon::Zone::PacketHandler20141022::PacketHandler20141022(std::shared_ptr<ZoneSocket> socket)
+: Horizon::Zone::PacketHandler(socket)
 {
-	InitializeHandlers();
+	initialize_handlers();
 }
 
 Horizon::Zone::PacketHandler20141022::~PacketHandler20141022()
@@ -29,11 +29,11 @@ Horizon::Zone::PacketHandler20141022::~PacketHandler20141022()
 	//
 }
 
-void Horizon::Zone::PacketHandler20141022::InitializeHandlers()
+void Horizon::Zone::PacketHandler20141022::initialize_handlers()
 {
-	PacketHandler::InitializeHandlers();
+	PacketHandler::initialize_handlers();
 
-#define HANDLER_FUNC(packet) addPacketHandler(PacketVer20141022::packets::packet, boost::bind(&PacketHandler20141022::Handle_ ## packet, this, boost::placeholders::_1));
+#define HANDLER_FUNC(packet) add_packet_handler(PacketVer20141022::packets::packet, boost::bind(&PacketHandler20141022::Handle_ ## packet, this, boost::placeholders::_1));
 	HANDLER_FUNC(CZ_ENTER);
 	HANDLER_FUNC(CZ_REQUEST_TIME);
 	HANDLER_FUNC(CZ_REQNAME);

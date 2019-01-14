@@ -28,8 +28,8 @@ namespace Horizon
 {
 namespace Zone
 {
-class Session;
-class InterSession;
+class InterSocket;
+class ZoneSocket;
 class PacketHandlerFactory
 {
 public:
@@ -41,12 +41,12 @@ public:
 	 * @param[in|out] session    shared_ptr to a Session instance.
 	 * @return shared pointer to a new instance of Horizon::Zone::PacketHandler.
 	 */
-	static std::shared_ptr<PacketHandler> CreatePacketHandler(std::shared_ptr<Session> session, uint32_t packet_ver)
+	static std::shared_ptr<PacketHandler> create_packet_handler(std::shared_ptr<ZoneSocket> socket, uint32_t packet_ver)
 	{
 		if (packet_ver >= 20141022)
-			return std::make_shared<PacketHandler20141022>(session);
+			return std::make_shared<PacketHandler20141022>(socket);
 
-		return std::make_shared<PacketHandler>(session);
+		return std::make_shared<PacketHandler>(socket);
 	}
 
 	/**
@@ -54,9 +54,9 @@ public:
 	 * @param[in|out] session    shared_ptr to a InterSession instance.
 	 * @return shared pointer to a new instance of Horizon::Zone::InterPacketHandler.
 	 */
-	static std::shared_ptr<InterPacketHandler> CreateInterPacketHandler(std::shared_ptr<InterSession> session)
+	static std::shared_ptr<InterPacketHandler> create_inter_packet_handler(std::shared_ptr<InterSocket> socket)
 	{
-		return std::make_shared<InterPacketHandler>(session);
+		return std::make_shared<InterPacketHandler>(socket);
 	}
 };
 }

@@ -24,11 +24,11 @@
 
 struct zone_server_configuration
 {
-	void setDatabasePath(std::string const &path) { _db_path = path; }
-	std::string &getDatabasePath() { return _db_path; }
+	void set_database_path(std::string const &path) { _db_path = path; }
+	std::string &get_database_path() { return _db_path; }
 
-	void setMapCacheFileName(std::string const &name) { _map_cache_file_name = name; }
-	std::string &getMapCacheFileName() { return _map_cache_file_name; }
+	void set_mapcache_file_name(std::string const &name) { _map_cache_file_name = name; }
+	std::string &get_mapcache_file_name() { return _map_cache_file_name; }
 
 private:
 	std::string _db_path{"../db/"};

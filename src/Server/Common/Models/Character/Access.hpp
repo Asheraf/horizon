@@ -43,7 +43,7 @@ public:
 	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM `character_access_data` WHERE `id` = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -55,9 +55,9 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterID(char_id);
-				setUnbanTime(res->getUInt("unban_time"));
-				setDeleteDate(res->getUInt("delete_date"));
+				set_character_id(char_id);
+				set_unban_time(res->getUInt("unban_time"));
+				set_delete_date(res->getUInt("delete_date"));
 				ret = true;
 			}
 
@@ -67,7 +67,7 @@ public:
 			DBLog->error("Models::Character::Access::LoadFromDatabase: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
 		return ret;
 	}
@@ -78,34 +78,34 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 
 		std::string query = "REPLACE INTO `character_access_data` "
 			"(`id`, `unban_time`, `delete_date`) VALUES (?, ?, ?);";
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, getCharacterID());
-			pstmt->setInt(2, getUnbanTime());
-			pstmt->setInt(3, getDeleteDate());
+			pstmt->setInt(1, get_character_id());
+			pstmt->setInt(2, get_unban_time());
+			pstmt->setInt(3, get_delete_date());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 
 	/* Char ID */
-	uint32_t getCharacterID() const { return _character_id; }
-	void setCharacterID(uint32_t character_id) { _character_id = character_id; }
+	uint32_t get_character_id() const { return _character_id; }
+	void set_character_id(uint32_t character_id) { _character_id = character_id; }
 	/* Unban Time */
-	uint32_t getUnbanTime() const { return _unban_time; }
-	void setUnbanTime(uint32_t unban_time) { _unban_time = unban_time; }
+	uint32_t get_unban_time() const { return _unban_time; }
+	void set_unban_time(uint32_t unban_time) { _unban_time = unban_time; }
 	/* Account Delete Date */
-	uint32_t getDeleteDate() const { return _delete_date; }
-	void setDeleteDate(uint32_t delete_date) { _delete_date = delete_date; }
+	uint32_t get_delete_date() const { return _delete_date; }
+	void set_delete_date(uint32_t delete_date) { _delete_date = delete_date; }
 
 private:
 	uint32_t _character_id{0};        ///< Character ID

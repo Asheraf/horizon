@@ -31,8 +31,8 @@ public:
 	~ExpulsionLog() { }
 
 	/* Guild ID */
-	uint32_t getGuildID() { return _guild_id; }
-	void setGuildID(uint32_t guild_id) { _guild_id = guild_id; }
+	uint32_t get_guild_id() { return _guild_id; }
+	void set_guild_id(uint32_t guild_id) { _guild_id = guild_id; }
 	/* Expellee Name */
 	std::string &getExpelleeName() { return _expellee_name; }
 	void setExpelleeName(std::string const &name) { _expelle_name = name; }

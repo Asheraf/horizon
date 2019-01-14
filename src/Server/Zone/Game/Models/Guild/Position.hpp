@@ -37,14 +37,14 @@ public:
 	~Position() { }
 
 	/* Guild ID */
-	uint32_t getGuildID() { return _guild_id; }
-	void setGuildID(uint32_t guild_id) { _guild_id = guild_id; }
+	uint32_t get_guild_id() { return _guild_id; }
+	void set_guild_id(uint32_t guild_id) { _guild_id = guild_id; }
 	/* Position ID */
-	uint8_t getID() { return _character_id; }
-	void setID(uint8_t char_id) { _character_id = char_id; }
+	uint8_t get_id() { return _character_id; }
+	void set_id(uint8_t char_id) { _character_id = char_id; }
 	/* Position Name */
-	std::string &getName() { return _name; }
-	void setName(std::string const &name) { _name = name; }
+	std::string &get_name() { return _name; }
+	void set_name(std::string const &name) { _name = name; }
 	/* Permission Mask */
 	uint32_t getPermissionsMask() { return _permission_mask; }
 	void setPermissionsMask(uint32_t permissions) { _permission_mask = permissions; }

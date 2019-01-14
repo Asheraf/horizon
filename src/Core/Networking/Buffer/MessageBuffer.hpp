@@ -33,50 +33,50 @@ public:
 		_storage.resize(MAX_BUFFER_LENGTH);
 	}
 
-	explicit MessageBuffer(std::size_t initialSize) : _wpos(0), _rpos(0), _storage()
+	explicit MessageBuffer(std::size_t initial_size)
+	: _wpos(0), _rpos(0), _storage()
 	{
-		_storage.resize(initialSize);
+		_storage.resize(initial_size);
 	}
 
-	MessageBuffer(MessageBuffer const& right) : _wpos(right._wpos), _rpos(right._rpos), _storage(right._storage)
+	MessageBuffer(MessageBuffer const &right)
+	: _wpos(right._wpos), _rpos(right._rpos), _storage(right._storage)
 	{
 	}
 
-	MessageBuffer(MessageBuffer&& right) : _wpos(right._wpos), _rpos(right._rpos), _storage(right.Move()) { }
+	MessageBuffer(MessageBuffer &&right)
+	: _wpos(right._wpos), _rpos(right._rpos), _storage(right.move())
+	{
+	}
 
-	void Reset()
+	void reset()
 	{
 		_wpos = 0;
 		_rpos = 0;
 	}
 
-	void Resize(size_type bytes)
+	void resize(size_type bytes)
 	{
 		_storage.resize(bytes);
 	}
 
-	uint8_t* GetBasePointer() { return _storage.data(); }
+	uint8_t *get_base_pointer() { return _storage.data(); }
+	uint8_t *get_read_pointer() { return get_base_pointer() + _rpos; }
+	uint8_t *get_write_pointer() { return get_base_pointer() + _wpos; }
 
-	uint8_t* getReadPointer() { return GetBasePointer() + _rpos; }
+	void read_completed(size_type bytes) { _rpos += bytes; }
+	void write_completed(size_type bytes) { _wpos += bytes; }
 
-	uint8_t* getWritePointer() { return GetBasePointer() + _wpos; }
-
-	void readCompleted(size_type bytes) { _rpos += bytes; }
-
-	void writeCompleted(size_type bytes) { _wpos += bytes; }
-
-	size_type GetActiveSize() const { return _wpos - _rpos; }
-
-	size_type getRemainingSpace() const { return _storage.size() - _wpos; }
-
-	size_type GetBufferSize() const { return _storage.size(); }
+	size_type get_active_size() const { return _wpos - _rpos; }
+	size_type get_remaining_space() const { return _storage.size() - _wpos; }
+	size_type get_buffer_size() const { return _storage.size(); }
 
 	// Discards inactive data
 	void normalize()
 	{
 		if (_rpos) {
 			if (_rpos != _wpos)
-				memmove(GetBasePointer(), getReadPointer(), GetActiveSize());
+				memmove(get_base_pointer(), get_read_pointer(), get_active_size());
 			_wpos -= _rpos;
 			_rpos = 0;
 		}
@@ -86,35 +86,31 @@ public:
 	void ensureFreeSpace()
 	{
 		// resize buffer if it's already full
-		if (getRemainingSpace() == 0)
+		if (get_remaining_space() == 0)
 			_storage.resize(_storage.size() * 3 / 2);
 	}
 
-	void Write(void const* data, std::size_t size)
+	void write(void const* data, std::size_t size)
 	{
-		if (size)
-		{
-			memcpy(getWritePointer(), data, size);
-			writeCompleted(size);
+		if (size) {
+			memcpy(get_write_pointer(), data, size);
+			write_completed(size);
 		}
 	}
 
-	std::vector<uint8_t> &&Move()
+	std::vector<uint8_t> &&move()
 	{
 		_wpos = 0;
 		_rpos = 0;
+
 		return std::move(_storage);
 	}
 
-	const std::vector<uint8_t> &Copy()
-	{
-		return _storage;
-	}
+	const std::vector<uint8_t> &copy() { return _storage; }
 
-	MessageBuffer &operator=(MessageBuffer const& right)
+	MessageBuffer &operator=(MessageBuffer const &right)
 	{
-		if (this != &right)
-		{
+		if (this != &right) {
 			_wpos = right._wpos;
 			_rpos = right._rpos;
 			_storage = right._storage;
@@ -123,13 +119,12 @@ public:
 		return *this;
 	}
 
-	MessageBuffer& operator=(MessageBuffer&& right)
+	MessageBuffer& operator=(MessageBuffer &&right)
 	{
-		if (this != &right)
-		{
+		if (this != &right) {
 			_wpos = right._wpos;
 			_rpos = right._rpos;
-			_storage = right.Move();
+			_storage = right.move();
 		}
 
 		return *this;

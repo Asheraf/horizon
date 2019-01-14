@@ -53,14 +53,14 @@ namespace Horizon
 {
 namespace Char
 {
-class Session;
+class CharSocket;
 class PacketHandler20120307 : public PacketHandler
 {
 public:
-	explicit PacketHandler20120307(std::shared_ptr<Session> session);
+	explicit PacketHandler20120307(std::shared_ptr<CharSocket> socket);
 	virtual ~PacketHandler20120307();
 
-	void InitializeHandlers();
+	void initialize_handlers();
 	void Handle_CHAR_CREATE(PacketBuffer &buf);
 };
 }

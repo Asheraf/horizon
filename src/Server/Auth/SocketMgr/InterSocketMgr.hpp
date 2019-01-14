@@ -19,7 +19,7 @@
 #define HORIZON_AUTH_INTERSOCKETMGR_HPP
 
 #include "Core/Networking/ConnectSocketMgr.hpp"
-#include "Server/Auth/Session/InterSession.hpp"
+#include "Server/Auth/Socket/InterSocket.hpp"
 
 namespace Horizon
 {
@@ -29,9 +29,9 @@ namespace Auth
  * Inter Socket Manager.
  * @brief Singleton class
  */
-class InterSocketMgr : public Horizon::Networking::ConnectSocketMgr<InterSession>
+class InterSocketMgr : public Horizon::Networking::ConnectSocketMgr<InterSocket>
 {
-	typedef Horizon::Networking::ConnectSocketMgr<InterSession> BaseSocketMgr;
+	typedef Horizon::Networking::ConnectSocketMgr<InterSocket> BaseSocketMgr;
 public:
 	static InterSocketMgr *getInstance()
 	{
@@ -39,9 +39,9 @@ public:
 		return &instance;
 	}
 
-	bool Start(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
+	bool start(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
 	{
-		if (BaseSocketMgr::Start(connection_name, server, connect_ip, port, connections) == nullptr)
+		if (BaseSocketMgr::start(connection_name, server, connect_ip, port, connections) == nullptr)
 			return false;
 		
 		return true;

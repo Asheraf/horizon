@@ -43,7 +43,7 @@ public:
 	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM `character_companion_data` WHERE `id` = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -55,10 +55,10 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterID(char_id);
-				setPetID(res->getUInt("pet_id"));
-				setHomunID(res->getUInt("homun_id"));
-				setElementalID(res->getUInt("elemental_id"));
+				set_character_id(char_id);
+				set_pet_id(res->getUInt("pet_id"));
+				set_homun_id(res->getUInt("homun_id"));
+				set_elemental_id(res->getUInt("elemental_id"));
 				ret = true;
 			}
 
@@ -68,7 +68,7 @@ public:
 			DBLog->error("Models::Character::Companion::LoadFromDatabase: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
 		return ret;
 	}
@@ -79,38 +79,38 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 
 		std::string query = "REPLACE INTO `character_companion_data` "
 			"(`id`, `pet_id`, `homun_id`, `elemental_id`) VALUES (?, ?, ?, ?);";
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, getCharacterID());
-			pstmt->setInt(2, getPetID());
-			pstmt->setInt(3, getHomunID());
-			pstmt->setInt(4, getElementalID());
+			pstmt->setInt(1, get_character_id());
+			pstmt->setInt(2, get_pet_id());
+			pstmt->setInt(3, get_homun_id());
+			pstmt->setInt(4, get_elemental_id());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 	
 	/* Character Id */
-	uint32_t getCharacterID() const { return character_id; }
-	void setCharacterID(uint32_t character_id) { Companion::character_id = character_id; }
+	uint32_t get_character_id() const { return character_id; }
+	void set_character_id(uint32_t character_id) { Companion::character_id = character_id; }
 	/* Pet ID */
-	uint32_t getPetID() const { return pet_id; }
-	void setPetID(uint32_t pet_id) { Companion::pet_id = pet_id; }
+	uint32_t get_pet_id() const { return pet_id; }
+	void set_pet_id(uint32_t pet_id) { Companion::pet_id = pet_id; }
 	/* Homun ID */
-	uint32_t getHomunID() const { return homun_id; }
-	void setHomunID(uint32_t homun_id) { Companion::homun_id = homun_id; }
+	uint32_t get_homun_id() const { return homun_id; }
+	void set_homun_id(uint32_t homun_id) { Companion::homun_id = homun_id; }
 	/* Elemental ID */
-	uint32_t getElementalID() const { return elemental_id; }
-	void setElementalID(uint32_t elemental_id) { Companion::elemental_id = elemental_id; }
+	uint32_t get_elemental_id() const { return elemental_id; }
+	void set_elemental_id(uint32_t elemental_id) { Companion::elemental_id = elemental_id; }
 private:
 	uint32_t character_id{0};
 	uint32_t pet_id{0};

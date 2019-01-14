@@ -31,11 +31,11 @@ public:
 	~Member() { }
 
 	/* Guild ID */
-	uint32_t getGuildID() { return _guild_id; }
-	void setGuildID(uint32_t guild_id) { _guild_id = guild_id; }
+	uint32_t get_guild_id() { return _guild_id; }
+	void set_guild_id(uint32_t guild_id) { _guild_id = guild_id; }
 	/* Character ID */
-	uint32_t getCharacterID() { return _character_id; }
-	void setCharacterID(uint32_t char_id) { _character_id = char_id; }
+	uint32_t get_character_id() { return _character_id; }
+	void set_character_id(uint32_t char_id) { _character_id = char_id; }
 	/* Experience Paid */
 	uint64_t getExperiencePaid() { return _experience_paid; }
 	void setExperiencePaid(uint32_t exp) { _experience_paid = exp; }

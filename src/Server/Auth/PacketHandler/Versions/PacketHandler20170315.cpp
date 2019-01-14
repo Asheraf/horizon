@@ -18,14 +18,14 @@
 #include "PacketHandler20170315.hpp"
 
 #include "Core/Logging/Logger.hpp"
-#include "Server/Auth/Session/Session.hpp"
+#include "Server/Auth/Socket/AuthSocket.hpp"
 
 #include <boost/bind.hpp>
 
-Horizon::Auth::PacketHandler20170315::PacketHandler20170315(std::shared_ptr<Session> const &session)
-: Horizon::Auth::PacketHandler(session)
+Horizon::Auth::PacketHandler20170315::PacketHandler20170315(std::shared_ptr<AuthSocket> socket)
+: Horizon::Auth::PacketHandler(socket)
 {
-	InitializeHandlers();
+	initialize_handlers();
 }
 
 Horizon::Auth::PacketHandler20170315::~PacketHandler20170315()
@@ -48,8 +48,8 @@ void Horizon::Auth::PacketHandler20170315::Handle_TEST_POLY(PacketBuffer &buf)
 	Send_AC_ACCEPT_LOGIN();
 }
 
-void Horizon::Auth::PacketHandler20170315::InitializeHandlers()
+void Horizon::Auth::PacketHandler20170315::initialize_handlers()
 {
-	Horizon::Auth::PacketHandler::InitializeHandlers();
-	addPacketHandler(CA_LOGIN, boost::bind(&PacketHandler20170315::Handle_TEST_POLY, this, boost::placeholders::_1));
+	Horizon::Auth::PacketHandler::initialize_handlers();
+	add_packet_handler(CA_LOGIN, boost::bind(&PacketHandler20170315::Handle_TEST_POLY, this, boost::placeholders::_1));
 }

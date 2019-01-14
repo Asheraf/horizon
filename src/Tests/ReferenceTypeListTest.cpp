@@ -113,8 +113,8 @@ class GenericTestObject
 public:
 	GenericTestObject(int id = 0) : _id(id) { }
 
-	virtual int getId() { return _id; }
-	virtual void setId(int id) { _id = id; }
+	virtual int get_id() { return _id; }
+	virtual void set_id(int id) { _id = id; }
 
 private:
 	int _id;
@@ -338,7 +338,7 @@ public:
 
 	bool operator()(GenericTestObject *obj)
 	{
-		if (obj->getId() == _id) {
+		if (obj->get_id() == _id) {
 			return true;
 		}
 		return false;
@@ -431,7 +431,7 @@ BOOST_AUTO_TEST_CASE(ReferenceTypeListTest)
 	TypeContainerVisitor<TypeRefContainer<MyTypes>, GenericTestObjectSearcher<CompareGenericTestObjectID>>  id_searcher(searcher);
 	id_searcher.Visit(refContainer);
 
-	BOOST_CHECK_EQUAL(res->getId(), ID_CHECK);
+	BOOST_CHECK_EQUAL(res->get_id(), ID_CHECK);
 
 	dynamic_cast<A *>(res)->removeReference();
 	BOOST_CHECK_EQUAL(refContainer.count<A>(), MAX_A_TYPES - 1);
@@ -445,17 +445,17 @@ BOOST_AUTO_TEST_CASE(ReferenceTypeListTest)
 	BOOST_CHECK_EQUAL(refContainer.count<C>(), MAX_C_TYPES - 1);
 
 	for (int i = 0; i < MAX_A_TYPES; i++) {
-		if (a[i]->getId() != ID_CHECK)
+		if (a[i]->get_id() != ID_CHECK)
 			a[i]->removeReference();
 		delete a[i];
 	}
 	for (int i = 0; i < MAX_B_TYPES; i++) {
-		if (b[i]->getId() != ID_CHECK)
+		if (b[i]->get_id() != ID_CHECK)
 			b[i]->removeReference();
 		delete b[i];
 	}
 	for (int i = 0; i < MAX_C_TYPES; i++) {
-		if (c[i]->getId() != ID_CHECK)
+		if (c[i]->get_id() != ID_CHECK)
 			c[i]->removeReference();
 		delete c[i];
 	}

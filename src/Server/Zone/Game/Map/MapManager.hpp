@@ -20,6 +20,12 @@
 
 #include "Core/Multithreading/LockedLookupTable.hpp"
 #include "Tools/MapCache/MapCache.hpp"
+#include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
+
+enum mapmgr_task_schedule_group
+{
+	MAPMGR_TASK_MAP_UPDATE = 0
+};
 
 namespace Horizon
 {
@@ -32,7 +38,7 @@ class MapManager
 {
 public:
 	MapManager() { };
-	~MapManager() { };
+	~MapManager();
 
 	static MapManager *getInstance()
 	{
@@ -40,11 +46,18 @@ public:
 		return &map_mgr;
 	}
 
-	bool Initialize();
+	bool initialize();
 	bool LoadMapCache();
 
+	Map *getMap(std::string const &map) { return _map_data_db.at(map); }
+
+	void update(uint32_t diff);
+
+	TaskScheduler &getScheduler() { return _scheduler; }
+
 private:
-	LockedLookupTable<std::string, std::shared_ptr<Map>> _map_data_db;
+	LockedLookupTable<std::string, Map *> _map_data_db;
+	TaskScheduler _scheduler;
 };
 }
 }

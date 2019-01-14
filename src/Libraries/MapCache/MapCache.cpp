@@ -26,6 +26,7 @@
 #include <libconfig.h++>
 #include <fstream>
 #include <boost/crc.hpp>
+#include <zlib.h>
 
 #define NO_WATER 1000000
 
@@ -81,7 +82,7 @@ mcache_import_error_types Horizon::Libraries::MapCache::ImportFromCacheFile()
 		return MCACHE_IMPORT_INVALID_CHECKSUM;
 
 	// Unpack the file.
-	if (getGRF().unpack(uncompressed_buf, &uncompressed_size, compressed_buf, compressed_size) != 0)
+	if (uncompress((Bytef *) uncompressed_buf, &uncompressed_size, (const Bytef *) compressed_buf, compressed_size) != Z_OK)
 		return MCACHE_IMPORT_DECOMPRESS_ERROR;
 
 	for (int i = 0, pos = 0; i < m_cache->getHeader().getMapCount(); ++i) {
@@ -113,9 +114,9 @@ mcache_import_error_types Horizon::Libraries::MapCache::ImportFromCacheFile()
 	return MCACHE_IMPORT_OK;
 }
 
-mcache_error_types Horizon::Libraries::MapCache::Initialize()
+mcache_error_types Horizon::Libraries::MapCache::initialize()
 {
-	if (getGRFPath().empty())
+	if (getGRFListPath().empty())
 		return MCACHE_INVALID_GRF_PATH;
 
 	if (getMapListPath().empty())
@@ -124,9 +125,11 @@ mcache_error_types Horizon::Libraries::MapCache::Initialize()
 	if (getMapCachePath().empty())
 		return MCACHE_INVALID_OUTPUT_PATH;
 
-	// Config
 	if (ReadMapListConfig() != MCACHE_CONFIG_OK)
 		return MCACHE_CONFIG_READ_ERROR;
+
+	if (ReadGRFListConfig() != MCACHE_GRF_CONF_OK)
+		return MCACHE_GRF_CONFIG_READ_ERROR;
 
 	return MCACHE_OK;
 }
@@ -166,19 +169,127 @@ mcache_config_error_types Horizon::Libraries::MapCache::ReadMapListConfig()
 	return MCACHE_CONFIG_OK;
 }
 
+
+mcache_grf_config_error_types Horizon::Libraries::MapCache::ReadGRFListConfig()
+{
+	libconfig::Config cfg;
+	std::string tmp_string;
+
+	if (getGRFListPath().empty())
+		return MCACHE_GRF_CONF_INVALID_FILE;
+
+	// Read the file. If there is an error, report it and exit.
+	try {
+		cfg.readFile(getGRFListPath().c_str());
+	} catch(const libconfig::FileIOException &fioex) {
+		return MCACHE_GRF_CONF_INVALID_FILE;
+	} catch(const libconfig::ParseException &pex) {
+		printf("Error: Parse error at %s:%d - %s.\n", pex.getFile(), pex.getLine(), pex.getError());
+		return MCACHE_GRF_CONF_PARSE_ERROR;
+	}
+
+	if (!(cfg.lookupValue("grf_resource_path", tmp_string))) {
+		printf("Error: Resource path setting not found for grf.\n");
+		return MCACHE_GRF_CONF_PARSE_ERROR;
+	}
+
+	setResourcePath(tmp_string);
+
+	const libconfig::Setting &grf_list = cfg.getRoot()["grf_list"];
+
+	if (grf_list.isGroup() == false)
+		return MCACHE_GRF_CONF_INVALID_ROOT_TYPE;
+
+	for (int i = 0; i < grf_list.getLength(); ++i) {
+		std::string name = grf_list[i].getName();
+		std::string path = grf_list[i];
+		int id = atoi(name.substr(2).c_str());
+		
+		if (grf_list[i].getType() != libconfig::Setting::TypeString
+			|| path.empty())
+			return MCACHE_GRF_CONF_INVALID_VALUE_TYPE;
+
+		GRF grf;
+		grf.set_id(id);
+		grf.setGRFPath(tmp_string + path);
+		addGRF(id, grf);
+	}
+
+	return MCACHE_GRF_CONF_OK;
+}
+
+std::pair<uint8_t, grf_load_result_types> Horizon::Libraries::MapCache::LoadGRFs()
+{
+	grf_load_result_types res;
+	
+	for (auto &grf : _grfs)
+		if ((res = grf.second.load()) != GRF_LOAD_OK)
+			return std::make_pair(grf.second.get_id(), res);
+
+	return std::pair<uint8_t, grf_load_result_types>(-1, GRF_LOAD_OK);
+}
+
 int Horizon::Libraries::MapCache::BuildInternalCache()
 {
 	int new_maps = 0;
+
 	for (std::size_t i = 0; i < _map_list.size(); ++i) {
 		std::string map_name = _map_list.at(i);
 
 		if (!m_cache->getMap(map_name)) {
-			if (GetMapFromGRF(map_name))
-				new_maps++;
+			for (auto &grf : _grfs) {
+				if (GetMapFromGRF(grf.second, map_name)) {
+					new_maps++;
+					break;
+				}
+			}
 		}
 	}
 
 	return new_maps;
+}
+
+void Horizon::Libraries::MapCache::PrintCacheForMap(std::string const &map_name)
+{
+	boost::optional<map_data> data;
+	std::ofstream ofs("../../../maps/"+map_name+".txt", std::ios::out);
+
+	if (!(data = m_cache->getMap(map_name))) {
+		printf("map not found\n");
+		return;
+	}
+
+	int **cells = (int **) std::malloc(sizeof(int *) * data->width());
+	cells[0] = (int *) std::malloc(sizeof(int) * data->width() * data->height());
+
+	for (int i = 0; i < data->width(); i++)
+		cells[i] = (*cells) + data->height() * i;
+
+	for (int y = 0, idx = 0; y < data->height(); y++)
+		for (int x = 0; x < data->width(); x++)
+			cells[x][y] = data->getCells().at(idx++);
+
+	for (int y = data->height() - 1; y >= 0; --y) {
+		for (int x = 0; x < data->width(); x++) {
+			int type = cells[x][y];
+			//			char s;
+			//			switch (type)
+			//			{
+			//			case 3: s = '~'; break; // walkable water
+			//			case 0: // walkable ground
+			//			case 2: // ???
+			//			case 4: // ???
+			//			case 6: s = '.'; break; // ???
+			//			case 5: s = 'O'; break; // gap (snipable)
+			//			case 1: s = '#'; break; // non-walkable ground
+			//			}
+			ofs.write(std::to_string(type).c_str(), 1);
+		}
+		ofs.write("\n", 1);
+	}
+
+	std::free(cells[0]);
+	std::free(cells);
 }
 
 bool Horizon::Libraries::MapCache::BuildExternalCache()
@@ -197,6 +308,7 @@ bool Horizon::Libraries::MapCache::BuildExternalCache()
 
 	uncompressed_buf = new uint8_t[file_size];
 	compressed_buf = new uint8_t[file_size];
+	compressed_size = compressBound(file_size);
 
 	int pos = 0;
 	// Content
@@ -206,10 +318,10 @@ bool Horizon::Libraries::MapCache::BuildExternalCache()
 		pos += sizeof(data.info);
 		memcpy(uncompressed_buf + pos, data.cells.data(), data.cells.size());
 		pos += data.cells.size();
+		PrintCacheForMap(m.first);
 	}
 
-	getGRF().pack(compressed_buf, &compressed_size, uncompressed_buf, file_size, getCompressionLevel());
-
+	compress2((Bytef *) compressed_buf, &compressed_size, (const Bytef *) uncompressed_buf, file_size, getCompressionLevel());
 	crc_32.process_bytes(compressed_buf, compressed_size);
 
 	// Header
@@ -226,21 +338,23 @@ bool Horizon::Libraries::MapCache::BuildExternalCache()
 	return true;
 }
 
-bool Horizon::Libraries::MapCache::ParseGRFReadResult(std::string const &filename, grf_read_error_types error)
+bool Horizon::Libraries::MapCache::ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_types error)
 {
+	const char *grf_name =  grf.getGRFPath().filename().c_str();
+
 	switch (error)
 	{
 	case GRE_OK:
 	default:
 		break;
 	case GRE_NOT_FOUND:
-		printf("Warning: File '%s' could not be located in the GRF.\n", filename.c_str());
+		printf("Warning: File '%s' could not be located in GRF '%s'.\n", filename.c_str(), grf_name);
 		return false;
 	case GRE_DECOMPRESS_SIZE_MISMATCH:
-		printf("Warning: File '%s' decompressed size mismatch.\n", filename.c_str());
+		printf("Warning: File '%s' decompressed size mismatch in GRF '%s'.\n", filename.c_str(), grf_name);
 		return false;
 	case GRE_READ_ERROR:
-		printf("Warning: File '%s' could not be read.\n", filename.c_str());
+		printf("Warning: File '%s' could not be read in GRF '%s'.\n", filename.c_str(), grf_name);
 		return false;
 	}
 
@@ -252,7 +366,7 @@ bool Horizon::Libraries::MapCache::ParseGRFReadResult(std::string const &filenam
  * @param[in] name  name of the map.
  * @return true on success, false on failure.
  */
-bool Horizon::Libraries::MapCache::GetMapFromGRF(std::string const &name)
+bool Horizon::Libraries::MapCache::GetMapFromGRF(GRF &grf, std::string const &name)
 {
 	char filename[256];
 	std::pair<grf_read_error_types, uint8_t *> gat, rsw;
@@ -265,17 +379,17 @@ bool Horizon::Libraries::MapCache::GetMapFromGRF(std::string const &name)
 	// Search and retrieve the map's GAT file.
 	std::sprintf(filename, "data\\%s.gat", name.c_str());
 
-	gat = getGRF().read(filename, nullptr);
+	gat = grf.read(filename, nullptr);
 
-	if (!ParseGRFReadResult(filename, gat.first))
+	if (!ParseGRFReadResult(grf, filename, gat.first))
 		return false;
 
 	// Search and retrieve the map's RSW file.
 	std::sprintf(filename, "data\\%s.rsw", name.c_str());
 
-	rsw = getGRF().read(filename, nullptr);
+	rsw = grf.read(filename, nullptr);
 
-	if (!ParseGRFReadResult(filename, rsw.first))
+	if (!ParseGRFReadResult(grf, filename, rsw.first))
 		return false;
 
 	// Determine the water height of the map.
@@ -299,18 +413,20 @@ bool Horizon::Libraries::MapCache::GetMapFromGRF(std::string const &name)
 
 	// Set cell information.
 	int offset = 14;
+
 	for (std::size_t i = 0; i < m.info.length; ++i) {
 		// Height of the bottom-left corner
 		// The actual start of the map.
 		float height = GetFloat((unsigned char *) (gat.second + offset));
 		// Type of cell
 		uint32_t type = GetULong((unsigned char *) (gat.second + offset + 16));
-		offset += 20;
 
 		if (type == 0 && water_height != NO_WATER && height > water_height)
 			type = 3; // Cell is 0 (walkable) but under water level, set to 3 (walkable water)
 
-		// Push back into cell vector.
+		offset += 20;
+
+		// Maps are stored starting (0, map_height), (1, map_height) ... (map_width, 0)
 		m.cells.push_back(type);
 	}
 

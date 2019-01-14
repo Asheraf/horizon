@@ -26,7 +26,7 @@ public:
 	~BCrypt() {}
 
 	static std::string generateHash(const std::string & password, int workload = 12);
-	static bool validatePassword(const std::string & password, const std::string & hash);
+	static bool validate_password(const std::string & password, const std::string & hash);
 };
 
 #endif //HORIZON_BCRYPT_HPP

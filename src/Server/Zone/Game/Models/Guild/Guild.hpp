@@ -33,8 +33,8 @@ public:
 	~Guild() { }
 
 	/* ID */
-	uint32_t getID() { return _id; }
-	void setID(uint32_t id) { _id = id; }
+	uint32_t get_id() { return _id; }
+	void set_id(uint32_t id) { _id = id; }
 	/* Name */
 	const std::string &getGuildName() { return _name; }
 	void setGuildName(std::string const &name) { _name = name; }
@@ -57,8 +57,8 @@ public:
 	uint64_t getNextRequiredExperience() { return _required_experience; }
 	void setNextRequiredExperience(uint64_t exp) { _required_experience = exp; }
 	/* Skill Points */
-	uint16_t getSkillPoints() { return _skill_points; }
-	void setSkillPoints(uint16_t skill_points) { _skill_points = skill_points; }
+	uint16_t get_skill_points() { return _skill_points; }
+	void set_skill_points(uint16_t skill_points) { _skill_points = skill_points; }
 	/* Notice Title */
 	std::string &getNoticeTitle() { return _notice_title; }
 	void setNoticeTitle(std::string const &title) { _notice_title = title; }

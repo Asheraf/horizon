@@ -31,14 +31,15 @@ namespace Horizon
 {
 namespace Inter
 {
-class Session;
-class PacketHandler : public Horizon::Base::PacketHandler<Session>
+class InterSocket;
+class PacketHandler : public Horizon::Base::PacketHandler<InterSocket>
 {
 public:
-	PacketHandler(std::shared_ptr<Session> session);
+	PacketHandler(std::shared_ptr<InterSocket> socket);
 	~PacketHandler();
 
-	virtual void InitializeHandlers() override;
+	virtual void initialize_handlers() override;
+	
 	/**
 	 * Handlers
 	 */

@@ -3,6 +3,7 @@
 #define HORIZON_BASE_INTERPACKETS_HPP
 
 #include "Server/Common/PacketBuffer.hpp"
+#include "Server/Common/Horizon.hpp"
 
 namespace Horizon
 {

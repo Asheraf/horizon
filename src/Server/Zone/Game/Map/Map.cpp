@@ -20,6 +20,10 @@
 #include "Utility/Utility.hpp"
 #include "Core/Multithreading/WorkerThreadPool.hpp"
 #include "Server/Zone/Game/Map/Grid/Cell/Cell.hpp"
+#include "Grid/Notifiers/GridNotifiers.hpp"
+#include "Grid/Container/GridReferenceContainer.hpp"
+#include "Grid/Container/GridReferenceContainerVisitor.hpp"
+#include "Grid/Grid.hpp"
 
 #include <future>
 #include <type_traits>
@@ -28,17 +32,31 @@
 Horizon::Zone::Game::Map::Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
 : _name(name), _width(width), _height(height),
   _grid_width((width / MAX_CELLS_PER_GRID)), _grid_height((height / MAX_CELLS_PER_GRID)),
-  _cells(boost::extents[_width][_height]),
-  _grid(_grid_width, _grid_height)
+  _cells(boost::extents[width][height]),
+  _gridholder(_grid_width, _grid_height),
+  _pathfinder(new AStar({width, height}, true, &AStar::Heuristic::manhattan,
+						std::bind(&Map::checkCollisionInPath, this, std::placeholders::_1, std::placeholders::_2)))
 {
-	for (int x = 0, idx = 0; x < width; ++x)
-		for (int y = 0; y < height; ++y)
-			_cells[x][y] = std::make_shared<Cell>(x, y, cells.at(idx++));
+	for (int y = 0, idx = 0; y < height; y++)
+		for (int x = 0; x < width; x++)
+			_cells[x][y] = new Cell(cells.at(idx++));
+}
+
+bool Horizon::Zone::Game::Map::checkCollisionInPath(uint16_t x, uint16_t y)
+{
+	if (_cells[x][y]->isWalkable())
+		return false;
+
+	return true;
 }
 
 Horizon::Zone::Game::Map::~Map()
 {
+	CoreLog->info("Performing cleanup on map '{}'...", _name);
 
+	for (int x = 0; x < _width; ++x)
+		for (int y = 0; y < _height; ++y)
+			std::free(_cells[x][y]);
 }
 
 bool Horizon::Zone::Game::Map::ensureGrid(GridCoords coords)
@@ -47,21 +65,13 @@ bool Horizon::Zone::Game::Map::ensureGrid(GridCoords coords)
 
 	for (uint32_t grid_x = coords.x() * MAX_CELLS_PER_GRID; grid_x < coords.x() * MAX_CELLS_PER_GRID + MAX_CELLS_PER_GRID; grid_x++)
 		for (uint32_t grid_y = coords.y() * MAX_CELLS_PER_GRID; grid_y < coords.y() * MAX_CELLS_PER_GRID + MAX_CELLS_PER_GRID; grid_y++)
-			if (_cells[grid_x][grid_y]->type() == CELL_NO_WALKSHOOT_GROUND)
+			if (!_cells[grid_x][grid_y]->isWalkable() && !_cells[grid_x][grid_y]->isShootable())
 				unusable_cells++;
 
-	if (unusable_cells == MAX_CELLS_PER_GRID * MAX_CELLS_PER_GRID)
-		return false;
-
 	_grid_init_mutex.lock();
-	_grid.initializeGrid(coords);
+	_gridholder.initializeGrid(coords, (unusable_cells == MAX_CELLS_PER_GRID * MAX_CELLS_PER_GRID));
 	_grid_init_mutex.unlock();
 
-	return true;
-}
-
-bool Horizon::Zone::Game::Map::addPlayerToMap(std::shared_ptr<Player> player, MapCoords coords)
-{
 	return true;
 }
 
@@ -92,4 +102,18 @@ void Horizon::Zone::Game::Map::ensureAllGrids()
 		}
 	}
 #undef MAX_THREADS
+}
+
+void Horizon::Zone::Game::Map::update(uint32_t diff)
+{
+	GridUpdater updater(diff);
+	GridReferenceContainerVisitor<MapEntityContainer, GridUpdater> map_updater(updater);
+	
+	for (int x = 0; x < _grid_width; x++) {
+		for (int y = 0; y < _grid_height; y++) {
+			GridCoords gcoords(x, y);
+			if (_gridholder.getGrid(gcoords) != nullptr)
+				_gridholder.getGrid(gcoords)->Visit(map_updater);
+		}
+	}
 }

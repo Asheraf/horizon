@@ -17,10 +17,19 @@
 
 #include "MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
+#include "Core/Multithreading/WorkerThreadPool.hpp"
 #include "Server/Zone/Zone.hpp"
 #include <algorithm>
 
-bool Horizon::Zone::Game::MapManager::Initialize()
+Horizon::Zone::Game::MapManager::~MapManager()
+{
+	auto mapdb = _map_data_db.get_map();
+
+	for (auto m : mapdb)
+		delete m.second;
+}
+
+bool Horizon::Zone::Game::MapManager::initialize()
 {
 	return LoadMapCache();
 }
@@ -29,8 +38,8 @@ bool Horizon::Zone::Game::MapManager::LoadMapCache()
 {
 	Horizon::Libraries::MapCache m;
 
-	m.setMapListPath(ZoneServer->getZoneConfig().getDatabasePath() + "map_list.conf");
-	m.setMapCachePath(ZoneServer->getZoneConfig().getDatabasePath().append(ZoneServer->getZoneConfig().getMapCacheFileName()));
+	m.setMapListPath(ZoneServer->get_zone_config().get_database_path() + "map_list.conf");
+	m.setMapCachePath(ZoneServer->get_zone_config().get_database_path().append(ZoneServer->get_zone_config().get_mapcache_file_name()));
 
 	if (m.ReadMapListConfig() != MCACHE_CONFIG_OK) {
 		ZoneLog->error("Could not read map config file '{}'.", m.getMapListPath().c_str());
@@ -64,13 +73,33 @@ bool Horizon::Zone::Game::MapManager::LoadMapCache()
 	ZoneLog->debug("Initializing grids...");
 
 	for (auto &i : m.getMCache()->maps) {
-		std::shared_ptr<Map> map = std::make_shared<Map>(i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
+		Map *map = new Map(i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
 		map->ensureAllGrids();
-		_map_data_db.insert(i.first, std::move(map));
+		_map_data_db.insert(i.first, map);
 		ZoneLog->info("Initialized grid for map '{}'", i.second.name());
 	}
 
 	ZoneLog->info("Done initializing '{}' maps.", _map_data_db.size());
 	
 	return true;
+}
+
+void Horizon::Zone::Game::MapManager::update(uint32_t diff)
+{
+	auto mapdb = _map_data_db.get_map();
+
+#define MAX_THREADS 8
+	WorkerThreadPool pool;
+	std::future<typename std::result_of<std::function<void()>()>::type> fut[MAX_THREADS];
+
+	for (auto it = mapdb.begin(); it != mapdb.end();) {
+		for (int i = 0; i < MAX_THREADS && it != mapdb.end(); i++, std::advance(it, 1))
+			fut[i] = pool.submit([it, diff] () { it->second->update(diff); });
+
+		for (int i = 0; i < MAX_THREADS; i++)
+			fut[i].wait();
+	}
+
+	_scheduler.Update(diff);
+#undef MAX_THREADS
 }

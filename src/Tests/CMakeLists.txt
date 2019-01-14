@@ -6,6 +6,8 @@ CollectSourceFiles(
 	TEST_SOURCES
 )
 
+set(CORE_DIR ${PROJECT_SOURCE_DIR}/src/Core)
+
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 foreach(TEST_SOURCE ${TEST_SOURCES})
@@ -14,10 +16,14 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 
 	if (TEST_NAME STREQUAL "BCryptTest")
 		set (ADD_LIBS bcryptcpp)
+	elseif (TEST_NAME STREQUAL "TaskSchedulingTest")
+		set (ADD_SOURCES
+			${CORE_DIR}/Multithreading/TaskScheduler/TaskScheduler.cpp
+			${CORE_DIR}/Multithreading/TaskScheduler/TaskScheduler.hpp)
 	endif ()
 
 	# Add compile target
-	add_executable(${TEST_NAME} ${TEST_SOURCE})
+	add_executable(${TEST_NAME} ${TEST_SOURCE} ${ADD_SOURCES})
 
 	# link to Boost libraries AND your targets and dependencies
 	target_link_libraries(${TEST_NAME}

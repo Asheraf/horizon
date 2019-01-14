@@ -29,7 +29,7 @@ class PacketHandler
 {
 public:
 	PacketHandler(std::shared_ptr<SessionType> session)
-	: _session(session)
+	: _socket(session)
 	{
 		//
 	}
@@ -45,9 +45,9 @@ public:
 	 * @param[in|out] buf    packet buffer to be queued.
 	 * @return true on success false on failure.
 	 */
-	bool HandleReceivedPacket(PacketBuffer &buf)
+	bool handle_received_packet(PacketBuffer &buf)
 	{
-		boost::optional<PacketHandlerFunc> optional_handler = getPacketHandler(buf.getOpCode());
+		boost::optional<PacketHandlerFunc> optional_handler = get_packet_handler(buf.getOpCode());
 
 		if (!optional_handler) {
 			CoreLog->trace("Unknown packet with ID received: {0:x}", buf.getOpCode());
@@ -68,19 +68,19 @@ public:
 	 * @param[in|out] pkt    packet buffer to be queued.
 	 */
 	template <typename T>
-	void SendPacket(T pkt)
+	void send_packet(T pkt)
 	{
 		PacketBuffer buf;
 
 		buf << pkt;
 
-		if (!_session->IsOpen())
+		if (!_socket->IsOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
-			buffer.Write(buf.contents(), sizeof(T));
-			_session->QueuePacket(std::move(buffer));
+			buffer.write(buf.contents(), sizeof(T));
+			_socket->QueuePacket(std::move(buffer));
 		}
 	}
 
@@ -92,15 +92,15 @@ public:
 	 * @param[in|out] buf    packet buffer to be queued.
 	 * @param[in]     size   size of the buffer to be queued (default sizeof type T)
 	 */
-	void SendPacket(PacketBuffer &buf, std::size_t size)
+	void send_packet(PacketBuffer &buf, std::size_t size)
 	{
-		if (!_session->IsOpen())
+		if (!_socket->IsOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
-			buffer.Write(buf.contents(), size);
-			_session->QueuePacket(std::move(buffer));
+			buffer.write(buf.contents(), size);
+			_socket->QueuePacket(std::move(buffer));
 		}
 	}
 
@@ -113,19 +113,19 @@ public:
 	 * @param[in]     size   size of the buffer to be sent (default sizeof type T)
 	 */
 	template <typename T>
-	void SendSyncPacket(T pkt, std::size_t size = sizeof(T))
+	void send_synchronous_packet(T pkt, std::size_t size = sizeof(T))
 	{
 		PacketBuffer buf;
 
 		buf << pkt;
 
-		if (!_session->IsOpen())
+		if (!_socket->IsOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
-			buffer.Write(buf.contents(), size);
-			_session->SyncWrite(buffer, size);
+			buffer.write(buf.contents(), size);
+			_socket->synchronous_write(buffer, size);
 		}
 	}
 
@@ -135,15 +135,15 @@ public:
 	 * @param[in|out] buf    packet buffer to be sent.
 	 * @param[in]     size   size of the buffer to be sent.
 	 */
-	void SendSyncPacket(PacketBuffer &buf, std::size_t size)
+	void send_synchronous_packet(PacketBuffer &buf, std::size_t size)
 	{
-		if (!_session->IsOpen())
+		if (!_socket->IsOpen())
 			return;
 
 		if (!buf.empty()) {
 			MessageBuffer buffer;
-			buffer.Write(buf.contents(), size);
-			_session->SyncWrite(buffer, size);
+			buffer.write(buf.contents(), size);
+			_socket->synchronous_write(buffer, size);
 		}
 	}
 
@@ -163,18 +163,18 @@ public:
 
 		buf << send_pkt;
 
-		if (!_session->IsOpen())
+		if (!_socket->IsOpen())
 			return false;
 
 		if (!buf.empty()) {
 			MessageBuffer recv_buf, send_buf;
-			send_buf.Write(buf.contents(), sizeof(SEND_T));
+			send_buf.write(buf.contents(), sizeof(SEND_T));
 
 			/* Block until data is sent. */
-			send_size = _session->SyncWrite(send_buf, sizeof(SEND_T));
+			send_size = _socket->synchronous_write(send_buf, sizeof(SEND_T));
 
 			/* Block until data is received. */
-			recv_size = _session->SyncRead(recv_buf);
+			recv_size = _socket->SyncRead(recv_buf);
 
 			if (recv_size > 0) {
 				uint16_t op_code = 0x0;
@@ -200,7 +200,7 @@ public:
 	 * @brief Retrieves the handler map.
 	 * @return PacketHandlerMap.
 	 */
-	const PacketHandlerMap &getHandlers() const { return _handlers; }
+	const PacketHandlerMap &get_handlers() const { return _handlers; }
 
 	/**
 	 * @brief Retrieves a packet handler function from the handler map.
@@ -208,7 +208,7 @@ public:
 	 * @return instance of initialized boost::optional<PacketHandlerFunc>,
 	 *         empty if not found.
 	 */
-	boost::optional<PacketHandlerFunc> getPacketHandler(uint16_t packet_id)
+	boost::optional<PacketHandlerFunc> get_packet_handler(uint16_t packet_id)
 	{
 		auto it = _handlers.find(packet_id);
 
@@ -223,9 +223,9 @@ public:
 	 * @param[in] packet_id   Id of the packet being added.
 	 * @param[in|out] func    Packet handler function.
 	 */
-	void addPacketHandler(uint16_t packet_id, PacketHandlerFunc const &func)
+	void add_packet_handler(uint16_t packet_id, PacketHandlerFunc const &func)
 	{
-		if (getPacketHandler(packet_id))
+		if (get_packet_handler(packet_id))
 			_handlers.erase(packet_id);
 
 		_handlers.insert(std::make_pair(packet_id, func));
@@ -235,15 +235,15 @@ public:
 	 * @brief Retrieves the session from this handler instance.
 	 * @return shared_ptr to an object of the session type.
 	 */
-	const std::shared_ptr<SessionType> &getSession() const { return _session; }
+	const std::shared_ptr<SessionType> &get_socket() const { return _socket; }
 
 	/**
 	 * @brief Pure virtual handler initializer on construction.
 	 */
-	virtual void InitializeHandlers() = 0;
+	virtual void initialize_handlers() = 0;
 
 private:
-	std::shared_ptr<SessionType> _session;   ///< Shared pointer to the instantiated session object.
+	std::shared_ptr<SessionType> _socket;   ///< Shared pointer to the instantiated session object.
 	PacketHandlerMap _handlers;              ///< Packet handler function map.
 };
 }

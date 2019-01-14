@@ -30,21 +30,22 @@
 #include <boost/system/error_code.hpp>
 
 class SessionData;
+class GameAccount;
 
 namespace Horizon
 {
 namespace Auth
 {
-class Session;
-class PacketHandler : public Horizon::Base::PacketHandler<Session>
+class AuthSocket;
+class PacketHandler : public Horizon::Base::PacketHandler<AuthSocket>
 {
 public:
-	explicit PacketHandler(std::shared_ptr<Session> session);
+	explicit PacketHandler(std::shared_ptr<AuthSocket> socket);
 	virtual ~PacketHandler();
 	/**
 	 *
 	 */
-	bool ValidateSessionData(uint32_t id, uint32_t client_version, uint8_t client_type);
+	bool validate_session_data(std::shared_ptr<GameAccount> game_account, uint32_t client_version, uint8_t client_type);
 
 	/**
 	 * Client To Auth
@@ -71,7 +72,7 @@ public:
 	virtual void Send_AC_REFUSE_LOGIN_R2();
 	virtual void Send_CA_CHARSERVERCONNECT();
 
-	virtual void InitializeHandlers();
+	virtual void initialize_handlers();
 };
 }
 }

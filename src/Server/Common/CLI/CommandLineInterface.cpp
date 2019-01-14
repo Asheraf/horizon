@@ -27,11 +27,11 @@ void command_complete(std::shared_ptr<CLICommand> /*cmd*/, bool /*success*/)
 	fflush(stdout);
 }
 
-void CLIThreadStart(Server *serv)
+void cli_thread_start(Server *serv)
 {
 	printf("\a");
 
-	while (!serv->isShuttingDown())
+	while (!serv->is_shutting_down())
 	{
 
 		char *command_str;
@@ -53,10 +53,10 @@ void CLIThreadStart(Server *serv)
 			}
 
 			fflush(stdout);
-			serv->QueueCLICommand(CLICommand(serv, command_str, &command_complete));
+			serv->queue_cli_command(CLICommand(serv, command_str, &command_complete));
 			add_history(command_str);
 			free(command_str);
-			std::this_thread::sleep_for(std::chrono::milliseconds(serv->getGeneralConf().getCoreUpdateInterval() + 100)); // Sleep until core has updated.
+			std::this_thread::sleep_for(std::chrono::milliseconds(serv->general_conf().get_core_update_interval() + 100)); // Sleep until core has updated.
 		} else if (feof(stdin)) {
 			serv->shutdown(SIGTERM);
 		}

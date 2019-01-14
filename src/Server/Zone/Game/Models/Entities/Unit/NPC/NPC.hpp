@@ -17,6 +17,8 @@ class NPC : public Unit, public GridObject<NPC>
 {
 public:
 	NPC(uint32_t guid);
+	NPC(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	NPC(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~NPC();
 
 private:

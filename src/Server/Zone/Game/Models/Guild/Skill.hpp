@@ -31,8 +31,8 @@ public:
 	~Skill() { }
 
 	/* Guild ID */
-	uint32_t getGuildID() { return _guild_id; }
-	void setGuildID(uint32_t guild_id) { _guild_id = guild_id; }
+	uint32_t get_guild_id() { return _guild_id; }
+	void set_guild_id(uint32_t guild_id) { _guild_id = guild_id; }
 
 	/* Skill ID */
 	uint32_t getSkillID() { return _skill_id; }

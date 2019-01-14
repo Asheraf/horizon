@@ -28,16 +28,16 @@ namespace Horizon
 {
 namespace Auth
 {
-class Session;
+class AuthSocket;
 class PacketHandler20171113 : public PacketHandler20170315
 {
 public:
-	explicit PacketHandler20171113(std::shared_ptr<Session> const &session);
+	explicit PacketHandler20171113(std::shared_ptr<AuthSocket> socket);
 	~PacketHandler20171113() override;
 
 	void Handle_CA_LOGIN_OTP(PacketBuffer &buf) override;
 	void Handle_Poly(PacketBuffer &buf);
-	void InitializeHandlers() override;
+	void initialize_handlers() override;
 };
 }
 }

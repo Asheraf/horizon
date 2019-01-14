@@ -108,7 +108,7 @@ public:
 
 		_new_socket_queue.push_back(sock);  // Add socket to queue.
 
-		SocketAdded(sock); // SocketAdded event for child classes.
+		socket_added(sock); // event for child classes.
 
 		CoreLog->trace("A new socket has been added to a thread. (Thread Connections: {}) ", _connections);
 	}
@@ -119,18 +119,18 @@ public:
 	 *        Once a socket is accepted or connected, its ownership is moved into a network thread.
 	 * @return a new shared pointer to a tcp::socket.
 	 */
-	std::shared_ptr<tcp::socket> GetSocketForNewConnection() { return std::make_shared<tcp::socket>(_io_service); }
+	std::shared_ptr<tcp::socket> get_new_socket() { return std::make_shared<tcp::socket>(_io_service); }
 
 	/**
 	 * @brief Gets the total number of network connections or sockets
 	 *        handled by this network thread.
 	 * @return total number of connections in this network thread.
 	 */
-	int32_t GetConnectionCount() const { return _connections; }
+	int32_t connection_count() const { return _connections; }
 
 protected:
-	virtual void SocketAdded(std::shared_ptr<SocketType> /*sock*/) { }
-	virtual void SocketRemoved(std::shared_ptr<SocketType> /*sock*/) { }
+	virtual void socket_added(std::shared_ptr<SocketType> /*sock*/) { }
+	virtual void socket_removed(std::shared_ptr<SocketType> /*sock*/) { }
 
 	/**
 	 * @brief Run the I/O Service loop within this network thread.
@@ -140,6 +140,7 @@ protected:
 	void run()
 	{
 		CoreLog->trace("Thread for new I/O service initiated.");
+
 		_updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
 		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
 
@@ -160,30 +161,30 @@ protected:
 		if (_stopped)
 			return;
 
-		_updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
-		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
-
-		AddNewSockets();
+		add_new_sockets();
 
 		_active_sockets.erase(std::remove_if(_active_sockets.begin(), _active_sockets.end(),
 			[this] (std::shared_ptr<SocketType> sock)
-				{
-					if (sock == nullptr || !sock->update()) {
+			{
+				if (sock == nullptr || !sock->update()) {
 
-						if (sock != nullptr && sock->isOpen()) {
-							sock->closeSocket();
-							this->SocketRemoved(sock);
-						}
-
-						--this->_connections;
-
-						CoreLog->trace("Socket closed in a networking thread. (Thread Connections: {})", this->_connections);
-
-						return true;
+					if (sock != nullptr && sock->is_open()) {
+						sock->close_socket();
+						this->socket_removed(sock);
 					}
 
-					return false;
-				}), _active_sockets.end());
+					--this->_connections;
+
+					CoreLog->trace("Socket closed in a networking thread. (Thread Connections: {})", this->_connections);
+
+					return true;
+				}
+
+				return false;
+			}), _active_sockets.end());
+
+		_updateTimer.expires_from_now(boost::posix_time::microseconds(500));
+		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
 	}
 
 	/**
@@ -193,7 +194,7 @@ protected:
 	 *        2) removing / closing new sockets that are not open.
 	 *        3) Starting the new socket once added to the container. (@see Socket<SocketType>::start())
 	 */
-	void AddNewSockets()
+	void add_new_sockets()
 	{
 		std::lock_guard<std::mutex> lock(_new_socket_queue_lock);
 
@@ -201,8 +202,8 @@ protected:
 			return;
 
 		for (std::shared_ptr<SocketType> sock : _new_socket_queue) {
-			if (!sock->isOpen()) {
-				SocketRemoved(sock);
+			if (!sock->is_open()) {
+				socket_removed(sock);
 				--_connections;
 			} else {
 				_active_sockets.push_back(sock);

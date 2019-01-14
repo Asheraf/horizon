@@ -114,8 +114,8 @@ public:
 	Player(int id = 0) : _id(id) { }
 	~Player() { }
 
-	int getId() { return _id; }
-	void setId(int id) { _id = id; }
+	int get_id() { return _id; }
+	void set_id(int id) { _id = id; }
 
 private:
 	int _id;
@@ -133,30 +133,30 @@ BOOST_AUTO_TEST_CASE(ReferenceListTest)
 		var[i] = i;
 		player[i] = std::make_shared<TestObject<Player>>();
 		player[i]->addReference(playerRefMgr);
-		player[i]->getReference().source()->setId(var[i]);
+		player[i]->getReference().source()->set_id(var[i]);
 		BOOST_TEST(player[i]->valid());
 	}
 
 	int ofs = MAX_LIMIT - 1;
 	for (auto it = playerRefMgr.begin(); it != TestRefManager<Player>::iterator(nullptr); it++)
-		BOOST_TEST(it->source()->getId() == var[ofs--]);
+		BOOST_TEST(it->source()->get_id() == var[ofs--]);
 
 	ofs = MAX_LIMIT - 1;
 	for (auto it = playerRefMgr.begin(); it != TestRefManager<Player>::iterator(nullptr); ++it)
-		BOOST_TEST(it->source()->getId() == var[ofs--]);
+		BOOST_TEST(it->source()->get_id() == var[ofs--]);
 
 	ofs = 0;
 	for (auto it = playerRefMgr.end(); it != TestRefManager<Player>::iterator(nullptr); it--)
-		BOOST_TEST(it->source()->getId() == var[ofs++]);
+		BOOST_TEST(it->source()->get_id() == var[ofs++]);
 
 	ofs = 0;
 	for (auto it = playerRefMgr.end(); it != TestRefManager<Player>::iterator(nullptr); --it)
-		BOOST_TEST(it->source()->getId() == var[ofs++]);
+		BOOST_TEST(it->source()->get_id() == var[ofs++]);
 
 	BOOST_TEST(playerRefMgr.size() == MAX_LIMIT);
 
-	BOOST_TEST(playerRefMgr.first()->source()->getId() == var[MAX_LIMIT - 1]);
-	BOOST_TEST(playerRefMgr.last()->source()->getId() == var[0]);
+	BOOST_TEST(playerRefMgr.first()->source()->get_id() == var[MAX_LIMIT - 1]);
+	BOOST_TEST(playerRefMgr.last()->source()->get_id() == var[0]);
 
 	BOOST_TEST(playerRefMgr.first()->prev() == nullptr);
 	BOOST_TEST(playerRefMgr.last()->next() == nullptr);

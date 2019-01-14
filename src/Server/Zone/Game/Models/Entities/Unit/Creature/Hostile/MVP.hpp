@@ -17,6 +17,8 @@ class MVP : public Creature, public GridObject<MVP>
 {
 public:
 	MVP(uint32_t guid);
+	MVP(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	MVP(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~MVP();
 
 private:

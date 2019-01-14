@@ -40,7 +40,7 @@ std::string BCrypt::generateHash(const std::string & password, int workload)
 	 return hash;
 }
 
-bool BCrypt::validatePassword(const std::string & password, const std::string & hash)
+bool BCrypt::validate_password(const std::string & password, const std::string & hash)
 {
 	return (bcrypt_checkpw(password.c_str(), hash.c_str()) == 0);
 }

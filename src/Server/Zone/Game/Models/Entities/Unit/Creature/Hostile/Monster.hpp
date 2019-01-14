@@ -17,6 +17,8 @@ class Monster : public Creature, public GridObject<Monster>
 {
 public:
 	Monster(uint32_t guid);
+	Monster(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	Monster(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~Monster();
 
 private:

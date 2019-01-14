@@ -25,19 +25,27 @@ public:
 	{
 	}
 
-	std::shared_ptr<GridType> getGrid(GridCoords &coords)
+	~GridHolder()
+	{
+		for (uint16_t x = 0; x < _width; ++x)
+			for (uint16_t y = 0; y < _height; ++y)
+				delete _grids[x][y];
+	}
+
+	GridType *getGrid(GridCoords &coords)
 	{
 		assert(coords.x() < _width);
 		assert(coords.y() < _height);
+
 		return _grids[coords.x()][coords.y()];
 	}
 
-	void initializeGrid(GridCoords &coords)
+	void initializeGrid(GridCoords &coords, bool unused)
 	{
 		assert(coords.x() < _width);
 		assert(coords.y() < _height);
 
-		_grids[coords.x()][coords.y()] = std::move(std::make_shared<GridType>());
+		_grids[coords.x()][coords.y()] = unused ? nullptr : new GridType();
 	}
 
 	uint16_t height() { return _height; }
@@ -62,7 +70,7 @@ public:
 
 private:
 	uint16_t _height{0}, _width{0};
-	boost::multi_array<std::shared_ptr<GridType>, 2> _grids;
+	boost::multi_array<GridType *, 2> _grids;
 };
 
 #endif /* HORIZON_ZONE_GAME_GRIDHOLDER_HPP */

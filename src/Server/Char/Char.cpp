@@ -19,11 +19,11 @@
 
 #include "Core/Database/MySqlConnection.hpp"
 #include "Core/Logging/Logger.hpp"
-#include "Server/Char/Session/Session.hpp"
+#include "Server/Char/Interface/InterAPI.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Char/SocketMgr/InterSocketMgr.hpp"
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
-#include "Server/Char/Interface/InterAPI.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/make_shared.hpp>
@@ -61,7 +61,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 	libconfig::Config cfg;
 	std::string tmp_string;
 	int tmp_value;
-	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
+	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 
 	// Read the file. If there is an error, report it and exit.
 	try {
@@ -82,28 +82,28 @@ bool Horizon::Char::CharMain::ReadConfig()
 
 	if (!inter_server.lookupValue("ip_address", tmp_string)) {
 		char_config_error("inter_server.ip_address", "127.0.0.1");
-		getNetworkConf().setInterServerIp("127.0.0.1");
+		network_conf().set_inter_server_ip("127.0.0.1");
 	} else {
-		getNetworkConf().setInterServerIp(tmp_string);
+		network_conf().set_inter_server_ip(tmp_string);
 	}
 
 	if (!inter_server.lookupValue("port", tmp_value)) {
 		char_config_error("inter_server.port", 9998);
-		getNetworkConf().setInterServerPort(9998);
+		network_conf().set_inter_server_port(9998);
 	} else {
-		getNetworkConf().setInterServerPort(tmp_value);
+		network_conf().set_inter_server_port(tmp_value);
 	}
 
 	if (!inter_server.lookupValue("password", tmp_string)) {
 		char_config_error("inter_server.password", "ABCDEF");
-		getNetworkConf().setInterServerPassword(tmp_string);
+		network_conf().set_inter_server_password(tmp_string);
 	} else {
-		getNetworkConf().setInterServerPassword(tmp_string);
+		network_conf().set_inter_server_password(tmp_string);
 	}
 
 	CharLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
-				  getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
-				  (getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+				  network_conf().get_inter_server_ip(), network_conf().get_inter_server_port(),
+				  (network_conf().get_inter_server_password().length()) ? "using password" : "not using password");
 
 	const libconfig::Setting &new_character = cfg.getRoot()["new_character"];
 
@@ -179,7 +179,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!ProcessCommonConfiguration(cfg))
+	if (!parse_common_configs(cfg))
 		return false;
 
 	CharLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
@@ -190,40 +190,9 @@ bool Horizon::Char::CharMain::ReadConfig()
 #undef char_config_error
 
 /* Initialize Char-Server CLI Commands */
-void Horizon::Char::CharMain::initializeCLICommands()
+void Horizon::Char::CharMain::initialize_cli_commands()
 {
-	Server::initializeCLICommands();
-}
-
-void Horizon::Char::CharMain::initializeCore()
-{
-	/* Inter-server connection thread. */
-	std::thread inter_conn_thread(std::bind(&CharMain::connectWithInterServer, this));
-
-	Server::initializeCore();
-
-	inter_conn_thread.join();
-}
-
-/**
- * Connect with the Inter-server.
- */
-void Horizon::Char::CharMain::connectWithInterServer()
-{
-	if (!getGeneralConf().isTestRun()) {
-		if (InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1)) {
-			CharInterAPI->setInterSession(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME));
-
-			do {
-				std::this_thread::sleep_for(std::chrono::seconds(2));
-			} while (!isShuttingDown() && CharInterAPI->pingInterServer());
-
-			if (!isShuttingDown()) {
-				InterSocktMgr->closeConnection(INTER_SESSION_NAME);
-				connectWithInterServer();
-			}
-		}
-	}
+	Server::initialize_cli_commands();
 }
 
 /**
@@ -238,6 +207,70 @@ void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 	}
 }
 
+void Horizon::Char::CharMain::initialize_core()
+{
+	/**
+	 * Establish a connection to the inter-server.
+	 */
+	if (!general_conf().is_test_run())
+		establish_inter_connection();
+
+	/* Core Signal Handler  */
+	boost::asio::signal_set signals(get_io_service(), SIGINT, SIGTERM);
+	signals.async_wait(SignalHandler);
+
+	/* Start Character Network */
+	ClientSocktMgr->start(get_io_service(),
+						  network_conf().get_listen_ip(),
+						  network_conf().get_listen_port(),
+						  network_conf().get_network_thread_count());
+
+	Server::initialize_core();
+
+	while (!is_shutting_down() && !general_conf().is_test_run()) {
+		uint32_t diff = general_conf().get_core_update_interval();
+		process_cli_commands();
+		_task_scheduler.Update(diff);
+		ClientSocktMgr->update_socket_sessions(diff);
+		std::this_thread::sleep_for(std::chrono::milliseconds(diff));
+	}
+	
+	/**
+	 * Server shutdown routine begins here...
+	 */
+	Server::finalize_core();
+
+	/**
+	 * Stop all networks
+	 */
+	ClientSocktMgr->stop_network();
+	InterSocktMgr->stop_network();
+
+	/* Cancel signal handling. */
+	signals.cancel();
+}
+
+/**
+ * Connect with the Inter-server.
+ */
+void Horizon::Char::CharMain::establish_inter_connection()
+{
+	if (InterSocktMgr->start(INTER_SESSION_NAME, this, network_conf().get_inter_server_ip(), network_conf().get_inter_server_port(), 1)) {
+		CharInterAPI->set_inter_socket(InterSocktMgr->get_connector_socket(INTER_SESSION_NAME));
+		_task_scheduler.Schedule(Seconds(12),
+			 [this] (TaskContext inter_ping) {
+				 if (!CharInterAPI->pingInterServer()) {
+					 InterSocktMgr->close_connection(INTER_SESSION_NAME);
+					 establish_inter_connection();
+					 return;
+				 }
+
+				 if (!is_shutting_down())
+					 inter_ping.Repeat();
+			 });
+	}
+}
+
 /**
  * Main entry point of the char-server application.
  * @param argc
@@ -248,33 +281,17 @@ int main(int argc, const char * argv[])
 {
 	/* Parse Command Line Arguments */
 	if (argc > 1)
-		CharServer->parseExecArguments(argv, argc);
+		CharServer->parse_exec_args(argv, argc);
 
 	/* Read Char Configuration */
 	if (!CharServer->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
-	/* Core Signal Handler  */
-	boost::asio::signal_set signals(*CharServer->getIOService(), SIGINT, SIGTERM);
-	signals.async_wait(SignalHandler);
-
-	/* Start Character Network */
-	ClientSocktMgr->Start(*CharServer->getIOService(),
-	        CharServer->getNetworkConf().getListenIp(),
-            CharServer->getNetworkConf().getListenPort(),
-            CharServer->getNetworkConf().getMaxThreads());
-
 	/* Initialize the Common Core */
-	CharServer->initializeCore();
+	CharServer->initialize_core();
 
 	/* Core Cleanup */
 	CharLog->info("Server shutting down...");
 
-	/* Stop Network */
-	ClientSocktMgr->StopNetwork();
-	InterSocktMgr->StopNetwork();
-
-	signals.cancel();
-
-	return CharServer->getGeneralConf().getShutdownSignal();
+	return CharServer->general_conf().get_shutdown_signal();
 }

@@ -17,6 +17,8 @@ class Pet : public Creature, public GridObject<Pet>
 {
 public:
 	Pet(uint32_t guid);
+	Pet(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	Pet(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~Pet();
 
 private:

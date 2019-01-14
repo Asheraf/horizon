@@ -78,10 +78,20 @@ void UnpackPosition(const uint8_t *p, uint16_t *x, uint16_t *y, uint8_t *dir)
 		*dir = (p[2] & 0x0f);
 }
 
+// client-side: x0+=sx0*0.0625-0.5 and y0+=sy0*0.0625-0.5
+void PackPosition(uint8_t *p, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t sx0, uint8_t sy0) {
+	p[0] = (uint8_t) (x0 >> 2);
+	p[1] = (uint8_t) ((x0 << 6) | ((y0 >> 4) & 0x3f));
+	p[2] = (uint8_t) ((y0 << 4) | ((x1 >> 6) & 0x0f));
+	p[3] = (uint8_t) ((x1 << 2) | ((y1 >> 8) & 0x03));
+	p[4] = (uint8_t) y1;
+	p[5] = (uint8_t) ((sx0 << 4) | (sy0 & 0x0f));
+}
+
 // little endian char array to uint conversion
 unsigned int GetULong(unsigned char *p)
 {
-	return (p[0] << 0 | p[1] << 8 | p[2] << 16 | p[3] << 24);
+	return (p[0] | p[1] << 8 | p[2] << 16 | p[3] << 24);
 }
 
 // Reads a float (32 bits) from the buffer

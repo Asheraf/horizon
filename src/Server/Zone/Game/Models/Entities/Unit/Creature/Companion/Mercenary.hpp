@@ -17,6 +17,8 @@ class Mercenary : public Creature, public GridObject<Mercenary>
 {
 public:
 	Mercenary(uint32_t guid);
+	Mercenary(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	Mercenary(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~Mercenary();
 
 private:

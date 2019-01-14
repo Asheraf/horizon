@@ -20,7 +20,8 @@
 #include "Core/Logging/Logger.hpp"
 #include "Server/Char/Char.hpp"
 #include "Server/Char/PacketHandler/Packets.hpp"
-#include "Server/Char/Session/Session.hpp"
+#include "Server/Char/Session/CharSession.hpp"
+#include "Server/Char/Socket/CharSocket.hpp"
 #include "Server/Char/Database/Query.hpp"
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 #include "Server/Common/Models/SessionData.hpp"
@@ -29,28 +30,30 @@
 #include <boost/bind.hpp>
 #include <string>
 
+using namespace Horizon::Char;
+
 /**
  * @brief Packet Handler Constructor.
  */
-Horizon::Char::PacketHandler::PacketHandler(std::shared_ptr<Session> session)
-: Horizon::Base::PacketHandler<Session>(session)
+PacketHandler::PacketHandler(std::shared_ptr<CharSocket> socket)
+: Horizon::Base::PacketHandler<CharSocket>(socket)
 {
-	InitializeHandlers();
+	initialize_handlers();
 }
 
 /**
  * @brief Packet Handler destructor.
  */
-Horizon::Char::PacketHandler::~PacketHandler()
+PacketHandler::~PacketHandler()
 {
 }
 
 /**
  * @brief Initialize packet handlers.
  */
-void Horizon::Char::PacketHandler::InitializeHandlers()
+void PacketHandler::initialize_handlers()
 {
-#define HANDLER_FUNC(packet) addPacketHandler(packet, boost::bind(&PacketHandler::Handle_ ## packet, this, boost::placeholders::_1));
+#define HANDLER_FUNC(packet) add_packet_handler(packet, boost::bind(&PacketHandler::Handle_ ## packet, this, boost::placeholders::_1));
 	HANDLER_FUNC(CHAR_KEEP_ALIVE);
 	HANDLER_FUNC(CHAR_CREATE);
 	HANDLER_FUNC(CHAR_DELETE_START);
@@ -68,9 +71,9 @@ void Horizon::Char::PacketHandler::InitializeHandlers()
  * @brief Receive and handle the CHAR_CONNCET packet.
  * @param[in|out] buf    Validated PacketBuffer received by the char-server.
  */
-void Horizon::Char::PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pkt*/)
+void PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pkt*/)
 {
-	CharQuery->AllCharactersByAccount(getSession()->getGameAccount());
+	CharQuery->AllCharactersByAccount(get_socket()->get_session()->get_game_account());
 	
 	// Send acceptance notice to client.
 	Send_CHAR_ACCOUNT_ID();         // 1st
@@ -82,13 +85,14 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pk
 	Send_CHAR_PINCODE_STATE_ACK();  // 5th
 }
 
-void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
+void PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 {
 	PACKET_CHAR_CREATE pkt;
+	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
 	character_gender_types gender;
 	buf >> pkt;
 
-	if (getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE) {
+	if (game_account->get_gender() == ACCOUNT_GENDER_MALE) {
 		gender = CHARACTER_GENDER_MALE;
 	} else {
 		gender = CHARACTER_GENDER_FEMALE;
@@ -101,83 +105,87 @@ void Horizon::Char::PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 	}
 
 	// Check if the slot is not a premium.
-	if (pkt.slot > getSession()->getGameAccount()->getCharacterSlots()) {
+	if (pkt.slot > game_account->get_character_slots()) {
 		Send_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
 		return;
 	}
 
-	std::shared_ptr<Horizon::Models::Character::Character> character = std::make_shared<Horizon::Models::Character::Character>(
-			getSession()->getGameAccount()->getID(), pkt.name, pkt.slot, gender);
-	character->setStatusData(std::make_shared<Horizon::Models::Character::Status>(
+	std::shared_ptr<Character> character = std::make_shared<Character>(
+			game_account->get_id(), pkt.name, pkt.slot, gender);
+	character->set_status_data(std::make_shared<Status>(
 			CharServer->getCharConfig().getStartZeny(), pkt.str, pkt.agi, pkt.int_, pkt.vit, pkt.dex, pkt.luk));
-	character->setViewData(std::make_shared<Horizon::Models::Character::View>(pkt.hair_style, pkt.hair_color));
-	character->setPositionData(std::make_shared<Horizon::Models::Character::Position>(
+	character->set_view_data(std::make_shared<View>(pkt.hair_style, pkt.hair_color));
+	character->set_position_data(std::make_shared<Position>(
 			CharServer->getCharConfig().getStartMap(), CharServer->getCharConfig().getStartX(), CharServer->getCharConfig().getStartY()));
 	
 	// Save character to sql.
 	character->create(CharServer);
 	// Add character to account.
-	getSession()->getGameAccount()->addCharacter(character);
+	game_account->add_character(character);
 	Send_CHAR_CREATE_SUCCESS_ACK(character);
 }
 
-void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
+void PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
 {
+	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
+	std::shared_ptr<Character> character = nullptr;
 	PACKET_CHAR_DELETE_START pkt;
 	character_delete_result result;
 
 	buf >> pkt;
 
-	std::shared_ptr<Horizon::Models::Character::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+	character = game_account->get_character(pkt.character_id);
 
 	if (character == nullptr) {
-		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
+		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", game_account->get_id());
 		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_DATABASE_ERR, 0);
 		return;
 	}
 
-	if (character->getAccessData()->getDeleteDate() > 0) {
+	if (character->get_access_data()->get_delete_date() > 0) {
 		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_UNKNOWN, 0);
 		return;
 	}
 
-	if (character->getGroupData()->getGuildID() > 0) {
+	if (character->get_group_data()->get_guild_id() > 0) {
 		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_GUILD_ERR, 0);
 		return;
 	}
 
-	if (character->getGroupData()->getPartyID() > 0) {
+	if (character->get_group_data()->get_party_id() > 0) {
 		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_PARTY_ERR, 0);
 		return;
 	}
 
-	character->getAccessData()->setDeleteDate(CharServer->getCharConfig().getCharacterDeletionTime() + time(nullptr));
-	character->getAccessData()->save(CharServer);
+	character->get_access_data()->set_delete_date(CharServer->getCharConfig().getCharacterDeletionTime() + time(nullptr));
+	character->get_access_data()->save(CharServer);
 	result = CHAR_DEL_RESULT_SUCCESS;
-	Send_CHAR_DELETE_START_ACK(character->getCharacterID(), result, character->getAccessData()->getDeleteDate() - time(nullptr));
+	Send_CHAR_DELETE_START_ACK(character->get_character_id(), result, character->get_access_data()->get_delete_date() - time(nullptr));
 }
 
-void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
+void PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
 {
+	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
+	std::shared_ptr<Character> character = nullptr;
 	PACKET_CHAR_DELETE_ACCEPT pkt;
 
 	buf >> pkt;
 
-	std::shared_ptr<Horizon::Models::Character::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+ 	character = game_account->get_character(pkt.character_id);
 
 	if (character == nullptr) {
-		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
+		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", game_account->get_id());
 		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_UNKNOWN);
 		return;
 	}
 
-	if (character->getAccessData()->getDeleteDate() > time(nullptr)) {
-		CharLog->warn("Attempted to delete character not ready for deletion, for account Id '{}'", getSession()->getGameAccount()->getID());
+	if (character->get_access_data()->get_delete_date() > time(nullptr)) {
+		CharLog->warn("Attempted to delete character Id {} which is not ready for deletion, in account '{}'", character->get_character_id(), game_account->get_id());
 		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_TIME_ERR);
 		return;
 	}
 
-	const char *birth_date = getSession()->getGameAccount()->getBirthDate().c_str();
+	const char *birth_date = game_account->get_birthdate().c_str();
 	if (std::strncmp(&birth_date[2], &pkt.birthdate[0], 2)        // YY
 		|| std::strncmp(&birth_date[5], &pkt.birthdate[2], 2)     // MM
 		|| std::strncmp(&birth_date[8], &pkt.birthdate[4], 2)) {  // DD
@@ -187,43 +195,46 @@ void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
 
 	Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_SUCCESS);
 
-	getSession()->getGameAccount()->removeCharacter(pkt.character_id);
-	character->setDeleted(true);
+	game_account->remove_character(pkt.character_id);
+	character->set_deleted(true);
 	character->save(CharServer);
 	Send_CHAR_RESEND_CHAR_LIST();
 }
 
-void Horizon::Char::PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
+void PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
 {
+	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
+	std::shared_ptr<Character> character;
 	PACKET_CHAR_DELETE_CANCEL pkt;
 
 	buf >> pkt;
 
-	std::shared_ptr<Horizon::Models::Character::Character> character = getSession()->getGameAccount()->getCharacter(pkt.character_id);
+	character = game_account->get_character(pkt.character_id);
 
 	if (character == nullptr) {
-		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", getSession()->getGameAccount()->getID());
+		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", game_account->get_id());
 		Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
 		return;
 	}
 
-	if (character->getAccessData()->getDeleteDate() == 0) {
-		CharLog->warn("Attempted to delete character that wasn't set for deletion in account Id '{}'", getSession()->getGameAccount()->getID());
+	if (character->get_access_data()->get_delete_date() == 0) {
+		CharLog->warn("Attempted to delete character that wasn't set for deletion in account Id '{}'", game_account->get_id());
 		Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
 		return;
 	}
 
-	character->getAccessData()->setDeleteDate(0);
-	character->getAccessData()->save(CharServer);
+	character->get_access_data()->set_delete_date(0);
+	character->get_access_data()->save(CharServer);
 
 	Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, true);
 }
 
-void Horizon::Char::PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
+void PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
 {
 	PACKET_CHAR_SELECT pkt;
-	AccountCharacterMapType characters = getSession()->getGameAccount()->getAllCharacters();
-	std::shared_ptr<Horizon::Models::Character::Character> character;
+	AccountCharacterMapType characters = get_socket()->get_session()->get_game_account()->get_all_characters();
+	std::shared_ptr<Character> character;
+
 	buf >> pkt;
 
 	if (characters.empty())
@@ -235,7 +246,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
 		if (character == nullptr)
 			continue;
 
-		if (character->getSlot() == pkt.slot)
+		if (character->get_slot() == pkt.slot)
 			break;
 	}
 
@@ -246,7 +257,7 @@ void Horizon::Char::PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
  * @brief Receive and handle the CHAR_KEEP_ALIVE packet.
  * @param[in|out] buf    Validated PacketBuffer received by the char-server.
  */
-void Horizon::Char::PacketHandler::Handle_CHAR_KEEP_ALIVE(PacketBuffer &/*buf*/)
+void PacketHandler::Handle_CHAR_KEEP_ALIVE(PacketBuffer &/*buf*/)
 {
 	// We do nothing here as yet, its just a keep-alive.
 	// PACKET_CHAR_KEEP_ALIVE pkt;
@@ -261,11 +272,11 @@ void Horizon::Char::PacketHandler::Handle_CHAR_KEEP_ALIVE(PacketBuffer &/*buf*/)
  * @brief Send to the client with the CHAR_CONNECT_ERROR packet.
  * @param[in] error    error code to be sent, @see character_connect_errors.
  */
-void Horizon::Char::PacketHandler::Send_CHAR_CONNECT_ERROR(character_connect_errors error)
+void PacketHandler::Send_CHAR_CONNECT_ERROR(character_connect_errors error)
 {
 	PACKET_CHAR_CONNECT_ERROR pkt;
 	pkt.error = error;
-	SendPacket(pkt);
+	send_packet(pkt);
 }
 
 /**
@@ -273,43 +284,48 @@ void Horizon::Char::PacketHandler::Send_CHAR_CONNECT_ERROR(character_connect_err
  * @note This packet has no ID but is required by the client.
  * @param[in] account_id   Account ID of the session.
  */
-void Horizon::Char::PacketHandler::Send_CHAR_ACCOUNT_ID()
+void PacketHandler::Send_CHAR_ACCOUNT_ID()
 {
 	PACKET_CHAR_ACCOUNT_ID pkt;
-	pkt.account_id = getSession()->getSessionData()->getGameAccountID();
-	SendPacket(pkt);
+	pkt.account_id = get_socket()->get_session()->get_game_account()->get_id();
+	send_packet(pkt);
 }
 
 /**
  * @brief Send to the client with the CHAR_SLOT_INFO_ACK packet on client connection.
- * @see Horizon::Char::packets
+ * @see packets
  */
-void Horizon::Char::PacketHandler::Send_CHAR_SLOT_INFO_ACK()
+void PacketHandler::Send_CHAR_SLOT_INFO_ACK()
 {
+	std::shared_ptr<SessionData> session_data = get_socket()->get_session()->get_session_data();
 	PACKET_CHAR_SLOT_INFO_ACK pkt;
+
 	pkt.total_slots = MAX_CHARACTER_SLOTS;
-	pkt.premium_slots = getSession()->getSessionData()->getCharacterSlots();
-	pkt.char_slots_1 = getSession()->getSessionData()->getCharacterSlots();
-	pkt.char_slots_2 = getSession()->getSessionData()->getCharacterSlots();
-	SendPacket(pkt);
-	CharLog->info("Sent character-slot information to AID {}", getSession()->getSessionData()->getGameAccountID());
+	pkt.premium_slots = session_data->get_character_slots();
+	pkt.char_slots_1 = session_data->get_character_slots();
+	pkt.char_slots_2 = session_data->get_character_slots();
+
+	send_packet(pkt);
+
+	CharLog->info("Sent character-slot information to AID {}", session_data->get_game_account_id());
 }
 
 /**
  * @brief Send to the client with the CHAR_LIST_ACK packet on client connection.
- * @see Horizon::Char::packets
+ * @see packets
  */
-void Horizon::Char::PacketHandler::Send_CHAR_LIST_ACK()
+void PacketHandler::Send_CHAR_LIST_ACK()
 {
+	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
 	PACKET_CHAR_LIST_ACK pkt;
 	PacketBuffer buf;
 	std::vector<character_list_data> char_list;
 	int char_list_length = 0;
 
-	for (auto &c : getSession()->getGameAccount()->getAllCharacters()) {
+	for (auto &c : game_account->get_all_characters()) {
 		character_list_data c_data;
 		c_data.create(c.second);
-		c_data.gender = getSession()->getGameAccount()->getGender();
+		c_data.gender = game_account->get_gender();
 		char_list.push_back(c_data);
 		char_list_length += sizeof(c_data);
 	}
@@ -322,22 +338,23 @@ void Horizon::Char::PacketHandler::Send_CHAR_LIST_ACK()
 		buf.append(&c, sizeof(c));
 	}
 
-	SendPacket(buf, pkt.packet_len);
+	send_packet(buf, pkt.packet_len);
 
-	CharLog->info("Sent character-list information to AID {}", getSession()->getSessionData()->getGameAccountID());
+	CharLog->info("Sent character-list information to AID {}", game_account->get_id());
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_RESEND_CHAR_LIST()
+void PacketHandler::Send_CHAR_RESEND_CHAR_LIST()
 {
+	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
 	PACKET_CHAR_RESEND_CHAR_LIST pkt;
 	PacketBuffer buf;
 	std::vector<character_list_data> char_list;
 	int char_list_length = 0;
 
-	for (auto &c : getSession()->getGameAccount()->getAllCharacters()) {
+	for (auto &c : game_account->get_all_characters()) {
 		character_list_data c_data;
 		c_data.create(c.second);
-		c_data.gender = getSession()->getGameAccount()->getGender();
+		c_data.gender = game_account->get_gender();
 		char_list.push_back(c_data);
 		char_list_length += sizeof(c_data);
 	}
@@ -350,98 +367,98 @@ void Horizon::Char::PacketHandler::Send_CHAR_RESEND_CHAR_LIST()
 		buf.append(&c, sizeof(c));
 	}
 
-	SendPacket(buf, pkt.packet_len);
+	send_packet(buf, pkt.packet_len);
 
-	CharLog->info("Re-sent character-list information to AID {}", getSession()->getSessionData()->getGameAccountID());
+	CharLog->info("Re-sent character-list information to AID {}", game_account->get_id());
 }
 
 /**
  * @brief Send to the client with the CHAR_BAN_LIST_ACK packet on client connection.
- * @see Horizon::Char::packets
+ * @see packets
  */
-void Horizon::Char::PacketHandler::Send_CHAR_BAN_LIST_ACK()
+void PacketHandler::Send_CHAR_BAN_LIST_ACK()
 {
 	PACKET_CHAR_BAN_LIST_ACK pkt;
-	SendPacket(pkt);
-	CharLog->info("Send character ban-list information to AID {}", getSession()->getGameAccount()->getID());
+	send_packet(pkt);
+	CharLog->info("Send character ban-list information to AID {}", get_socket()->get_session()->get_game_account()->get_id());
 }
 
 /**
  * @brief Send to the client with the CHAR_PINCODE_STATE_ACK packet on client connection.
- * @see Horizon::Char::packets
+ * @see packets
  */
-void Horizon::Char::PacketHandler::Send_CHAR_PINCODE_STATE_ACK()
+void PacketHandler::Send_CHAR_PINCODE_STATE_ACK()
 {
 	PACKET_CHAR_PINCODE_STATE_ACK pkt;
 	pkt.pincode_seed = rand() % 0xFFFF;
-	pkt.account_id = getSession()->getSessionData()->getGameAccountID();
+	pkt.account_id = get_socket()->get_session()->get_game_account()->get_id();
 	pkt.state = PINCODE_CORRECT;
-	SendPacket(pkt);
+	send_packet(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Horizon::Models::Character::Character> character)
+void PacketHandler::Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Character> character)
 {
 	PACKET_CHAR_CREATE_SUCCESS_ACK pkt;
 
 	pkt.data.create(character);
 
-	if (getSession()->getGameAccount()->getGender() == ACCOUNT_GENDER_MALE)
+	if (get_socket()->get_session()->get_game_account()->get_gender() == ACCOUNT_GENDER_MALE)
 		pkt.data.gender = CHARACTER_GENDER_MALE;
 	else
 		pkt.data.gender = CHARACTER_GENDER_FEMALE;
 
-	SendPacket(pkt);
+	send_packet(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date)
+void PacketHandler::Send_CHAR_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date)
 {
 	PACKET_CHAR_DELETE_START_ACK pkt;
 	pkt.character_id = character_id;
 	pkt.result = result;
 	pkt.deletion_date = deletion_date;
-	SendPacket(pkt);
+	send_packet(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result)
+void PacketHandler::Send_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result)
 {
 	PACKET_CHAR_DELETE_ACCEPT_ACK pkt;
 	pkt.character_id = character_id;
 	pkt.result = result;
-	SendPacket(pkt);
+	send_packet(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success)
+void PacketHandler::Send_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success)
 {
 	PACKET_CHAR_DELETE_CANCEL_ACK pkt;
 	pkt.character_id = character_id;
 	pkt.result = success ? 1 : 2;
-	SendPacket(pkt);
+	send_packet(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_CREATE_ERROR_ACK(char_create_error_types error)
+void PacketHandler::Send_CHAR_CREATE_ERROR_ACK(char_create_error_types error)
 {
 	PACKET_CHAR_CREATE_ERROR_ACK pkt;
 	pkt.error_code = (uint8_t) error;
-	SendPacket(pkt);
+	send_packet(pkt);
 }
 
-void Horizon::Char::PacketHandler::Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Horizon::Models::Character::Character> character)
+void PacketHandler::Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Character> character)
 {
 	PACKET_CHAR_SEND_ZONE_INFO pkt;
 	std::string map_name;
 
-	if ((map_name = character->getPositionData()->getCurrentMap()).empty())
-		if ((map_name = character->getPositionData()->getSavedMap()).empty())
+	if ((map_name = character->get_position_data()->get_current_map()).empty())
+		if ((map_name = character->get_position_data()->get_saved_map()).empty())
 			map_name = CharServer->getCharConfig().getStartMap().c_str();
 
 	map_name += ".gat";
 
-	pkt.char_id = character->getCharacterID();
+	pkt.char_id = character->get_character_id();
 	pkt.ip_address = inet_addr(CharServer->getCharConfig().getZoneServerIP().c_str());
 	pkt.port = CharServer->getCharConfig().getZoneServerPort();
 	strncpy(pkt.mapname,
 			map_name.c_str(),
 			MAP_NAME_LENGTH_EXT);
 
-	SendPacket(pkt);
+	send_packet(pkt);
 }

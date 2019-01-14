@@ -22,6 +22,7 @@
 #include "Server/Common/Interfaces/InterServerAPI.hpp"
 #include "Server/Zone/PacketHandler/InterPacketHandler.hpp"
 #include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
+#include "Server/Zone/Socket/InterSocket.hpp"
 #include "Server/Zone/Session/InterSession.hpp"
 
 namespace Horizon
@@ -30,10 +31,14 @@ namespace Zone
 {
 namespace Interface
 {
-class InterAPI : public Horizon::Interface::InterServerAPI<InterSession>
+class InterAPI : public Horizon::Interface::InterServerAPI<InterSocket>
 {
 public:
-	InterAPI() : InterServerAPI(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME)) {}
+	InterAPI()
+	: InterServerAPI()
+	{
+		//
+	}
 	~InterAPI() {}
 
 	static InterAPI *getInstance()

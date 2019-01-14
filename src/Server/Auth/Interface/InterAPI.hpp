@@ -18,9 +18,9 @@
 #ifndef HORIZON_AUTH_INTERFACE_INTERAPI_HPP
 #define HORIZON_AUTH_INTERFACE_INTERAPI_HPP
 
-#include "Server/Common/Horizon.hpp"
 #include "Server/Common/Interfaces/InterServerAPI.hpp"
 #include "Server/Auth/PacketHandler/InterPacketHandler.hpp"
+#include "Server/Auth/Socket/InterSocket.hpp"
 #include "Server/Auth/Session/InterSession.hpp"
 
 namespace Horizon
@@ -29,10 +29,12 @@ namespace Auth
 {
 namespace Interface
 {
-class InterAPI : public Horizon::Interface::InterServerAPI<InterSession>
+class InterAPI : public Horizon::Interface::InterServerAPI<InterSocket>
 {
 public:
-	InterAPI() : InterServerAPI(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME)){}
+	InterAPI() : InterServerAPI()
+	{
+	}
 	~InterAPI() {}
 
 	static InterAPI *getInstance()

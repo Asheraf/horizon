@@ -24,17 +24,15 @@ add_library(grf
 
 target_link_libraries(grf
 	PUBLIC
-	${Boost_LIBRARIES}
-	${ZLIB_LIBRARY})
+	${Boost_LIBRARIES})
 
 target_include_directories(grf
 	PUBLIC
 		${PROJECT_SOURCE_DIR}/src
-		${ZLIB_INCLUDE_DIR}
 		${Boost_INCLUDE_DIRS})
 
-set_target_properties(grf 
-	PROPERTIES 
+set_target_properties(grf
+	PROPERTIES
 	LINKER_LANGUAGE CXX
         FOLDER
         "GRF")

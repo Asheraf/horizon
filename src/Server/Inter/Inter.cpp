@@ -48,7 +48,7 @@ bool Horizon::Inter::InterMain::ReadConfig()
 {
 	libconfig::Config cfg;
 	std::string tmp_string;
-	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
+	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 
 	// Read the file. If there is an error, report it and exit.
 	try {
@@ -62,12 +62,12 @@ bool Horizon::Inter::InterMain::ReadConfig()
 	}
 
 	if (cfg.lookupValue("password", tmp_string))
-		getNetworkConf().setInterServerPassword(tmp_string);
+		network_conf().set_inter_server_password(tmp_string);
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!ProcessCommonConfiguration(cfg))
+	if (!parse_common_configs(cfg))
 		return false;
 
 	InterLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
@@ -82,9 +82,9 @@ bool Horizon::Inter::InterMain::CLICmd_SendAuthPacket()
 /**
  * Initialize Inter-Server CLI Commands.
  */
-void Horizon::Inter::InterMain::initializeCLICommands()
+void Horizon::Inter::InterMain::initialize_cli_commands()
 {
-	Server::initializeCLICommands();
+	Server::initialize_cli_commands();
 }
 
 /**
@@ -98,13 +98,46 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 	}
 }
 
-void Horizon::Inter::InterMain::initializeCore()
+void Horizon::Inter::InterMain::initialize_core()
 {
-	// Main Runtime Routine
-	Server::initializeCore();
 
-	// Close all connections.
+	/**
+	 * Core Signal Handler
+	 */
+	boost::asio::signal_set signals(get_io_service(), SIGINT, SIGTERM);
+	// Set signal handler for callbacks.
+	// Set signal handlers (this must be done before starting io_service threads,
+	// because otherwise they would unblock and exit)
+	signals.async_wait(SignalHandler);
+
+	// Start Interacter Network
+	ClientSocktMgr->start(get_io_service(),
+						  network_conf().get_listen_ip(),
+						  network_conf().get_listen_port(),
+						  network_conf().get_network_thread_count());
 	
+	Server::initialize_core();
+
+	// Main Runtime Routine
+	while (!is_shutting_down() && !general_conf().is_test_run()) {
+		process_cli_commands();
+		std::this_thread::sleep_for(std::chrono::milliseconds(general_conf().get_core_update_interval()));
+	}
+
+	/**
+	 * Server shutdown routine begins here...
+	 * Join various threads.
+	 */
+	if (!general_conf().is_test_run())
+		m_CLIThread.join();
+
+	/**
+	 * Stop all networks
+	 */
+	ClientSocktMgr->stop_network();
+
+	/* Cancel signal handling. */
+	signals.cancel();
 }
 
 /**
@@ -116,7 +149,7 @@ void Horizon::Inter::InterMain::initializeCore()
 int main(int argc, const char * argv[])
 {
 	if (argc > 1)
-		InterServer->parseExecArguments(argv, argc);
+		InterServer->parse_exec_args(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -126,34 +159,14 @@ int main(int argc, const char * argv[])
 		exit(SIGTERM); // Stop process if the file can't be read.
 
 	/**
-	 * Core Signal Handler
-	 */
-	boost::asio::signal_set signals(*InterServer->getIOService(), SIGINT, SIGTERM);
-	// Set signal handler for callbacks.
-	// Set signal handlers (this must be done before starting io_service threads,
-	// because otherwise they would unblock and exit)
-	signals.async_wait(SignalHandler);
-
-	// Start Interacter Network
-	ClientSocktMgr->Start(*InterServer->getIOService(),
-            InterServer->getNetworkConf().getListenIp(),
-            InterServer->getNetworkConf().getListenPort(),
-            InterServer->getNetworkConf().getMaxThreads());
-
-	/**
 	 * Initialize the Common Core
 	 */
-	InterServer->initializeCore();
+	InterServer->initialize_core();
 
 	/*
 	 * Core Cleanup
 	 */
 	InterLog->info("Server shutting down...");
 
-	/* Stop Network */
-	ClientSocktMgr->StopNetwork();
-
-	signals.cancel();
-
-	return InterServer->getGeneralConf().getShutdownSignal();
+	return InterServer->general_conf().get_shutdown_signal();
 }

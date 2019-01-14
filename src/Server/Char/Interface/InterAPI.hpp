@@ -21,6 +21,7 @@
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Interfaces/InterServerAPI.hpp"
 #include "Server/Char/PacketHandler/InterPacketHandler.hpp"
+#include "Server/Char/Socket/InterSocket.hpp"
 #include "Server/Char/Session/InterSession.hpp"
 
 namespace Horizon
@@ -29,10 +30,14 @@ namespace Char
 {
 namespace Interface
 {
-class InterAPI : public Horizon::Interface::InterServerAPI<InterSession>
+class InterAPI : public Horizon::Interface::InterServerAPI<InterSocket>
 {
 public:
-	InterAPI() : InterServerAPI(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME)) { }
+	InterAPI()
+	: InterServerAPI()
+	{
+		//
+	}
 	
 	~InterAPI() {}
 

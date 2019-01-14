@@ -19,12 +19,15 @@
 #define HORIZON_COMMON_PACKETBUFFER_H
 
 #include "Core/Networking/Buffer/ByteBuffer.hpp"
+#include "Core/Multithreading/ThreadSafeQueue.hpp"
 
 #include <stdint.h>
 #include <boost/function.hpp>
 #include <unordered_map>
 
 class PacketBuffer;
+
+typedef ThreadSafeQueue<PacketBuffer> PacketQueueType;
 
 #pragma pack(push, 1)
 struct Packet
@@ -112,7 +115,7 @@ public:
 		return *this;
 	}
 
-	void Initialize(uint16_t id, size_t newres = 200)
+	void initialize(uint16_t id, size_t newres = 200)
 	{
 		clear();
 		_storage.reserve(newres);

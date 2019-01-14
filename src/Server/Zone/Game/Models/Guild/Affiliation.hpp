@@ -36,8 +36,8 @@ public:
 	~Affiliation() { }
 
 	/* Guild ID */
-	uint32_t getGuildID() { return _guild_id; }
-	void setGuildID(uint32_t guild_id) { _guild_id = guild_id; }
+	uint32_t get_guild_id() { return _guild_id; }
+	void set_guild_id(uint32_t guild_id) { _guild_id = guild_id; }
 	/* Affiliation Type */
 	void setAntagonist(uint32_t guild_id) { _affiliate_id = guild_id; _type = AFFTYPE_ANTAGONIST; }
 	void setAlliance(uint32_t guild_id) { _affiliate_id = guild_id; _type = AFFTYPE_ALLIANCE; }

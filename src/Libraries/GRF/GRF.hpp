@@ -21,7 +21,6 @@
 #include "DES.hpp"
 
 #include <cstdlib>
-#include <string>
 #include <cstring>
 #include <unordered_map>
 #include <boost/filesystem/path.hpp>
@@ -86,28 +85,30 @@ public:
 	void decodeFull(unsigned char *buf, size_t len, int cycle);
 	void decodeHeader(unsigned char *buf, size_t len);
 	void decodeShuffledBytes(BIT64 *src);
-	int unpack(void *dest, unsigned long *dest_len, const void *source, unsigned long source_len);
-	int pack(void *dest, unsigned long *dest_len, const void *source, unsigned long source_len, int level = 6);
 	uint8_t substituteObfuscatedByte(uint8_t in);
 
+	uint8_t get_id() { return _id; }
+	void set_id(uint8_t id) { _id = id; }
+
 	/* Path */
-	boost::filesystem::path &getGRFPath() { return _full_grf_path; }
-	void setGRFPath(std::string const &path) { _full_grf_path = path; }
+	const boost::filesystem::path &getGRFPath() const { return _path; }
+	void setGRFPath(std::string const &path) { _path = path; }
 	/* Size */
-	std::size_t getGRFSize() { return _grf_size; }
+	std::size_t getGRFSize() const { return _grf_size; }
 	void setGRFSize(std::size_t const &size) { _grf_size = size; }
 	/* Version */
-	int getGRFVersion() { return _grf_version; }
+	int getGRFVersion() const { return _grf_version; }
 	void setGRFVersion(int version) { _grf_version = version; }
 	/* Total Files */
-	int getTotalFiles() { return _total_files; }
+	int getTotalFiles() const { return _total_files; }
 	void setTotalFiles(int total) { _total_files = total; }
 
 	FileMapType &getFileMap() { return _file_map; }
 	FileErrorMapType &getFileErrorMap() { return _file_error_map; }
 
 private:
-	boost::filesystem::path _full_grf_path;
+	int _id;
+	boost::filesystem::path _path;
 	std::size_t _grf_size;
 	int _grf_version;
 	int _total_files;

@@ -18,6 +18,8 @@ class Skill : public Unit, public GridObject<Skill>
 {
 public:
 	Skill(uint32_t guid);
+	Skill(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	Skill(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~Skill();
 
 private:

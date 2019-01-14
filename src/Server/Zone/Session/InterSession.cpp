@@ -1,76 +1,27 @@
-/***************************************************
- *       _   _            _                        *
- *      | | | |          (_)                       *
- *      | |_| | ___  _ __ _ _______  _ __          *
- *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
- *      | | | | (_) | |  | |/ / (_) | | | |        *
- *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
- ***************************************************
- * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
- *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
- *
- * Under a proprietary license this file is not for use
- * or viewing without permission.
- **************************************************/
-
 #include "InterSession.hpp"
-
-#include "Server/Common/Base/PacketHandler/InterPackets.hpp"
-#include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
-#include "Server/Zone/PacketHandler/PacketHandlerFactory.hpp"
 #include "Server/Zone/PacketHandler/InterPacketHandler.hpp"
+#include "Server/Zone/PacketHandler/PacketHandlerFactory.hpp"
+#include "Server/Zone/Socket/InterSocket.hpp"
 
-#include <random>
+using namespace Horizon::Zone;
 
-Horizon::Zone::InterSession::InterSession(std::shared_ptr<tcp::socket> socket)
-: Socket(socket)
+InterSession::InterSession(std::shared_ptr<InterSocket> socket)
+: Session(socket),
+  _packet_handler(PacketHandlerFactory::create_inter_packet_handler(socket))
 {
+	PacketBuffer initial_buffer;
+	_packet_handler->receive_and_handle(initial_buffer);
 }
 
-/**
- * @brief Initial method invoked once from the network thread that handles the session.
- */
-void Horizon::Zone::InterSession::start()
-{
-	PacketBuffer buf;
-	ZoneLog->info("Established connection from {}.", getRemoteIPAddress());
-	setPacketHandler(PacketHandlerFactory::CreateInterPacketHandler(shared_from_this()));
-	getPacketHandler()->ReceiveAndHandle(buf);
-}
-
-/**
- * @brief Socket cleanup method on connection closure.
- */
-void Horizon::Zone::InterSession::onClose()
-{
-	ZoneLog->info("Closed connection from {}.", getRemoteIPAddress());
-
-	/**
-	 * @brief Perform socket manager cleanup.
-	 */
-	InterSocktMgr->ClearSession(INTER_SESSION_NAME, shared_from_this());
-}
-
-void Horizon::Zone::InterSession::readHandler()
+InterSession::~InterSession()
 {
 	//
 }
 
-bool Horizon::Zone::InterSession::update()
+std::shared_ptr<InterPacketHandler> InterSession::get_packet_handler() { return _packet_handler; }
+void InterSession::set_packet_handler(std::shared_ptr<InterPacketHandler> handler) { _packet_handler.swap(handler); }
+
+void InterSession::update(uint32_t diff)
 {
-	return CharSocket::update();
+	//
 }
-
-std::shared_ptr<Horizon::Zone::InterPacketHandler> Horizon::Zone::InterSession::getPacketHandler()
-{
-	return std::atomic_load(&_packet_handler);
-}
-
-void Horizon::Zone::InterSession::setPacketHandler(std::shared_ptr<InterPacketHandler> handler)
-{
-	std::atomic_store(&_packet_handler, handler);
-}
-
-

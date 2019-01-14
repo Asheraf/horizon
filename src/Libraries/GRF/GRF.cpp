@@ -20,11 +20,11 @@
 #include "Utility/StrUtils.hpp"
 
 #include <iostream>
-#include <zlib.h>
 #include <sys/stat.h>
 #include <vector>
 #include <sstream>
 #include <codecvt>
+#include <zlib.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
@@ -36,23 +36,6 @@
 GRF::GRF()
 {
 	//
-}
-
-int GRF::unpack(void *dest, unsigned long *dest_len, const void *source, unsigned long source_len)
-{
-	return uncompress((Bytef *) dest, dest_len, (const Bytef *) source, source_len);
-}
-
-int GRF::pack(void *dest, unsigned long *dest_len, const void *source, unsigned long source_len, int level)
-{
-	if (*dest_len == 0)
-		*dest_len = compressBound(source_len);
-	
-	if (dest == NULL) {
-		dest = new unsigned char[*dest_len];
-	}
-	
-	return compress2((Bytef *) dest, dest_len, (const Bytef *) source, source_len, level);
 }
 
 /**
@@ -241,7 +224,7 @@ grf_load_result_types GRF::load()
 		return GRF_LOAD_READ_ERROR;
 	}
 
-	unpack(decompressed_buf, &decompressed_size, compressed_buf, compressed_size);
+	uncompress(decompressed_buf, &decompressed_size, compressed_buf, compressed_size);
 
 	delete[] compressed_buf;
 
@@ -378,7 +361,7 @@ std::pair<grf_read_error_types, uint8_t *> GRF::read(const char *in_name, int *s
 			uLongf len;
 			decode(grf_compressed_buf, entry->compressed_aligned_size, entry->type, entry->compressed_size);
 			len = entry->original_size;
-			unpack(file_buf, &len, grf_compressed_buf, entry->compressed_size);
+			uncompress(file_buf, &len, grf_compressed_buf, entry->compressed_size);
 			if (len != (uLong) entry->original_size) {
 				delete[] grf_compressed_buf;
 				delete[] file_buf;

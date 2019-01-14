@@ -21,7 +21,7 @@
 #include "Core/Database/MySqlConnection.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "Server/Common/Server.hpp"
-#include "Server/Inter/Session/Session.hpp"
+#include "Server/Inter/Socket/InterSocket.hpp"
 
 #include <string>
 
@@ -41,11 +41,11 @@ public:
 		return &instance;
 	}
 
-	void initializeCore();
+	void initialize_core();
 	
 	bool ReadConfig();
 	bool CLICmd_SendAuthPacket();
-	void initializeCLICommands();
+	void initialize_cli_commands();
 private:
 	struct {
 		bool enabled;

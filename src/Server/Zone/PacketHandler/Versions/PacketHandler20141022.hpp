@@ -55,15 +55,15 @@ struct PACKET_CZ_REQUEST_MOVE : public Horizon::Zone::PACKET_CZ_REQUEST_MOVE
 #pragma pack(pop)
 }
 
-class Session;
+class ZoneSocket;
 
 class PacketHandler20141022 : public PacketHandler
 {
 public:
-	PacketHandler20141022(std::shared_ptr<Session> session);
+	PacketHandler20141022(std::shared_ptr<ZoneSocket> socket);
 	~PacketHandler20141022();
 
-	virtual void InitializeHandlers();
+	virtual void initialize_handlers();
 };
 }
 }

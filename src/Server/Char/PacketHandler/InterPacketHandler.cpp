@@ -19,17 +19,17 @@
 
 #include "Core/Logging/Logger.hpp"
 #include "Server/Char/Char.hpp"
-#include "Server/Char/Session/InterSession.hpp"
+#include "Server/Char/Socket/InterSocket.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Inter/PacketHandler/Packets.hpp"
 
 #include <boost/bind.hpp>
 
-Horizon::Char::InterPacketHandler::InterPacketHandler(std::shared_ptr<InterSession> session)
-: Horizon::Base::InterPacketHandler<InterSession>(session, CharServer->getNetworkConf().getInterServerPassword(), INTER_CONNECT_CLIENT_CHAR)
+Horizon::Char::InterPacketHandler::InterPacketHandler(std::shared_ptr<InterSocket> socket)
+: Horizon::Base::InterPacketHandler<InterSocket>(socket, CharServer->network_conf().get_inter_server_password(), INTER_CONNECT_CLIENT_CHAR)
 {
 	// Construct
-	InitializeHandlers();
+	initialize_handlers();
 }
 
 Horizon::Char::InterPacketHandler::~InterPacketHandler()
@@ -37,11 +37,11 @@ Horizon::Char::InterPacketHandler::~InterPacketHandler()
 	// Destruct
 }
 
-void Horizon::Char::InterPacketHandler::InitializeHandlers()
+void Horizon::Char::InterPacketHandler::initialize_handlers()
 {
-	Base::InterPacketHandler<InterSession>::InitializeHandlers();
+	Base::InterPacketHandler<InterSocket>::initialize_handlers();
 
-#define HANDLER_FUNC(packet, handler) addPacketHandler(packet, boost::bind(handler, this, boost::placeholders::_1))
+#define HANDLER_FUNC(packet, handler) add_packet_handler(packet, boost::bind(handler, this, boost::placeholders::_1))
 	///
 #undef HANDLER_FUNC
 }

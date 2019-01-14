@@ -43,7 +43,7 @@ public:
 	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM `character_misc_data` WHERE `id` = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -55,11 +55,11 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterID(char_id);
-				setRenameCount((uint8_t) res->getUInt("rename_count"));
-				setUniqueItemCounter(res->getUInt("unique_item_counter"));
-				setHotkeyRowIndex((uint16_t) res->getUInt("hotkey_row_index"));
-				setChangeSlotCount((uint8_t) res->getUInt("change_slot_count"));
+				set_character_id(char_id);
+				set_rename_count((uint8_t) res->getUInt("rename_count"));
+				set_unique_item_counter(res->getUInt("unique_item_counter"));
+				set_hotkey_row_index((uint16_t) res->getUInt("hotkey_row_index"));
+				set_change_slot_count((uint8_t) res->getUInt("change_slot_count"));
 				ret = true;
 			}
 
@@ -69,7 +69,7 @@ public:
 			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
 		return ret;
 	}
@@ -80,7 +80,7 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 
 		std::string query = "REPLACE INTO `character_misc_data` "
 			"(`id`, `rename_count`, `unique_item_counter`, `hotkey_row_index`, `change_slot_count`) "
@@ -88,35 +88,35 @@ public:
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, getCharacterID());
-			pstmt->setInt(2, getRenameCount());
-			pstmt->setInt64(3, getUniqueItemCounter());
-			pstmt->setInt(4, getHotkeyRowIndex());
-			pstmt->setInt(5, getChangeSlotCount());
+			pstmt->setInt(1, get_character_id());
+			pstmt->setInt(2, get_rename_count());
+			pstmt->setInt64(3, get_unique_item_counter());
+			pstmt->setInt(4, get_hotkey_row_index());
+			pstmt->setInt(5, get_change_slot_count());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */
-	uint32_t getCharacterID() const { return character_id; }
-	void setCharacterID(uint32_t character_id) { Misc::character_id = character_id; }
+	uint32_t get_character_id() const { return character_id; }
+	void set_character_id(uint32_t character_id) { Misc::character_id = character_id; }
 	/* Character Rename Count */
-	uint8_t getRenameCount() const { return rename_count; }
-	void setRenameCount(uint8_t rename_count) { Misc::rename_count = rename_count; }
+	uint8_t get_rename_count() const { return rename_count; }
+	void set_rename_count(uint8_t rename_count) { Misc::rename_count = rename_count; }
 	/* Unique Item Counter */
-	uint64_t getUniqueItemCounter() const { return unique_item_counter; }
-	void setUniqueItemCounter(uint64_t unique_item_counter) { Misc::unique_item_counter = unique_item_counter; }
+	uint64_t get_unique_item_counter() const { return unique_item_counter; }
+	void set_unique_item_counter(uint64_t unique_item_counter) { Misc::unique_item_counter = unique_item_counter; }
 	/* Hotkey Row Index */
-	uint8_t getHotkeyRowIndex() const { return hotkey_row_index; }
-	void setHotkeyRowIndex(uint8_t hotkey_row_index) { Misc::hotkey_row_index = hotkey_row_index; }
+	uint8_t get_hotkey_row_index() const { return hotkey_row_index; }
+	void set_hotkey_row_index(uint8_t hotkey_row_index) { Misc::hotkey_row_index = hotkey_row_index; }
 	/* Change Slot Count */
-	uint8_t getChangeSlotCount() const { return change_slot_count; }
-	void setChangeSlotCount(uint8_t change_slot_count) { Misc::change_slot_count = change_slot_count; }
+	uint8_t get_change_slot_count() const { return change_slot_count; }
+	void set_change_slot_count(uint8_t change_slot_count) { Misc::change_slot_count = change_slot_count; }
 private:
 	uint32_t character_id{0};
 	uint8_t rename_count{0};

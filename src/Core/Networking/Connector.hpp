@@ -51,7 +51,7 @@ public:
 	 */
 	Connector(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port)
 	: server(server), _connection_name(connection_name), _endpoint(boost::asio::ip::address::from_string(connect_ip), port),
-	_socket_factory(std::bind(&Connector::DefaultSocketFactory, this))
+	_socket_factory(std::bind(&Connector::default_socket_factory, this))
 	{
 	}
 
@@ -71,9 +71,9 @@ public:
 	 * @param[in] callback     the callback function that handles socket ownership.
 	 * @param[in] connections  the number of connections to the endpoint that will be initiated and handled.
 	 */
-	void ConnectWithCallback(ConnectorCallback callback, int connections = 1)
+	void connect_with_callback(ConnectorCallback callback, int connections = 1)
 	{
-		for (int i = 0; i < connections && !server->isShuttingDown(); i++) {
+		for (int i = 0; i < connections && !server->is_shutting_down(); i++) {
 			std::shared_ptr<tcp::socket> socket;
 			uint32_t network_thread_idx;
 			boost::system::error_code error;
@@ -96,17 +96,17 @@ public:
 					callback(_connection_name, socket, network_thread_idx);
 					CoreLog->info("Successfully connected to '{}' at endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 				}
-			} while (!socket->is_open() && !server->isShuttingDown());
+			} while (!socket->is_open() && !server->is_shutting_down());
 		}
 	}
 
 	/**
 	 * @brief Sets a socket factory method that provides a socket for new connections.
 	 */
-	void SetSocketFactory(std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> &&func) { _socket_factory = func; }
+	void set_socket_factory(std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> &&func) { _socket_factory = func; }
 
 private:
-	std::pair<std::shared_ptr<tcp::socket>, uint32_t> DefaultSocketFactory() { return std::make_pair(nullptr, 0); }
+	std::pair<std::shared_ptr<tcp::socket>, uint32_t> default_socket_factory() { return std::make_pair(nullptr, 0); }
 
 	Server *server;
 	std::string _connection_name;

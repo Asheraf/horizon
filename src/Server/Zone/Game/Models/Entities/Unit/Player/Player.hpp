@@ -8,7 +8,7 @@ namespace Horizon
 {
 	namespace Zone
 	{
-		class Session;
+		class ZoneSession;
 
 		namespace Game
 		{
@@ -21,11 +21,10 @@ namespace Horizon
 		namespace Character
 		{
 			class Character;
+			class Position;
 		}
 	}
 }
-
-using namespace Horizon::Models::Character;
 
 namespace Horizon
 {
@@ -38,20 +37,30 @@ namespace Entities
 class Player : public Unit, public GridObject<Player>
 {
 public:
-	Player(uint32_t guid, std::shared_ptr<Character> c);
+	Player(uint32_t guid, std::shared_ptr<ZoneSession> session);
+	Player(uint32_t guid, std::string const &map_name, MapCoords mcoords, std::shared_ptr<ZoneSession> session);
+	Player(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords, std::shared_ptr<ZoneSession> session);
 	~Player();
 
 	/* Character */
-	void setCharacter(std::shared_ptr<Character> c) { _character = c; }
-	std::shared_ptr<Character> getCharacter() { return _character; }
+	std::shared_ptr<Horizon::Models::Character::Character> get_character();
 
 	/* Session */
-	void setSession(std::shared_ptr<Horizon::Zone::Session> s) { _session = s; }
-	std::shared_ptr<Horizon::Zone::Session> getSession() { return _session; }
+	void set_session(std::weak_ptr<ZoneSession> session) { _session.swap(session); }
+	std::shared_ptr<ZoneSession> get_session() { return _session.lock(); }
+
+	virtual void initialize() override;
+
+	/* */
+	void update(uint32_t diff) override;
+
+	/* */
+	void update_position(uint16_t x, uint16_t y) override;
+	void update_status() override;
+	void stop_movement() override;
 
 private:
-	std::shared_ptr<Character> _character;
-	std::shared_ptr<Horizon::Zone::Session> _session;
+	std::weak_ptr<ZoneSession> _session;
 };
 }
 }

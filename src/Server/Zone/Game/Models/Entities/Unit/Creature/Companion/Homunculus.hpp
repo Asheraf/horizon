@@ -17,6 +17,8 @@ class Homunculus : public Creature, public GridObject<Homunculus>
 {
 public:
 	Homunculus(uint32_t guid);
+	Homunculus(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	Homunculus(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~Homunculus();
 
 private:

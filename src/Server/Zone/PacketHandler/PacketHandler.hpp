@@ -21,7 +21,6 @@
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Common/Base/PacketHandler/PacketHandler.hpp"
 #include "Server/Zone/PacketHandler/Packets.hpp"
-
 #include <memory>
 
 class PacketBuffer;
@@ -31,14 +30,14 @@ namespace Horizon
 {
 namespace Zone
 {
-class Session;
-class PacketHandler : public Horizon::Base::PacketHandler<Session>
+class ZoneSocket;
+class PacketHandler : public Horizon::Base::PacketHandler<ZoneSocket>
 {
 public:
-	explicit PacketHandler(std::shared_ptr<Session> session);
+	explicit PacketHandler(std::shared_ptr<ZoneSocket> socket);
 	virtual ~PacketHandler();
 
-	virtual void InitializeHandlers();
+	virtual void initialize_handlers();
 	/**
 	 * Handlers
 	 */
@@ -56,6 +55,13 @@ public:
 	virtual void Send_ZC_ACCEPT_CONNECTION();
 	virtual void Send_ZC_NPCACK_MAPMOVE(std::string const &map_name, uint16_t x, uint16_t y);
 	virtual void Send_ZC_NOTIFY_TIME();
+	virtual void Send_ZC_NOTIFY_UNITMOVE(uint32_t guid, uint16_t x, uint16_t y);
+	virtual void Send_ZC_NOTIFY_PLAYERMOVE(uint16_t x, uint16_t y);
+	virtual void Send_ZC_STOPMOVE(uint16_t x, uint16_t y);
+	virtual void Send_ZC_PAR_CHANGE(uint16_t type, uint16_t value);
+	virtual void Send_ZC_INITIAL_STATUS();
+	virtual void Send_ZC_UPDATE_MAPINFO(uint16_t x, uint16_t y, const char *map_name, uint16_t type);
+	virtual void Send_ZC_NOTIFY_GROUNDSKILL(uint16_t skill_id, uint32_t guid, uint16_t level, uint16_t x, uint16_t y, uint32_t duration);
 };
 }
 }

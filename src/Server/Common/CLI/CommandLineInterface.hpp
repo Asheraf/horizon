@@ -21,6 +21,6 @@
 
 #include <Server/Common/Server.hpp>
 
-void CLIThreadStart(Server *srv);
+void cli_thread_start(Server *srv);
 
 #endif // HORIZON_COMMANDLINEINTERFACE_H

@@ -72,10 +72,10 @@ public:
 	 * @param[in]      password  password for the account in question.
 	 * @return true on success, false on failure.
 	 */
-	bool VerifyCredentials(Server *server, std::string username, std::string password)
+	bool verify_credentials(Server *server, std::string username, std::string password)
 	{
 		std::string query = "SELECT * FROM `game_account` WHERE `username` = ? AND `password` = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -88,17 +88,17 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				loadFromResultSet(res);
+				load_from_result_set(res);
 				ret = true;
 			}
 
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("GameAccount::VerifyCredentials: {}", e.what());
+			DBLog->error("GameAccount::verify_credentials: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 		return ret;
 	}
 
@@ -109,10 +109,10 @@ public:
 	 * @param[in]      password  password for the account in question.
 	 * @return true on success, false on failure.
 	 */
-	bool VerifyCredentialsBCrypt(Server *server, std::string username, std::string password)
+	bool verify_credentials_bcrypt(Server *server, std::string username, std::string password)
 	{
 		std::string query = "SELECT * FROM `game_account` WHERE username = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -121,21 +121,21 @@ public:
 			sql::ResultSet *res = pstmt->executeQuery();
 
 			if (res != nullptr && res->next()
-			    && BCrypt::validatePassword(password, res->getString("password"))) {
+			    && BCrypt::validate_password(password, res->getString("password"))) {
 				/**
 				 * Create Game Account Data
 				 */
-				loadFromResultSet(res);
+				load_from_result_set(res);
 				ret = true;
 			}
 
 			delete res;
 			delete pstmt;
 		} catch (sql::SQLException &e) {
-			DBLog->error("GameAccount::VerifyCredentialsBCrypt: {}", e.what());
+			DBLog->error("GameAccount::verify_credentials_bcrypt: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 		return ret;
 	}
 
@@ -143,7 +143,7 @@ public:
 	 * @brief Load data into the model from a result set retrieved from the database.
 	 * @param[in] res   instance of sql::ResultSet loaded from the database.
 	 */
-	void loadFromResultSet(sql::ResultSet *res)
+	void load_from_result_set(sql::ResultSet *res)
 	{
 		id = res->getInt("id");
 		username = res->getString("username");
@@ -176,7 +176,7 @@ public:
 	 */
 	void update(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 
 		std::string query = "UPDATE `game_account` "
 		"SET `gender` = ?, `email` = ?, `group_id` = ?, `state` = ?, `unban_time` = ?, "
@@ -184,25 +184,25 @@ public:
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setString(1, (getGender() == ACCOUNT_GENDER_MALE ? "M" : "F"));
-			pstmt->setString(2, getEmail());
-			pstmt->setInt(3, getState());
-			pstmt->setInt(4, getUnbanTime());
-			pstmt->setInt(5, getExpirationTime());
-			pstmt->setInt(6, getLastLogin());
-			pstmt->setString(7, getLastIP());
-			pstmt->setString(8, getBirthDate());
-			pstmt->setInt(9, getCharacterSlots());
-			pstmt->setString(10, getPincode());
-			pstmt->setInt(11, getPincodeExpiry());
-			pstmt->setInt(12, getID());
+			pstmt->setString(1, (get_gender() == ACCOUNT_GENDER_MALE ? "M" : "F"));
+			pstmt->setString(2, get_email());
+			pstmt->setInt(3, get_state());
+			pstmt->setInt(4, get_unban_time());
+			pstmt->setInt(5, get_expiration_time());
+			pstmt->setInt(6, get_last_login());
+			pstmt->setString(7, get_last_ip());
+			pstmt->setString(8, get_birthdate());
+			pstmt->setInt(9, get_character_slots());
+			pstmt->setString(10, get_pincode());
+			pstmt->setInt(11, get_pincode_expiry());
+			pstmt->setInt(12, get_id());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 
 	/**
@@ -210,20 +210,20 @@ public:
 	 */
 	GameAccount &operator >> (PACKET_INTER_GAME_ACCOUNT &pkt)
 	{
-		pkt.id = getID();
-		strncpy(pkt.username, getUsername().c_str(), MAX_USERNAME_LENGTH);
-		pkt.gender = getGender();
-		strncpy(pkt.email, getEmail().c_str(), MAX_EMAIL_LENGTH);
-		pkt.group_id = getGroupID();
-		pkt.state = getState();
-		pkt.unban_time = getUnbanTime();
-		pkt.expiration_time = getExpirationTime();
-		pkt.last_login = getLastLogin();
-		strncpy(pkt.last_ip, getLastIP().c_str(), MAX_IP_ADDRESS_STR_LENGTH);
-		strncpy(pkt.birth_date, getBirthDate().c_str(), MAX_BIRTHDATE_STRING_LENGTH);
-		pkt.character_slots = getCharacterSlots();
-		strncpy(pkt.pincode, getPincode().c_str(), MAX_PINCODE_STRING_LENGTH);
-		pkt.pincode_expiry = getPincodeExpiry();
+		pkt.id = get_id();
+		strncpy(pkt.username, get_username().c_str(), MAX_USERNAME_LENGTH);
+		pkt.gender = get_gender();
+		strncpy(pkt.email, get_email().c_str(), MAX_EMAIL_LENGTH);
+		pkt.group_id = get_group_id();
+		pkt.state = get_state();
+		pkt.unban_time = get_unban_time();
+		pkt.expiration_time = get_expiration_time();
+		pkt.last_login = get_last_login();
+		strncpy(pkt.last_ip, get_last_ip().c_str(), MAX_IP_ADDRESS_STR_LENGTH);
+		strncpy(pkt.birth_date, get_birthdate().c_str(), MAX_BIRTHDATE_STRING_LENGTH);
+		pkt.character_slots = get_character_slots();
+		strncpy(pkt.pincode, get_pincode().c_str(), MAX_PINCODE_STRING_LENGTH);
+		pkt.pincode_expiry = get_pincode_expiry();
 		return *this;
 	}
 
@@ -232,71 +232,71 @@ public:
 	 */
 	GameAccount &operator << (PACKET_INTER_GAME_ACCOUNT &pkt)
 	{
-		setID(pkt.id);
-		setUsername(pkt.username);
-		setGender(static_cast<game_account_gender_types>(pkt.gender));
-		setEmail(pkt.email);
-		setGroupID(pkt.group_id);
-		setState(static_cast<game_account_state_types>(pkt.state));
-		setUnbanTime(pkt.unban_time);
-		setExpirationTime(pkt.expiration_time);
-		setLastLogin(pkt.last_login);
-		setLastIP(pkt.last_ip);
-		setBirthDate(pkt.birth_date);
-		setCharacterSlots(pkt.character_slots);
-		setPincode(pkt.pincode);
-		setPincodeExpiry(pkt.pincode_expiry);
+		set_id(pkt.id);
+		set_username(pkt.username);
+		set_gender(static_cast<game_account_gender_types>(pkt.gender));
+		set_email(pkt.email);
+		set_group_id(pkt.group_id);
+		set_state(static_cast<game_account_state_types>(pkt.state));
+		set_unban_time(pkt.unban_time);
+		set_expiration_time(pkt.expiration_time);
+		set_last_login(pkt.last_login);
+		set_last_ip(pkt.last_ip);
+		set_birthdate(pkt.birth_date);
+		set_character_slots(pkt.character_slots);
+		set_pincode(pkt.pincode);
+		set_pincode_expiry(pkt.pincode_expiry);
 		return *this;
 	}
 
 	/* Account Id */
-	uint32_t getID() const { return id; }
-	void setID(uint32_t id) { GameAccount::id = id; }
+	uint32_t get_id() const { return id; }
+	void set_id(uint32_t id) { GameAccount::id = id; }
 	/* Username */
-	const std::string &getUsername() const { return username; }
-	void setUsername(const std::string &username) { GameAccount::username = username; }
+	const std::string &get_username() const { return username; }
+	void set_username(const std::string &username) { GameAccount::username = username; }
 	/* Gender */
-	game_account_gender_types getGender() const { return gender; }
-	void setGender(game_account_gender_types gender) { GameAccount::gender = gender; }
+	game_account_gender_types get_gender() const { return gender; }
+	void set_gender(game_account_gender_types gender) { GameAccount::gender = gender; }
 	/* Email */
-	const std::string &getEmail() const { return email; }
-	void setEmail(const std::string &email) { GameAccount::email = email; }
+	const std::string &get_email() const { return email; }
+	void set_email(const std::string &email) { GameAccount::email = email; }
 	/* Group ID */
-	uint16_t getGroupID() const { return group_id; }
-	void setGroupID(uint16_t group_id) { GameAccount::group_id = group_id; }
+	uint16_t get_group_id() const { return group_id; }
+	void set_group_id(uint16_t group_id) { GameAccount::group_id = group_id; }
 	/* State */
-	game_account_state_types getState() const { return state; }
-	void setState(game_account_state_types state) { GameAccount::state = state; }
+	game_account_state_types get_state() const { return state; }
+	void set_state(game_account_state_types state) { GameAccount::state = state; }
 	/* Unban Time */
-	time_t getUnbanTime() const { return unban_time; }
-	void setUnbanTime(time_t unban_time) { GameAccount::unban_time = unban_time; }
+	time_t get_unban_time() const { return unban_time; }
+	void set_unban_time(time_t unban_time) { GameAccount::unban_time = unban_time; }
 	/* Expiration Time */
-	time_t getExpirationTime() const { return expiration_time; }
-	void setExpirationTime(time_t expiration_time) { GameAccount::expiration_time = expiration_time; }
+	time_t get_expiration_time() const { return expiration_time; }
+	void set_expiration_time(time_t expiration_time) { GameAccount::expiration_time = expiration_time; }
 	/* Last Login */
-	time_t getLastLogin() const { return last_login; }
-	void setLastLogin(time_t last_login) { GameAccount::last_login = last_login; }
+	time_t get_last_login() const { return last_login; }
+	void set_last_login(time_t last_login) { GameAccount::last_login = last_login; }
 	/* Last IP */
-	const std::string &getLastIP() const { return last_ip; }
-	void setLastIP(const std::string &last_ip) { GameAccount::last_ip = last_ip; }
+	const std::string &get_last_ip() const { return last_ip; }
+	void set_last_ip(const std::string &last_ip) { GameAccount::last_ip = last_ip; }
 	/* Birth Date */
-	const std::string &getBirthDate() const { return birth_date; }
-	void setBirthDate(const std::string &birth_date) { GameAccount::birth_date = birth_date; }
+	const std::string &get_birthdate() const { return birth_date; }
+	void set_birthdate(const std::string &birth_date) { GameAccount::birth_date = birth_date; }
 	/* Character Slots */
-	uint8_t getCharacterSlots() const { return character_slots; }
-	void setCharacterSlots(uint8_t character_slots) { GameAccount::character_slots = character_slots; }
+	uint8_t get_character_slots() const { return character_slots; }
+	void set_character_slots(uint8_t character_slots) { GameAccount::character_slots = character_slots; }
 	/* Pincode */
-	const std::string &getPincode() const { return pincode; }
-	void setPincode(const std::string &pincode) { GameAccount::pincode = pincode; }
+	const std::string &get_pincode() const { return pincode; }
+	void set_pincode(const std::string &pincode) { GameAccount::pincode = pincode; }
 	/* Pincode Expiry */
-	time_t getPincodeExpiry() const { return pincode_expiry; }
-	void setPincodeExpiry(time_t pincode_expiry) { GameAccount::pincode_expiry = pincode_expiry; }
+	time_t get_pincode_expiry() const { return pincode_expiry; }
+	void set_pincode_expiry(time_t pincode_expiry) { GameAccount::pincode_expiry = pincode_expiry; }
 
 	/**
 	 * @brief Retrieve a character from the account's character list.
 	 * @param[in] id of the character to be retrieved.
 	 */
-	const std::shared_ptr<Horizon::Models::Character::Character> getCharacter(uint32_t id)
+	const std::shared_ptr<Horizon::Models::Character::Character> get_character(uint32_t id)
 	{
 		auto it = _characters.find(id);
 
@@ -310,23 +310,23 @@ public:
 	 * @brief Add a character to the account's character list.
 	 * @param[in|out] character  shared_ptr to the character model to be added.
 	 */
-	void addCharacter(std::shared_ptr<Horizon::Models::Character::Character> character)
+	void add_character(std::shared_ptr<Horizon::Models::Character::Character> character)
 	{
-		auto old_character = getCharacter(character->getCharacterID());
+		auto old_character = get_character(character->get_character_id());
 
 		if (old_character != nullptr)
 			old_character = character;
 		else
-			_characters.insert(std::make_pair(character->getCharacterID(), character));
+			_characters.insert(std::make_pair(character->get_character_id(), character));
 	}
 
 	/**
 	 * @brief Remove a character from the account's character list.
 	 * @param[in] id of the character to remove.
 	 */
-	void removeCharacter(uint32_t id)
+	void remove_character(uint32_t id)
 	{
-		auto character = getCharacter(id);
+		auto character = get_character(id);
 
 		if (character != nullptr)
 			_characters.erase(id);
@@ -335,7 +335,7 @@ public:
 	/**
 	 * @brief retrieve a std::map of all characters from the account.
 	 */
-	const AccountCharacterMapType &getAllCharacters() const { return _characters; }
+	const AccountCharacterMapType &get_all_characters() const { return _characters; }
 	
 private:
 	uint32_t id{};                                   ///< Account Id

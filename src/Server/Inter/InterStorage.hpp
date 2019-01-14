@@ -48,7 +48,7 @@ public:
 	{
 		boost::unique_lock<boost::shared_mutex> lock(_storage_lock);
 
-		findAndRemove(id);
+		find_and_remove(id);
 		_storage.insert(std::make_pair(id, std::make_shared<StorageType>(data)));
 	}
 
@@ -60,7 +60,7 @@ public:
 	{
 		boost::unique_lock<boost::shared_mutex> lock(_storage_lock);
 
-		findAndRemove(id);
+		find_and_remove(id);
 	}
 
 	/**
@@ -93,7 +93,7 @@ private:
 	 * @param[in] id session identifier as key.
 	 * @return true on success, false on failure.
 	 */
-	bool findAndRemove(uint32_t id)
+	bool find_and_remove(uint32_t id)
 	{
 		auto it = _storage.find(id);
 

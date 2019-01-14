@@ -49,7 +49,7 @@ public:
 	AsyncAcceptor(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port)
 	: _acceptor(io_service, tcp::endpoint(boost::asio::ip::address::from_string(listen_ip), port)),
 	_endpoint(boost::asio::ip::address::from_string(listen_ip), port),
-	_socket(std::make_shared<tcp::socket>(io_service)), _closed(false), _socketFactory(std::bind(&AsyncAcceptor::DefaultSocketFactory, this))
+	_socket(std::make_shared<tcp::socket>(io_service)), _closed(false), _socket_factory(std::bind(&AsyncAcceptor::default_socket_factory, this))
 	{
 	}
 
@@ -63,13 +63,13 @@ public:
 	 *        3) Execute recursively on successful acceptances until closed.
 	 * @param[in] callback   the callback function to execute (@see type AcceptCallback)
 	 */
-	void AsyncAcceptWithCallback(AcceptCallback callback)
+	void async_accept_with_callback(AcceptCallback callback)
 	{
 		std::shared_ptr<tcp::socket> socket;
 
 		uint32_t thread_index;
 
-		std::tie(socket, thread_index) = _socketFactory();
+		std::tie(socket, thread_index) = _socket_factory();
 
 		_acceptor.async_accept(*socket, [this, socket, callback, thread_index] (boost::system::error_code error)
 		   {
@@ -83,14 +83,14 @@ public:
 			   }
 
 			   if (!_closed)
-				   this->AsyncAcceptWithCallback(callback);
+				   this->async_accept_with_callback(callback);
 		   });
 	}
 
 	/**
 	 * @brief Binds this instance to an endpoint, to listen for connections.
 	 */
-	bool Bind()
+	bool bind()
 	{
 		boost::system::error_code errorCode;
 
@@ -121,7 +121,7 @@ public:
 	/**
 	 * @brief Closes the acceptor across all threads.
 	 */
-	void Close()
+	void close()
 	{
 		if (_closed.exchange(true))
 			return;
@@ -130,19 +130,21 @@ public:
 		_acceptor.close(error);
 	}
 
+	bool is_open() { return _closed.load(); }
+
 	/**
 	 * @brief Sets the socket factory for the acceptor.
 	 */
-	void SetSocketFactory(std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> &&func) { _socketFactory = func; }
+	void set_socket_factory(std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> &&func) { _socket_factory = func; }
 
 private:
-	std::pair<std::shared_ptr<tcp::socket>, uint32_t> DefaultSocketFactory() { return std::make_pair(_socket, 0); }
+	std::pair<std::shared_ptr<tcp::socket>, uint32_t> default_socket_factory() { return std::make_pair(_socket, 0); }
 
 	tcp::acceptor _acceptor;
 	tcp::endpoint _endpoint;
 	std::shared_ptr<tcp::socket> _socket;
 	std::atomic<bool> _closed;
-	std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> _socketFactory;
+	std::function<std::pair<std::shared_ptr<tcp::socket>, uint32_t>()> _socket_factory;
 };
 
 template <class T>

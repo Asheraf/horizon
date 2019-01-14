@@ -30,8 +30,12 @@ inline const char *TimeStamp2String(char *str, size_t size, time_t timestamp, co
 // Reorders bytes from network to little endian (Windows).
 // Necessary for sending port numbers to the RO client until Gravity notices that they forgot ntohs() calls.
 uint16_t ntows(uint16_t netshort);
+
+// client-side: x0+=sx0*0.0625-0.5 and y0+=sy0*0.0625-0.5
+void PackPosition(uint8_t *p, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t sx0, uint8_t sy0);
 void PackPosition(uint8_t *p, uint16_t x, uint16_t y, uint8_t dir);
 void UnpackPosition(const uint8_t *p, uint16_t *x, uint16_t *y, uint8_t *dir);
+
 // little endian char array to uint conversion
 unsigned int GetULong(unsigned char* p);
 

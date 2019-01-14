@@ -30,7 +30,7 @@ Horizon::Tools::MapCache::~MapCache()
 
 }
 
-void Horizon::Tools::MapCache::parseExecArguments(int argc, const char *argv[])
+void Horizon::Tools::MapCache::parse_exec_args(int argc, const char *argv[])
 {
 	for (int i = 1; i < argc; ++i) {
 		std::string arg(argv[i]);
@@ -41,8 +41,8 @@ void Horizon::Tools::MapCache::parseExecArguments(int argc, const char *argv[])
 			std::vector<std::string> arg_parts;
 			boost::split(arg_parts, *it, boost::is_any_of("="));
 
-			if (arg_parts.at(0).compare("--grf") == 0) {
-				getLibrary().setGRFPath(arg_parts.at(1));
+			if (arg_parts.at(0).compare("--grf-config") == 0) {
+				getLibrary().setGRFListPath(arg_parts.at(1));
 			} else if (arg_parts.at(0).compare("--config") == 0) {
 				getLibrary().setMapListPath(arg_parts.at(1));
 			} else if (arg_parts.at(0).compare("--compression-level") == 0) {
@@ -68,7 +68,7 @@ bool Horizon::Tools::MapCache::ParseInitializeResult(mcache_error_types type)
 	switch (type)
 	{
 	case MCACHE_INVALID_GRF_PATH:
-		printf("Invalid GRF path '%s' provided.\n", getLibrary().getGRFPath().c_str());
+		printf("Invalid GRF config path '%s' provided.\n", getLibrary().getGRFListPath().c_str());
 		return false;
 	case MCACHE_INVALID_CONFIG_PATH:
 		printf("Invalid config path '%s' provided.\n", getLibrary().getMapListPath().c_str());
@@ -88,37 +88,55 @@ bool Horizon::Tools::MapCache::ParseInitializeResult(mcache_error_types type)
 	return true;
 }
 
-bool Horizon::Tools::MapCache::ParseGRFLoadResult(grf_load_result_types result)
+bool Horizon::Tools::MapCache::ParseGRFLoadResult(std::pair<uint8_t, grf_load_result_types> result)
 {
-	switch (result)
-	{
-		case GRF_LOAD_HEADER_READ_ERROR:
-			printf("GRF: Error reading grf header. aborting...\n");
-			return true;
-		case GRF_LOAD_FORMAT_ERROR:
-			printf("GRF: Invalid or unknown grf header format. aborting...\n");
-			return true;
-		case GRF_LOAD_INVALID_VERSION:
-			printf("GRF: Invalid grf version %x. aborting...\n", getLibrary().getGRF().getGRFVersion());
-			return true;
-		case GRF_LOAD_READ_ERROR:
-			printf("GRF: Read error while loading the grf. Aborting...\n");
-			return true;
-		case GRF_LOAD_MAGIC_ERROR:
-			printf("GRF: Magic header was not 'Master of Magic'! Aborting...\n");
-			return true;
-		case GRF_LOAD_PATH_ERROR:
-			printf("GRF: Incorrect path '%s' given for grf. Aborting...\n", getLibrary().getGRF().getGRFPath().c_str());
-			return true;
-		case GRF_LOAD_INCOMPLETE_HEADER:
-			printf("GRF: Error reading header of the given grf '%s'. Aborting...\n", getLibrary().getGRF().getGRFPath().c_str());
-			return true;
-		case GRF_LOAD_ILLEGAL_DATA_FORMAT:
-			printf("GRF: Illegal data format, compressed size is greater than expected.\n");
-			return true;
-		case GRF_LOAD_OK:
-		default:
-			break;
+	if (result.second != GRF_LOAD_OK) {
+		GRF &problematic_grf = getLibrary().getGRF(result.first);
+
+		switch (result.second)
+		{
+			case GRF_LOAD_HEADER_READ_ERROR:
+				printf("GRF: Error reading grf header. aborting...\n");
+				return true;
+			case GRF_LOAD_FORMAT_ERROR:
+				printf("GRF: Invalid or unknown grf header format. aborting...\n");
+				return true;
+			case GRF_LOAD_INVALID_VERSION:
+				printf("GRF: Invalid grf version %x. aborting...\n", problematic_grf.getGRFVersion());
+				return true;
+			case GRF_LOAD_READ_ERROR:
+				printf("GRF: Read error while loading the grf. Aborting...\n");
+				return true;
+			case GRF_LOAD_MAGIC_ERROR:
+				printf("GRF: Magic header was not 'Master of Magic'! Aborting...\n");
+				return true;
+			case GRF_LOAD_PATH_ERROR:
+				printf("GRF: Incorrect path '%s' given for grf. Aborting...\n", problematic_grf.getGRFPath().c_str());
+				return true;
+			case GRF_LOAD_INCOMPLETE_HEADER:
+				printf("GRF: Error reading header of the given grf '%s'. Aborting...\n", problematic_grf.getGRFPath().c_str());
+				return true;
+			case GRF_LOAD_ILLEGAL_DATA_FORMAT:
+				printf("GRF: Illegal data format, compressed size is greater than expected.\n");
+				return true;
+			case GRF_LOAD_OK:
+			default:
+				break;
+		}
+	}
+
+	for (auto &grf : getLibrary().getGRFs()) {
+		int size = grf.second.getGRFSize();
+		float kb_size = size / 1024;
+		float mb_size = kb_size / 1024;
+		float gb_size = mb_size / 1024;
+
+		printf("Info: GRF Loaded '%s' from path '%s'.\n", grf.second.getGRFPath().filename().c_str(),
+			   grf.second.getGRFPath().generic_path().c_str());
+		printf("Info: Total GRF Size - %d B (%0.2f KB or %0.2f MB or %0.2f GB).\n", size, kb_size, mb_size, gb_size);
+		printf("Info: GRF has '%d' Total Compressed Files.\n", grf.second.getTotalFiles());
+		printf("Info: GRF Version %x\n", grf.second.getGRFVersion());
+		printf("Info: GRF file path: '%s'\n", grf.second.getGRFPath().c_str());
 	}
 
 	return false;
@@ -174,32 +192,17 @@ int main(int argc, const char * argv[])
 
 	Horizon::Tools::MapCache m;
 
-	m.parseExecArguments(argc, argv);
+	m.parse_exec_args(argc, argv);
 
-	if (!m.ParseInitializeResult(m.getLibrary().Initialize()))
+	if (!m.ParseInitializeResult(m.getLibrary().initialize()))
 		return SIGABRT;
 
 	printf("Info: Config file path: '%s'\n", m.getLibrary().getMapListPath().c_str());
 	printf("Info: Compression Level '%d'\n", m.getLibrary().getCompressionLevel());
 	printf("Info: Output file set to '%s'\n", m.getLibrary().getMapCachePath().c_str());
 
-	// GRF
-	m.getLibrary().getGRF().setGRFPath(m.getLibrary().getGRFPath().c_str());
-
-	if (m.ParseGRFLoadResult(m.getLibrary().getGRF().load()))
+	if (m.ParseGRFLoadResult(m.getLibrary().LoadGRFs()))
 		return 1;
-
-	int size = m.getLibrary().getGRF().getGRFSize();
-	float kb_size = size / 1024;
-	float mb_size = kb_size / 1024;
-	float gb_size = mb_size / 1024;
-
-	printf("Info: GRF Loaded '%s' from path '%s'.\n", m.getLibrary().getGRF().getGRFPath().filename().c_str(),
-		   m.getLibrary().getGRF().getGRFPath().generic_path().c_str());
-	printf("Info: Total GRF Size - %d B (%0.2f KB or %0.2f MB or %0.2f GB).\n", size, kb_size, mb_size, gb_size);
-	printf("Info: GRF has '%d' Total Compressed Files.\n", m.getLibrary().getGRF().getTotalFiles());
-	printf("Info: GRF Version %x\n", m.getLibrary().getGRF().getGRFVersion());
-	printf("Info: GRF file path: '%s'\n", m.getLibrary().getGRFPath().c_str());
 
 	if (m.getLibrary().Exists()) {
 		printf("Info: Importing previously cached information from '%s'...\n", m.getLibrary().getMapCachePath().c_str());

@@ -15,9 +15,10 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef HORIZON_CHAR_CHARMAIN_H
-#define HORIZON_CHAR_CHARMAIN_H
+#ifndef HORIZON_CHAR_CHARMAIN_HPP
+#define HORIZON_CHAR_CHARMAIN_HPP
 
+#include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Server/Common/Server.hpp"
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 
@@ -40,18 +41,21 @@ public:
 	}
 	
 	bool ReadConfig();
-	void initializeCLICommands();
-	void connectWithInterServer();
-	void initializeCore();
+	void initialize_cli_commands();
+	void establish_inter_connection();
+	void initialize_core();
 
 	character_server_configuration &getCharConfig() { return _char_server_config; }
 
+	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
+
 private:
 	character_server_configuration _char_server_config;
+	TaskScheduler _task_scheduler;
 };
 }
 }
 
 #define CharServer Horizon::Char::CharMain::getInstance()
 
-#endif //HORIZON_CHAR_CHARMAIN_H
+#endif //HORIZON_CHAR_CHARMAIN_HPP

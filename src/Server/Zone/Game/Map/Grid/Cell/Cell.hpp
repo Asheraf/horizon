@@ -3,18 +3,6 @@
 #define HORIZON_ZONE_GAME_CELL_HPP
 
 #include "Utility/Utility.hpp"
-#include "Core/Logging/Logger.hpp"
-
-enum cell_types
-{
-	CELL_WALKSHOOT_GROUND            = 0,
-	CELL_NO_WALKSHOOT_GROUND         = 1,
-	// CELL_UNUSED_WALK_SHOOT_GROUND     = 2,
-	CELL_WALKSHOOT_WATER             = 3,
-	// CELL_UNUSED2_WALK_SHOOT_GROUND    = 4,
-	CELL_SHOOTABLE_ONLY              = 5,
-	CELL_WALKSHOOT_GROUND2           = 6
-};
 
 namespace Horizon
 {
@@ -22,30 +10,14 @@ namespace Zone
 {
 namespace Game
 {
+#pragma pack(push, 1)
 class Cell
 {
 public:
-    Cell(uint16_t x, uint16_t y)
-    : _x(x), _y(y)
+    Cell(uint8_t type)
+	: _walkable(0), _shootable(0), _is_water(0)
     {
-    }
-
-    Cell(uint16_t x, uint16_t y, uint8_t type)
-    : _x(x), _y(y), _type(type)
-    {
-		switch (type)
-		{
-		case 0: setWalkable(); setShootable(); break; // walkable ground
-		case 1: break; // non-walkable ground
-		case 2: setWalkable(); setShootable(); break; // ???
-		case 3: setWalkable(); setShootable(); setWater(); break; // walkable water
-		case 4: setWalkable(); setShootable(); break; // ???
-		case 5: setShootable(); break; // gap (snipable)
-		case 6: setWalkable(); setShootable(); break; // ???
-		default:
-			CoreLog->info("Unrecognized cell type '{}'\n", type);
-			break;
-		}
+		validateType(type);
     }
 
     ~Cell()
@@ -53,28 +25,47 @@ public:
         //
     }
 
-    uint16_t x() { return _x; }
-    uint16_t y() { return _y; }
+	void setType(uint8_t type) { validateType(type); }
 
-    uint8_t type() { return _type; }
-    void setType(uint8_t type) { _type = type; }
+	void validateType(uint8_t type)
+	{
+		switch (type)
+		{
+			case 3: setWater(); // walkable water
+			case 0: // walkable ground
+			case 2: // ???
+			case 4: // ???
+			case 6: setWalkable(); // ???
+			case 5: setShootable(); // gap (snipable)
+			case 1: break; // non-walkable ground
 
-	bool isWalkable() { return _walkable; }
-	void setWalkable() { _walkable = true; }
+//			case 0: cell.walkable = 1; cell.shootable = 1; cell.water = 0; break; // walkable ground
+//			case 1: cell.walkable = 0; cell.shootable = 0; cell.water = 0; break; // non-walkable ground
+//			case 2: cell.walkable = 1; cell.shootable = 1; cell.water = 0; break; // ???
+//			case 3: cell.walkable = 1; cell.shootable = 1; cell.water = 1; break; // walkable water
+//			case 4: cell.walkable = 1; cell.shootable = 1; cell.water = 0; break; // ???
+//			case 5: cell.walkable = 0; cell.shootable = 1; cell.water = 0; break; // gap (snipable)
+//			case 6: cell.walkable = 1; cell.shootable = 1; cell.water = 0; break; // ???
+			default:
+				break;
+		}
+	}
 
-	bool isShootable() { return _shootable; }
-	void setShootable() { _shootable = true; }
+	bool isWalkable() { return _walkable ? true : false; }
+	void setWalkable() { _walkable = 1; }
 
-	bool isWater() { return _is_water; }
-	void setWater() { _is_water = true; }
+	bool isShootable() { return _shootable ? true : false; }
+	void setShootable() { _shootable = 1; }
+
+	bool isWater() { return _is_water ? true : false; }
+	void setWater() { _is_water = 1; }
 
 private:
-    uint16_t _x{0}, _y{0};
-    uint8_t _type{0};
-	bool _walkable{false};
-	bool _shootable{false};
-	bool _is_water{false};
+	unsigned int _walkable : 1;
+	unsigned int _shootable : 1;
+	unsigned int _is_water : 1;
 };
+#pragma pack(pop)
 }
 }
 }

@@ -1,59 +1,33 @@
-/***************************************************
- *       _   _            _                        *
- *      | | | |          (_)                       *
- *      | |_| | ___  _ __ _ _______  _ __          *
- *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
- *      | | | | (_) | |  | |/ / (_) | | | |        *
- *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
- ***************************************************
- * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
- *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
- *
- * Under a proprietary license this file is not for use
- * or viewing without permission.
- **************************************************/
+#ifndef HORIZON_AUTH_SESSION_INTERSESSION_HPP
+#define HORIZON_AUTH_SESSION_INTERSESSION_HPP
 
-#ifndef HORIZON_AUTH_INTERSESSION_HPP
-#define HORIZON_AUTH_INTERSESSION_HPP
+#include "Core/Networking/Session.hpp"
 
-#include "Server/Common/Horizon.hpp"
-#include "Core/Networking/Socket.hpp"
-
-#include <cstdio>
-#include <boost/asio/ip/tcp.hpp>
-
-using boost::asio::ip::tcp;
+#include <memory>
 
 namespace Horizon
 {
 namespace Auth
 {
 class InterPacketHandler;
-class InterSession : public Socket<InterSession>
+class InterSocket;
+class InterSession : public Horizon::Networking::Session<InterSocket>
 {
-	typedef Socket<InterSession> AuthSocket;
 public:
-	explicit InterSession(std::shared_ptr<tcp::socket> socket);
-	~InterSession() { }
-
-	/* */
-	void start() override;
-	bool update() override;
+	InterSession(std::shared_ptr<InterSocket> socket);
+	~InterSession();
 
 	/* Packet Handler */
-	std::shared_ptr<InterPacketHandler> getPacketHandler();
-	void setPacketHandler(std::shared_ptr<InterPacketHandler> handler);
-	/* */
-protected:
-	void onClose() override;
-	void readHandler() override;
-	/* */
+	std::shared_ptr<InterPacketHandler> get_packet_handler();
+	void set_packet_handler(std::shared_ptr<InterPacketHandler> handler);
+
+	void update(uint32_t diff);
+
 private:
 	std::shared_ptr<InterPacketHandler> _packet_handler;
+
 };
 }
 }
 
-#endif /* HORIZON_AUTH_INTERSESSION_HPP */
+#endif /* HORIZON_AUTH_SESSION_INTERSESSION_HPP */

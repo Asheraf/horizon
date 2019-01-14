@@ -99,6 +99,23 @@ public:
 
 		return count;
 	}
+
+	bool empty()
+	{
+		boost::unique_lock<boost::mutex> head_lock(head_mutex);
+
+		if(head.get() == get_tail())
+			return true;
+
+		return false;
+	}
+
+	std::shared_ptr<T> front()
+	{
+		boost::unique_lock<boost::mutex> head_lock(head_mutex);
+		std::shared_ptr<T> front = head != nullptr ? std::make_shared<T>(*head->data) : nullptr;
+		return std::move(front);
+	}
 };
 
 #endif // HORIZON_CORE_MULTITHREADING_THREADSAFEQUEUE_HPP

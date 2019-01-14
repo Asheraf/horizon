@@ -103,7 +103,7 @@ public:
 	template <class SPECIFIC_TYPE>
 	bool insert(SPECIFIC_TYPE *obj)
 	{
-		assert(!obj->valid());
+		assert(obj && !obj->valid());
 		SPECIFIC_TYPE* t = GridTypeListIterator::Insert(_elements, obj);
 		return (t != NULL);
 	}

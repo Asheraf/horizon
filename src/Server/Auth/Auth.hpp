@@ -18,16 +18,16 @@
 #ifndef HORIZON_AUTH_MAIN_HPP
 #define HORIZON_AUTH_MAIN_HPP
 
+#include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Core/Database/MySqlConnection.hpp"
 #include "Common/Server.hpp"
 #include "Common/Models/Configuration/AuthServerConfiguration.hpp"
-#include "Server/Auth/Session/Session.hpp"
+#include "Server/Auth/Socket/AuthSocket.hpp"
 
 #include <string>
 #include <Server/Common/Models/ServerData.hpp>
 
 typedef std::unordered_map<int, std::shared_ptr<character_server_data>> CharacterServerMapType;
-
 namespace Horizon
 {
 namespace Auth
@@ -50,26 +50,21 @@ public:
 	bool ReadConfig();
 
 	/* Auth Server Configuration */
-	struct auth_server_config &getAuthConfig() { return _auth_config; }
+	struct auth_server_config &get_auth_config() { return _auth_config; }
 
-	void connectWithInterServer();
-	void connectionKeepAliveLoop();
+	void establish_inter_connection();
 
-	void initializeCore();
+	void initialize_core();
 	/* CLI */
-	void initializeCLICommands();
-	bool CLICmd_ReloadConfig();
-
-	void UpdateCharServLoop();
-	void UpdateSessionLoop();
+	void initialize_cli_commands();
+	bool clicmd_reload_config();
 
 	/* Character Server Handlers */
-	void addCharacterServer(struct character_server_data &serv)
+	void add_character_server(struct character_server_data &serv)
 	{
 		_character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv)));
 	}
-
-	std::shared_ptr<character_server_data> getCharacterServer(int id)
+	std::shared_ptr<character_server_data> get_character_server(int id)
 	{
 		auto it = _character_servers.find(id);
 
@@ -78,14 +73,17 @@ public:
 		else
 			return nullptr;
 	}
-	std::size_t totalCharacterServers() { return _character_servers.size(); }
+	std::size_t character_server_count() { return _character_servers.size(); }
+	const CharacterServerMapType &get_character_servers() const { return _character_servers; }
 
-	const CharacterServerMapType &getCharacterServers() const { return _character_servers; }
+	/* Task Scheduler */
+	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
 
 protected:
 	/* Auth Server Configuration */
 	struct auth_server_config _auth_config;
 	CharacterServerMapType _character_servers;
+	TaskScheduler _task_scheduler;
 };
 }
 }

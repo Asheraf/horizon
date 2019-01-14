@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(BCryptTest)
 	std::string pass = "hi,mom";
 	std::string hash;
 
-	BOOST_CHECK(bcrypt.validatePassword(pass, "$2a$10$VEVmGHy4F4XQMJ3eOZJAUeb.MedU0W10pTPCuf53eHdKJPiSE8sMK"));
+	BOOST_CHECK(bcrypt.validate_password(pass, "$2a$10$VEVmGHy4F4XQMJ3eOZJAUeb.MedU0W10pTPCuf53eHdKJPiSE8sMK"));
 	hash = bcrypt.generateHash(pass);
-	BOOST_CHECK(bcrypt.validatePassword(pass, hash));
+	BOOST_CHECK(bcrypt.validate_password(pass, hash));
 }

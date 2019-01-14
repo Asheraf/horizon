@@ -27,6 +27,8 @@ namespace Horizon
 {
 namespace Auth
 {
+class AuthSocket;
+class InterSocket;
 class PacketHandlerFactory
 {
 public:
@@ -40,14 +42,14 @@ public:
 	 * @param[in] packet_ver version of the client of the connected session.
 	 * @return shared pointer to a new packet handler object for the client version or default.
 	 */
-	static std::shared_ptr<PacketHandler> CreateAuthPacketHandler(std::shared_ptr<Session> const &session, int packet_ver)
+	static std::shared_ptr<PacketHandler> create_auth_packet_handler(std::shared_ptr<AuthSocket> socket, int packet_ver)
 	{
 		if (packet_ver >= 20171113)
-			return std::make_shared<PacketHandler20171113>(session);
+			return std::make_shared<PacketHandler20171113>(socket);
 		else if (packet_ver >= 20170315)
-			return std::make_shared<PacketHandler20170315>(session);
+			return std::make_shared<PacketHandler20170315>(socket);
 
-		return std::make_shared<PacketHandler>(session);
+		return std::make_shared<PacketHandler>(socket);
 	}
 
 	/**
@@ -55,9 +57,9 @@ public:
 	 * @param[in] session    constant reference to the session in question.
 	 * @return shared pointer to a new packet handler object.
 	 */
-	static std::shared_ptr<InterPacketHandler> CreateInterPacketHandler(std::shared_ptr<InterSession> session)
+	static std::shared_ptr<InterPacketHandler> create_inter_packet_handler(std::shared_ptr<InterSocket> socket)
 	{
-		return std::make_shared<InterPacketHandler>(session);
+		return std::make_shared<InterPacketHandler>(socket);
 	}
 };
 }

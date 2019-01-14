@@ -43,7 +43,7 @@ public:
 	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM `character_ui_settings` WHERE `id` = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -55,10 +55,10 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterID(char_id);
-				setFont((uint8_t) res->getUInt("font"));
-				setShowEquip((uint8_t) res->getUInt("show_equip"));
-				setAllowParty((uint8_t) res->getUInt("allow_party"));
+				set_character_id(char_id);
+				set_font((uint8_t) res->getUInt("font"));
+				set_show_equip((uint8_t) res->getUInt("show_equip"));
+				set_allow_party((uint8_t) res->getUInt("allow_party"));
 
 				ret = true;
 			}
@@ -69,7 +69,7 @@ public:
 			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
 		return ret;
 	}
@@ -80,38 +80,38 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 
 		std::string query = "REPLACE INTO `character_ui_settings` "
 		"(`id`, `font`, `show_equip`, `allow_party`) VALUES (?, ?, ?, ?);";
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, getCharacterID());
-			pstmt->setInt(2, getFont());
-			pstmt->setInt(3, getShowEquip());
-			pstmt->setInt(4, getAllowParty());
+			pstmt->setInt(1, get_character_id());
+			pstmt->setInt(2, get_font());
+			pstmt->setInt(3, get_show_equip());
+			pstmt->setInt(4, get_allow_party());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */
-	uint32_t getCharacterID() const { return character_id; }
-	void setCharacterID(uint32_t character_id) { UISettings::character_id = character_id; }
+	uint32_t get_character_id() const { return character_id; }
+	void set_character_id(uint32_t character_id) { UISettings::character_id = character_id; }
 	/* Font */
-	uint8_t getFont() const { return font; }
-	void setFont(uint8_t font) { UISettings::font = font; }
+	uint8_t get_font() const { return font; }
+	void set_font(uint8_t font) { UISettings::font = font; }
 	/* Show Equip */
-	uint8_t getShowEquip() const { return show_equip; }
-	void setShowEquip(uint8_t show_equip) { UISettings::show_equip = show_equip; }
+	uint8_t get_show_equip() const { return show_equip; }
+	void set_show_equip(uint8_t show_equip) { UISettings::show_equip = show_equip; }
 	/* Allow Party */
-	uint8_t getAllowParty() const { return allow_party; }
-	void setAllowParty(uint8_t allow_party) { UISettings::allow_party = allow_party; }
+	uint8_t get_allow_party() const { return allow_party; }
+	void set_allow_party(uint8_t allow_party) { UISettings::allow_party = allow_party; }
 private:
 	uint32_t character_id{0};
 	uint8_t font{0};

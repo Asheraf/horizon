@@ -18,14 +18,14 @@
 #include "PacketHandler20171113.hpp"
 
 #include "Core/Logging/Logger.hpp"
-#include "Server/Auth/Session/Session.hpp"
+#include "Server/Auth/Socket/AuthSocket.hpp"
 
 #include <boost/bind.hpp>
 
-Horizon::Auth::PacketHandler20171113::PacketHandler20171113(std::shared_ptr<Session> const &session)
-: Horizon::Auth::PacketHandler20170315(session)
+Horizon::Auth::PacketHandler20171113::PacketHandler20171113(std::shared_ptr<AuthSocket> socket)
+: Horizon::Auth::PacketHandler20170315(socket)
 {
-	InitializeHandlers();
+	initialize_handlers();
 }
 
 Horizon::Auth::PacketHandler20171113::~PacketHandler20171113()
@@ -42,8 +42,8 @@ void Horizon::Auth::PacketHandler20171113::Handle_Poly(PacketBuffer &/*buf*/)
 	AuthLog->info("20171113 Poly Overloaded!");
 }
 
-void Horizon::Auth::PacketHandler20171113::InitializeHandlers()
+void Horizon::Auth::PacketHandler20171113::initialize_handlers()
 {
-	PacketHandler20170315::InitializeHandlers();
-	addPacketHandler(CA_LOGIN, boost::bind(&PacketHandler::Handle_CA_LOGIN, this, boost::placeholders::_1));
+	PacketHandler20170315::initialize_handlers();
+	add_packet_handler(CA_LOGIN, boost::bind(&PacketHandler::Handle_CA_LOGIN, this, boost::placeholders::_1));
 }

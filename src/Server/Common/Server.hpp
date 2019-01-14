@@ -37,10 +37,10 @@ public:
 	Server(std::string name, std::string config_file_path, std::string config_file_name);
 	~Server();
 
-	void parseExecArguments(const char *argv[], int argc);
+	void parse_exec_args(const char *argv[], int argc);
 
 	/* Shutting Down Flags */
-	bool isShuttingDown() const { return _shut_down; };
+	bool is_shutting_down() const { return _shut_down; };
 	void shutdown(int signal) {
 		if (_shut_down.exchange(true))
 			return;
@@ -48,40 +48,38 @@ public:
 		_shutdown_signal.exchange(signal);
 	};
 
-	void IOServiceLoop();
-
 	/* Core I/O Service*/
-	const std::shared_ptr<boost::asio::io_service> getIOService() const;
+	boost::asio::io_service &get_io_service();
 	/* General Configuration */
-	struct general_server_configuration &getGeneralConf() { return this->general_config; }
+	struct general_server_configuration &general_conf() { return this->general_config; }
 	/* Network Configuration */
-	network_configuration &getNetworkConf() { return network_config; };
+	network_configuration &network_conf() { return network_config; };
 	void setNetwork(const network_configuration &network) { this->network_config = network; };
 	/* Database Configuration */
-	database_configuration &getDatabaseConf() { return database_config; }
+	database_configuration &database_conf() { return database_config; }
 
 	/**
 	 * Processing Functions
 	 */
 	/* Common Configuration */
-	bool ProcessCommonConfiguration(libconfig::Config &cfg);
+	bool parse_common_configs(libconfig::Config &cfg);
 	/* Initialize Core */
-	virtual void initializeCore();
+	virtual void initialize_core();
+	virtual void finalize_core();
 	/* Mysql Threads */
-	void InitializeMySQLConnections();
-	boost::shared_ptr<MySQLConnection> MySQLBorrow() { return mysql_pool->borrow(); }
-	void MySQLUnborrow(boost::shared_ptr<MySQLConnection> conn) { mysql_pool->unborrow(conn); }
+	void initialize_mysql();
+	boost::shared_ptr<MySQLConnection> mysql_borrow() { return mysql_pool->borrow(); }
+	void mysql_unborrow(boost::shared_ptr<MySQLConnection> conn) { mysql_pool->unborrow(conn); }
 	/* Command Line Interface */
-	void InitializeCLI();
+	void initialize_command_line();
 
-	virtual void initializeCLICommands();
-	void InitializeCommonCLICommands();
-	void ProcessCLICommands();
-	void QueueCLICommand(CLICommand &&cmdMgr) { m_CLICmdQueue.push(std::move(cmdMgr)); }
-	void addCLIFunction(std::string cmd, std::function<bool(void)> func) { m_CLIFunctionMap.insert(std::make_pair(cmd, func)); };
+	virtual void initialize_cli_commands();
+	void process_cli_commands();
+	void queue_cli_command(CLICommand &&cmdMgr) { m_CLICmdQueue.push(std::move(cmdMgr)); }
+	void add_cli_command_func(std::string cmd, std::function<bool(void)> func) { m_CLIFunctionMap.insert(std::make_pair(cmd, func)); };
 	
 	/* CLI Function getter */
-	std::function<bool(void)> getCLIFunc(std::string &cmd)
+	std::function<bool(void)> get_cli_command_func(std::string &cmd)
 	{
 		auto it = m_CLIFunctionMap.find(cmd);
 		return (it != m_CLIFunctionMap.end()) ? it->second : nullptr;
@@ -90,7 +88,7 @@ public:
 	/**
 	 * CLI Commands
 	 */
-	bool CLICmd_Shutdown() { shutdown(SIGTERM); return true; }
+	bool clicmd_shutdown() { shutdown(SIGTERM); return true; }
 
 protected:
 	/* General Configuration */
@@ -110,9 +108,8 @@ protected:
 	std::unordered_map<std::string, std::function<bool(void)>> m_CLIFunctionMap;
 	/**
 	 * Core IO Service
-	 * @owner shared.
 	 */
-	std::shared_ptr<boost::asio::io_service> io_service;
+	boost::asio::io_service _io_service;
 };
 
 #endif /* HORIZON_SERVER_HPP */

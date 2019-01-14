@@ -43,7 +43,7 @@ public:
 	bool load(Server *server, uint32_t char_id)
 	{
 		std::string query = "SELECT * FROM `character_group_data` WHERE `id` = ?";
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 		bool ret = false;
 
 		try {
@@ -55,9 +55,9 @@ public:
 				/**
 				 * Create Game Account Data
 				 */
-				setCharacterID(char_id);
-				setPartyID(res->getUInt("party_id"));
-				setGuildID(res->getUInt("guild_id"));
+				set_character_id(char_id);
+				set_party_id(res->getUInt("party_id"));
+				set_guild_id(res->getUInt("guild_id"));
 				ret = true;
 			}
 
@@ -67,7 +67,7 @@ public:
 			DBLog->error("Models::Character::Group::LoadFromDatabase: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 
 		return ret;
 	}
@@ -78,34 +78,34 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->MySQLBorrow();
+		auto sql = server->mysql_borrow();
 
 		std::string query = "REPLACE INTO `character_group_data` "
 			"(`id`, `party_id`, `guild_id`) VALUES (?, ?, ?);";
 
 		try {
 			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, getCharacterID());
-			pstmt->setInt(2, getPartyID());
-			pstmt->setInt(3, getGuildID());
+			pstmt->setInt(1, get_character_id());
+			pstmt->setInt(2, get_party_id());
+			pstmt->setInt(3, get_guild_id());
 			pstmt->executeUpdate();
 			delete pstmt;
 		} catch (sql::SQLException &e) {
 			DBLog->error("SQLException: {}", e.what());
 		}
 
-		server->MySQLUnborrow(sql);
+		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */
-	uint32_t getCharacterID() const { return character_id; }
-	void setCharacterID(uint32_t character_id) { Group::character_id = character_id; }
+	uint32_t get_character_id() const { return character_id; }
+	void set_character_id(uint32_t character_id) { Group::character_id = character_id; }
 	/* Party ID */
-	uint32_t getPartyID() const { return party_id; }
-	void setPartyID(uint32_t party_id) { Group::party_id = party_id; }
+	uint32_t get_party_id() const { return party_id; }
+	void set_party_id(uint32_t party_id) { Group::party_id = party_id; }
 	/* Guild ID */
-	uint32_t getGuildID() const { return guild_id; }
-	void setGuildID(uint32_t guild_id) { Group::guild_id = guild_id; }
+	uint32_t get_guild_id() const { return guild_id; }
+	void set_guild_id(uint32_t guild_id) { Group::guild_id = guild_id; }
 
 private:
 	uint32_t character_id{0};

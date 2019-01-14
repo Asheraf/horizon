@@ -29,15 +29,15 @@ namespace Horizon
 {
 namespace Zone
 {
-class InterSession;
-class InterPacketHandler : public Horizon::Base::InterPacketHandler<InterSession>
+class InterSocket;
+class InterPacketHandler : public Horizon::Base::InterPacketHandler<InterSocket>
 {
 public:
-	InterPacketHandler(std::shared_ptr<InterSession> session);
+	InterPacketHandler(std::shared_ptr<InterSocket> socket);
 	~InterPacketHandler();
 
 	/* Initializer */
-	void InitializeHandlers() override;
+	void initialize_handlers() override;
 };
 }
 }

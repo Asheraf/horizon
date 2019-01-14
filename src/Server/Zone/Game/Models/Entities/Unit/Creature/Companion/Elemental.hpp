@@ -17,6 +17,8 @@ class Elemental : public Creature, public GridObject<Elemental>
 {
 public:
 	Elemental(uint32_t guid);
+	Elemental(uint32_t guid, std::string const &map_name, MapCoords mcoords);
+	Elemental(uint32_t guid, std::string const &map_name, MapCoords mcoords, GridCoords gcoords);
 	~Elemental();
 
 };

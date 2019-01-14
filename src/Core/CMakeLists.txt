@@ -18,10 +18,14 @@
 add_subdirectory(Networking)
 add_subdirectory(Structures)
 
+set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(CORE_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Logging/Logger.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Logging/Logger.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Database/ConnectionPool.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Database/MySqlConnection.hpp
+    ${DIR}/Logging/Logger.cpp
+    ${DIR}/Logging/Logger.hpp
+    ${DIR}/Database/ConnectionPool.hpp
+    ${DIR}/Database/MySqlConnection.hpp
+    ${DIR}/Multithreading/TaskScheduler/TaskScheduler.cpp
+    ${DIR}/Multithreading/TaskScheduler/TaskScheduler.hpp
     ${STRUCTURE_SOURCES}
     PARENT_SCOPE)

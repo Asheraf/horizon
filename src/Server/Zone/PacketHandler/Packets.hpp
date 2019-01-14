@@ -36,14 +36,20 @@ enum packets
 	ZC_ACK_REQNAME                = 0x0095,
 	ZC_ACK_REQNAMEALL             = 0x0195,
 	ZC_ACK_GUILD_MENUINTERFACE    = 0x014e,
-
+	ZC_NOTIFY_UNITMOVE            = 0x0086,
+	ZC_NOTIFY_PLAYERMOVE          = 0x0087,
+	ZC_STOPMOVE                   = 0x0088,
+	ZC_PAR_CHANGE                 = 0x00b0,
+	ZC_INITIAL_STATUS             = 0x00bd,
+	ZC_UPDATE_MAPINFO             = 0x0192,
+	ZC_NOTIFY_GROUNDSKILL         = 0x0117,
 	/* CZ */
 	CZ_LOGIN_TIMESTAMP            = 0x044a,
 	CZ_MAP_LOAD_END_ACK           = 0x007d,
 	CZ_REQ_GUILD_MENUINTERFACE    = 0x014d,
 	CZ_REQ_GUILD_MENU             = 0x014f,
 };
-	
+
 #pragma pack(push, 1)
 struct PACKET_CZ_ENTER : public Packet
 {
@@ -73,19 +79,19 @@ enum zone_server_reject_types : uint8_t
 
 struct PACKET_ZC_ERROR : public Packet
 {
-	PACKET_ZC_ERROR() : Packet(Horizon::Zone::packets::ZC_ERROR) { }
+	PACKET_ZC_ERROR() : Packet(ZC_ERROR) { }
 	uint8_t error{ZONE_SERV_ERROR_REJECT};
 };
 
 struct PACKET_ZC_ACCOUNT_ID : public Packet
 {
-	PACKET_ZC_ACCOUNT_ID() : Packet(Horizon::Zone::packets::ZC_ACCOUNT_ID) { }
+	PACKET_ZC_ACCOUNT_ID() : Packet(ZC_ACCOUNT_ID) { }
 	uint32_t account_id{0};
 };
 
 struct PACKET_ZC_ACCEPT_CONNECTION : public Packet
 {
-	PACKET_ZC_ACCEPT_CONNECTION() : Packet(Horizon::Zone::packets::ZC_ACCEPT_CONNECTION) { }
+	PACKET_ZC_ACCEPT_CONNECTION() : Packet(ZC_ACCEPT_CONNECTION) { }
 	uint32_t start_time{0};
 	uint8_t packed_position[3]{0};
 	uint8_t x_size{0};
@@ -94,17 +100,102 @@ struct PACKET_ZC_ACCEPT_CONNECTION : public Packet
 	uint8_t gender{0};
 };
 
+struct PACKET_ZC_NOTIFY_UNITMOVE : public Packet
+{
+	PACKET_ZC_NOTIFY_UNITMOVE() : Packet(ZC_NOTIFY_UNITMOVE) { }
+	uint32_t guid;
+	uint8_t packed_pos[6];
+	uint32_t timestamp;
+};
+
+struct PACKET_ZC_NOTIFY_PLAYERMOVE : public Packet
+{
+	PACKET_ZC_NOTIFY_PLAYERMOVE() : Packet(ZC_NOTIFY_PLAYERMOVE) { }
+	uint32_t timestamp;
+	uint8_t packed_pos[6];
+};
+
+struct PACKET_ZC_STOPMOVE : public Packet
+{
+	PACKET_ZC_STOPMOVE() : Packet(ZC_STOPMOVE) { }
+	uint32_t guid;
+	uint16_t x;
+	uint16_t y;
+};
+
 struct PACKET_ZC_NPCACK_MAPMOVE : public Packet
 {
-	PACKET_ZC_NPCACK_MAPMOVE() : Packet(Horizon::Zone::packets::ZC_NPCACK_MAPMOVE) { }
+	PACKET_ZC_NPCACK_MAPMOVE() : Packet(ZC_NPCACK_MAPMOVE) { }
 	char map_name[MAP_NAME_LENGTH_EXT]{0};
 	uint16_t x{0};
 	uint16_t y{0};
 };
 
+struct PACKET_ZC_PAR_CHANGE : public Packet
+{
+	PACKET_ZC_PAR_CHANGE() : Packet(ZC_PAR_CHANGE) { }
+	uint16_t type{0};
+	uint32_t value{0};
+};
+
+struct PACKET_ZC_INITIAL_STATUS : public Packet
+{
+	PACKET_ZC_INITIAL_STATUS() : Packet(ZC_INITIAL_STATUS) { }
+	uint16_t status_points{0};
+	uint8_t strength{1};
+	uint8_t strength_req_stats{1};
+	uint8_t agility{1};
+	uint8_t agility_req_stats{1};
+	uint8_t vitality{1};
+	uint8_t vitality_req_stats{1};
+	uint8_t intelligence{1};
+	uint8_t intelligence_req_stats{1};
+	uint8_t dexterity{1};
+	uint8_t dexterity_req_stats{1};
+	uint8_t luck{1};
+	uint8_t luck_req_stats{1};
+	uint16_t left_hand_atk{1};
+	uint16_t right_hand_atk{1};
+	uint16_t right_hand_matk{1};
+	uint16_t left_hand_matk{1};
+	uint16_t soft_defense{1};
+	uint16_t hard_defense{1};
+	uint16_t soft_magic_defense{1};
+	uint16_t hard_magic_defense{1};
+	uint16_t hit{1};
+	uint16_t flee{1};
+	uint16_t perfect_dodge{1};
+	uint16_t critical{1};
+	uint16_t attack_speed{1};
+	uint16_t plus_aspd{0}; // always 0 apparently.
+};
+
+struct PACKET_ZC_UPDATE_MAPINFO : public Packet
+{
+	PACKET_ZC_UPDATE_MAPINFO() : Packet(ZC_UPDATE_MAPINFO) { }
+	uint16_t x{0};
+	uint16_t y{0};
+	uint16_t type{0}; // 5 = icewall
+	char map_name[MAP_NAME_LENGTH_EXT]{0};
+};
+
+struct PACKET_ZC_NOTIFY_GROUNDSKILL : public Packet
+{
+	PACKET_ZC_NOTIFY_GROUNDSKILL() : Packet(ZC_NOTIFY_GROUNDSKILL) { }
+	uint16_t skill_id;
+	uint32_t guid;
+	uint16_t level;
+	uint16_t x;
+	uint16_t y;
+	uint32_t duration;
+};
+
+/**
+ * CZ
+ */
 struct PACKET_CZ_LOGIN_TIMESTAMP : public Packet
 {
-	PACKET_CZ_LOGIN_TIMESTAMP() : Packet(Horizon::Zone::packets::CZ_LOGIN_TIMESTAMP) { }
+	PACKET_CZ_LOGIN_TIMESTAMP() : Packet(CZ_LOGIN_TIMESTAMP) { }
 	uint32_t timestamp{0};
 };
 
@@ -116,7 +207,7 @@ struct PACKET_CZ_REQUEST_TIME : public Packet
 
 struct PACKET_ZC_NOTIFY_TIME : public Packet
 {
-	PACKET_ZC_NOTIFY_TIME() : Packet(Horizon::Zone::packets::ZC_NOTIFY_TIME) { }
+	PACKET_ZC_NOTIFY_TIME() : Packet(ZC_NOTIFY_TIME) { }
 	uint32_t timestamp{0};
 };
 
@@ -128,14 +219,14 @@ struct PACKET_CZ_REQNAME : public Packet
 
 struct PACKET_ZC_ACK_REQNAME : public Packet
 {
-	PACKET_ZC_ACK_REQNAME() : Packet(Horizon::Zone::packets::ZC_ACK_REQNAME) { }
+	PACKET_ZC_ACK_REQNAME() : Packet(ZC_ACK_REQNAME) { }
 	uint32_t guid;
 	char name[MAX_CHAR_NAME_LENGTH];
 };
 
 struct PACKET_ZC_ACK_REQNAMEALL : public Packet
 {
-	PACKET_ZC_ACK_REQNAMEALL() : Packet(Horizon::Zone::packets::ZC_ACK_REQNAMEALL) { }
+	PACKET_ZC_ACK_REQNAMEALL() : Packet(ZC_ACK_REQNAMEALL) { }
 	uint32_t guid;
 	char name[MAX_CHAR_NAME_LENGTH];
 	char party_name[MAX_PARTY_NAME_LENGTH];
@@ -145,7 +236,7 @@ struct PACKET_ZC_ACK_REQNAMEALL : public Packet
 
 struct PACKET_CZ_REQ_GUILD_MENUINTERFACE : public Packet
 {
-	PACKET_CZ_REQ_GUILD_MENUINTERFACE() : Packet(Horizon::Zone::packets::CZ_REQ_GUILD_MENUINTERFACE) { }
+	PACKET_CZ_REQ_GUILD_MENUINTERFACE() : Packet(CZ_REQ_GUILD_MENUINTERFACE) { }
 };
 
 enum zc_ack_guild_menuinterface_mask_types
@@ -163,7 +254,7 @@ enum zc_ack_guild_menuinterface_mask_types
 
 struct PACKET_ZC_ACK_GUILD_MENUINTERFACE : public Packet
 {
-	PACKET_ZC_ACK_GUILD_MENUINTERFACE() : Packet(Horizon::Zone::packets::ZC_ACK_GUILD_MENUINTERFACE) { }
+	PACKET_ZC_ACK_GUILD_MENUINTERFACE() : Packet(ZC_ACK_GUILD_MENUINTERFACE) { }
 	uint32_t menu_interface_mask;
 };
 
@@ -180,7 +271,7 @@ enum cz_req_guild_menu_types
 
 struct PACKET_CZ_REQ_GUILD_MENU : public Packet
 {
-	PACKET_CZ_REQ_GUILD_MENU() : Packet(Horizon::Zone::packets::CZ_REQ_GUILD_MENU) { }
+	PACKET_CZ_REQ_GUILD_MENU() : Packet(CZ_REQ_GUILD_MENU) { }
 	cz_req_guild_menu_types info_type;
 };
 

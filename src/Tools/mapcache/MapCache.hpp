@@ -36,11 +36,11 @@ public:
 	MapCache();
 	~MapCache();
 
-	void parseExecArguments(int argc, const char *argv[]);
+	void parse_exec_args(int argc, const char *argv[]);
 	
 	bool ParseInitializeResult(mcache_error_types type);
 
-	bool ParseGRFLoadResult(grf_load_result_types result);
+	bool ParseGRFLoadResult(std::pair<uint8_t, grf_load_result_types> result);
 
 	bool ParseMapCacheImportResult(mcache_import_error_types type);
 

@@ -23,10 +23,10 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/bind.hpp>
 
 /* Public */
 Server::Server(std::string /*name*/, std::string config_file_path, std::string config_file_name)
-: io_service(std::make_shared<boost::asio::io_service>())
 {
 	std::cout << "   _   _            _                  " << std::endl;
 	std::cout << "  | | | |          (_)                 " << std::endl;
@@ -50,7 +50,7 @@ Server::~Server()
 {
 }
 
-void Server::parseExecArguments(const char *argv[], int argc)
+void Server::parse_exec_args(const char *argv[], int argc)
 {
 	if (strcmp(argv[1], "--test-run") == 0) {
 		CoreLog->info("Test run initiated.");
@@ -64,110 +64,110 @@ void Server::parseExecArguments(const char *argv[], int argc)
 				boost::split(arg_parts, *it, boost::is_any_of("="));
 
 				if (arg_parts.at(0).compare("--dbuser") == 0) {
-					getDatabaseConf().setUsername(arg_parts.at(1));
-					CoreLog->info("Database user is manually set to '{}'", getDatabaseConf().getDatabase());
+					database_conf().set_username(arg_parts.at(1));
+					CoreLog->info("Database user is manually set to '{}'", database_conf().get_database());
 				} else if (arg_parts.at(0).compare("--dbpassword") == 0) {
-					getDatabaseConf().setPassword(arg_parts.at(1));
-					CoreLog->info("Database password is manually set to '{}'", getDatabaseConf().getPassword());
+					database_conf().set_password(arg_parts.at(1));
+					CoreLog->info("Database password is manually set to '{}'", database_conf().get_password());
 				} else if (arg_parts.at(0).compare("--dbhost") == 0) {
-					getDatabaseConf().setHost(arg_parts.at(1));
-					CoreLog->info("Database host is manually set to '{}'", getDatabaseConf().getHost());
+					database_conf().set_host(arg_parts.at(1));
+					CoreLog->info("Database host is manually set to '{}'", database_conf().get_host());
 				} else if (arg_parts.at(0).compare("--dbdatabase") == 0) {
-					getDatabaseConf().setDatabase(arg_parts.at(1));
-					CoreLog->info("Database database is manually set to '{}'", getDatabaseConf().getDatabase());
+					database_conf().set_database(arg_parts.at(1));
+					CoreLog->info("Database database is manually set to '{}'", database_conf().get_database());
 				} else if (arg_parts.at(0).compare("--dbthreads") == 0) {
 					int num = std::atoi(arg_parts.at(1).c_str());
 					int threads = std::max(1, std::min(num, 10));
-					getDatabaseConf().setMaxThreads(threads);
-					CoreLog->info("Database max threads are manually set to '{}'", getDatabaseConf().getMaxThreads());
+					database_conf().set_db_thread_count(threads);
+					CoreLog->info("Database max threads are manually set to '{}'", database_conf().get_db_thread_count());
 				} else {
 					CoreLog->error("Unrecognised argument for test run '{}'", *it);
 				}
 			}
 		}
-		getGeneralConf().setTestRun();
+		general_conf().set_test_run();
 	}
 }
 
 #define core_config_error(setting_name, default) \
 CoreLog->error("No setting for '{}' in configuration file, defaulting to {}", setting_name, default);
 
-bool Server::ProcessCommonConfiguration(libconfig::Config &cfg)
+bool Server::parse_common_configs(libconfig::Config &cfg)
 {
 	std::string tmp_string{""};
 	uint32_t tmp_value{0};
 
 	if (cfg.lookupValue("bind_ip", tmp_string)) {
-		getNetworkConf().setListenIp(tmp_string);
+		network_conf().set_listen_ip(tmp_string);
 	} else {
 		core_config_error("bind_ip", "127.0.0.1");
-		getNetworkConf().setListenIp("127.0.0.1");
+		network_conf().set_listen_ip("127.0.0.1");
 	}
 
 	if (cfg.lookupValue("bind_port", tmp_value)) {
-		getNetworkConf().setListenPort(tmp_value);
+		network_conf().set_listen_port(tmp_value);
 	} else {
 		AuthLog->error("Invalid or non-existent configuration for 'bind_port', Halting...");
 		return false;
 	}
 
 	if (cfg.lookupValue("network_threads", tmp_value)) {
-		getNetworkConf().setMaxThreads(tmp_value);
+		network_conf().set_network_thread_count(tmp_value);
 	} else {
 		core_config_error("network_threads", 1);
-		getNetworkConf().setMaxThreads(1);
+		network_conf().set_network_thread_count(1);
 	}
 
 	CoreLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.",
-				  getNetworkConf().getListenIp(), getNetworkConf().getListenPort(), getNetworkConf().getMaxThreads());
+				  network_conf().get_listen_ip(), network_conf().get_listen_port(), network_conf().get_network_thread_count());
 
 	/**
 	 * Database Configuration
 	 * @brief
 	 */
-	if (!getGeneralConf().isTestRun()) {
+	if (!general_conf().is_test_run()) {
 		const libconfig::Setting &dbconf = cfg.getRoot()["database"];
 
 		if (dbconf.lookupValue("hostname", tmp_string)) {
-			getDatabaseConf().setHost(tmp_string);
+			database_conf().set_host(tmp_string);
 		} else {
 			core_config_error("hostname", "127.0.0.1");
-			getDatabaseConf().setHost("127.0.0.1");
+			database_conf().set_host("127.0.0.1");
 		}
 
 		if (dbconf.lookupValue("port", tmp_value)) {
-			getDatabaseConf().setPort(tmp_value);
+			database_conf().set_port(tmp_value);
 		} else {
 			core_config_error("hostname", 3306);
-			getDatabaseConf().setPort(3306);
+			database_conf().set_port(3306);
 		}
 
 		if (dbconf.lookupValue("database", tmp_string)) {
-			getDatabaseConf().setDatabase(tmp_string);
+			database_conf().set_database(tmp_string);
 		} else {
 			core_config_error("database", "horizon");
-			getDatabaseConf().setDatabase("horizon");
+			database_conf().set_database("horizon");
 		}
 
 		if (dbconf.lookupValue("username", tmp_string)) {
-			getDatabaseConf().setUsername(tmp_string);
+			database_conf().set_username(tmp_string);
 		} else {
 			core_config_error("username", "horizon");
-			getDatabaseConf().setUsername("horizon");
+			database_conf().set_username("horizon");
 		}
 
 		if (dbconf.lookupValue("password", tmp_string)) {
-			getDatabaseConf().setPassword(tmp_string);
+			database_conf().set_password(tmp_string);
 		} else {
 			core_config_error("password", "horizon");
-			getDatabaseConf().setPassword("horizon");
+			database_conf().set_password("horizon");
 		}
 
 		if (dbconf.lookupValue("connection_threads", tmp_value)) {
-			getDatabaseConf().setMaxThreads(tmp_value);
+			database_conf().set_db_thread_count(tmp_value);
 		} else {
 			core_config_error("connection_threads", 1);
-			getDatabaseConf().setMaxThreads(1);
+			database_conf().set_db_thread_count(1);
 		}
 	}
 
@@ -175,22 +175,22 @@ bool Server::ProcessCommonConfiguration(libconfig::Config &cfg)
 	 * Core I/O Thread Count
 	 */
 	if (cfg.lookupValue("global_io_threads", tmp_value)) {
-		getGeneralConf().setGlobalIOThreads(tmp_value);
-		CoreLog->info("Using {} threads for working on Global I/O Events.", getGeneralConf().getGlobalIOThreads());
+		general_conf().set_io_thread_count(tmp_value);
+		CoreLog->info("Using {} threads for working on Global I/O Events.", general_conf().get_io_thread_count());
 	} else {
 		CoreLog->info("I/O Thread configuration not found, defaulting to 2.");
-		getGeneralConf().setGlobalIOThreads(2);
+		general_conf().set_io_thread_count(2);
 	}
 
 	/**
 	 * Core Update Interval.
 	 */
 	if (cfg.lookupValue("core_update_interval", tmp_value)) {
-		getGeneralConf().setCoreUpdateInterval(tmp_value);
-		CoreLog->info("Core update interval set to {}ms.", getGeneralConf().getCoreUpdateInterval());
+		general_conf().set_core_update_interval(tmp_value);
+		CoreLog->info("Core update interval set to {}ms.", general_conf().get_core_update_interval());
 	} else {
 		CoreLog->info("Core update interval was not defined, defaulting to 500ms.");
-		getGeneralConf().setCoreUpdateInterval(500);
+		general_conf().set_core_update_interval(500);
 	}
 
 	return true;
@@ -198,36 +198,36 @@ bool Server::ProcessCommonConfiguration(libconfig::Config &cfg)
 
 #undef core_config_error
 
-void Server::InitializeMySQLConnections()
+void Server::initialize_mysql()
 {
 	// Create a pool of MySQL connections
-	mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(getDatabaseConf().getHost(), getDatabaseConf().getDatabase(), getDatabaseConf().getUsername(), getDatabaseConf().getPassword());
-	mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(getDatabaseConf().getMaxThreads(), mysql_connection_factory);
+	mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(database_conf().get_host(), database_conf().get_database(), database_conf().get_username(), database_conf().get_password());
+	mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(database_conf().get_db_thread_count(), mysql_connection_factory);
 }
 
-void Server::InitializeCLI()
+void Server::initialize_command_line()
 {
-	if (getGeneralConf().isTestRun()) {
+	if (general_conf().is_test_run()) {
 		CoreLog->info("Command line not supported during test-runs... skipping.");
 		return;
 	}
 
-	m_CLIThread = std::thread(std::bind(&CLIThreadStart, this));
-	initializeCLICommands();
+	m_CLIThread = std::thread(std::bind(&cli_thread_start, this));
+	initialize_cli_commands();
 }
 
-void Server::initializeCLICommands()
+void Server::initialize_cli_commands()
 {
-	addCLIFunction("shutdown", std::bind(&Server::CLICmd_Shutdown, this));
+	add_cli_command_func("shutdown", std::bind(&Server::clicmd_shutdown, this));
 }
 
-void Server::ProcessCLICommands()
+void Server::process_cli_commands()
 {
 	std::shared_ptr<CLICommand> command;
 
 	while ((command = m_CLICmdQueue.try_pop())) {
 		bool ret = false;
-		std::function<bool(void)> cmd_func = getCLIFunc(command->m_command);
+		std::function<bool(void)> cmd_func = get_cli_command_func(command->m_command);
 
 		if (cmd_func) {
 			ret = cmd_func();
@@ -240,51 +240,35 @@ void Server::ProcessCLICommands()
 	}
 }
 
-void Server::initializeCore()
+void Server::initialize_core()
 {
-	std::shared_ptr<boost::asio::io_service> io_service = getIOService();
-	std::shared_ptr<std::vector<std::thread>> thread_pool(new std::vector<std::thread>(), [io_service] (std::vector<std::thread> *del)
-	{
-		io_service->stop();
-		for (std::thread &thr : *del)
-			thr.join();
-		delete del;
-	});
+	boost::thread_group global_thread_group;
 
-	int global_thread_count = std::max(getGeneralConf().getGlobalIOThreads(), 1);
+	int global_thread_count = std::max(general_conf().get_io_thread_count(), 1);
 
-	for (int i = 0; i < global_thread_count; ++i) {
-		thread_pool->push_back(std::thread(std::bind(&Server::IOServiceLoop, this)));
-	}
+	for (int i = 0; i < global_thread_count; ++i)
+		global_thread_group.create_thread(boost::bind(&boost::asio::io_service::run, boost::ref(get_io_service())));
 
-	CoreLog->info("A Thread pool of {} global I/O threads have been spawned.", this->getGeneralConf().getGlobalIOThreads());
+	CoreLog->info("A global I/O thread pool of {} threads have been created.", global_thread_count);
 
 	/**
 	 * MySQL Startup
 	 */
-	InitializeMySQLConnections();
+	initialize_mysql();
 
 	/**
 	 * Initialize Commandline Interface
 	 */
-	InitializeCLI();
+	initialize_command_line();
+}
 
-	while (!isShuttingDown() && !getGeneralConf().isTestRun()) {
-		ProcessCLICommands();
-		std::this_thread::sleep_for(std::chrono::milliseconds(getGeneralConf().getCoreUpdateInterval()));
-	}
-
-	// Join the CLI Thread.
-	if (!getGeneralConf().isTestRun())
+void Server::finalize_core()
+{
+	if (!general_conf().is_test_run())
 		m_CLIThread.join();
 }
 
-void Server::IOServiceLoop()
+boost::asio::io_service &Server::get_io_service()
 {
-	getIOService()->run();
-}
-
-const std::shared_ptr<boost::asio::io_service> Server::getIOService() const
-{
-	return this->io_service;
+	return _io_service;
 }

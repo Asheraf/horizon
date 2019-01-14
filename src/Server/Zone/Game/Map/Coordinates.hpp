@@ -26,6 +26,16 @@ public:
 		return *this;
 	}
 
+	bool operator == (const Coordinates<UPPER_BOUNDS> &right)
+	{
+		return (_x == right._x && _y == right._y);
+	}
+
+	bool operator != (const Coordinates<UPPER_BOUNDS> &right)
+	{
+		return !(*this == right);
+	}
+
 	uint16_t x() { return _x; }
 	uint16_t y() { return _y; }
 

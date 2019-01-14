@@ -25,6 +25,7 @@ set(SOURCE_FILES
 	AsyncAcceptor.hpp
 	NetworkThread.hpp
 	Socket.hpp
+	Session.hpp
 	SocketMgr.hpp
 	AcceptSocketMgr.hpp
 	ConnectSocketMgr.hpp

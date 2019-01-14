@@ -19,7 +19,7 @@
 #define HORIZON_CHAR_CLIENTSOCKETMGR_HPP
 
 #include "Core/Networking/AcceptSocketMgr.hpp"
-#include "Server/Char/Session/Session.hpp"
+#include "Server/Char/Socket/CharSocket.hpp"
 
 namespace Horizon
 {
@@ -28,9 +28,9 @@ namespace Char
 /**
  * @brief Singleton class
  */
-class ClientSocketMgr : public Horizon::Networking::AcceptSocketMgr<Session>
+class ClientSocketMgr : public Horizon::Networking::AcceptSocketMgr<CharSocket>
 {
-	typedef Horizon::Networking::AcceptSocketMgr<Session> BaseSocketMgr;
+	typedef Horizon::Networking::AcceptSocketMgr<CharSocket> BaseSocketMgr;
 public:
 	static ClientSocketMgr *getInstance()
 	{
@@ -38,9 +38,9 @@ public:
 		return &instance;
 	}
 
-	bool Start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1)
+	bool start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1)
 	{
-		if (!BaseSocketMgr::Start(io_service, listen_ip, port, threads))
+		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
 
 		return true;

@@ -29,14 +29,14 @@ namespace Horizon
 {
 namespace Auth
 {
-class InterSession;
-class InterPacketHandler : public Horizon::Base::InterPacketHandler<InterSession>
+class InterSocket;
+class InterPacketHandler : public Horizon::Base::InterPacketHandler<InterSocket>
 {
 public:
-	InterPacketHandler(std::shared_ptr<InterSession> session);
+	InterPacketHandler(std::shared_ptr<InterSocket> session);
 	~InterPacketHandler();
 
-	void InitializeHandlers() override;
+	void initialize_handlers() override;
 };
 }
 }

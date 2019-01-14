@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <map>
 #include <boost/optional.hpp>
+#include <unordered_map>
 
 #pragma pack(push, 1)
 struct mapcache_header
@@ -102,12 +103,13 @@ private:
 
 enum mcache_error_types
 {
-	MCACHE_OK                   = 0,
-	MCACHE_INVALID_GRF_PATH     = 1,
-	MCACHE_INVALID_CONFIG_PATH  = 2,
-	MCACHE_INVALID_OUTPUT_PATH  = 3,
-	MCACHE_CONFIG_READ_ERROR    = 4,
-	MCACHE_GRF_LOAD_ERROR       = 5,
+	MCACHE_OK                    = 0,
+	MCACHE_INVALID_GRF_PATH      = 1,
+	MCACHE_INVALID_CONFIG_PATH   = 2,
+	MCACHE_INVALID_OUTPUT_PATH   = 3,
+	MCACHE_CONFIG_READ_ERROR     = 4,
+	MCACHE_GRF_CONFIG_READ_ERROR = 5,
+	MCACHE_GRF_LOAD_ERROR        = 6
 };
 
 enum mcache_config_error_types
@@ -117,6 +119,16 @@ enum mcache_config_error_types
 	MCACHE_CONFIG_PARSE_ERROR         = 2,
 	MCACHE_CONFIG_INVALID_ROOT_TYPE   = 3,
 	MCACHE_CONFIG_INVALID_VALUE_TYPE  = 4
+};
+
+enum mcache_grf_config_error_types
+{
+	MCACHE_GRF_CONF_OK                 = 0,
+	MCACHE_GRF_CONF_INVALID_FILE       = 1,
+	MCACHE_GRF_CONF_PARSE_ERROR        = 2,
+	MCACHE_GRF_CONF_INVALID_ROOT_TYPE  = 3,
+	MCACHE_GRF_CONF_INVALID_KEY_TYPE   = 4,
+	MCACHE_GRF_CONF_INVALID_VALUE_TYPE = 5
 };
 
 enum mcache_import_error_types
@@ -147,9 +159,8 @@ public:
 	MapCache();
 	~MapCache();
 
-	mcache_error_types Initialize();
+	mcache_error_types initialize();
 	bool Exists();
-	bool ParseGRFReadResult(std::string const &filename, grf_read_error_types error);
 
 	mcache_import_error_types ImportFromCacheFile();
 
@@ -159,13 +170,22 @@ public:
 	bool CreateNewCacheWithHeader();
 	bool AppendToCache(std::string const &name);
 
-	bool GetMapFromGRF(std::string const &name);
+	bool GetMapFromGRF(GRF &grf, std::string const &name);
+	
+	bool ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_types error);
 
 	/* */
 	mcache_config_error_types ReadMapListConfig();
+	/* */
+	mcache_grf_config_error_types ReadGRFListConfig();
+	/* */
+	std::pair<uint8_t, grf_load_result_types> LoadGRFs();
 
+	void PrintCacheForMap(std::string const &map_name);
+	
 	/* GRF Library */
-	GRF &getGRF() { return _grf; }
+	GRF &getGRF(uint8_t id) { return _grfs.at(id); }
+	void addGRF(uint8_t id, GRF &grf) { _grfs[id] = grf; }
 
 	/* Map Cache Path */
 	boost::filesystem::path &getMapCachePath() { return _map_cache_path; }
@@ -179,12 +199,20 @@ public:
 	const boost::filesystem::path &getMapListPath() const { return _map_list_path; }
 	void setMapListPath(std::string const &path) { _map_list_path = path; }
 
+	/* GRF List Config Path */
+	const boost::filesystem::path &getGRFListPath() const { return _grf_list_path; }
+	void setGRFListPath(std::string const &path) { _grf_list_path = path; }
+
 	/* Map List */
 	void addToMapList(std::string const &map) { _map_list.push_back(map); }
 
 	/* GRF Path */
-	boost::filesystem::path &getGRFPath() { return _grf_path; }
-	void setGRFPath(std::string const &path) { _grf_path = path; }
+	const boost::filesystem::path &getGRFPath(uint8_t id) { return _grfs[id].getGRFPath(); }
+	void setGRFPath(uint8_t id, std::string const &path) { _grfs[id].setGRFPath(path); }
+
+	/* Resource Path */
+	const boost::filesystem::path &getResourcePath() { return _resource_path; }
+	void setResourcePath(std::string const &path) { _resource_path = path; }
 
 	/* Verbose */
 	void setVerbose() { _verbose = true; }
@@ -193,11 +221,13 @@ public:
 
 	/* MCache */
 	std::shared_ptr<map_cache> getMCache() { return m_cache; }
+
+	const std::unordered_map<uint8_t, GRF> &getGRFs() { return _grfs; }
 private:
-	boost::filesystem::path _grf_path;
 	boost::filesystem::path _map_list_path;
+	boost::filesystem::path _grf_list_path, _resource_path;
 	boost::filesystem::path _map_cache_path;
-	GRF _grf;
+	std::unordered_map<uint8_t, GRF> _grfs;
 	int _compression_level{6};
 	std::map<std::string, map_data> _map_cache_data;
 	std::vector<std::string> _map_list;

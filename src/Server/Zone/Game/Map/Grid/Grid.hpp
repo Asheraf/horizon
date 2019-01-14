@@ -11,7 +11,7 @@
 template
 <
 	class ACTIVE_OBJECT,
-	class ZONE_OBJECT_TYPES
+	class GRID_OBJECT_TYPES
 >
 class Grid
 {
@@ -25,13 +25,18 @@ public:
 	}
 
 	template <class T>
-	void Visit(GridReferenceContainerVisitor<T, GridReferenceContainer<ZONE_OBJECT_TYPES>> &visitor)
+	void Visit(GridReferenceContainerVisitor<GridReferenceContainer<GRID_OBJECT_TYPES>, T> &visitor)
 	{
 		visitor.Visit(_container);
 	}
 
+	/** Returns the number of object within the grid.
+	 */
+	template <class T>
+	uint32_t getObjectCount() const { return uint32_t(_container.template count<T>()); }
+
 private:
-	GridReferenceContainer<ZONE_OBJECT_TYPES> _container;
+	GridReferenceContainer<GRID_OBJECT_TYPES> _container;
 };
 
 #endif /* HORIZON_ZONE_GAME_GRID_HPP */

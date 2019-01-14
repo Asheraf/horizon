@@ -29,20 +29,21 @@
 
 using boost::asio::ip::udp;
 using namespace std::chrono_literals;
+using namespace Horizon::Auth;
 
 /**
  * AuthMain Constructor.
  */
-Horizon::Auth::AuthMain::AuthMain()
+AuthMain::AuthMain()
 : Server("Auth", "config/", "auth-server.conf")
 {
-	initializeCLICommands();
+	initialize_cli_commands();
 }
 
 /**
  * AuthMain Destructor.
  */
-Horizon::Auth::AuthMain::~AuthMain()
+AuthMain::~AuthMain()
 {
 }
 
@@ -53,10 +54,10 @@ Horizon::Auth::AuthMain::~AuthMain()
  * Read /config/auth-server.yaml
  * @return true on success, false on failure.
  */
-bool Horizon::Auth::AuthMain::ReadConfig()
+bool AuthMain::ReadConfig()
 {
 	libconfig::Config cfg;
-	std::string file_path = getGeneralConf().getConfigFilePath() + getGeneralConf().getConfigFileName();
+	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 	std::string tmp_string;
 	int tmp_value;
 
@@ -75,47 +76,47 @@ bool Horizon::Auth::AuthMain::ReadConfig()
 
 	if (!inter_server.lookupValue("ip_address", tmp_string)) {
 		auth_config_error("inter_server.ip_address", "127.0.0.1");
-		getNetworkConf().setInterServerIp("127.0.0.1");
+		network_conf().set_inter_server_ip("127.0.0.1");
 	} else {
-		getNetworkConf().setInterServerIp(tmp_string);
+		network_conf().set_inter_server_ip(tmp_string);
 	}
 
 	if (!inter_server.lookupValue("port", tmp_value)) {
 		auth_config_error("inter_server.port", 9998);
-		getNetworkConf().setInterServerPort(9998);
+		network_conf().set_inter_server_port(9998);
 	} else {
-		getNetworkConf().setInterServerPort(tmp_value);
+		network_conf().set_inter_server_port(tmp_value);
 	}
 
 	if (!inter_server.lookupValue("password", tmp_string)) {
 		auth_config_error("inter_server.password", "ABCDEF");
-		getNetworkConf().setInterServerPassword(tmp_string);
+		network_conf().set_inter_server_password(tmp_string);
 	} else {
-		getNetworkConf().setInterServerPassword(tmp_string);
+		network_conf().set_inter_server_password(tmp_string);
 	}
 
 	AuthLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
-		getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(),
-		(getNetworkConf().getInterServerPassword().length()) ? "using password" : "not using password");
+		network_conf().get_inter_server_ip(), network_conf().get_inter_server_port(),
+		(network_conf().get_inter_server_password().length()) ? "using password" : "not using password");
 
 	if (cfg.lookupValue("pass_hash_method", tmp_value)) {
 		HashingMethods hashingMethod = static_cast<HashingMethods>(tmp_value);
 		if (hashingMethod < PASS_HASH_NONE || hashingMethod > PASS_HASH_BCRYPT) {
 			auth_config_error("pass_hash_method", PASS_HASH_NONE);
-			getAuthConfig().setPassHashMethod(PASS_HASH_NONE);
+			get_auth_config().setPassHashMethod(PASS_HASH_NONE);
 		} else {
-			getAuthConfig().setPassHashMethod(hashingMethod);
+			get_auth_config().setPassHashMethod(hashingMethod);
 		}
 	} else {
 		auth_config_error("pass_hash_method", PASS_HASH_NONE);
-		getAuthConfig().setPassHashMethod(PASS_HASH_NONE);
+		get_auth_config().setPassHashMethod(PASS_HASH_NONE);
 	}
 
-	if (getAuthConfig().getPassHashMethod() == PASS_HASH_NONE)
+	if (get_auth_config().getPassHashMethod() == PASS_HASH_NONE)
 		AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
 
 	if (cfg.lookupValue("client_date_format", tmp_string))
-		getAuthConfig().setClientDateFormat(tmp_string);
+		get_auth_config().setClientDateFormat(tmp_string);
 
 	/**
 	 * Logging Configuration
@@ -124,20 +125,20 @@ bool Horizon::Auth::AuthMain::ReadConfig()
 
 	if (log.isGroup()) {
 		if (log.lookupValue("enable_logging", tmp_value))
-			getAuthConfig().getLogConf().enable();
+			get_auth_config().getLogConf().enable();
 		if (log.lookupValue("login_max_tries", tmp_value))
-			getAuthConfig().getLogConf().setLoginMaxTries(tmp_value);
+			get_auth_config().getLogConf().setLoginMaxTries(tmp_value);
 		if (log.lookupValue("login_fail_ban_time", tmp_value))
-			getAuthConfig().getLogConf().setLoginFailBanTime(tmp_value);
+			get_auth_config().getLogConf().setLoginFailBanTime(tmp_value);
 		if (log.lookupValue("login_fail_check_time", tmp_value))
-			getAuthConfig().getLogConf().setLoginFailCheckTime(tmp_value);
+			get_auth_config().getLogConf().setLoginFailCheckTime(tmp_value);
 	} else {
 		AuthLog->warn("Invalid config type for 'log' provided, expected group. Skipping all entries...");
 	}
 
-	AuthLog->info("Logging is {}.", getAuthConfig().getLogConf().isEnabled() ? "enabled" : "disabled");
+	AuthLog->info("Logging is {}.", get_auth_config().getLogConf().isEnabled() ? "enabled" : "disabled");
 	AuthLog->info("Failed logins exceeding {} tries every {} seconds will be banned for {} seconds.",
-				  getAuthConfig().getLogConf().getLoginFailCheckTime(), getAuthConfig().getLogConf().getLoginMaxTries(), getAuthConfig().getLogConf().getLoginFailBanTime());
+				  get_auth_config().getLogConf().getLoginFailCheckTime(), get_auth_config().getLogConf().getLoginMaxTries(), get_auth_config().getLogConf().getLoginFailBanTime());
 
 	/**
 	 * Character Servers.
@@ -193,7 +194,7 @@ bool Horizon::Auth::AuthMain::ReadConfig()
 
 			char_serv.is_new = tmp_value ? true : false;
 
-			addCharacterServer(char_serv);
+			add_character_server(char_serv);
 			AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.is_new ? "(new)" : "");
 		}
 	} else {
@@ -203,7 +204,7 @@ bool Horizon::Auth::AuthMain::ReadConfig()
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!ProcessCommonConfiguration(cfg))
+	if (!parse_common_configs(cfg))
 		return false;
 
 	AuthLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
@@ -217,12 +218,12 @@ bool Horizon::Auth::AuthMain::ReadConfig()
  * CLI Command: Reload Configuration
  * @return boolean value from AuthServer->ReadConfig()
  */
-bool Horizon::Auth::AuthMain::CLICmd_ReloadConfig()
+bool AuthMain::clicmd_reload_config()
 {
 	// Clear all character server info before reloading.
 	_character_servers.clear();
 
-	AuthLog->info("Reloading configuration from '{}'.", getGeneralConf().getConfigFileName());
+	AuthLog->info("Reloading configuration from '{}'.", general_conf().get_config_file_name());
 
 	return AuthServer->ReadConfig();
 }
@@ -230,46 +231,11 @@ bool Horizon::Auth::AuthMain::CLICmd_ReloadConfig()
 /**
  * Initialize CLI Comamnds
  */
-void Horizon::Auth::AuthMain::initializeCLICommands()
+void AuthMain::initialize_cli_commands()
 {
-	addCLIFunction("reloadconf", std::bind(&AuthMain::CLICmd_ReloadConfig, this));
+	add_cli_command_func("reloadconf", std::bind(&AuthMain::clicmd_reload_config, this));
 
-	Server::initializeCLICommands();
-}
-
-void Horizon::Auth::AuthMain::initializeCore()
-{
-	/**
-	 * Establish a connection to the inter-server.
-	 */
-	std::thread inter_conn_thread(std::bind(&AuthMain::connectWithInterServer, this));
-
-	// Initialize Main Core.
-	Server::initializeCore();
-
-	// Join connection thread on end.
-	inter_conn_thread.join();
-}
-
-/**
- * Connect with Inter Server
- */
-void Horizon::Auth::AuthMain::connectWithInterServer()
-{
-	if (!getGeneralConf().isTestRun()) {
-		if (InterSocktMgr->Start(INTER_SESSION_NAME, this, getNetworkConf().getInterServerIp(), getNetworkConf().getInterServerPort(), 1)) {
-			AuthInterAPI->setInterSession(InterSocktMgr->getConnectedSession(INTER_SESSION_NAME));
-
-			do {
-				std::this_thread::sleep_for(std::chrono::seconds(2));
-			} while (!isShuttingDown() && AuthInterAPI->pingInterServer());
-
-			if (!isShuttingDown()) {
-				InterSocktMgr->closeConnection(INTER_SESSION_NAME);
-				connectWithInterServer();
-			}
-		}
-	}
+	Server::initialize_cli_commands();
 }
 
 /**
@@ -277,12 +243,81 @@ void Horizon::Auth::AuthMain::connectWithInterServer()
  * @param ioServiceRef
  * @param error
  */
-void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const boost::system::error_code &error, int /*signal*/)
+void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
-		if (std::shared_ptr<boost::asio::io_service> io_service = ioServiceRef.lock())
-			io_service->stop();
 		AuthServer->shutdown(SIGINT);
+	}
+}
+
+void AuthMain::initialize_core()
+{
+	/**
+	 * Establish a connection to the inter-server.
+	 */
+	if (!general_conf().is_test_run())
+		establish_inter_connection();
+	
+	/**
+	 * Core Signal Handler
+	 */
+	boost::asio::signal_set signals(get_io_service(), SIGINT, SIGTERM);
+	// Set signal handler for callbacks.
+	// Set signal handlers (this must be done before starting io_service threads,
+	// because otherwise they would unblock and exit)
+	signals.async_wait(std::bind(&SignalHandler, std::placeholders::_1, std::placeholders::_2));
+
+	// Start Auth Network
+	ClientSocktMgr->start(get_io_service(),
+						  network_conf().get_listen_ip(),
+						  network_conf().get_listen_port(),
+						  network_conf().get_network_thread_count());
+
+	// Initialize core.
+	Server::initialize_core();
+
+	/* Server Update Loop */
+	while (!is_shutting_down() && !general_conf().is_test_run()) {
+		uint32_t diff = general_conf().get_core_update_interval();
+		process_cli_commands();
+		_task_scheduler.Update(diff);
+		ClientSocktMgr->update_socket_sessions(diff);
+		std::this_thread::sleep_for(std::chrono::milliseconds(diff));
+	}
+
+	/**
+	 * Server shutdown routine begins here...
+	 */
+	Server::finalize_core();
+
+	/**
+	 * Stop all networks
+	 */
+	ClientSocktMgr->stop_network();
+	InterSocktMgr->stop_network();
+
+	/* Cancel signal handling. */
+	signals.cancel();
+}
+
+/**
+ * Connect with Inter Server
+ */
+void AuthMain::establish_inter_connection()
+{
+	if (InterSocktMgr->start(INTER_SESSION_NAME, this, network_conf().get_inter_server_ip(), network_conf().get_inter_server_port(), 1)) {
+		AuthInterAPI->set_inter_socket(InterSocktMgr->get_connector_socket(INTER_SESSION_NAME));
+		_task_scheduler.Schedule(Seconds(12),
+			[this] (TaskContext inter_ping) {
+				if (!AuthInterAPI->pingInterServer()) {
+					InterSocktMgr->close_connection(INTER_SESSION_NAME);
+					establish_inter_connection();
+					return;
+				}
+
+				if (!is_shutting_down())
+					inter_ping.Repeat();
+		});
 	}
 }
 
@@ -295,7 +330,7 @@ void SignalHandler(std::weak_ptr<boost::asio::io_service> &ioServiceRef, const b
 int main(int argc, const char * argv[])
 {
 	if (argc > 1)
-		AuthServer->parseExecArguments(argv, argc);
+		AuthServer->parse_exec_args(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
@@ -305,36 +340,14 @@ int main(int argc, const char * argv[])
 		exit(SIGTERM); // Stop process if the file can't be read.
 
 	/**
-	 * Core Signal Handler
-	 */
-	boost::asio::signal_set signals(*AuthServer->getIOService(), SIGINT, SIGTERM);
-	// Set signal handler for callbacks.
-	// Set signal handlers (this must be done before starting io_service threads,
-	// because otherwise they would unblock and exit)
-	signals.async_wait(std::bind(&SignalHandler, std::weak_ptr<boost::asio::io_service>(AuthServer->getIOService()), std::placeholders::_1, std::placeholders::_2));
-
-	// Start Auth Network
-	ClientSocktMgr->Start(*AuthServer->getIOService(),
-		AuthServer->getNetworkConf().getListenIp(),
-		AuthServer->getNetworkConf().getListenPort(),
-		AuthServer->getNetworkConf().getMaxThreads());
-
-	/**
 	 * Initialize the Common Core
 	 */
-	AuthServer->initializeCore();
+	AuthServer->initialize_core();
 
 	/*
 	 * Core Cleanup
 	 */
 	AuthLog->info("Server shutting down...");
 
-	/* Stop Network */
-	ClientSocktMgr->StopNetwork();
-	InterSocktMgr->StopNetwork();
-
-	// Cancel signal handling.
-	signals.cancel();
-
-	return AuthServer->getGeneralConf().getShutdownSignal();
+	return AuthServer->general_conf().get_shutdown_signal();
 }

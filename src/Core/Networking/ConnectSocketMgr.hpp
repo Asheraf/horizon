@@ -18,8 +18,8 @@
 #ifndef HORIZON_NETWORKING_CONNECTSOCKETMGR_HPP
 #define HORIZON_NETWORKING_CONNECTSOCKETMGR_HPP
 
+#include "Core/Multithreading/LockedLookupTable.hpp"
 #include "Core/Networking/SocketMgr.hpp"
-#include <boost/thread.hpp>
 
 namespace Horizon
 {
@@ -33,12 +33,8 @@ template <class SocketType>
 class ConnectSocketMgr : public SocketMgr<SocketType>
 {
 	typedef SocketMgr<SocketType> BaseSocketMgr;
-	struct connector_pool_data
-	{
-		std::shared_ptr<Connector> connector;
-		std::vector<std::shared_ptr<SocketType>> sessions;
-	};
-	typedef std::unordered_map<std::string, connector_pool_data>  NetworkConnectorPool;
+	typedef LockedLookupTable<uint32_t, std::shared_ptr<SocketType>> SocketTableType;
+	typedef LockedLookupTable<std::string, std::shared_ptr<SocketTableType>>  NetworkConnectorPool;
 public:
 	ConnectSocketMgr() { }
 	~ConnectSocketMgr() { }
@@ -53,7 +49,7 @@ public:
 	 * @param[in]     connections      number of connections to create and handle.
 	 * @return true on success, false on failure.
 	 */
-	std::shared_ptr<Connector> Start(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
+	std::shared_ptr<Connector> start(std::string const &connection_name, Server *server, std::string const &connect_ip, uint16_t port, uint32_t connections = 1)
 	{
 		std::shared_ptr<Connector> connector;
 
@@ -67,13 +63,10 @@ public:
 			return nullptr;
 		}
 
-		// Add the connector to the session pool before anything.
-		AddToConnectorPool(connection_name, connector);
-
 		// Set the socket factory. & Start attempting to connect.
-		connector->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForNewConnection, this));
-		connector->ConnectWithCallback(
-					boost::bind(&ConnectSocketMgr<SocketType>::OnSocketOpen,
+		connector->set_socket_factory(std::bind(&BaseSocketMgr::get_new_socket, this));
+		connector->connect_with_callback(
+					boost::bind(&ConnectSocketMgr<SocketType>::on_socket_open,
 						this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3), connections);
 
 		return connector;
@@ -82,100 +75,81 @@ public:
 	/**
 	 * @brief Stop the Connector network and clear the connection pool.
 	 */
-	void StopNetwork() override
+	void stop_network() override
 	{
-		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
-
-		SocketMgr<SocketType>::StopNetwork();
-
-		_network_connector_pool.clear();
+		SocketMgr<SocketType>::stop_network();
 	}
 
 	/**
-	 * Add a connector to the connector pool.
+	 * Add a connected socket of a SocketType to the connector pool.
 	 * @param[in|out] conn_name   const reference to the connection name string.
-	 * @param[in|out] connector   reference to the shared pointer of type Connector.
+	 * @param[in|out] socket     reference to the shared pointer of SocketType.
 	 */
-	void AddToConnectorPool(std::string const &conn_name, std::shared_ptr<Connector> const &connector)
+	void add_connector_pool_socket(std::string const &conn_name, std::shared_ptr<SocketType> const &socket)
 	{
-		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+		std::shared_ptr<SocketTableType> socket_table = _network_connector_pool.at(conn_name);
 
-		auto it = _network_connector_pool.find(conn_name);
-
-		if (it != _network_connector_pool.end()) {
-			it->second.connector = std::move(connector);
-		} else {
-			struct connector_pool_data cpd;
-			cpd.connector = std::move(connector);
-			_network_connector_pool.insert(std::make_pair(conn_name, cpd));
+		if (socket_table == nullptr) {
+			socket_table = std::make_shared<SocketTableType>();
+			_network_connector_pool.insert(conn_name, socket_table);
 		}
-	}
 
-	/**
-	 * Add a connected session of a SocketType to the connector pool.
-	 * @param[in|out] conn_name   const reference to the connection name string.
-	 * @param[in|out] session     reference to the shared pointer of SocketType.
-	 */
-	void AddSessionToConnectorPool(std::string const &conn_name, std::shared_ptr<SocketType> const &session)
-	{
-		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
-
-		auto it = _network_connector_pool.find(conn_name);
-
-		if (it != _network_connector_pool.end())
-			it->second.sessions.push_back(session);
+		socket_table->insert(socket->get_socket_id(), socket);
 	}
 
 	/**
 	 * Get the size of the connection pool for a given connection.
 	 * @param[in|out] conn_name   const reference to the connection name string.
 	 */
-	std::size_t getConnectionPoolSize(std::string const &conn_name)
+	std::size_t connector_pool_size(std::string const &conn_name)
 	{
-		boost::shared_lock<boost::shared_mutex> lock(_socket_mtx);
+		auto socket_table = _network_connector_pool.at(conn_name);
 
-		auto it = _network_connector_pool.find(conn_name);
-
-		if (it != _network_connector_pool.end())
-			return it->second.sessions.size();
+		if (socket_table != nullptr)
+			return socket_table->size();
 
 		return 0;
 	}
 
 	/**
-	 * Get a random session from the list of connected sessions in a connector pool.
+	 * Get a random socket from the list of connected sockets in a connector pool.
 	 * @param[in|out] conn_name   const reference to the connection name string.
 	 */
-	std::shared_ptr<SocketType> getConnectedSession(std::string const &conn_name)
+	std::shared_ptr<SocketType> get_connector_socket(std::string const &conn_name)
 	{
-		boost::shared_lock<boost::shared_mutex> lock(_socket_mtx);
-		
-		auto it = _network_connector_pool.find(conn_name);
+		auto socket_table = _network_connector_pool.at(conn_name);
 
-		if (it != _network_connector_pool.end() && it->second.sessions.size() > 0) {
-			int session_size = it->second.sessions.size() - 1;
-			int rand_idx = session_size > 0 ? (rand() % session_size) : 0;
+		if (socket_table != nullptr) {
+			auto socket_map = socket_table->get_map();
+			int size = socket_map.size();
 
-			return it->second.sessions.at(rand_idx);
+			if (size > 0) {
+				int rand_idx = (rand() % size);
+				int idx = 0;
+
+				for (auto sock : socket_map)
+					if (idx++ == rand_idx)
+						return sock.second;
+			}
 		}
 
 		return nullptr;
 	}
 
 	/**
-	 * Remove a connected session of a SocketType from the connector pool.
+	 * Remove a connected socket of a SocketType from the connector pool.
 	 * @param[in|out] conn_name   const reference to the connection name string.
-	 * @param[in|out] session     reference to the shared pointer of SocketType.
+	 * @param[in|out] socket     reference to the shared pointer of SocketType.
 	 */
-	void RemoveConnectedSession(std::string const &conn_name, std::shared_ptr<SocketType> const &session)
+	void finalize_connector_socket(std::string const &conn_name, std::shared_ptr<SocketType> const &socket)
 	{
-		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
+		auto socket_table = _network_connector_pool.at(conn_name);
 
-		auto it = _network_connector_pool.find(conn_name);
-
-		if (it != _network_connector_pool.end()) {
-			it->second.sessions.erase(std::remove(it->second.sessions.begin(), it->second.sessions.end(), session), it->second.sessions.end());
-			CoreLog->info("SocketMgr::RemoveConnectedSession: successfully removed '{}' connected session ID - {}.", conn_name, session->getSocketId());
+		if (socket_table != nullptr) {
+			if (socket_table->at(socket->get_socket_id())) {
+				socket_table->erase(socket->get_socket_id());
+				CoreLog->info("SocketMgr::remove_connector_socket: successfully removed '{}' connected socket ID - {}.", conn_name, socket->get_socket_id());
+			}
 		}
 	}
 
@@ -186,39 +160,29 @@ public:
 	 * @param[in]     socket         shared pointer.
 	 * @param[in]     thread_index   index of the thread that the socket is being moved from.
 	 */
-	virtual void OnSocketOpen(std::string const &conn_name, std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
+	virtual void on_socket_open(std::string const &conn_name, std::shared_ptr<tcp::socket> const &tcp_socket, uint32_t thread_index)
 	{
-		std::shared_ptr<SocketType> session = SocketMgr<SocketType>::OnSocketOpen(std::move(socket), thread_index);
+		std::shared_ptr<SocketType> socket = SocketMgr<SocketType>::on_socket_open(std::move(tcp_socket), thread_index);
 		// Add socket to connector map.
-		AddSessionToConnectorPool(conn_name, session);
+		add_connector_pool_socket(conn_name, socket);
 	}
 
-	/**
-	 * @brief Routine called from an implemented socket when finalising / closing.
-	 * @param[in|out] session pointer to the session that the socket belongs to.
-	 */
-	void ClearSession(std::string const &conn_name, std::shared_ptr<SocketType> session)
+	void close_connection(std::string const &conn_name)
 	{
-		RemoveConnectedSession(conn_name, session);
-	}
+		auto socket_table = _network_connector_pool.at(conn_name);
 
-	void closeConnection(std::string const &conn_name)
-	{
-		boost::unique_lock<boost::shared_mutex> lock(_socket_mtx);
-		
-		auto it = _network_connector_pool.find(conn_name);
-
-		if (it != _network_connector_pool.end()) {
-			for (auto sock : it->second.sessions) {
-				if (sock != nullptr)
-					sock->closeSocket(); // Set for closing by the network thread.
-			}
+		if (socket_table != nullptr) {
+			auto socket_map = socket_table->get_map();
+			for (auto sock : socket_map)
+				if (sock.second->is_open())
+					sock.second->close_socket();
+			
+			_network_connector_pool.erase(conn_name);
 		}
 	}
 
 private:
 	NetworkConnectorPool _network_connector_pool;
-	boost::shared_mutex _socket_mtx;
 };
 }
 }
