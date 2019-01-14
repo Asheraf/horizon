@@ -152,14 +152,15 @@ include(FindMySQLConnector)
 set (Config++_FIND_REQUIRED true)
 include(FindConfig++)
 
-if (WITH_TOOLS)
-    find_package(ZLIB REQUIRED)
-    if (NOT ZLIB_FOUND)
-        message(FATAL_ERROR "zlib was not found and is required.")
-    else()
-        message("-- zlib version ${ZLIB_VERSION_STRING} found.")
-    endif()
-endif (WITH_TOOLS)
+#################
+# Find Zlib
+#################
+find_package(ZLIB REQUIRED)
+if (NOT ZLIB_FOUND)
+    message(FATAL_ERROR "zlib was not found and is required.")
+else()
+    message("-- zlib version ${ZLIB_VERSION_STRING} found.")
+endif()
 
 #################
 # Horizon Project Source
