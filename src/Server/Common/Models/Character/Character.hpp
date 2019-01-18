@@ -31,6 +31,7 @@
 #include "Server/Common/Models/Character/View.hpp"
 
 #include <string>
+#include <mysqlx/xdevapi.h>
 
 enum character_gender_types
 {
@@ -64,37 +65,32 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM characters WHERE id = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `account_id`, `slot`, `name`, `gender`, `deleted` FROM `characters` WHERE id = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_account_id(res->getUInt("account_id"));
-				set_slot((uint16_t) res->getUInt("slot"));
-				set_name(res->getString("name"));
-				set_gender((character_gender_types) res->getInt("gender"));
-				set_deleted(res->getBoolean("deleted"));
-				ret = true;
+				set_account_id(record[0]);
+				set_slot((uint16_t) record[1].get<int>());
+				set_name(record[2]);
+				std::string gender = record[3].get<std::string>();
+				if (gender.compare("M") == 0)
+					set_gender(CHARACTER_GENDER_MALE);
+				else if (gender.compare("F") == 0)
+					set_gender(CHARACTER_GENDER_FEMALE);
+				set_deleted(record[4]);
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Character::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Character::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	bool load_all(Server *server, uint32_t char_id)
@@ -149,54 +145,43 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
 		std::string query = "REPLACE INTO `characters` "
 		"(`id`, `account_id`, `slot`, `name`, `online`, `gender`, `deleted`) "
 		"VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_account_id());
-			pstmt->setInt(3, get_slot());
-			pstmt->setString(4, get_name());
-			pstmt->setBoolean(5, is_online());
-			pstmt->setString(6, (get_gender() == CHARACTER_GENDER_MALE ? "M" : "F"));
-			pstmt->setBoolean(7, is_deleted());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query)
+				.bind(get_character_id(),
+					  get_account_id(),
+					  get_slot(),
+					  get_name(),
+					  is_online(),
+					  get_gender() == CHARACTER_GENDER_MALE ? "M" : "F",
+					  is_deleted())
+				.execute();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Character::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	void create(Server *server)
 	{
 		int char_id = 0;
-		auto sql = server->mysql_borrow();
 		std::string query = "SELECT `id` as max_id FROM `characters` ORDER BY `id` DESC LIMIT 1;";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).execute().fetchOne();
 
-			if (res != nullptr && res->next())
-				char_id = res->getInt("max_id") + 1;
-
-			delete pstmt;
-			delete res;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			if (record) {
+				char_id = record[0].get<int>();
+			} else {
+				char_id = 1;
+			}
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Character::create: {}", e.what());
 		}
-
-		if (char_id == 0) {
-			DBLog->warn("unable to get char_id for new character.");
-			return;
-		}
-
-		server->mysql_unborrow(sql);
 
 		if (get_status_data() == nullptr)
 			set_status_data(std::make_shared<Status>());

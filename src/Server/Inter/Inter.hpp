@@ -18,7 +18,6 @@
 #ifndef HORIZON_INTER_INTERMAIN_H
 #define HORIZON_INTER_INTERMAIN_H
 
-#include "Core/Database/MySqlConnection.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "Server/Common/Server.hpp"
 #include "Server/Inter/Socket/InterSocket.hpp"

@@ -19,20 +19,20 @@ public:
 	typedef Head::Iterator<Reference<TO, FROM>> iterator;
 	RefManager() { }
 
-	virtual Reference<TO, FROM> *first() { return static_cast<Reference<TO, FROM> *>(Head::first()); }
-	virtual Reference<TO, FROM> const *first() const { return static_cast<Reference<TO, FROM> const *>(Head::first()); }
-
-	virtual Reference<TO, FROM> *last()  { return static_cast<Reference<TO, FROM> *>(Head::last()); }
-	virtual Reference<TO, FROM> const *last() const { return static_cast<Reference<TO, FROM> const *>(Head::last()); }
+	Reference<TO, FROM> *first() { return static_cast<Reference<TO, FROM> *>(Head::first()); }
+	Reference<TO, FROM> const *first() const { return static_cast<Reference<TO, FROM> const *>(Head::first()); }
 
 	iterator begin() { return iterator(first()); }
-	iterator end() { return iterator(last()); }
+	iterator end() { return iterator(nullptr); }
 
-	virtual ~RefManager() { clear(); }
-
-	void clear()
+	virtual ~RefManager()
 	{
-		while (auto *ref = first())
+		clear_all();
+	}
+
+	void clear_all()
+	{
+		while (Reference<TO, FROM> *ref = first())
 			ref->invalidate();
 	}
 };

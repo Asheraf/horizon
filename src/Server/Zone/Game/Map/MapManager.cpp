@@ -37,9 +37,10 @@ bool Horizon::Zone::Game::MapManager::initialize()
 bool Horizon::Zone::Game::MapManager::LoadMapCache()
 {
 	Horizon::Libraries::MapCache m;
+	std::string db_path = ZoneServer->get_zone_config().get_database_path();
 
-	m.setMapListPath(ZoneServer->get_zone_config().get_database_path() + "map_list.conf");
-	m.setMapCachePath(ZoneServer->get_zone_config().get_database_path().append(ZoneServer->get_zone_config().get_mapcache_file_name()));
+	m.setMapListPath(db_path + "map_list.conf");
+	m.setMapCachePath(db_path + ZoneServer->get_zone_config().get_mapcache_file_name());
 
 	if (m.ReadMapListConfig() != MCACHE_CONFIG_OK) {
 		ZoneLog->error("Could not read map config file '{}'.", m.getMapListPath().c_str());

@@ -20,7 +20,7 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
+#include <mysqlx/xdevapi.h>
 
 namespace Horizon
 {
@@ -42,34 +42,25 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_group_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `party_id`, `guild_id` FROM `character_group_data` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_party_id(res->getUInt("party_id"));
-				set_guild_id(res->getUInt("guild_id"));
-				ret = true;
+				set_party_id(record[0]);
+				set_guild_id(record[1]);
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Group::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Group::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -78,23 +69,19 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "REPLACE INTO `character_group_data` "
 			"(`id`, `party_id`, `guild_id`) VALUES (?, ?, ?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_party_id());
-			pstmt->setInt(3, get_guild_id());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query)
+					.bind(get_character_id(),
+						  get_party_id(),
+						  get_guild_id())
+					.execute();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Group::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */

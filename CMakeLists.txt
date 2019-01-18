@@ -18,12 +18,14 @@
 # Project Setup
 #################################
 cmake_minimum_required (VERSION 3.5 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 14)
 set (PROJECT_NAME "Horizon" CXX)
 set (AUTH_TARGET_NAME auth)
 SET(CMAKE_BUILD_TYPE Debug)
 project (${PROJECT_NAME})
+
+EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
+message( STATUS "Architecture: ${ARCHITECTURE}" )
 
 # Include External Projects Module
 include(ExternalProject)
@@ -152,14 +154,15 @@ include(FindMySQLConnector)
 set (Config++_FIND_REQUIRED true)
 include(FindConfig++)
 
-if (WITH_TOOLS)
-    find_package(ZLIB REQUIRED)
-    if (NOT ZLIB_FOUND)
-        message(FATAL_ERROR "zlib was not found and is required.")
-    else()
-        message("-- zlib version ${ZLIB_VERSION_STRING} found.")
-    endif()
-endif (WITH_TOOLS)
+#################
+# Find ZLIB
+#################
+find_package(ZLIB REQUIRED)
+if (NOT ZLIB_FOUND)
+	message(FATAL_ERROR "zlib was not found and is required.")
+else()
+	message("-- zlib version ${ZLIB_VERSION_STRING} found.")
+endif()
 
 #################
 # Horizon Project Source

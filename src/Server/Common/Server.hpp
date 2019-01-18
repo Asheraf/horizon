@@ -20,9 +20,9 @@
 
 #include "Logging/Logger.hpp"
 #include "CLI/CLICommand.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
 #include "Models/Configuration/GeneralServerConfiguration.hpp"
+#include <mysqlx/xdevapi.h>
 
 #include <cstdio>
 #include <boost/bind.hpp>
@@ -68,8 +68,6 @@ public:
 	virtual void finalize_core();
 	/* Mysql Threads */
 	void initialize_mysql();
-	boost::shared_ptr<MySQLConnection> mysql_borrow() { return mysql_pool->borrow(); }
-	void mysql_unborrow(boost::shared_ptr<MySQLConnection> conn) { mysql_pool->unborrow(conn); }
 	/* Command Line Interface */
 	void initialize_command_line();
 
@@ -90,6 +88,8 @@ public:
 	 */
 	bool clicmd_shutdown() { shutdown(SIGTERM); return true; }
 
+	std::shared_ptr<mysqlx::Client> get_mysql_client() { return _mysql_client; }
+	
 protected:
 	/* General Configuration */
 	struct general_server_configuration general_config;
@@ -97,9 +97,8 @@ protected:
 	struct network_configuration network_config;
 	/* Database Configuration */
 	struct database_configuration database_config;
-	/* MySQL Connection Factory & Pool */
-	boost::shared_ptr<MySQLConnectionFactory> mysql_connection_factory;
-	boost::shared_ptr<ConnectionPool<MySQLConnection>> mysql_pool;
+	/* MySQL Client */
+	std::shared_ptr<mysqlx::Client> _mysql_client;
 	// CLI command holder to be thread safe
 	ThreadSafeQueue<CLICommand> m_CLICmdQueue;
 	std::thread m_CLIThread;

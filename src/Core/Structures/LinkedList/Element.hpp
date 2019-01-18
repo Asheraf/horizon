@@ -13,79 +13,65 @@ namespace LinkedList
 {
 class Element
 {
-    friend class Head;
+private:
+	friend class Head;
 
-    std::atomic<Element *> _e_next;
-    std::atomic<Element *> _e_prev;
+	Element *_next;
+	Element *_prev;
 
 public:
-    Element() : _e_next(nullptr), _e_prev(nullptr) { }
+	Element() : _next(nullptr), _prev(nullptr) { }
 
-    bool hasNext() const
+	bool has_next() const  { return (_next && _next->_next != nullptr); }
+	bool has_prev() const  { return (_prev && _prev->_prev != nullptr); }
+	bool is_in_list() const { return (_next != nullptr && _prev != nullptr); }
+
+	Element *next()       { return has_next() ? _next : nullptr; }
+	Element const *next() const { return has_next() ? _next : nullptr; }
+	Element *prev()       { return has_prev() ? _prev : nullptr; }
+	Element const *prev() const { return has_prev() ? _prev : nullptr; }
+
+	Element *nocheck_next()       { return _next; }
+	Element const *nocheck_next() const { return _next; }
+	Element *nocheck_prev()       { return _prev; }
+	Element const *nocheck_prev() const { return _prev; }
+
+	void delink()
 	{
-		Element *next = _e_next.load();
-		Element *next_e = next != nullptr ? next->_e_next.load() : nullptr;
-		return (next_e != nullptr);
-	}
-
-    bool hasPrev() const
-	{
-		Element *prev = _e_prev.load();
-		Element *prev_e = prev != nullptr ? prev->_e_prev.load() : nullptr;
-		return (prev_e != nullptr);
-	}
-
-    bool valid() const { return (_e_next.load() != nullptr && _e_prev.load() != nullptr); }
-
-    /* Next Element Accessor */
-	virtual Element *next() { return hasNext() ? _e_next.load() : nullptr; }
-    virtual Element const *next() const { return hasNext() ? _e_next.load() : nullptr; }
-    virtual void setNext(Element *n) { _e_next.store(n); }
-
-    /* Previous Element Accessor */
-	virtual Element *prev() { return hasPrev() ? _e_prev.load() : nullptr; }
-    virtual Element const *prev() const { return hasPrev() ? _e_prev.load() : nullptr; }
-    virtual void setPrev(Element *p) { _e_prev.store(p); }
-
-    virtual void erase()
-    {
-		Element *next = _e_next.load();
-		Element *prev = _e_prev.load();
-
-		if (next == nullptr || prev == nullptr)
+		if (!is_in_list())
 			return;
 
-        next->_e_prev.store(_e_prev);
-        prev->_e_next.store(_e_next);
-        _e_next.store(nullptr);
-        _e_prev.store(nullptr);
-    }
+		_next->_prev = _prev;
+		_prev->_next = _next;
+		_next = nullptr;
+		_prev = nullptr;
+	}
 
-    void insertBefore(Element* e)
-    {
-		Element *prev = _e_prev.load();
+	void push_before(Element* pElem)
+	{
+		pElem->_next = this;
+		pElem->_prev = _prev;
+		_prev->_next = pElem;
+		_prev = pElem;
+	}
 
-        e->_e_next.store(this);
-        e->_e_prev.store(prev);
-        prev->_e_next.store(e);
-        _e_prev.store(e);
-    }
+	void push_after(Element* pElem)
+	{
+		pElem->_prev = this;
+		pElem->_next = _next;
+		_next->_prev = pElem;
+		_next = pElem;
+	}
 
-    void insertAfter(Element* e)
-    {
-		Element *next = _e_next.load();
-
-        e->_e_prev.store(this);
-        e->_e_next.store(next);
-        next->_e_prev.store(e);
-        _e_next.store(e);
-    }
+private:
+	Element(Element const&) = delete;
+	Element& operator=(Element const&) = delete;
 
 protected:
-    virtual ~Element()
-    {
-        erase();
-    }
+	~Element()
+	{
+		delink();
+	}
 };
 }
 }

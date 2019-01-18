@@ -20,7 +20,6 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 
 namespace Horizon
 {
@@ -42,36 +41,24 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_ui_settings` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `font`, `show_equip`, `allow_party` FROM `character_ui_settings` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_font((uint8_t) res->getUInt("font"));
-				set_show_equip((uint8_t) res->getUInt("show_equip"));
-				set_allow_party((uint8_t) res->getUInt("allow_party"));
-
-				ret = true;
+				set_font((uint8_t) record[0].get<int>());
+				set_show_equip((uint8_t) record[1].get<int>());
+				set_allow_party((uint8_t)  record[2].get<int>());
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("UISettings::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -80,24 +67,21 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "REPLACE INTO `character_ui_settings` "
 		"(`id`, `font`, `show_equip`, `allow_party`) VALUES (?, ?, ?, ?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_font());
-			pstmt->setInt(3, get_show_equip());
-			pstmt->setInt(4, get_allow_party());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
-		}
+			auto s = server->get_mysql_client()->getSession();
 
-		server->mysql_unborrow(sql);
+			s.sql(query)
+					.bind(get_character_id(),
+						  get_font(),
+						  get_show_equip(),
+						  get_allow_party())
+					.execute();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("UISettings::save: {}", e.what());
+		}
 	}
 
 	/* Character ID */

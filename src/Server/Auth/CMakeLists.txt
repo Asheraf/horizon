@@ -33,7 +33,7 @@ target_link_libraries(auth
         networking
 	    -lpthread
 	    bcryptcpp
-        ${MYSQL_CONNECTOR_LIBRARIES}
+        ${CONCPP_LIBS}
         ${Readline_LIBRARY}
 		${CONFIG++_LIBRARY}
 )
@@ -50,7 +50,7 @@ CollectIncludeDirectories(
 target_include_directories(auth
 	PUBLIC
 		${PUBLIC_INCLUDES}
-        ${MYSQL_CONNECTOR_INCLUDE_DIRS}
+        ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 		${CONFIG++_INCLUDE_DIR}
 	PRIVATE

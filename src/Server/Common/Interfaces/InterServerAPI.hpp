@@ -138,8 +138,8 @@ public:
 		PACKET_INTER_PING send_pkt;
 		PACKET_INTER_PONG recv_pkt;
 
-		if (_inter_socket != nullptr
-			&& _inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_PONG)
+		if (_inter_socket != nullptr && _inter_socket->get_session()->get_packet_handler() &&
+			_inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_PONG)
 			return true;
 
 		return false;

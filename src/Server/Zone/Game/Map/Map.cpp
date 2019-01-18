@@ -31,11 +31,10 @@
 
 Horizon::Zone::Game::Map::Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
 : _name(name), _width(width), _height(height),
-  _grid_width((width / MAX_CELLS_PER_GRID)), _grid_height((height / MAX_CELLS_PER_GRID)),
+  _grid_width((width / MAX_GRID_WIDTH)), _grid_height((height / MAX_GRID_WIDTH)),
   _cells(boost::extents[width][height]),
   _gridholder(_grid_width, _grid_height),
-  _pathfinder(new AStar({width, height}, true, &AStar::Heuristic::manhattan,
-						std::bind(&Map::checkCollisionInPath, this, std::placeholders::_1, std::placeholders::_2)))
+  _pathfinder(new AStar::Generator({width, height}, std::bind(&Map::checkCollisionInPath, this, std::placeholders::_1, std::placeholders::_2), true, &AStar::Heuristic::manhattan))
 {
 	for (int y = 0, idx = 0; y < height; y++)
 		for (int x = 0; x < width; x++)
@@ -44,6 +43,8 @@ Horizon::Zone::Game::Map::Map(std::string const &name, uint16_t width, uint16_t 
 
 bool Horizon::Zone::Game::Map::checkCollisionInPath(uint16_t x, uint16_t y)
 {
+	if (x < 0 || y < 0 || x > _width || y > _height)
+		return false;
 	if (_cells[x][y]->isWalkable())
 		return false;
 
@@ -61,47 +62,17 @@ Horizon::Zone::Game::Map::~Map()
 
 bool Horizon::Zone::Game::Map::ensureGrid(GridCoords coords)
 {
-	int unusable_cells = 0;
-
-	for (uint32_t grid_x = coords.x() * MAX_CELLS_PER_GRID; grid_x < coords.x() * MAX_CELLS_PER_GRID + MAX_CELLS_PER_GRID; grid_x++)
-		for (uint32_t grid_y = coords.y() * MAX_CELLS_PER_GRID; grid_y < coords.y() * MAX_CELLS_PER_GRID + MAX_CELLS_PER_GRID; grid_y++)
-			if (!_cells[grid_x][grid_y]->isWalkable() && !_cells[grid_x][grid_y]->isShootable())
-				unusable_cells++;
-
-	_grid_init_mutex.lock();
-	_gridholder.initializeGrid(coords, (unusable_cells == MAX_CELLS_PER_GRID * MAX_CELLS_PER_GRID));
-	_grid_init_mutex.unlock();
-
+	_gridholder.initialize_grid(coords, false);
 	return true;
 }
 
 void Horizon::Zone::Game::Map::ensureAllGrids()
 {
-#define MAX_THREADS 4
-	WorkerThreadPool pool;
-	std::future<typename std::result_of<std::function<void()>()>::type> fut[MAX_THREADS];
-
 	for (int x = 0; x < _grid_width; x++) {
-		for (int y = 0; y < _grid_height;) {
-			GridCoords coords(x, y);
-			int workers = 0;
-
-			while (workers < MAX_THREADS && y < _grid_height) {
-				fut[workers++] = pool.submit(
-					[this, coords] ()
-					{
-						ensureGrid(coords);
-					});
-				y++;
-			}
-
-			workers = 0;
-
-			while (workers < MAX_THREADS && y < _grid_height)
-				fut[workers++].wait();
+		for (int y = 0; y < _grid_height; y++) {
+			ensureGrid(GridCoords(x, y));
 		}
 	}
-#undef MAX_THREADS
 }
 
 void Horizon::Zone::Game::Map::update(uint32_t diff)
@@ -112,8 +83,8 @@ void Horizon::Zone::Game::Map::update(uint32_t diff)
 	for (int x = 0; x < _grid_width; x++) {
 		for (int y = 0; y < _grid_height; y++) {
 			GridCoords gcoords(x, y);
-			if (_gridholder.getGrid(gcoords) != nullptr)
-				_gridholder.getGrid(gcoords)->Visit(map_updater);
+			if (_gridholder.get_grid(gcoords) != nullptr)
+				_gridholder.get_grid(gcoords)->Visit(map_updater);
 		}
 	}
 }

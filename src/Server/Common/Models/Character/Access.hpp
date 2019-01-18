@@ -20,7 +20,7 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
+#include <mysqlx/xdevapi.h>
 
 namespace Horizon
 {
@@ -42,34 +42,26 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_access_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
-
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql("SELECT `unban_time`, `delete_date` FROM character_access_data WHERE id = ?")
+					.bind(char_id)
+					.execute()
+					.fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_unban_time(res->getUInt("unban_time"));
-				set_delete_date(res->getUInt("delete_date"));
-				ret = true;
+				set_unban_time(record[0]);
+				set_delete_date(record[1]);
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Access::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Access::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -78,23 +70,15 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
-		std::string query = "REPLACE INTO `character_access_data` "
-			"(`id`, `unban_time`, `delete_date`) VALUES (?, ?, ?);";
+		std::string query = "REPLACE INTO `character_access_data` (`id`, `unban_time`, `delete_date`) VALUES (?, ?, ?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_unban_time());
-			pstmt->setInt(3, get_delete_date());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query).bind(get_character_id(), get_unban_time(), get_delete_date()).execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Access::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/* Char ID */

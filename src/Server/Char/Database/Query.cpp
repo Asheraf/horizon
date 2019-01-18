@@ -30,6 +30,7 @@
 #include "Server/Common/Models/Character/Companion.hpp"
 #include "Server/Common/Models/Character/Access.hpp"
 
+#include <mysqlx/xdevapi.h>
 
 Horizon::Char::Database::Query::Query()
 {
@@ -44,7 +45,21 @@ Horizon::Char::Database::Query::~Query()
 void Horizon::Char::Database::Query::InitializeQueryStrings()
 {
 	addQueryString(SELECT_ALL_CHARS_BY_AID,
-		"SELECT * FROM `characters` c "
+		"SELECT c.id, c.account_id, c.slot, c.name, c.online, c.gender, c.deleted, "
+		"csd.job_class, csd.base_level, csd.job_level, csd.base_experience, csd.job_experience, "
+		"csd.zeny, csd.strength, csd.agility, csd.vitality, csd.intelligence, csd.dexterity, csd.luck, "
+		"csd.maximum_hp, csd.hp, csd.maximum_sp, csd.sp, csd.status_points, csd.skill_points, csd.body_state, "
+		"csd.virtue, csd.honor, csd.manner, "
+		"cus.font, cus.show_equip, cus.allow_party, "
+		"cvd.hair_style_id, cvd.hair_color_id, cvd.cloth_color_id, cvd.body_id, cvd.weapon_id, cvd.shield_id, "
+		"cvd.head_top_view_id, cvd.head_mid_view_id, cvd.head_bottom_view_id, cvd.robe_view_id, "
+		"cpd.current_map, cpd.current_x, cpd.current_y, cpd.saved_map, cpd.saved_x, cpd.saved_y, "
+		"cmd.rename_count, cmd.unique_item_counter, cmd.hotkey_row_index, cmd.change_slot_count, "
+		"cgd.party_id, cgd.guild_id, "
+		"cfd.partner_aid, cfd.father_aid, cfd.mother_aid, cfd.child_aid, "
+		"ccd.pet_id, ccd.homun_id, ccd.elemental_id, "
+		"cad.unban_time, cad.delete_date "
+		"FROM `characters` c "
 		"INNER JOIN `character_status_data` csd ON c.id = csd.id "
 		"INNER JOIN `character_ui_settings` cus ON c.id = cus.id "
 		"INNER JOIN `character_view_data` cvd ON c.id = cvd.id "
@@ -56,11 +71,11 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 		"INNER JOIN `character_access_data` cad ON c.id = cad.id "
 		"WHERE c.account_id = ? AND c.deleted = 0");
 	addQueryString(CHECK_EXISTING_CHAR_BY_NAME,
-		"SELECT * FROM `characters` WHERE `name` = ?");
+		"SELECT `id`, `account_id`, `slot`, `name`, `online`, `gender`, `deleted` FROM `characters` WHERE `name` = ?");
 }
 
 std::shared_ptr<Horizon::Models::Character::Character>
-Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res)
+Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record)
 {
 	Horizon::Models::Character::Character c;
 	Horizon::Models::Character::Status csd;
@@ -73,92 +88,92 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 	Horizon::Models::Character::Companion ccd;
 	Horizon::Models::Character::Access cad;
 
-	int char_id = res->getInt("id");
+	int char_id = record[0];
 
 	// Character
 	c.set_character_id(char_id);
 	c.set_account_id(account_id);
-	c.set_name(res->getString("name"));
-	c.set_slot(res->getInt("slot"));
-	std::string gender = res->getString("gender");
+	c.set_name(record[3]);
+	c.set_slot(record[2].get<int>());
+	std::string gender = record[5];
 	if (gender == "M")
 		c.set_gender(CHARACTER_GENDER_MALE);
 	else if (gender == "F")
 		c.set_gender(CHARACTER_GENDER_FEMALE);
 	// Status
 	csd.set_character_id(char_id);
-	csd.set_job_class(res->getInt("job_class"));
-	csd.set_base_level(res->getInt("base_level"));
-	csd.set_job_level(res->getInt("job_level"));
-	csd.set_base_exp(res->getInt64("base_experience"));
-	csd.set_job_exp(res->getInt64("job_experience"));
-	csd.set_zeny(res->getInt("zeny"));
-	csd.set_strength(res->getInt("strength"));
-	csd.set_agility(res->getInt("agility"));
-	csd.set_vitality(res->getInt("vitality"));
-	csd.set_intelligence(res->getInt("intelligence"));
-	csd.set_dexterity(res->getInt("dexterity"));
-	csd.set_luck(res->getInt("luck"));
-	csd.set_max_hp(res->getInt("maximum_hp"));
-	csd.set_hp(res->getInt("hp"));
-	csd.set_max_sp(res->getInt("maximum_sp"));
-	csd.set_sp(res->getInt("sp"));
-	csd.set_status_points(res->getInt("status_points"));
-	csd.set_skill_points(res->getInt("skill_points"));
-	csd.set_body_state(res->getInt("body_state"));
-	csd.set_virtue(res->getInt("virtue"));
-	csd.set_honor(res->getInt("honor"));
-	csd.set_manner(res->getInt("manner"));
+	csd.set_job_class(record[7].get<int>());
+	csd.set_base_level(record[8].get<int>());
+	csd.set_job_level(record[9].get<int>());
+	csd.set_base_exp(record[10]);
+	csd.set_job_exp(record[11]);
+	csd.set_zeny(record[12]);
+	csd.set_strength(record[13].get<int>());
+	csd.set_agility(record[14].get<int>());
+	csd.set_vitality(record[15].get<int>());
+	csd.set_intelligence(record[16].get<int>());
+	csd.set_dexterity(record[17].get<int>());
+	csd.set_luck(record[18].get<int>());
+	csd.set_max_hp(record[19]);
+	csd.set_hp(record[20]);
+	csd.set_max_sp(record[21]);
+	csd.set_sp(record[22]);
+	csd.set_status_points(record[23]);
+	csd.set_skill_points(record[24]);
+	csd.set_body_state(record[25]);
+	csd.set_virtue(record[26].get<int>());
+	csd.set_honor(record[27]);
+	csd.set_manner(record[28].get<int>());
 	// UI Settings
 	cus.set_character_id(char_id);
-	cus.set_font(res->getInt("font"));
-	cus.set_show_equip(res->getInt("show_equip"));
-	cus.set_allow_party(res->getInt("allow_party"));
+	cus.set_font(record[29].get<int>());
+	cus.set_show_equip(record[30].get<int>());
+	cus.set_allow_party(record[31].get<int>());
 	// View
 	cvd.set_character_id(char_id);
-	cvd.set_hair_style_id(res->getInt("hair_style_id"));
-	cvd.set_hair_color_id(res->getInt("hair_color_id"));
-	cvd.set_cloth_color_id(res->getInt("cloth_color_id"));
-	cvd.set_body_id(res->getInt("body_id"));
-	cvd.set_weapon_id(res->getInt("weapon_id"));
-	cvd.set_shield_id(res->getInt("shield_id"));
-	cvd.set_head_top_view_id(res->getInt("head_top_view_id"));
-	cvd.set_head_mid_view_id(res->getInt("head_mid_view_id"));
-	cvd.set_head_bottom_view_id(res->getInt("head_bottom_view_id"));
-	cvd.set_robe_view_id(res->getInt("robe_view_id"));
+	cvd.set_hair_style_id(record[32].get<int>());
+	cvd.set_hair_color_id(record[33].get<int>());
+	cvd.set_cloth_color_id(record[34].get<int>());
+	cvd.set_body_id(record[35].get<int>());
+	cvd.set_weapon_id(record[36].get<int>());
+	cvd.set_shield_id(record[37].get<int>());
+	cvd.set_head_top_view_id(record[38].get<int>());
+	cvd.set_head_mid_view_id(record[39].get<int>());
+	cvd.set_head_bottom_view_id(record[40].get<int>());
+	cvd.set_robe_view_id(record[41].get<int>());
 	// Position
 	cpd.set_character_id(char_id);
-	cpd.set_current_map(res->getString("current_map"));
-	cpd.set_current_x(res->getInt("current_x"));
-	cpd.set_current_y(res->getInt("current_y"));
-	cpd.set_saved_map(res->getString("saved_map"));
-	cpd.set_saved_x(res->getInt("saved_x"));
-	cpd.set_saved_y(res->getInt("saved_y"));
+	cpd.set_current_map(record[42]);
+	cpd.set_current_x(record[43].get<int>());
+	cpd.set_current_y(record[44].get<int>());
+	cpd.set_saved_map(record[45]);
+	cpd.set_saved_x(record[46].get<int>());
+	cpd.set_saved_y(record[47].get<int>());
 	// Misc
 	cmd.set_character_id(char_id);
-	cmd.set_rename_count(res->getInt("rename_count"));
-	cmd.set_unique_item_counter(res->getInt64("unique_item_counter"));
-	cmd.set_hotkey_row_index(res->getInt("hotkey_row_index"));
-	cmd.set_change_slot_count(res->getInt("change_slot_count"));
+	cmd.set_rename_count(record[48].get<int>());
+	cmd.set_unique_item_counter(record[49]);
+	cmd.set_hotkey_row_index(record[50].get<int>());
+	cmd.set_change_slot_count(record[51].get<int>());
 	// Group
 	cgd.set_character_id(char_id);
-	cgd.set_party_id(res->getInt("party_id"));
-	cgd.set_guild_id(res->getInt("guild_id"));
+	cgd.set_party_id(record[52]);
+	cgd.set_guild_id(record[53]);
 	// Family
 	cfd.set_character_id(char_id);
-	cfd.set_partner_aid(res->getInt("partner_aid"));
-	cfd.set_father_aid(res->getInt("father_aid"));
-	cfd.set_mother_aid(res->getInt("mother_aid"));
-	cfd.set_child_aid(res->getInt("child_aid"));
+	cfd.set_partner_aid(record[54]);
+	cfd.set_father_aid(record[55]);
+	cfd.set_mother_aid(record[56]);
+	cfd.set_child_aid(record[57]);
 	// Companion
 	ccd.set_character_id(char_id);
-	ccd.set_pet_id(res->getInt("pet_id"));
-	ccd.set_homun_id(res->getInt("homun_id"));
-	ccd.set_elemental_id(res->getInt("elemental_id"));
+	ccd.set_pet_id(record[58]);
+	ccd.set_homun_id(record[59]);
+	ccd.set_elemental_id(record[60]);
 	// Access
 	cad.set_character_id(char_id);
-	cad.set_unban_time(res->getInt("unban_time"));
-	cad.set_delete_date(res->getInt("delete_date"));
+	cad.set_unban_time(record[61]);
+	cad.set_delete_date(record[62]);
 
 	// Append to character.
 	c.set_status_data(std::make_shared<Horizon::Models::Character::Status>(csd));
@@ -176,54 +191,39 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 
 int Horizon::Char::Database::Query::AllCharactersByAccount(std::shared_ptr<GameAccount> account)
 {
-	auto sql = CharServer->mysql_borrow();
+	auto sql_session = CharServer->get_mysql_client()->getSession();
+
 	boost::optional<std::string> query = getQueryString(SELECT_ALL_CHARS_BY_AID);
-	int results = 0;
 
 	if (!query)
 		return 0;
 
-	try {
-		sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(*query);
-		pstmt->setInt(1, account->get_id());
-		sql::ResultSet *res = pstmt->executeQuery();
+	mysqlx::RowResult res = sql_session.sql(*query).bind(account->get_id()).execute();
+	mysqlx::Row record;
 
-		while (res != nullptr && res->next()) {
-			account->add_character(CreateCharacterModelFromResult(account->get_id(), res));
-			++results;
-		}
-		delete pstmt;
-		delete res;
-	} catch (sql::SQLException &e) {
-		DBLog->error("SQLException: {}", e.what());
+	while ((record = res.fetchOne())) {
+		account->add_character(CreateCharacterModelFromResult(account->get_id(), record));
 	}
 
-	CharServer->mysql_unborrow(sql);
-	return results;
+	sql_session.close();
+	return res.count();
 }
 
 int Horizon::Char::Database::Query::CheckExistingCharByName(std::string name)
 {
-	auto sql = CharServer->mysql_borrow();
+	auto sql_session = CharServer->get_mysql_client()->getSession();
 	int found = 0;
+
 	boost::optional<std::string> query = getQueryString(CHECK_EXISTING_CHAR_BY_NAME);
 
 	if (!query)
 		return -1;
 
-	try {
-		sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(*query);
-		pstmt->setString(1, name);
-		sql::ResultSet *res = pstmt->executeQuery();
+	mysqlx::RowResult res = sql_session.sql(*query).bind(name).execute();
+	mysqlx::Row record = res.fetchOne();
 
-		if (res != nullptr && res->next())
-			found = 1;
-
-		delete pstmt;
-		delete res;
-	} catch (sql::SQLException &e) {
-		DBLog->error("SQLException: {}", e.what());
-	}
+	if (record)
+		found = 1;
 
 	return found;
 }

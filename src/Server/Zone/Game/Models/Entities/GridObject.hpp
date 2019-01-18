@@ -17,11 +17,11 @@ class GridObject
 public:
 	virtual ~GridObject() { }
 
-	bool valid() const { return _ref.valid(); }
-	void addReference(GridRefManager<T> &m) { assert(!valid()); _ref.link(&m, (T*) this); }
-	void removeReference() { assert(valid()); _ref.erase(); }
+	bool is_valid() const { return _ref.is_valid(); }
+	void add_reference(GridRefManager<T> &m) { assert(!is_valid()); _ref.link(&m, (T*) this); }
+	void remove_reference() { assert(is_valid()); _ref.erase(); }
 
-	GridReference<T> &getReference() { return _ref; }
+	GridReference<T> &get_reference() { return _ref; }
 
 private:
 	GridReference<T> _ref;

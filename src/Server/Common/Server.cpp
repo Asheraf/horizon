@@ -21,7 +21,8 @@
 #include "version.hpp"
 
 #include <iostream>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/bind.hpp>
 
@@ -57,11 +58,11 @@ void Server::parse_exec_args(const char *argv[], int argc)
 		for (int i = 2; i < argc; ++i) {
 			std::string arg(argv[i]);
 			std::vector<std::string> separated_args;
-			boost::split(separated_args, arg, boost::is_any_of(" "));
+			boost::algorithm::split(separated_args, arg, boost::algorithm::is_any_of(" "));
 
 			for (auto it = separated_args.begin(); it != separated_args.end(); ++it) {
 				std::vector<std::string> arg_parts;
-				boost::split(arg_parts, *it, boost::is_any_of("="));
+				boost::algorithm::split(arg_parts, *it, boost::algorithm::is_any_of("="));
 
 				if (arg_parts.at(0).compare("--dbuser") == 0) {
 					database_conf().set_username(arg_parts.at(1));
@@ -200,9 +201,16 @@ bool Server::parse_common_configs(libconfig::Config &cfg)
 
 void Server::initialize_mysql()
 {
-	// Create a pool of MySQL connections
-	mysql_connection_factory = boost::make_shared<MySQLConnectionFactory>(database_conf().get_host(), database_conf().get_database(), database_conf().get_username(), database_conf().get_password());
-	mysql_pool = boost::make_shared<ConnectionPool<MySQLConnection>>(database_conf().get_db_thread_count(), mysql_connection_factory);
+	std::string conn_uri = database_conf().get_username() + ":" + database_conf().get_password() + "@127.0.0.1/" + database_conf().get_database();
+
+	_mysql_client = std::make_shared<mysqlx::Client>("mysqlx://root:sagun123@localhost:33060/horizon");
+
+	try {
+		mysqlx::Session s = _mysql_client->getSession();
+		CoreLog->info("Successfully connected to mysql server on {}.", conn_uri);
+	} catch (const mysqlx::Error &err) {
+		CoreLog->info("Could not connect to mysql server on {} due to {}.", conn_uri, err.what());
+	}
 }
 
 void Server::initialize_command_line()

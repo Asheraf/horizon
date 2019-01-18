@@ -20,7 +20,8 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
+
+#include <mysqlx/xdevapi.h>
 
 namespace Horizon
 {
@@ -42,36 +43,27 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_family_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `partner_aid`, `father_aid`, `mother_aid`, `child_aid` FROM `character_family_data` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_partner_aid(res->getUInt("partner_aid"));
-				set_father_aid(res->getUInt("father_aid"));
-				set_mother_aid(res->getUInt("mother_aid"));
-				set_child_aid(res->getUInt("child_aid"));
-				ret = true;
+				set_partner_aid(record[0]);
+				set_father_aid(record[1]);
+				set_mother_aid(record[2]);
+				set_child_aid(record[3]);
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Family::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Family::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -80,25 +72,16 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "REPLACE INTO `character_family_data` "
 			"(`id`, `partner_aid`, `father_aid`, `mother_aid`, `child_aid`) VALUES (?, ?, ?, ?, ?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_partner_aid());
-			pstmt->setInt(3, get_father_aid());
-			pstmt->setInt(4, get_mother_aid());
-			pstmt->setInt(5, get_child_aid());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query).bind(get_character_id(), get_partner_aid(), get_father_aid(), get_mother_aid(), get_child_aid()).execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Family::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/* Character Id */

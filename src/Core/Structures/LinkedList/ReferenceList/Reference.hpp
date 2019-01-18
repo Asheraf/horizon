@@ -15,78 +15,82 @@ namespace LinkedList
 template <class TO, class FROM>
 class Reference : public Element
 {
-public:
-    Reference()
-	: _e_ref_to(nullptr), _e_ref_from(nullptr)
-	{
-		//
-	}
-
-	virtual ~Reference()
-	{
-		//
-	}
-
-    // Create new link
-    void link(TO *ref_to, FROM *ref_from)
-    {
-        assert(ref_from != nullptr);
-
-        if (valid())
-            erase();
-
-        if (ref_to != NULL) {
-            _e_ref_to.store(ref_to);
-            _e_ref_from.store(ref_from);
-            targetObjectBuildLink();
-        }
-    }
-
-    // We don't need the reference anymore. Call comes from the _e_ref_from object
-    // Tell our _e_ref_to object, that the link is cut
-    void erase() override
-    {
-        targetObjectDestroyLink();
-        Element::erase();
-        _e_ref_to.store(nullptr);
-        _e_ref_from.store(nullptr);
-    }
-
-    // Link is invalid due to destruction of referenced target object. Call comes from the _e_ref_to object
-    // Tell our _e_ref_from object, that the link is cut
-    void invalidate() // the _e_ref_from MUST remain!!
-    {
-        sourceObjectDestroyLink();
-        Element::erase();
-        _e_ref_to.store(nullptr);
-    }
-
-    bool valid() const { return _e_ref_to.load() != nullptr; }
-
-    virtual Reference<TO, FROM> *next() override { return((Reference<TO, FROM> *) Element::next()); }
-    virtual Reference<TO, FROM> const *next() const override { return((Reference<TO, FROM> const *) Element::next()); }
-    virtual Reference<TO, FROM> *prev() override { return((Reference<TO, FROM> *) Element::prev()); }
-    virtual Reference<TO, FROM> const *prev() const override { return((Reference<TO, FROM> const *) Element::prev()); }
-
-    TO *operator->() { return _e_ref_to.load(); }
-    TO *target() { return _e_ref_to.load(); }
-
-    FROM *source() { return _e_ref_from.load(); }
+private:
+	TO *_ref_to;
+	FROM *_ref_from;
 
 protected:
-    // Tell our _e_ref_to (target) object that we have a link
-    virtual void targetObjectBuildLink() = 0;
-    // Tell our _e_ref_to (taget) object, that the link is cut
-    virtual void targetObjectDestroyLink() = 0;
-    // Tell our _e_ref_from (source) object, that the link is cut (Target destroyed)
-    virtual void sourceObjectDestroyLink() = 0;
+	// Tell our refTo (target) object that we have a link
+	virtual void target_object_build_link() = 0;
+
+	// Tell our refTo (taget) object, that the link is cut
+	virtual void target_object_destroy_link() = 0;
+
+	// Tell our refFrom (source) object, that the link is cut (Target destroyed)
+	virtual void source_object_destroy_link() = 0;
+public:
+	Reference() { _ref_to = NULL; _ref_from = NULL; }
+	virtual ~Reference() { }
+
+	// Create new link
+	void link(TO *toObj, FROM *fromObj)
+	{
+		assert(fromObj);
+
+		// Clear if any previous references to a reference manager.
+		if (is_valid())
+			remove();
+
+		// Build the link.
+		if (toObj != NULL) {
+			_ref_to = toObj;
+			_ref_from = fromObj;
+			target_object_build_link();
+		}
+	}
+
+	// We don't need the reference anymore. Call comes from the refFrom object
+	// Tell our refTo object, that the link is cut
+	void remove()
+	{
+		target_object_destroy_link();
+		delink();
+		_ref_to = NULL;
+		_ref_from = NULL;
+	}
+
+	// Link is invalid due to destruction of referenced target object. Call comes from the refTo object
+	// Tell our refFrom object, that the link is cut
+	void invalidate()                                   // the _ref_from MUST remain!!
+	{
+		source_object_destroy_link();
+		delink();
+		_ref_to = NULL;
+	}
+
+	bool is_valid() const                                // Only check the _ref_to
+	{
+		return _ref_to != NULL;
+	}
+
+	Reference<TO, FROM> *next()       { return((Reference<TO, FROM> *) Element::next()); }
+	Reference<TO, FROM> const *next() const { return((Reference<TO, FROM> const*) Element::next()); }
+	Reference<TO, FROM> *prev()       { return((Reference<TO, FROM> *) Element::prev()); }
+	Reference<TO, FROM> const *prev() const { return((Reference<TO, FROM> const*) Element::prev()); }
+
+	Reference<TO, FROM> *nocheck_next()       { return((Reference<TO, FROM> *) Element::nocheck_next()); }
+	Reference<TO, FROM> const *nocheck_next() const { return((Reference<TO, FROM> const *) Element::nocheck_next()); }
+	Reference<TO, FROM> *nocheck_prev()       { return((Reference<TO, FROM> *) Element::nocheck_prev()); }
+	Reference<TO, FROM> const *nocheck_prev() const { return((Reference<TO, FROM> const *) Element::nocheck_prev()); }
+
+	TO *operator->() const { return _ref_to; }
+	TO *target() const { return _ref_to; }
+
+	FROM *source() const { return _ref_from; }
 
 private:
-    Reference(Reference const&) = delete;
-    Reference &operator=(Reference const&) = delete;
-
-    std::atomic<TO *> _e_ref_to;
-    std::atomic<FROM *> _e_ref_from;
+	Reference(Reference const&) = delete;
+	Reference& operator=(Reference const&) = delete;
 };
 }
 }

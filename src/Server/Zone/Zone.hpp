@@ -18,7 +18,6 @@
 #ifndef HORIZON_ZONE_ZONEMAIN_HPP
 #define HORIZON_ZONE_ZONEMAIN_HPP
 
-#include "Core/Database/MySqlConnection.hpp"
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "Server/Common/Models/Configuration/ZoneServerConfiguration.hpp"

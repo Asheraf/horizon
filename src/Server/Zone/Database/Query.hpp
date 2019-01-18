@@ -19,10 +19,10 @@
 #define HORIZON_ZONE_DATABASE_QUERY_HPP
 
 #include "Server/Common/Database/Query.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 
 #include <map>
 #include <stdio.h>
+#include <mysqlx/xdevapi.h>
 
 class GameAccount;
 
@@ -62,7 +62,7 @@ namespace Horizon
 
 				void InitializeQueryStrings();
 
-				std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, sql::ResultSet *res);
+				std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
 			};
 		}
 	}

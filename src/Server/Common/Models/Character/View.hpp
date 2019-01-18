@@ -20,7 +20,6 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 
 namespace Horizon
 {
@@ -48,43 +47,31 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_view_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `hair_style_id`, `hair_color_id`, `cloth_color_id`, `body_id`, `weapon_id`, `shield_id`, `head_top_view_id`, `head_mid_view_id`, `head_bottom_view_id`, `robe_view_id` FROM `character_view_data` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_hair_style_id((uint8_t) res->getInt("hair_style_id"));
-				set_hair_color_id((uint16_t) res->getUInt("hair_color_id"));
-				set_cloth_color_id((uint16_t) res->getUInt("cloth_color_id"));
-				set_body_id((uint16_t) res->getUInt("body_id"));
-				set_weapon_id((uint16_t) res->getUInt("weapon_id"));
-				set_shield_id((uint16_t) res->getUInt("shield_id"));
-				set_head_top_view_id((uint16_t) res->getUInt("head_top_view_id"));
-				set_head_mid_view_id((uint16_t) res->getUInt("head_mid_view_id"));
-				set_head_bottom_view_id((uint16_t) res->getUInt("head_bottom_view_id"));
-				set_robe_view_id((uint16_t) res->getUInt("robe_view_id"));
-
-				ret = true;
+				set_hair_style_id((uint8_t) record[0].get<int>());
+				set_hair_color_id((uint16_t) record[1].get<int>());
+				set_cloth_color_id((uint16_t) record[2].get<int>());
+				set_body_id((uint16_t) record[3].get<int>());
+				set_weapon_id((uint16_t) record[4].get<int>());
+				set_shield_id((uint16_t) record[5].get<int>());
+				set_head_top_view_id((uint16_t) record[6].get<int>());
+				set_head_mid_view_id((uint16_t) record[7].get<int>());
+				set_head_bottom_view_id((uint16_t) record[8].get<int>());
+				set_robe_view_id((uint16_t) record[9].get<int>());
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("View::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -93,32 +80,28 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "REPLACE INTO `character_view_data` "
 			"(`id`, `hair_style_id`, `hair_color_id`, `cloth_color_id`, `body_id`, "
 			"`weapon_id`, `shield_id`, `head_top_view_id`, `head_mid_view_id`, `robe_view_id`) "
-			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_hair_style_id());
-			pstmt->setInt(3, get_hair_color_id());
-			pstmt->setInt(4, get_cloth_color_id());
-			pstmt->setInt(5, get_body_id());
-			pstmt->setInt(6, get_weapon_id());
-			pstmt->setInt(7, get_shield_id());
-			pstmt->setInt(8, get_head_top_view_id());
-			pstmt->setInt(9, get_head_mid_view_id());
-			pstmt->setInt(10, get_robe_view_id());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query)
+					.bind(get_character_id(),
+						  get_hair_style_id(),
+						  get_hair_color_id(),
+						  get_cloth_color_id(),
+						  get_body_id(),
+						  get_weapon_id(),
+						  get_shield_id(),
+						  get_head_top_view_id(),
+						  get_head_mid_view_id(),
+						  get_robe_view_id())
+					.execute();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("View::load: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/* Character Id */

@@ -11,26 +11,16 @@ class GridRefManager : public Horizon::Structures::LinkedList::RefManager<GridRe
 public:
 	typedef Horizon::Structures::LinkedList::Head::Iterator<GridReference<OBJECT>> iterator;
 
-	GridReference<OBJECT> *first() override
+	GridReference<OBJECT> *first()
 	{
 		return static_cast<GridReference<OBJECT> *> (Horizon::Structures::LinkedList::RefManager<GridRefManager<OBJECT>, OBJECT>::first());
 	}
-	GridReference<OBJECT> const *first() const override
+	GridReference<OBJECT> const *first() const
 	{
 		return static_cast<GridReference<OBJECT> const *> (Horizon::Structures::LinkedList::RefManager<GridRefManager<OBJECT>, OBJECT>::first());
 	}
 
-	GridReference<OBJECT> *last() override
-	{
-		return static_cast<GridReference<OBJECT> *> (Horizon::Structures::LinkedList::RefManager<GridRefManager<OBJECT>, OBJECT>::last());
-	}
-	GridReference<OBJECT> const *last() const override
-	{
-		return static_cast<GridReference<OBJECT> const *> (Horizon::Structures::LinkedList::RefManager<GridRefManager<OBJECT>, OBJECT>::last());
-	}
-
 	iterator begin() { return iterator(first()); }
-	iterator end()   { return iterator(last()); }
 };
 
 #endif /* HORIZON_ZONE_GAME_GRIDREFMANAGER_HPP */

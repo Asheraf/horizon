@@ -20,7 +20,8 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
+
+#include <mysqlx/xdevapi.h>
 
 namespace Horizon
 {
@@ -42,35 +43,26 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_companion_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `pet_id`, `homun_id`, `elemental_id` FROM `character_companion_data` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_pet_id(res->getUInt("pet_id"));
-				set_homun_id(res->getUInt("homun_id"));
-				set_elemental_id(res->getUInt("elemental_id"));
-				ret = true;
+				set_pet_id(record[0]);
+				set_homun_id(record[1]);
+				set_elemental_id(record[2]);
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Companion::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Companion::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -79,24 +71,15 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
-		std::string query = "REPLACE INTO `character_companion_data` "
-			"(`id`, `pet_id`, `homun_id`, `elemental_id`) VALUES (?, ?, ?, ?);";
+		std::string query = "REPLACE INTO `character_companion_data` (`id`, `pet_id`, `homun_id`, `elemental_id`) VALUES (?, ?, ?, ?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_pet_id());
-			pstmt->setInt(3, get_homun_id());
-			pstmt->setInt(4, get_elemental_id());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query).bind(get_character_id(), get_pet_id(), get_homun_id(), get_elemental_id()).execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Companion::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 	
 	/* Character Id */
@@ -111,6 +94,7 @@ public:
 	/* Elemental ID */
 	uint32_t get_elemental_id() const { return elemental_id; }
 	void set_elemental_id(uint32_t elemental_id) { Companion::elemental_id = elemental_id; }
+
 private:
 	uint32_t character_id{0};
 	uint32_t pet_id{0};

@@ -31,8 +31,8 @@ public:
 	TestListElem(int var)
 	: Element(), _var(var) { }
 
-	int getVar() const { return _var; }
-	void setVar(int var) { _var = var; }
+	int get_var() const { return _var; }
+	void set_var(int var) { _var = var; }
 
 private:
 	int _var;
@@ -63,22 +63,30 @@ BOOST_AUTO_TEST_CASE(LinkedListTest)
 		var[i] = i;
 		t[i] = std::make_shared<TestListElem>(var[i]);
 		h.push_front(t[i].get());
-		BOOST_CHECK_EQUAL(h.first()->getVar(), var[i]);
+		BOOST_CHECK_EQUAL(h.first()->get_var(), var[i]);
 	}
 
 	int idx = 99;
-	for (TestListHead::iterator it = h.begin(); it != TestListHead::iterator(nullptr); ++it)
-		BOOST_CHECK_EQUAL(it->getVar(), var[idx--]);
+	for (TestListHead::iterator it = h.begin(); it != TestListHead::iterator(nullptr); ++it) {
+		printf("pre-increment: %d\n", it->get_var());
+		BOOST_CHECK_EQUAL(it->get_var(), var[idx--]);
+	}
 
 	idx = 99;
-	for (TestListHead::iterator it = h.begin(); it != TestListHead::iterator(nullptr); it++)
-		BOOST_CHECK_EQUAL(it->getVar(), var[idx--]);
+	for (TestListHead::iterator it = h.begin(); it != TestListHead::iterator(nullptr); it++) {
+		printf("reverse post-increment: %d\n", it->get_var());
+		BOOST_CHECK_EQUAL(it->get_var(), var[idx--]);
+	}
 
 	idx = 0;
-	for (TestListHead::iterator it = h.end(); it != TestListHead::iterator(nullptr); --it)
-		BOOST_CHECK_EQUAL(it->getVar(), var[idx++]);
+	for (TestListHead::iterator it = h.end(); it != TestListHead::iterator(nullptr); --it) {
+		printf("pre-decrement: %d\n", it->get_var());
+		BOOST_CHECK_EQUAL(it->get_var(), var[idx++]);
+	}
 
 	idx = 0;
-	for (TestListHead::iterator it = h.end(); it != TestListHead::iterator(nullptr); it--)
-		BOOST_CHECK_EQUAL(it->getVar(), var[idx++]);
+	for (TestListHead::iterator it = h.end(); it != TestListHead::iterator(nullptr); it--) {
+		printf("post-decrement: %d\n", it->get_var());
+		BOOST_CHECK_EQUAL(it->get_var(), var[idx++]);
+	}
 }

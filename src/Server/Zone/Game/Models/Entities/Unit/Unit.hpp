@@ -30,10 +30,10 @@ public:
 	virtual void update_position(uint16_t x, uint16_t y) = 0;
 	virtual void stop_movement() = 0;
 private:
-	MapCoords _dest_changed_pos{0, 0}, _dest_pos{0, 0}, _current_dest_pos{0, 0};
+	MapCoords _changed_dest_pos{0, 0}, _dest_pos{0, 0};
 	AStar::CoordinateList _walk_path;
 	uint16_t _walk_step{0};
-	bool _is_walking{false};
+	bool _walk_path_invalid;
 
 };
 }

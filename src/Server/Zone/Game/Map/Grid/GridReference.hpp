@@ -15,32 +15,32 @@ public:
     	//
     }
 
-    ~GridReference() override { this->erase(); }
+    ~GridReference() override { this->remove(); }
 
-    GridReference *next() override
+    GridReference *next()
     {
     	return static_cast<GridReference *>(Horizon::Structures::LinkedList::Reference<GridRefManager<OBJECT>, OBJECT>::next());
     }
 
 protected:
-    void targetObjectBuildLink() override
+    void target_object_build_link() override
     {
         // called from link()
         this->target()->push_front(this);
-        this->target()->incSize();
+        this->target()->inc_size();
     }
 
-    void targetObjectDestroyLink() override
+    void target_object_destroy_link() override
     {
         // called from erase()
-        if (this->valid())
-        	this->target()->decSize();
+        if (this->is_valid())
+        	this->target()->dec_size();
     }
 
-    void sourceObjectDestroyLink() override
+    void source_object_destroy_link() override
     {
         // called from invalidate()
-        this->target()->decSize();
+        this->target()->dec_size();
     }
 };
 

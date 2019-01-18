@@ -33,7 +33,7 @@ target_link_libraries(char
         networking
 	    -lpthread
         ${YAMLCPP_LIBRARY}
-        ${MYSQL_CONNECTOR_LIBRARIES}
+        ${CONCPP_LIBS}
         ${Readline_LIBRARY}
 		${CONFIG++_LIBRARY}
 )
@@ -51,13 +51,14 @@ target_include_directories(char
 	PUBLIC
 		${PUBLIC_INCLUDES}
         ${YAMLCPP_INCLUDE_DIR}
-        ${MYSQL_CONNECTOR_INCLUDE_DIRS}
+        ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 		${CONFIG++_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
+message("Installing char server here: ${CMAKE_INSTALL_PREFIX}")
 install(TARGETS char
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})

@@ -50,7 +50,7 @@ namespace Zone
 {
 namespace Game
 {
-class Entity : public std::enable_shared_from_this<Horizon::Zone::Game::Entity>
+class Entity
 {
 public:
 	Entity(uint32_t guid, entity_type type);

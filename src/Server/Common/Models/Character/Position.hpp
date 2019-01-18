@@ -20,7 +20,6 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 
 namespace Horizon
 {
@@ -48,39 +47,29 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_position_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `current_map`, `current_x`, `current_y`, `saved_map`, `saved_x`, `saved_y` FROM `character_position_data` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_current_map(res->getString("current_map"));
-				set_current_x((uint16_t) res->getInt("current_x"));
-				set_current_y((uint16_t) res->getInt("current_y"));
-				set_saved_map(res->getString("saved_map"));
-				set_saved_x((uint16_t) res->getInt("saved_x"));
-				set_saved_y((uint16_t) res->getInt("saved_y"));
-
-				ret = true;
+				set_current_map(record[0]);
+				set_current_x((uint16_t) record[1].get<int>());
+				set_current_y((uint16_t) record[2].get<int>());
+				set_saved_map(record[3]);
+				set_saved_x((uint16_t) record[4].get<int>());
+				set_saved_y((uint16_t) record[5].get<int>());
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Position::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -89,28 +78,25 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "REPLACE INTO `character_position_data` "
 			"(`id`, `current_map`, `current_x`, `current_y`, `saved_map`, `saved_x`, `saved_y`) "
-			"VALUES (?, ?, ?, ?, ?, ?, ?);";
+			"VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setString(2, get_current_map());
-			pstmt->setInt(3, get_current_x());
-			pstmt->setInt(4, get_current_y());
-			pstmt->setString(5, get_saved_map());
-			pstmt->setInt(6, get_saved_x());
-			pstmt->setInt(7, get_saved_y());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query)
+					.bind(get_character_id(),
+						  get_current_map(),
+						  get_current_x(),
+						  get_current_y(),
+						  get_saved_map(),
+						  get_saved_x(),
+						  get_saved_y())
+					.execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Position::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */

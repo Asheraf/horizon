@@ -36,26 +36,16 @@ class TestRefManager : public Horizon::Structures::LinkedList::RefManager<TestRe
 public:
 	typedef Horizon::Structures::LinkedList::Head::Iterator<TestReference<OBJECT>> iterator;
 
-	TestReference<OBJECT> *first() override
+	TestReference<OBJECT> *first()
 	{
 		return static_cast<TestReference<OBJECT> *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::first());
 	}
-	TestReference<OBJECT> const *first() const override
+	TestReference<OBJECT> const *first() const
 	{
 		return static_cast<TestReference<OBJECT> const *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::first());
 	}
 
-	TestReference<OBJECT> *last() override
-	{
-		return static_cast<TestReference<OBJECT> *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::last());
-	}
-	TestReference<OBJECT> const *last() const override
-	{
-		return static_cast<TestReference<OBJECT> const *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::last());
-	}
-
 	iterator begin() { return iterator(first()); }
-	iterator end()   { return iterator(last()); }
 };
 
 template <class OBJECT>
@@ -66,29 +56,29 @@ public:
     {
     	//
     }
-    ~TestReference() override { this->erase(); }
-    TestReference *next() override
+    ~TestReference() override { this->remove(); }
+    TestReference *next()
     {
     	return (TestReference *) Horizon::Structures::LinkedList::Reference<TestRefManager<OBJECT>, OBJECT>::next();
     }
 
 protected:
-    void targetObjectBuildLink() override
+    void target_object_build_link() override
     {
         // called from link()
         this->target()->push_front(this);
-        this->target()->incSize();
+        this->target()->inc_size();
     }
-    void targetObjectDestroyLink() override
+    void target_object_destroy_link() override
     {
         // called from erase()
-        if (this->valid())
-        	this->target()->decSize();
+        if (this->is_valid())
+        	this->target()->dec_size();
     }
-    void sourceObjectDestroyLink() override
+    void source_object_destroy_link() override
     {
         // called from invalidate()
-        this->target()->decSize();
+        this->target()->dec_size();
     }
 };
 
@@ -98,11 +88,11 @@ class TestObject
 public:
 	virtual ~TestObject() { }
 
-    bool valid() const { return _ref.valid(); }
-    void addReference(TestRefManager<T> &m) { assert(!valid()); _ref.link(&m, (T*) this); }
-    void removeReference() { assert(valid()); _ref.erase(); }
+    bool is_valid() const { return _ref.is_valid(); }
+    void add_reference(TestRefManager<T> &m) { assert(!is_valid()); _ref.link(&m, (T*) this); }
+    void remove_reference() { assert(is_valid()); _ref.remove(); }
 
-	TestReference<T> &getReference() { return _ref; }
+	TestReference<T> &get_reference() { return _ref; }
 
 private:
 	TestReference<T> _ref;
@@ -111,13 +101,16 @@ private:
 class GenericTestObject
 {
 public:
-	GenericTestObject(int id = 0) : _id(id) { }
+	GenericTestObject(int id, char type) : _id(id), _type(type) { }
 
 	virtual int get_id() { return _id; }
 	virtual void set_id(int id) { _id = id; }
 
+	char get_type() { return _type; }
+
 private:
 	int _id;
+	char _type;
 };
 
 /*============================*
@@ -126,19 +119,19 @@ private:
 class A : public TestObject<A>, public GenericTestObject
 {
 public:
-	A(int id = 0) : GenericTestObject(id) { }
+	A(int id = 0) : GenericTestObject(id, 'A') { }
 };
 
 class B : public TestObject<B>, public GenericTestObject
 {
 public:
-	B(int id = 0) : GenericTestObject(id) { }
+	B(int id = 0) : GenericTestObject(id, 'B') { }
 };
 
 class C : public TestObject<C>, public GenericTestObject
 {
 public:
-	C(int id = 0) : GenericTestObject(id) { }
+	C(int id = 0) : GenericTestObject(id, 'C') { }
 };
 
 /*============================*
@@ -172,7 +165,7 @@ template<class SPECIFIC_TYPE>
 SPECIFIC_TYPE *Insert(ContainerMapList<SPECIFIC_TYPE> &elements, SPECIFIC_TYPE *obj)
 {
 	//elements._element[hdl] = obj;
-	obj->addReference(elements._element);
+	obj->add_reference(elements._element);
 	return obj;
 }
 template<class SPECIFIC_TYPE>
@@ -200,7 +193,7 @@ SPECIFIC_TYPE* Insert(ContainerMapList<TypeList<HEAD, TAIL>> &elements, SPECIFIC
 	template <class SPECIFIC_TYPE>
 	size_t count(ContainerMapList<SPECIFIC_TYPE> const &elements, SPECIFIC_TYPE */*fake*/)
 	{
-		return elements._element.size();
+		return elements._element.get_size();
 	}
 	template <class SPECIFIC_TYPE>
 	size_t count(ContainerMapList<TypeNull> const &/*elements*/, SPECIFIC_TYPE */*fake*/)
@@ -240,13 +233,13 @@ public:
 	template <class SPECIFIC_TYPE>
 	bool insert(SPECIFIC_TYPE *obj)
 	{
-		assert(!obj->valid());
+		assert(!obj->is_valid());
 		SPECIFIC_TYPE* t = TypeListIterator::Insert(_elements, obj);
 		return (t != NULL);
 	}
 
-	ContainerMapList<OBJECT_TYPES> &getElements(void) { return _elements; }
-	const ContainerMapList<OBJECT_TYPES> &getElements(void) const { return _elements;}
+	ContainerMapList<OBJECT_TYPES> &get_elements(void) { return _elements; }
+	const ContainerMapList<OBJECT_TYPES> &get_elements(void) const { return _elements;}
 
 private:
 	ContainerMapList<OBJECT_TYPES> _elements;
@@ -285,7 +278,7 @@ void VisitorHelper(VISITOR &v, ContainerMapList<TypeList<H, T>> &c)
 template<class VISITOR, class OBJECT_TYPES>
 void VisitorHelper(VISITOR &v, TypeRefContainer<OBJECT_TYPES> &c)
 {
-	VisitorHelper(v, c.getElements());
+	VisitorHelper(v, c.get_elements());
 }
 
 /*============================*
@@ -351,13 +344,13 @@ private:
 /*============================*
  * Searchers
  *============================*/
-template<class Predicate>
+template<class PREDICATE>
 struct GenericTestObjectSearcher
 {
 	GenericTestObject *&_object;
-	Predicate &_check;
+	PREDICATE &_check;
 
-	GenericTestObjectSearcher(GenericTestObject *&result, Predicate &check)
+	GenericTestObjectSearcher(GenericTestObject *&result, PREDICATE &check)
 	: _object(result), _check(check) { }
 
 	template <class T>
@@ -392,39 +385,46 @@ BOOST_AUTO_TEST_CASE(ReferenceTypeListTest)
 	B *b[MAX_B_TYPES];
 	C *c[MAX_C_TYPES];
 
+	print_count(refContainer);
+
+	int aids[] = { 11, 21, 36 };
 	for (int i = 0; i < MAX_A_TYPES; i++) {
-		a[i] = new A(i);
+		a[i] = new A(aids[i]);
 		refContainer.template insert<A>(a[i]);
-		assert(a[i]->valid());
+		assert(a[i]->is_valid());
 	}
 
 	BOOST_CHECK_EQUAL(refContainer.count<A>(), MAX_A_TYPES);
 	BOOST_CHECK_EQUAL(refContainer.count<B>(), 0);
 	BOOST_CHECK_EQUAL(refContainer.count<C>(), 0);
 
+	int bids[6] = { 12, 22, 37, 42, 51, 62 };
 	for (int i = 0; i < MAX_B_TYPES; i++) {
-		b[i] = new B(i);
+		b[i] = new B(bids[i]);
 		refContainer.template insert<B>(b[i]);
-		assert(b[i]->valid());
+		assert(b[i]->is_valid());
 	}
 	BOOST_CHECK_EQUAL(refContainer.count<A>(), MAX_A_TYPES);
 	BOOST_CHECK_EQUAL(refContainer.count<B>(), MAX_B_TYPES);
 	BOOST_CHECK_EQUAL(refContainer.count<C>(), 0);
 
+	int cids[9] = { 13, 23, 38, 43, 52, 63, 71, 87, 99 };
 	for (int i = 0; i < MAX_C_TYPES; i++) {
-		c[i] = new C(i);
+		c[i] = new C(cids[i]);
 		refContainer.template insert<C>(c[i]);
-		assert(c[i]->valid());
+		assert(c[i]->is_valid());
 	}
 
 	BOOST_CHECK_EQUAL(refContainer.count<A>(), MAX_A_TYPES);
 	BOOST_CHECK_EQUAL(refContainer.count<B>(), MAX_B_TYPES);
 	BOOST_CHECK_EQUAL(refContainer.count<C>(), MAX_C_TYPES);
 
+	print_count(refContainer);
+
 	/**
 	 * Searcher & Checker tests.
 	 */
-#define ID_CHECK 1
+#define ID_CHECK 42
 	GenericTestObject *res = nullptr;
 	CompareGenericTestObjectID check(ID_CHECK);
 	GenericTestObjectSearcher<CompareGenericTestObjectID> searcher(res, check);
@@ -433,30 +433,18 @@ BOOST_AUTO_TEST_CASE(ReferenceTypeListTest)
 
 	BOOST_CHECK_EQUAL(res->get_id(), ID_CHECK);
 
-	dynamic_cast<A *>(res)->removeReference();
-	BOOST_CHECK_EQUAL(refContainer.count<A>(), MAX_A_TYPES - 1);
-	res = nullptr;
-	id_searcher.Visit(refContainer);
-	dynamic_cast<B *>(res)->removeReference();
-	BOOST_CHECK_EQUAL(refContainer.count<B>(), MAX_B_TYPES - 1);
-	res = nullptr;
-	id_searcher.Visit(refContainer);
-	dynamic_cast<C *>(res)->removeReference();
-	BOOST_CHECK_EQUAL(refContainer.count<C>(), MAX_C_TYPES - 1);
+	printf("Found res of type %c id %d\n", res->get_type(), res->get_id());
 
 	for (int i = 0; i < MAX_A_TYPES; i++) {
-		if (a[i]->get_id() != ID_CHECK)
-			a[i]->removeReference();
+		a[i]->remove_reference();
 		delete a[i];
 	}
 	for (int i = 0; i < MAX_B_TYPES; i++) {
-		if (b[i]->get_id() != ID_CHECK)
-			b[i]->removeReference();
+		b[i]->remove_reference();
 		delete b[i];
 	}
 	for (int i = 0; i < MAX_C_TYPES; i++) {
-		if (c[i]->get_id() != ID_CHECK)
-			c[i]->removeReference();
+		c[i]->remove_reference();
 		delete c[i];
 	}
 #undef ID_CHECK
@@ -464,4 +452,6 @@ BOOST_AUTO_TEST_CASE(ReferenceTypeListTest)
 	BOOST_CHECK_EQUAL(refContainer.count<A>(), 0);
 	BOOST_CHECK_EQUAL(refContainer.count<B>(), 0);
 	BOOST_CHECK_EQUAL(refContainer.count<C>(), 0);
+
+	print_count(refContainer);
 }

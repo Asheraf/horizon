@@ -34,7 +34,7 @@ target_link_libraries(inter
 	    -lpthread
 		bcryptcpp
 		${CONFIG++_LIBRARY}
-        ${MYSQL_CONNECTOR_LIBRARIES}
+        ${CONCPP_LIBS}
         ${Readline_LIBRARY}
 )
 
@@ -51,7 +51,7 @@ target_include_directories(inter
 	PUBLIC
 		${PUBLIC_INCLUDES}
 		${CONFIG++_INCLUDE_DIR}
-        ${MYSQL_CONNECTOR_INCLUDE_DIRS}
+        ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}

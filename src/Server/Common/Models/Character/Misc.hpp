@@ -20,7 +20,6 @@
 
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 
 namespace Horizon
 {
@@ -42,36 +41,27 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_misc_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `rename_count`, `unique_item_counter`, `hotkey_row_index`, `change_slot_count` FROM `character_misc_data` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_rename_count((uint8_t) res->getUInt("rename_count"));
-				set_unique_item_counter(res->getUInt("unique_item_counter"));
-				set_hotkey_row_index((uint16_t) res->getUInt("hotkey_row_index"));
-				set_change_slot_count((uint8_t) res->getUInt("change_slot_count"));
-				ret = true;
+				set_rename_count((uint8_t) record[0].get<int>());
+				set_unique_item_counter(record[1]);
+				set_hotkey_row_index((uint8_t) record[2].get<int>());
+				set_change_slot_count((uint8_t) record[3].get<int>());
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Misc::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Misc::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -80,26 +70,22 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "REPLACE INTO `character_misc_data` "
 			"(`id`, `rename_count`, `unique_item_counter`, `hotkey_row_index`, `change_slot_count`) "
 			"VALUES (?, ?, ?, ?, ?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_rename_count());
-			pstmt->setInt64(3, get_unique_item_counter());
-			pstmt->setInt(4, get_hotkey_row_index());
-			pstmt->setInt(5, get_change_slot_count());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query)
+					.bind(get_character_id(),
+						  get_rename_count(),
+						  get_unique_item_counter(),
+						  get_hotkey_row_index(),
+						  get_change_slot_count())
+					.execute();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Misc::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */

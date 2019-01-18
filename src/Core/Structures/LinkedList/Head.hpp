@@ -15,177 +15,174 @@ namespace LinkedList
 {
 class Head
 {
-    std::atomic<Element *> _e_first{nullptr};
-    std::atomic<Element *> _e_last{nullptr};
-    std::atomic<uint32_t> _list_size;
+private:
+	Element _first;
+	Element _last;
+	uint32_t _size;
 
 public:
-    Head()
-	: _e_first{new Element()}, _e_last{new Element()}, _list_size(0)
-    {
-		Element *first = _e_first.load();
-		Element *last = _e_last.load();
-        first->setNext(last);
-        last->setPrev(first);
-    }
-
-    bool empty() const
+	Head(): _size(0)
 	{
-		Element *first = _e_first.load();
-		Element *last = _e_last.load();
+		// create empty list
 
-		return !(first->next() && first->next()->valid());
+		_first._next = &_last;
+		_last._prev = &_first;
 	}
 
-	virtual Element *first() { return (empty() ? nullptr : _e_first.load()->next()); }
-    virtual Element const *first() const { return (empty() ? nullptr : _e_first.load()->next()); }
-	
-	virtual Element *last() { return(empty() ? nullptr : _e_last.load()->prev()); }
-    virtual Element const *last() const { return(empty() ? nullptr : _e_last.load()->prev()); }
+	bool is_empty() const { return(!_first._next->is_in_list()); }
 
-    void push_front(Element *e) { _e_first.load()->insertAfter(e); }
-    void push_back(Element *e) { _e_last.load()->insertBefore(e); }
+	Element *first()       { return (is_empty() ? nullptr : _first._next); }
+	Element const *first() const { return (is_empty() ? nullptr : _first._next); }
 
-    uint32_t size() const
-    {
-        if (!_list_size) {
-            uint32_t result = 0;
-            Element const *e = first();
+	Element *last()       { return(is_empty() ? nullptr : _last._prev); }
+	Element const *last() const { return(is_empty() ? nullptr : _last._prev); }
 
-            while (e != nullptr) {
-                result++;
-                e = e->next();
-            }
+	void push_front(Element *pElem)
+	{
+		_first.push_after(pElem);
+	}
 
-            return result;
-        }
+	void push_back(Element *pElem)
+	{
+		_last.push_before(pElem);
+	}
 
-		return _list_size;
-    }
+	uint32_t get_size() const
+	{
+		if (!_size)
+		{
+			uint32_t result = 0;
+			Element const* e = first();
+			while (e)
+			{
+				++result;
+				e = e->next();
+			}
+			return result;
+		}
+		else
+			return _size;
+	}
 
-    void incSize() { ++_list_size; }
-    void decSize() { --_list_size; }
+	void inc_size() { ++_size; }
+	void dec_size() { --_size; }
 
-    template <class _Ty>
-    class Iterator
-    {
+	template<class _Ty>
+	class Iterator
+	{
 	public:
-		typedef std::bidirectional_iterator_tag iterator_category;
-		typedef _Ty * pointer_t;
-		typedef _Ty const * const_pointer_t;
-		typedef _Ty & reference_t;
-		typedef _Ty const & const_reference_t;
+		typedef std::bidirectional_iterator_tag     iterator_category;
+		typedef _Ty                                 value_type;
+		typedef ptrdiff_t                           difference_type;
+		typedef ptrdiff_t                           distance_type;
+		typedef _Ty*                                pointer;
+		typedef _Ty const*                          const_pointer;
+		typedef _Ty&                                reference;
+		typedef _Ty const &                         const_reference;
 
-		Iterator()
-		: _ptr(nullptr) // construct with null node pointer_t
-		{
+		Iterator() : _Ptr(nullptr)
+		{                                           // construct with null node pointer
 		}
 
-		Iterator(pointer_t _Pnode)
-		: _ptr(_Pnode) // construct with node pointer_t _Pnode
-		{
+		Iterator(pointer _Pnode) : _Ptr(_Pnode)
+		{                                           // construct with node pointer _Pnode
 		}
 
-		Iterator(Iterator const &r)
-		: _ptr(r._ptr.load())
+		Iterator& operator=(Iterator const &_Right)
 		{
-		}
-
-		Iterator &operator=(Iterator const &r)
-		{
-			_ptr = r._ptr;
+			_Ptr = _Right._Ptr;
 			return *this;
 		}
 
-		Iterator &operator=(const_pointer_t const &r)
+		Iterator& operator=(const_pointer const &_Right)
 		{
-			_ptr = pointer_t(r);
+			_Ptr = pointer(_Right);
 			return *this;
 		}
 
-		reference_t operator*()
-		{ // return designated value
-			return *_ptr;
+		reference operator*()
+		{                                           // return designated value
+			return *_Ptr;
 		}
 
-		pointer_t operator->()
-		{ // return pointer_t to class object
-			return _ptr;
+		pointer operator->()
+		{                                           // return pointer to class object
+			return _Ptr;
 		}
 
-		Iterator &operator++ ()
-		{ // preincrement
-			_ptr = static_cast<_Ty *>(_ptr.load()->next());
+		Iterator& operator++()
+		{                                           // preincrement
+			_Ptr = static_cast<pointer>(_Ptr->next());
 			return (*this);
 		}
 
 		Iterator operator++(int)
-		{ // postincrement
-			Iterator<_Ty> _Tmp = (*this);
+		{                                           // postincrement
+			Iterator<_Ty> _Tmp = *this;
 			++*this;
 			return (_Tmp);
 		}
 
-		Iterator &operator--()
-		{ // predecrement
-			_ptr = (_Ty *) _ptr->prev();
+		Iterator& operator--()
+		{                                           // predecrement
+			_Ptr = static_cast<pointer>(_Ptr->prev());
 			return (*this);
 		}
 
 		Iterator operator--(int)
-		{ // postdecrement
-			Iterator<_Ty> _Tmp = (*this);
+		{                                           // postdecrement
+			Iterator<_Ty> _Tmp = *this;
 			--*this;
 			return (_Tmp);
 		}
 
-		bool operator==(Iterator const &r) const
-		{ // test for iterator equality
-			return (_ptr == r._ptr);
+		bool operator==(Iterator const &_Right) const
+		{                                           // test for iterator equality
+			return (_Ptr == _Right._Ptr);
 		}
 
-		bool operator!=(Iterator const &r) const
-		{ // test for iterator inequality
-			return (!(*this == r));
+		bool operator!=(Iterator const &_Right) const
+		{                                           // test for iterator inequality
+			return (!(*this == _Right));
 		}
 
-		bool operator==(pointer_t const &r) const
-		{ // test for pointer_t equality
-			return (_ptr != r);
+		bool operator==(pointer const &_Right) const
+		{                                           // test for pointer equality
+			return (_Ptr != _Right);
 		}
 
-		bool operator!=(pointer_t const &r) const
-		{ // test for pointer_t equality
-			return (!(*this == r));
+		bool operator!=(pointer const &_Right) const
+		{                                           // test for pointer equality
+			return (!(*this == _Right));
 		}
 
-		bool operator==(reference_t r) const
-		{ // test for reference_t equality
-			return (_ptr == &r);
+		bool operator==(const_reference _Right) const
+		{                                           // test for reference equality
+			return (_Ptr == &_Right);
 		}
 
-		bool operator!=(reference_t r) const
-		{ // test for reference_t equality
-			return (_ptr != &r);
+		bool operator!=(const_reference _Right) const
+		{                                           // test for reference equality
+			return (_Ptr != &_Right);
 		}
 
-		pointer_t _Mynode()
-		{ // return node pointer_t
-			return (_ptr);
+		pointer _Mynode()
+		{                                           // return node pointer
+			return (_Ptr);
 		}
 
 	protected:
-		std::atomic<pointer_t> _ptr; // pointer_t to node
-    };
+		pointer _Ptr;                               // pointer to node
+	};
 
-    typedef Iterator<Element> iterator;
+	typedef Iterator<Element> iterator;
+
+private:
+	Head(Head const&) = delete;
+	Head& operator=(Head const&) = delete;
 
 protected:
 	~Head() { }
-
-private:
-    Head(Head const &) = delete;
-    Head &operator=(Head const &) = delete;
 };
 }
 }

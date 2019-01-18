@@ -18,7 +18,6 @@
 #ifndef HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP
 #define HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP
 
-#include "Core/Database/MySqlConnection.hpp"
 #include "Server/Common/Horizon.hpp"
 #include "Server/Common/Server.hpp"
 
@@ -54,54 +53,45 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT * FROM `character_status_data` WHERE `id` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `job_class`, `base_level`, `job_level`, `base_experience`, `job_experience`, `zeny`, `strength`, `agility`, `vitality`, `intelligence`, `dexterity`, `luck`, `maximum_hp`, `maximum_sp`, `hp`, `sp`, `status_points`, `skill_points`, `body_state`, `virtue`, `honor`, `manner` FROM `character_status_data` WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, char_id);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(char_id).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
+			if (record) {
 				set_character_id(char_id);
-				set_job_class((uint16_t) res->getUInt("job_class"));
-				set_base_level((uint16_t) res->getUInt("base_level"));
-				set_job_level((uint16_t) res->getUInt("job_level"));
-				set_base_exp(res->getUInt64("base_experience"));
-				set_job_exp(res->getUInt64("job_experience"));
-				set_zeny(res->getUInt("zeny"));
-				set_strength((uint16_t) res->getInt("strength"));
-				set_agility((uint16_t) res->getInt("agility"));
-				set_vitality((uint16_t) res->getInt("vitality"));
-				set_intelligence((uint16_t) res->getInt("intelligence"));
-				set_dexterity((uint16_t) res->getInt("dexterity"));
-				set_luck((uint16_t) res->getInt("luck"));
-				set_max_hp(res->getUInt("maximum_hp"));
-				set_max_sp(res->getUInt("maximum_sp"));
-				set_hp(res->getUInt("hp"));
-				set_sp(res->getUInt("sp"));
-				set_status_points(res->getUInt("status_points"));
-				set_skill_points(res->getUInt("skill_points"));
-				set_body_state(res->getUInt("body_state"));
-				set_virtue((int16_t) res->getInt("virtue"));
-				set_honor(res->getUInt("honor"));
-				set_manner((int16_t) res->getInt("manner"));
-				ret = true;
+				set_job_class((uint16_t) record[0].get<int>());
+				set_base_level((uint16_t) record[1].get<int>());
+				set_job_level((uint16_t) record[2].get<int>());
+				set_base_exp(record[3]);
+				set_job_exp(record[4]);
+				set_zeny(record[5]);
+				set_strength((uint16_t) record[6].get<int>());
+				set_agility((uint16_t) record[7].get<int>());
+				set_vitality((uint16_t)record[8].get<int>());
+				set_intelligence((uint16_t) record[9].get<int>());
+				set_dexterity((uint16_t) record[10].get<int>());
+				set_luck((uint16_t) record[11].get<int>());
+				set_max_hp(record[12]);
+				set_max_sp(record[13]);
+				set_hp(record[14]);
+				set_sp(record[15]);
+				set_status_points(record[16]);
+				set_skill_points(record[17]);
+				set_body_state(record[18]);
+				set_virtue((uint16_t) record[19].get<int>());
+				set_honor((uint16_t) record[20].get<int>());
+				set_manner((uint16_t) record[21].get<int>());
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("Models::Character::Status::LoadFromDatabase: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Status::load: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-
-		return ret;
+		return false;
 	}
 
 	/**
@@ -110,8 +100,6 @@ public:
 	 */
 	void save(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "REPLACE INTO `character_status_data` "
 			"(`id`, `job_class`, `base_level`, `job_level`, "
 			"`base_experience`, `job_experience`, `zeny`, "
@@ -121,37 +109,36 @@ public:
 			"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setInt(1, get_character_id());
-			pstmt->setInt(2, get_job_class());
-			pstmt->setInt(3, get_base_level());
-			pstmt->setInt(4, get_job_level());
-			pstmt->setInt64(5, get_base_exp());
-			pstmt->setInt64(6, get_job_exp());
-			pstmt->setInt(7, get_zeny());
-			pstmt->setInt(8, get_strength());
-			pstmt->setInt(9, get_agility());
-			pstmt->setInt(10, get_vitality());
-			pstmt->setInt(11, get_intelligence());
-			pstmt->setInt(12, get_dexterity());
-			pstmt->setInt(13, get_luck());
-			pstmt->setInt(14, get_max_hp());
-			pstmt->setInt(15, get_max_sp());
-			pstmt->setInt(16, get_sp());
-			pstmt->setInt(17, get_hp());
-			pstmt->setInt(18, get_status_points());
-			pstmt->setInt(19, get_skill_points());
-			pstmt->setInt(20, get_body_state());
-			pstmt->setInt(21, get_virtue());
-			pstmt->setInt(22, get_honor());
-			pstmt->setInt(23, get_manner());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query)
+					.bind(get_character_id(),
+						  get_job_class(),
+						  get_base_level(),
+						  get_job_level(),
+						  get_base_exp(),
+						  get_job_exp(),
+						  get_zeny(),
+						  get_strength(),
+						  get_agility(),
+						  get_vitality(),
+						  get_intelligence(),
+						  get_dexterity(),
+						  get_luck(),
+						  get_max_hp(),
+						  get_max_sp(),
+						  get_hp(),
+						  get_sp(),
+						  get_status_points(),
+						  get_skill_points(),
+						  get_body_state(),
+						  get_virtue(),
+						  get_honor(),
+						  get_manner())
+					.execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("Status::save: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/* Character ID */

@@ -18,10 +18,10 @@ class Grid
 friend class Horizon::Zone::Game::MapManager;
 public:
 	template <class SPECIFIC_OBJECT>
-	void addObject(SPECIFIC_OBJECT *obj)
+	void add_object(SPECIFIC_OBJECT *obj)
 	{
 		_container.template insert<SPECIFIC_OBJECT>(obj);
-		assert(obj->valid());
+		assert(obj->is_valid());
 	}
 
 	template <class T>

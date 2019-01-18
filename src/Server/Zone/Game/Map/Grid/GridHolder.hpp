@@ -32,7 +32,7 @@ public:
 				delete _grids[x][y];
 	}
 
-	GridType *getGrid(GridCoords &coords)
+	GridType *get_grid(GridCoords &coords)
 	{
 		assert(coords.x() < _width);
 		assert(coords.y() < _height);
@@ -40,7 +40,7 @@ public:
 		return _grids[coords.x()][coords.y()];
 	}
 
-	void initializeGrid(GridCoords &coords, bool unused)
+	void initialize_grid(GridCoords &coords, bool unused)
 	{
 		assert(coords.x() < _width);
 		assert(coords.y() < _height);
@@ -51,21 +51,21 @@ public:
 	uint16_t height() { return _height; }
 	uint16_t width() { return _width; }
 
-	template<class VISITOR, class CONTAINER_TYPE>
-	void VisitAll(GridReferenceContainerVisitor<VISITOR, GridReferenceContainer<CONTAINER_TYPE>> &visitor)
+	template<class CONTAINER_TYPE, class VISITOR>
+	void VisitAll(GridReferenceContainerVisitor<GridReferenceContainer<CONTAINER_TYPE>, VISITOR> &visitor)
 	{
 		for (uint16_t x = 0; x < _width; ++x) {
 			for (uint16_t y = 0; y < _height; ++y) {
 				GridCoords c(x, y);
-				getGrid(c).Visit(visitor);
+				get_grid(c).Visit(visitor);
 			}
 		}
 	}
 
-	template<class VISITOR, class CONTAINER_TYPE>
-	void Visit(GridCoords coords,  GridReferenceContainerVisitor<VISITOR, GridReferenceContainer<CONTAINER_TYPE>> &visitor)
+	template<class CONTAINER_TYPE, class VISITOR>
+	void Visit(GridCoords coords, GridReferenceContainerVisitor<GridReferenceContainer<CONTAINER_TYPE>, VISITOR> &visitor)
 	{
-		getGrid(coords).Visit(visitor);
+		get_grid(coords).Visit(visitor);
 	}
 
 private:

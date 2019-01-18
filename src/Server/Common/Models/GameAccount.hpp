@@ -20,13 +20,11 @@
 
 #include "Server/Common/Server.hpp"
 #include "Libraries/BCrypt/BCrypt.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/Base/PacketHandler/InterPackets.hpp"
 
 #include <cstdint>
 #include <boost/asio/ip/address.hpp>
-#include <cppconn/resultset.h>
 
 namespace Horizon
 {
@@ -46,7 +44,7 @@ enum game_account_gender_types
 	ACCOUNT_GENDER_NONE
 };
 
-enum game_account_state_types
+enum game_account_state_type
 {
 	ACCOUNT_STATE_NONE,
 	ACCOUNT_STATE_BANNED
@@ -74,32 +72,51 @@ public:
 	 */
 	bool verify_credentials(Server *server, std::string username, std::string password)
 	{
-		std::string query = "SELECT * FROM `game_account` WHERE `username` = ? AND `password` = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `id`, `username`, `gender`, `email`, `group_id`, `state`, `unban_time`, `expiration_time`, UNIX_TIMESTAMP(`last_login`), `last_ip`, DATE_FORMAT(`birth_date`, '%Y-%m-%d'), `character_slots`, `pincode`, `pincode_expiry` FROM `game_account` WHERE `username` = ? AND `password` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setString(1, username);
-			pstmt->setString(2, password);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(username, password).execute().fetchOne();
 
-			if (res != nullptr && res->next()) {
-				/**
-				 * Create Game Account Data
-				 */
-				load_from_result_set(res);
-				ret = true;
+			if (record) {
+				id = record[0];
+				username = record[1].get<std::string>();
+				std::string account_gender = record[2];
+
+				if (account_gender == "M")
+					gender = ACCOUNT_GENDER_MALE;
+				else if (account_gender == "F")
+					gender = ACCOUNT_GENDER_FEMALE;
+				else if (account_gender == "NA")
+					gender = ACCOUNT_GENDER_NONE;
+
+				email = record[3].get<std::string>();
+				group_id = (uint16_t) record[4].get<int>();
+				state = (game_account_state_type) record[5].get<int>();
+				unban_time = record[6].get<int>();
+
+				expiration_time = record[7].get<int>();
+
+				if (record[8].getType() > 0)
+					last_login = record[8].get<int>();
+
+				last_ip = record[9].get<std::string>();
+
+				if (record[10].getType() > 0)
+					birth_date = record[10].get<std::string>();
+
+				character_slots = (uint8_t) record[11].get<int>();
+				pincode = record[12].get<std::string>();
+				pincode_expiry = record[13].get<int>();
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("GameAccount::verify_credentials: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("GameAccount::verify_credentials: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-		return ret;
+		return false;
 	}
 
 	/**
@@ -111,63 +128,52 @@ public:
 	 */
 	bool verify_credentials_bcrypt(Server *server, std::string username, std::string password)
 	{
-		std::string query = "SELECT * FROM `game_account` WHERE username = ?";
-		auto sql = server->mysql_borrow();
-		bool ret = false;
+		std::string query = "SELECT `id`, `username`, `password`, `gender`, `email`, `group_id`, `state`, `unban_time`, `expiration_time`, UNIX_TIMESTAMP(`last_login`), `last_ip`, DATE_FORMAT(`birth_date`, '%Y-%m-%d'), `character_slots`, `pincode`, `pincode_expiry` FROM `game_account` WHERE username = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setString(1, username);
-			sql::ResultSet *res = pstmt->executeQuery();
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(username).execute().fetchOne();
+			std::string stored_password = record[2];
 
-			if (res != nullptr && res->next()
-			    && BCrypt::validate_password(password, res->getString("password"))) {
-				/**
-				 * Create Game Account Data
-				 */
-				load_from_result_set(res);
-				ret = true;
+			if (record && BCrypt::validate_password(password, stored_password)) {
+				id = record[0];
+				username = record[1].get<std::string>();
+				std::string account_gender = record[3].get<std::string>();
+
+				if (account_gender == "M")
+					gender = ACCOUNT_GENDER_MALE;
+				else if (account_gender == "F")
+					gender = ACCOUNT_GENDER_FEMALE;
+				else if (account_gender == "NA")
+					gender = ACCOUNT_GENDER_NONE;
+
+				email = record[4].get<std::string>();
+				group_id = (uint16_t) record[5].get<int>();
+				state = (game_account_state_type) record[6].get<int>();
+				unban_time = record[7].get<int>();
+
+				expiration_time = record[8].get<int>();
+
+				if (record[9].getType() > 0) // check null
+					last_login = record[9].get<int>();
+
+				last_ip = record[10].get<std::string>();
+
+				if (record[11].getType() > 0)
+					birth_date = record[11].get<std::string>();
+
+				character_slots = record[12].get<int>();
+				pincode = record[13].get<std::string>();
+				pincode_expiry = record[14].get<int>();
+				s.close();
+				return true;
 			}
-
-			delete res;
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("GameAccount::verify_credentials_bcrypt: {}", e.what());
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("GameAccount::verify_credentials_bcrypt: {}", e.what());
 		}
 
-		server->mysql_unborrow(sql);
-		return ret;
-	}
-
-	/**
-	 * @brief Load data into the model from a result set retrieved from the database.
-	 * @param[in] res   instance of sql::ResultSet loaded from the database.
-	 */
-	void load_from_result_set(sql::ResultSet *res)
-	{
-		id = res->getInt("id");
-		username = res->getString("username");
-		std::string account_gender = res->getString("gender");
-
-		if (account_gender == "M")
-			gender = ACCOUNT_GENDER_MALE;
-		else if (account_gender == "F")
-			gender = ACCOUNT_GENDER_FEMALE;
-		else if (account_gender == "NA")
-			gender = ACCOUNT_GENDER_NONE;
-
-		email = res->getString("email");
-		group_id = (uint16_t) res->getInt("group_id");
-		state = (game_account_state_types) res->getInt("state");
-		unban_time = res->getInt64("unban_time");
-
-		expiration_time = res->getInt64("expiration_time");
-		last_login = res->getInt64("last_login");
-		last_ip = res->getString("last_ip");
-		birth_date = res->getString("birth_date");
-		character_slots = (uint8_t) res->getInt("character_slots");
-		pincode = res->getInt("pincode");
-		pincode_expiry = res->getInt64("pincode_expiry");
+		return false;
 	}
 
 	/**
@@ -176,33 +182,30 @@ public:
 	 */
 	void update(Server *server)
 	{
-		auto sql = server->mysql_borrow();
-
 		std::string query = "UPDATE `game_account` "
 		"SET `gender` = ?, `email` = ?, `group_id` = ?, `state` = ?, `unban_time` = ?, "
-		"`expiration_time` = ?, `last_login` = ?, `last_ip` = ?, `birth_date` = ?, `character_slots` = ?, `pincode` = ?, `pincode_expiry` = ?) WHERE `id` = ?";
+		"`expiration_time` = ?, `last_login` = FROM_UNIXTIME(?), `last_ip` = ?, `birth_date` = FROM_UNIXTIME(?), `character_slots` = ?, `pincode` = ?, `pincode_expiry` = ?) WHERE `id` = ?";
 
 		try {
-			sql::PreparedStatement *pstmt = sql->getConnection()->prepareStatement(query);
-			pstmt->setString(1, (get_gender() == ACCOUNT_GENDER_MALE ? "M" : "F"));
-			pstmt->setString(2, get_email());
-			pstmt->setInt(3, get_state());
-			pstmt->setInt(4, get_unban_time());
-			pstmt->setInt(5, get_expiration_time());
-			pstmt->setInt(6, get_last_login());
-			pstmt->setString(7, get_last_ip());
-			pstmt->setString(8, get_birthdate());
-			pstmt->setInt(9, get_character_slots());
-			pstmt->setString(10, get_pincode());
-			pstmt->setInt(11, get_pincode_expiry());
-			pstmt->setInt(12, get_id());
-			pstmt->executeUpdate();
-			delete pstmt;
-		} catch (sql::SQLException &e) {
-			DBLog->error("SQLException: {}", e.what());
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query)
+				.bind(get_gender() == ACCOUNT_GENDER_MALE ? "M" : "F",
+					  get_email(),
+					  (uint8_t) get_state(),
+					  get_unban_time(),
+					  get_expiration_time(),
+					  get_last_login(),
+					  get_last_ip(),
+					  get_birthdate(),
+					  get_character_slots(),
+					  get_pincode(),
+					  get_pincode_expiry(),
+					  get_id())
+				.execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("GameAccount::update: {}", e.what());
 		}
-
-		server->mysql_unborrow(sql);
 	}
 
 	/**
@@ -237,7 +240,7 @@ public:
 		set_gender(static_cast<game_account_gender_types>(pkt.gender));
 		set_email(pkt.email);
 		set_group_id(pkt.group_id);
-		set_state(static_cast<game_account_state_types>(pkt.state));
+		set_state(static_cast<game_account_state_type>(pkt.state));
 		set_unban_time(pkt.unban_time);
 		set_expiration_time(pkt.expiration_time);
 		set_last_login(pkt.last_login);
@@ -265,8 +268,8 @@ public:
 	uint16_t get_group_id() const { return group_id; }
 	void set_group_id(uint16_t group_id) { GameAccount::group_id = group_id; }
 	/* State */
-	game_account_state_types get_state() const { return state; }
-	void set_state(game_account_state_types state) { GameAccount::state = state; }
+	game_account_state_type get_state() const { return state; }
+	void set_state(game_account_state_type state) { GameAccount::state = state; }
 	/* Unban Time */
 	time_t get_unban_time() const { return unban_time; }
 	void set_unban_time(time_t unban_time) { GameAccount::unban_time = unban_time; }
@@ -343,7 +346,7 @@ private:
 	game_account_gender_types gender{ACCOUNT_GENDER_NONE};              ///< Gender
 	std::string email{};                             ///< e-mail (by default: a@a.com)
 	uint16_t group_id{};                             ///< player group id
-	game_account_state_types state{};                ///< packet 0x006a value + 1 (0: complete OK)
+	game_account_state_type state{};                ///< packet 0x006a value + 1 (0: complete OK)
 	time_t unban_time{};                             ///< (timestamp): ban time limit of the account (0 = no ban)
 	time_t expiration_time{};                        ///< (timestamp): validity limit of the account (0 = unlimited)
 	time_t last_login{};                             ///< date+time of last successful login

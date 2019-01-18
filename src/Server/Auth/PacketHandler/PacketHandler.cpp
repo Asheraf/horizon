@@ -17,7 +17,6 @@
 
 #include "PacketHandler.hpp"
 
-#include "Core/Database/MySqlConnection.hpp"
 #include "Libraries/BCrypt/BCrypt.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
@@ -124,11 +123,6 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 	}
 
 	if (authenticated) {
-		if (game_account == nullptr) {
-			AuthLog->error("nullptr gameaccount!?!?!");
-			return;
-		}
-
 		get_socket()->get_session()->set_game_account(game_account);
 
 		AuthLog->info("Authentication of account '{}' granted.", pkt.username);

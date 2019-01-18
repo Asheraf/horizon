@@ -36,26 +36,17 @@ class TestRefManager : public Horizon::Structures::LinkedList::RefManager<TestRe
 public:
 	typedef Horizon::Structures::LinkedList::Head::Iterator<TestReference<OBJECT>> iterator;
 
-	TestReference<OBJECT> *first() override
+	TestReference<OBJECT> *first()
 	{
 		return static_cast<TestReference<OBJECT> *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::first());
 	}
-	TestReference<OBJECT> const *first() const override
+
+	TestReference<OBJECT> const *first() const
 	{
 		return static_cast<TestReference<OBJECT> const *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::first());
 	}
 
-	TestReference<OBJECT> *last() override
-	{
-		return static_cast<TestReference<OBJECT> *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::last());
-	}
-	TestReference<OBJECT> const *last() const override
-	{
-		return static_cast<TestReference<OBJECT> const *> (Horizon::Structures::LinkedList::RefManager<TestRefManager<OBJECT>, OBJECT>::last());
-	}
-
 	iterator begin() { return iterator(first()); }
-	iterator end()   { return iterator(last()); }
 };
 
 template <class OBJECT>
@@ -66,29 +57,29 @@ public:
     {
     	//
     }
-    ~TestReference() override { this->erase(); }
-    TestReference *next() override
+    ~TestReference() override { this->remove(); }
+    TestReference *next()
     {
     	return (TestReference *) Horizon::Structures::LinkedList::Reference<TestRefManager<OBJECT>, OBJECT>::next();
     }
 
 protected:
-    void targetObjectBuildLink() override
+    void target_object_build_link() override
     {
         // called from link()
         this->target()->push_front(this);
-        this->target()->incSize();
+        this->target()->inc_size();
     }
-    void targetObjectDestroyLink() override
+    void target_object_destroy_link() override
     {
         // called from erase()
-        if (this->valid())
-        	this->target()->decSize();
+        if (this->is_valid())
+        	this->target()->dec_size();
     }
-    void sourceObjectDestroyLink() override
+    void source_object_destroy_link() override
     {
         // called from invalidate()
-        this->target()->decSize();
+        this->target()->dec_size();
     }
 };
 
@@ -98,11 +89,11 @@ class TestObject
 public:
 	virtual ~TestObject() { }
 
-    bool valid() const { return _ref.valid(); }
-    void addReference(TestRefManager<T> &m) { assert(!valid()); _ref.link(&m, (T*) this); }
-    void removeReference() { assert(valid()); _ref.erase(); }
+    bool valid() const { return _ref.is_valid(); }
+    void add_reference(TestRefManager<T> &m) { assert(!valid()); _ref.link(&m, (T*) this); }
+    void remove_reference() { assert(valid()); _ref.invalidate(); }
 
-	TestReference<T> &getReference() { return _ref; }
+	TestReference<T> &get_reference() { return _ref; }
 
 private:
 	TestReference<T> _ref;
@@ -132,8 +123,8 @@ BOOST_AUTO_TEST_CASE(ReferenceListTest)
 	for (int i = 0; i < MAX_LIMIT; i++) {
 		var[i] = i;
 		player[i] = std::make_shared<TestObject<Player>>();
-		player[i]->addReference(playerRefMgr);
-		player[i]->getReference().source()->set_id(var[i]);
+		player[i]->add_reference(playerRefMgr);
+		player[i]->get_reference().source()->set_id(var[i]);
 		BOOST_TEST(player[i]->valid());
 	}
 
@@ -145,24 +136,13 @@ BOOST_AUTO_TEST_CASE(ReferenceListTest)
 	for (auto it = playerRefMgr.begin(); it != TestRefManager<Player>::iterator(nullptr); ++it)
 		BOOST_TEST(it->source()->get_id() == var[ofs--]);
 
-	ofs = 0;
-	for (auto it = playerRefMgr.end(); it != TestRefManager<Player>::iterator(nullptr); it--)
-		BOOST_TEST(it->source()->get_id() == var[ofs++]);
-
-	ofs = 0;
-	for (auto it = playerRefMgr.end(); it != TestRefManager<Player>::iterator(nullptr); --it)
-		BOOST_TEST(it->source()->get_id() == var[ofs++]);
-
-	BOOST_TEST(playerRefMgr.size() == MAX_LIMIT);
-
-	BOOST_TEST(playerRefMgr.first()->source()->get_id() == var[MAX_LIMIT - 1]);
-	BOOST_TEST(playerRefMgr.last()->source()->get_id() == var[0]);
+	BOOST_TEST(playerRefMgr.get_size() == MAX_LIMIT);
 
 	BOOST_TEST(playerRefMgr.first()->prev() == nullptr);
 	BOOST_TEST(playerRefMgr.last()->next() == nullptr);
 
 	for (int i = 0; i < MAX_LIMIT; i++)
-		player[i]->removeReference();
+		player[i]->remove_reference();
 
-	BOOST_TEST(playerRefMgr.size() == 0);
+	BOOST_TEST(playerRefMgr.get_size() == 0);
 }

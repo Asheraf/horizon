@@ -19,7 +19,6 @@
 #define HORIZON_AUTH_MAIN_HPP
 
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
-#include "Core/Database/MySqlConnection.hpp"
 #include "Common/Server.hpp"
 #include "Common/Models/Configuration/AuthServerConfiguration.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"

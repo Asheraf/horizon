@@ -58,7 +58,7 @@ public:
 	template <class T>
 	bool addEntityToMap(T *entity, MapCoords coords);
 
-	AStar *get_pathfinder() { return _pathfinder; }
+	AStar::Generator *get_pathfinder() { return _pathfinder; }
 
 	void update(uint32_t diff);
 	
@@ -70,7 +70,7 @@ private:
 	GridHolderType _gridholder;
 	boost::mutex _grid_init_mutex;
 	// Path Finding 
-	AStar *_pathfinder;
+	AStar::Generator *_pathfinder;
 };
 }
 }
@@ -79,8 +79,8 @@ private:
 template <class T>
 bool Horizon::Zone::Game::Map::addEntityToMap(T *entity, MapCoords mcoords)
 {
-	GridCoords gcoords(mcoords.x() / MAX_CELLS_PER_GRID, mcoords.y() / MAX_CELLS_PER_GRID);
-	_gridholder.getGrid(gcoords)->addObject<T>(&*entity);
+	GridCoords gcoords(mcoords.x() / MAX_GRID_WIDTH, mcoords.y() / MAX_GRID_WIDTH);
+	_gridholder.get_grid(gcoords)->add_object<T>(entity);
 	entity->set_grid_coords(gcoords);
 	return true;
 }

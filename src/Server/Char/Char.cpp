@@ -17,7 +17,6 @@
 
 #include "Char.hpp"
 
-#include "Core/Database/MySqlConnection.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "Server/Char/Interface/InterAPI.hpp"
 #include "Server/Char/Session/CharSession.hpp"
