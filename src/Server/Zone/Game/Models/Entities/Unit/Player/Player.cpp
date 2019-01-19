@@ -34,20 +34,22 @@ Player::~Player()
 void Player::initialize()
 {
 	Unit::initialize();
-	//get_session()->get_packet_handler()->Send_ZC_INITIAL_STATUS();
+	get_session()->get_packet_handler()->Send_ZC_INITIAL_STATUS();
+	get_session()->get_packet_handler()->Send_ZC_SPAWN_UNIT();
 }
 
 void Player::update_position(uint16_t x, uint16_t y)
 {
+	std::shared_ptr<Position> p = get_character()->get_position_data();
 	get_session()->get_packet_handler()->Send_ZC_NOTIFY_PLAYERMOVE(x, y);
-	get_character()->get_position_data()->set_current_x(x);
-	get_character()->get_position_data()->set_current_y(y);
+	p->set_current_x(x);
+	p->set_current_y(y);
 }
 
 void Player::stop_movement()
 {
 	MapCoords &coords = get_map_coords();
-	get_session()->get_packet_handler()->Send_ZC_STOPMOVE(coords.x(), coords.y());
+	get_session()->get_packet_handler()->Send_ZC_STOPMOVE(getGUID(), coords.x(), coords.y());
 }
 
 std::shared_ptr<Character> Player::get_character()
@@ -62,7 +64,7 @@ void Player::update(uint32_t diff)
 
 void Player::update_status()
 {
-	get_session()->get_packet_handler()->Send_ZC_PAR_CHANGE(0, 200);
-//	get_session()->get_packet_handler()->Send_ZC_PAR_CHANGE(24, 1000);
-//	get_session()->get_packet_handler()->Send_ZC_PAR_CHANGE(25, 1500);
+	get_session()->get_packet_handler()->Send_ZC_PAR_CHANGE(0, 150);
+////	get_session()->get_packet_handler()->Send_ZC_PAR_CHANGE(24, 1000);
+////	get_session()->get_packet_handler()->Send_ZC_PAR_CHANGE(25, 1500);
 }

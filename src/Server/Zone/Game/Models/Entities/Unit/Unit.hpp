@@ -23,7 +23,7 @@ public:
 
 	virtual void initialize() override;
 	virtual bool move_to_pos(uint16_t x, uint16_t y);
-	void schedule_movement(MapCoords mcoords);
+	bool schedule_movement(MapCoords mcoords);
 	void move();
 	virtual void update(uint32_t diff) override;
 	virtual void update_status() = 0;

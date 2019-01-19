@@ -235,10 +235,10 @@ void PacketHandler::Send_ZC_NOTIFY_PLAYERMOVE(uint16_t x1, uint16_t y1)
 	send_packet(pkt);
 }
 
-void PacketHandler::Send_ZC_STOPMOVE(uint16_t x, uint16_t y)
+void PacketHandler::Send_ZC_STOPMOVE(uint32_t guid, uint16_t x, uint16_t y)
 {
 	PACKET_ZC_STOPMOVE pkt;
-	pkt.guid = get_socket()->get_session()->get_game_account()->get_id();
+	pkt.guid = guid;
 	pkt.x = x;
 	pkt.y = y;
 	send_packet(pkt);
@@ -255,6 +255,12 @@ void PacketHandler::Send_ZC_PAR_CHANGE(uint16_t type, uint16_t value)
 void PacketHandler::Send_ZC_INITIAL_STATUS()
 {
 	PACKET_ZC_INITIAL_STATUS pkt;
+	send_packet(pkt);
+}
+
+void PacketHandler::Send_ZC_SPAWN_UNIT()
+{
+	PACKET_ZC_SPAWN_UNIT pkt;
 	send_packet(pkt);
 }
 

@@ -37,7 +37,7 @@ void Unit::initialize()
 	update_status();
 }
 
-void Unit::schedule_movement(MapCoords coords)
+bool Unit::schedule_movement(MapCoords coords)
 {
 	AStar::Vec2i source_coords = { get_map_coords().x(), get_map_coords().y() };
 	AStar::Vec2i dest_coords = { coords.x(), coords.y() };
@@ -51,7 +51,7 @@ void Unit::schedule_movement(MapCoords coords)
 	auto path = map->get_pathfinder()->findPath(source_coords, dest_coords);
 
 	if (path.size() == 0)
-		return;
+		return false;
 
 	_walk_path = path;
 	std::reverse(_walk_path.begin(), _walk_path.end());
@@ -59,10 +59,16 @@ void Unit::schedule_movement(MapCoords coords)
 
 	printf("%d %d -> %d %d\n", source_coords.x, source_coords.y, dest_coords.x, dest_coords.y);
 
-	if (_walk_path.size() > 0) {
+	_changed_dest_pos = {0, 0};
+
+	if (_walk_path.size() > 14 || _walk_path.size() == 0) {
+		static_cast<Player *>(this)->stop_movement();
+	} else if (_walk_path.size() > 0) {
 		update_position(_dest_pos.x(), _dest_pos.y());
 		move();
 	}
+
+	return true;
 }
 
 void Unit::move()
@@ -74,7 +80,6 @@ void Unit::move()
 
 	if (_changed_dest_pos != MapCoords(0, 0)) {
 		_dest_pos = _changed_dest_pos;
-		_changed_dest_pos = {0, 0};
 		schedule_movement(_dest_pos);
 		return;
 	}
@@ -100,7 +105,7 @@ void Unit::move()
 
 bool Unit::move_to_pos(uint16_t x, uint16_t y)
 {
-	if (_walk_path.size() > 0) {
+	if (getScheduler().Count(ENTITY_SCHEDULE_WALK)) {
 		_changed_dest_pos = { x, y };
 		return true;
 	}

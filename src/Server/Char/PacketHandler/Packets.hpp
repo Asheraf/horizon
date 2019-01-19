@@ -112,7 +112,7 @@ struct character_list_data
 		head_mid_view_id = view->get_head_mid_view_id();
 		hair_color_id = view->get_hair_color_id();
 		clothes_color_id = view->get_cloth_color_id();
-		strncpy(name, c->get_name().c_str(), MAX_CHAR_NAME_LENGTH);
+		strncpy(name, c->get_name().c_str(), MAX_UNIT_NAME_LENGTH);
 		strength = status->get_strength();
 		agility = status->get_agility();
 		vitality = status->get_vitality();
@@ -155,7 +155,7 @@ struct character_list_data
 	uint16_t head_mid_view_id{};     ///< 74
 	uint16_t hair_color_id{};        ///< 76
 	uint16_t clothes_color_id{};     ///< 78
-	char name[MAX_CHAR_NAME_LENGTH]{};     ///< 80
+	char name[MAX_UNIT_NAME_LENGTH]{};     ///< 80
 	uint8_t strength{};              ///< 104
 	uint8_t agility{};
 	uint8_t vitality{};
@@ -193,7 +193,7 @@ struct PACKET_CHAR_CREATE : public Packet
 {
 	PACKET_CHAR_CREATE() : Packet(Horizon::Char::packets::CHAR_CREATE) {}
 	//S 0067 <name>.24B <str>.B <agi>.B <vit>.B <int>.B <dex>.B <luk>.B <slot>.B <hair color>.W <hair style>.W
-	char name[MAX_CHAR_NAME_LENGTH];
+	char name[MAX_UNIT_NAME_LENGTH];
 	uint8_t str{};
 	uint8_t agi{};
 	uint8_t vit{};
@@ -302,7 +302,7 @@ struct PACKET_CHAR_CREATE_2015 : public Packet
 {
 	PACKET_CHAR_CREATE_2015() : Packet(Horizon::Char::packets::CHAR_CREATE_2015) {}
 	// S 0a39 <name>.24B <slot>.B <hair color>.W <hair style>.W <starting job class ID>.W <Unknown>.(W or 2 B's)??? <sex>.B
-	char name[MAX_CHAR_NAME_LENGTH];
+	char name[MAX_UNIT_NAME_LENGTH];
 	uint8_t slot{};
 	uint16_t hair_color{};
 	uint16_t hair_style{};
@@ -397,7 +397,7 @@ struct PACKET_CHAR_RENAME_1 : public Packet
 {
 	PACKET_CHAR_RENAME_1() : Packet(Horizon::Char::packets::CHAR_RENAME_1) {}
 	uint32_t character_id{};
-	char new_name[MAX_CHAR_NAME_LENGTH];
+	char new_name[MAX_UNIT_NAME_LENGTH];
 };
 
 struct PACKET_CHAR_RENAME_2 : public Packet
@@ -405,7 +405,7 @@ struct PACKET_CHAR_RENAME_2 : public Packet
 	PACKET_CHAR_RENAME_2() : Packet(Horizon::Char::packets::CHAR_RENAME_2) {}
 	uint32_t account_id{};
 	uint32_t character_id{};
-	char new_name[MAX_CHAR_NAME_LENGTH];
+	char new_name[MAX_UNIT_NAME_LENGTH];
 };
 
 struct PACKET_CHAR_RENAME_CONFIRM : public Packet
