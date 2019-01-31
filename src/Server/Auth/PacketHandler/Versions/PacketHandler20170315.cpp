@@ -32,24 +32,26 @@ Horizon::Auth::PacketHandler20170315::~PacketHandler20170315()
 {
 }
 
-void Horizon::Auth::PacketHandler20170315::Send_AC_ACCEPT_LOGIN()
+void Horizon::Auth::PacketHandler20170315::initialize_handlers()
 {
-	// Override common handler.
-	AuthLog->info("Overloaded!");
-	Send_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
+	Horizon::Auth::PacketHandler::initialize_handlers();
+	add_packet_handler(CA_LOGIN, boost::bind(&PacketHandler20170315::Handle_TEST_POLY, this, boost::placeholders::_1));
 }
 
-void Horizon::Auth::PacketHandler20170315::Handle_TEST_POLY(PacketBuffer &buf)
+bool Horizon::Auth::PacketHandler20170315::Handle_TEST_POLY(PacketBuffer &buf)
 {
 	PACKET_CA_LOGIN pkt;
 	buf >> pkt;
 
 	AuthLog->info("poly working {}", pkt.version);
 	Send_AC_ACCEPT_LOGIN();
+
+	return true;
 }
 
-void Horizon::Auth::PacketHandler20170315::initialize_handlers()
+void Horizon::Auth::PacketHandler20170315::Send_AC_ACCEPT_LOGIN()
 {
-	Horizon::Auth::PacketHandler::initialize_handlers();
-	add_packet_handler(CA_LOGIN, boost::bind(&PacketHandler20170315::Handle_TEST_POLY, this, boost::placeholders::_1));
+	// Override common handler.
+	AuthLog->info("Overloaded!");
+	Send_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
 }

@@ -31,7 +31,8 @@ namespace Character
 class Group
 {
 public:
-	Group() {}
+	Group(uint32_t char_id) : _character_id(char_id) {}
+	
 	~Group() {}
 
 	/**
@@ -85,19 +86,19 @@ public:
 	}
 
 	/* Character ID */
-	uint32_t get_character_id() const { return character_id; }
-	void set_character_id(uint32_t character_id) { Group::character_id = character_id; }
+	uint32_t get_character_id() const { return _character_id; }
+	void set_character_id(uint32_t character_id) { _character_id = character_id; }
 	/* Party ID */
-	uint32_t get_party_id() const { return party_id; }
-	void set_party_id(uint32_t party_id) { Group::party_id = party_id; }
+	uint32_t get_party_id() const { return _party_id; }
+	void set_party_id(uint32_t party_id) { _party_id = party_id; }
 	/* Guild ID */
-	uint32_t get_guild_id() const { return guild_id; }
-	void set_guild_id(uint32_t guild_id) { Group::guild_id = guild_id; }
+	uint32_t get_guild_id() const { return _guild_id; }
+	void set_guild_id(uint32_t guild_id) { _guild_id = guild_id; }
 
 private:
-	uint32_t character_id{0};
-	uint32_t party_id{0};
-	uint32_t guild_id{0};
+	uint32_t _character_id{0};
+	uint32_t _party_id{0};
+	uint32_t _guild_id{0};
 };
 }
 }

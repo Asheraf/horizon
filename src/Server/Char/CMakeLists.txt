@@ -58,7 +58,6 @@ target_include_directories(char
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
-message("Installing char server here: ${CMAKE_INSTALL_PREFIX}")
 install(TARGETS char
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})

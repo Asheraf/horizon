@@ -73,30 +73,46 @@ mcache_import_error_types Horizon::Libraries::MapCache::ImportFromCacheFile()
 	memset(uncompressed_buf, '\0', uncompressed_size);
 
 	// Read the remaining size.
-	if (!ifs.read((char *) compressed_buf, compressed_size))
+	if (!ifs.read((char *) compressed_buf, compressed_size)) {
+		delete[] uncompressed_buf;
+		delete[] compressed_buf;
 		return MCACHE_IMPORT_READ_ERROR;
+	}
 
 	crc_32.process_bytes(compressed_buf, compressed_size);
 
-	if (crc_32.checksum() != m_cache->getHeader().getChecksum())
+	if (crc_32.checksum() != m_cache->getHeader().getChecksum()) {
+		delete[] uncompressed_buf;
+		delete[] compressed_buf;
 		return MCACHE_IMPORT_INVALID_CHECKSUM;
+	}
 
 	// Unpack the file.
-	if (uncompress((Bytef *) uncompressed_buf, &uncompressed_size, (const Bytef *) compressed_buf, compressed_size) != Z_OK)
+	if (uncompress((Bytef *) uncompressed_buf, &uncompressed_size, (const Bytef *) compressed_buf, compressed_size) != Z_OK) {
+		delete[] uncompressed_buf;
+		delete[] compressed_buf;
 		return MCACHE_IMPORT_DECOMPRESS_ERROR;
+	}
 
 	for (int i = 0, pos = 0; i < m_cache->getHeader().getMapCount(); ++i) {
 		map_data m{};
 		uint8_t *cells = nullptr;
 
-		if (memcpy(&m.info, uncompressed_buf + pos, sizeof(map_info)) == nullptr)
+		if (memcpy(&m.info, uncompressed_buf + pos, sizeof(map_info)) == nullptr) {
+			delete[] uncompressed_buf;
+			delete[] compressed_buf;
 			return MCACHE_IMPORT_MAPINFO_ERROR;
+		}
 
 		cells = new uint8_t[m.info.length];
 		pos += sizeof(map_info);
 
-		if (memcpy(cells, uncompressed_buf + pos, m.info.length) == nullptr)
+		if (memcpy(cells, uncompressed_buf + pos, m.info.length) == nullptr) {
+			delete[] cells;
+			delete[] uncompressed_buf;
+			delete[] compressed_buf;
 			return MCACHE_IMPORT_CELLINFO_ERROR;
+		}
 
 		for (uint32_t c = 0; c < m.info.length; ++c)
 			m.cells.push_back(cells[c]);

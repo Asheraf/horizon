@@ -20,6 +20,14 @@
 
 #include <cstring>
 
+enum client_types {
+	CLIENT_TYPE_RAGEXE    = 0,
+	CLIENT_TYPE_RAGEXE_RE = 1,
+	CLIENT_TYPE_ZERO      = 2,
+	CLIENT_TYPE_SAKRAY    = 3,
+	CLIENT_TYPE_AD        = 4,
+	CLIENT_TYPE_MAX
+};
 struct network_configuration
 {
 	/* Listen IP */
@@ -31,23 +39,10 @@ struct network_configuration
 	/* Max Threads */
 	uint32_t get_network_thread_count() const { return max_threads; }
 	void set_network_thread_count(uint32_t max_threads) { network_configuration::max_threads = max_threads; }
-	/* Inter-server IP */
-	const std::string &get_inter_server_ip() const { return inter_server_ip; }
-	void set_inter_server_ip(const std::string &inter_server_ip) { network_configuration::inter_server_ip = inter_server_ip; }
-	/* Inter-server Port */
-	uint16_t get_inter_server_port() const { return inter_server_port; }
-	void set_inter_server_port(uint16_t inter_server_port) { network_configuration::inter_server_port = inter_server_port; }
-	/* Inter-server Password */
-	std::string get_inter_server_password() const { return inter_server_password; }
-	void set_inter_server_password(std::string const &inter_server_password) { network_configuration::inter_server_password = inter_server_password; }
 
 	std::string listen_ip; //< Listen IP
 	uint16_t listen_port; //< Listen Port Number
 	uint32_t max_threads; //< Maximum network threads.
-
-	std::string inter_server_ip;
-	uint16_t inter_server_port;
-	std::string inter_server_password;
 };
 
 struct database_configuration
@@ -71,10 +66,10 @@ struct database_configuration
 	int get_db_thread_count() const { return max_threads; }
 	void set_db_thread_count(int max_threads) { database_configuration::max_threads = max_threads; }
 
-	std::string host, username, password;
-	std::string database;
-	int max_threads;
-	uint16_t _port;
+	std::string host{""}, username{""}, password{""};
+	std::string database{""};
+	int max_threads{1};
+	uint16_t _port{0};
 };
 
 struct general_server_configuration
@@ -97,23 +92,23 @@ struct general_server_configuration
 	/* Core Update Interval */
 	int get_core_update_interval() const { return core_update_interval; };
 	void set_core_update_interval(int core_update_interval) { this->core_update_interval = core_update_interval; };
-	/* Minimum Client Version */
-	uint32_t get_minimum_client_version() const { return _minimum_client_version; }
-	void set_minimum_client_version(uint32_t version) { _minimum_client_version = version; }
-	/* Maximum Client Version */
-	uint32_t get_maximum_client_version() const { return _maximum_client_version; }
-	void set_maximum_client_version(uint32_t version) { _maximum_client_version = version; }
+	/* Client Type */
+	uint32_t get_client_type() const { return _client_type; }
+	void set_client_type(uint32_t type) { _client_type = type; }
+	/* Packet Version */
+	uint32_t get_packet_version() const { return _packet_version; }
+	void set_packet_version(uint32_t version) { _packet_version = version; }
 
 	/* Minimal Test Run Flag */
-	bool minimal;
+	bool minimal{false};
 	/* Configuration Files */
-	std::string config_file_path;
-	std::string config_file_name;
-	int shutdown_signal;                           ///< Shutdown signal.
-	int global_io_threads;                         ///< Maximum amount of Core Threads spawned to perform i/o run.
-	int core_update_interval;                      ///< Core update interval timer.
-	int _minimum_client_version;                   ///< Minimum client version allowed to connect.
-	int _maximum_client_version;                   ///< Maximum client version allowed to connect.
+	std::string config_file_path{""};
+	std::string config_file_name{""};
+	int shutdown_signal;                              ///< Shutdown signal.
+	int global_io_threads{1};                         ///< Maximum amount of Core Threads spawned to perform i/o run.
+	int core_update_interval{500};                    ///< Core update interval timer.
+	int _client_type{0};                              ///< Client Type to use (Ragexe, RagexeRE, Zero, Sakray or AD)
+	int _packet_version{0};                           ///< Maximum client version allowed to connect.
 };
 
 #endif //HORIZON_GENERALSERVERCONFIGURATION_H

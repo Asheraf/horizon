@@ -104,13 +104,9 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(_new_socket_queue_lock);
 
-		++_connections; // Increment network connections.
-
 		_new_socket_queue.push_back(sock);  // Add socket to queue.
 
 		socket_added(sock); // event for child classes.
-
-		CoreLog->trace("A new socket has been added to a thread. (Thread Connections: {}) ", _connections);
 	}
 
 	/**
@@ -161,30 +157,30 @@ protected:
 		if (_stopped)
 			return;
 
+		_updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
+		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
+
 		add_new_sockets();
 
 		_active_sockets.erase(std::remove_if(_active_sockets.begin(), _active_sockets.end(),
 			[this] (std::shared_ptr<SocketType> sock)
 			{
-				if (sock == nullptr || !sock->update()) {
+				if (!sock->update()) {
 
-					if (sock != nullptr && sock->is_open()) {
+					if (sock->is_open())
 						sock->close_socket();
-						this->socket_removed(sock);
-					}
 
-					--this->_connections;
+					socket_removed(sock);
 
-					CoreLog->trace("Socket closed in a networking thread. (Thread Connections: {})", this->_connections);
+					--_connections;
+
+					CoreLog->info("Socket closed in networking thread {:p}. (Connections: {})", (void *) (_thread.get()), _connections);
 
 					return true;
 				}
 
 				return false;
 			}), _active_sockets.end());
-
-		_updateTimer.expires_from_now(boost::posix_time::microseconds(500));
-		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
 	}
 
 	/**
@@ -204,11 +200,14 @@ protected:
 		for (std::shared_ptr<SocketType> sock : _new_socket_queue) {
 			if (!sock->is_open()) {
 				socket_removed(sock);
-				--_connections;
 			} else {
 				_active_sockets.push_back(sock);
 				// Start receiving from the socket.
 				sock->start();
+
+				++_connections; // Increment network connections.
+
+				CoreLog->trace("A new socket has been added to network thread {:p}. (Connections: {}) ", (void *) (_thread.get()), _connections);
 			}
 		}
 

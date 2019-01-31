@@ -62,6 +62,7 @@ public:
 	}
 
 	virtual void start() = 0;
+
 	virtual bool update()
 	{
 		if (_closed)
@@ -78,12 +79,12 @@ public:
 
 	/* Socket Id */
 	uint64_t get_socket_id() { return _socket_id; }
-	void set_socket_id(uint64_t socket_id) { Socket::_socket_id = socket_id; }
+	void set_socket_id(uint64_t socket_id) { _socket_id = socket_id; }
 
 	/* Remote IP and Port */
 	std::string &remote_ip_address() { return _remote_ip_address; }
 	uint16_t remote_port() const { return _remote_port; }
-
+	
 	void async_read()
 	{
 		if (!is_open())
@@ -145,7 +146,7 @@ public:
 		return size;
 	}
 
-	void queue_packet(MessageBuffer &&buffer) { _write_queue.push(new MessageBuffer(buffer)); }
+	void queue_packet(MessageBuffer &&buffer) { _write_queue.push(std::move(buffer)); }
 
 	bool is_open() { return !_closed && !_closing; }
 
@@ -180,6 +181,7 @@ public:
 protected:
 	virtual void on_close() = 0;
 	virtual void read_handler() = 0;
+	virtual void on_error() = 0;
 
 	bool async_process_queue()
 	{
@@ -228,8 +230,18 @@ private:
 	 */
 	void internal_read_handler(boost::system::error_code error, size_t transferredBytes)
 	{
-		if (error)
+		if (error) {
+			if (error.value() == boost::asio::error::eof) {
+				close_socket();
+			} else if (error.value() == boost::system::errc::connection_reset
+					   || error.value() == boost::system::errc::timed_out) {
+				close_socket();
+				on_error();
+			} else {
+				CoreLog->debug("Socket::internal_read_handler: {} - {}.", error.value(), error.message());
+			}
 			return;
+		}
 
 		if (transferredBytes > 0) {
 			_read_buffer.write_completed(transferredBytes);
@@ -259,10 +271,9 @@ private:
 		if (_write_queue.empty())
 			return false;
 
-		std::shared_ptr<MessageBuffer *> mes = _write_queue.front();
+		std::shared_ptr<MessageBuffer> to_send = _write_queue.front();
 
-		MessageBuffer to_send = *(*mes);
-		std::size_t bytes_sent = write_buffer_and_send(to_send, error);
+		std::size_t bytes_sent = write_buffer_and_send(*to_send, error);
 
 		if (error == boost::asio::error::would_block || error == boost::asio::error::try_again)
 			return async_process_queue();
@@ -270,13 +281,13 @@ private:
 		/**
 		 * Re-process queue if we have remaining bytes.
 		 */
-		if (!error && bytes_sent < to_send.get_active_size()) {
-			to_send.read_completed(bytes_sent);
+		if (!error && bytes_sent < to_send->get_active_size()) {
+			to_send->read_completed(bytes_sent);
 			return async_process_queue();
 		}
 
 		// Pop the front element.
-		delete *_write_queue.try_pop();
+		_write_queue.try_pop();
 
 		// Close if required.
 		if (_closing && _write_queue.empty())
@@ -291,7 +302,7 @@ private:
 	std::string _remote_ip_address;
 	uint16_t _remote_port;
 	MessageBuffer _read_buffer;
-	ThreadSafeQueue<MessageBuffer *> _write_queue;
+	ThreadSafeQueue<MessageBuffer> _write_queue;
 	std::atomic<bool> _closed;
 	std::atomic<bool> _closing;
 	bool _is_writing_async;

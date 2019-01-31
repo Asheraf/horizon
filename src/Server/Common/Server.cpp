@@ -25,6 +25,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
 
 /* Public */
 Server::Server(std::string /*name*/, std::string config_file_path, std::string config_file_name)
@@ -188,10 +189,55 @@ bool Server::parse_common_configs(libconfig::Config &cfg)
 	 */
 	if (cfg.lookupValue("core_update_interval", tmp_value)) {
 		general_conf().set_core_update_interval(tmp_value);
-		CoreLog->info("Core update interval set to {}ms.", general_conf().get_core_update_interval());
+		CoreLog->info("Core update interval set to {}µs.", general_conf().get_core_update_interval());
 	} else {
-		CoreLog->info("Core update interval was not defined, defaulting to 500ms.");
+		CoreLog->info("Core update interval was not defined, defaulting to 500µs.");
 		general_conf().set_core_update_interval(500);
+	}
+
+
+	/**
+	 * Client Type
+	 */
+	if (!cfg.lookupValue("client_type", tmp_value)) {
+		CoreLog->info("No client type set, defaulting to 0 (Ragexe)");
+		general_conf().get_client_type();
+	} else {
+		switch (tmp_value)
+		{
+		case CLIENT_TYPE_RAGEXE:
+			general_conf().set_client_type(CLIENT_TYPE_RAGEXE);
+			CoreLog->warn("Server has been configured to use the 'Ragexe' client for packet information.");
+			break;
+		case CLIENT_TYPE_RAGEXE_RE:
+			general_conf().set_client_type(CLIENT_TYPE_RAGEXE_RE);
+			CoreLog->warn("Server has been configured to use the 'RagexeRE' client for packet information.");
+			break;
+		case CLIENT_TYPE_ZERO:
+			general_conf().set_client_type(CLIENT_TYPE_ZERO);
+			CoreLog->warn("Server has been configured to use the 'ZERO' client for packet information.");
+			break;
+		case CLIENT_TYPE_SAKRAY:
+			general_conf().set_client_type(CLIENT_TYPE_SAKRAY);
+			CoreLog->warn("Server has been configured to use the 'Sakray' client for packet information.");
+			break;
+		case CLIENT_TYPE_AD:
+			general_conf().set_client_type(CLIENT_TYPE_AD);
+			CoreLog->warn("Server has been configured to use the 'AD' client for packet information.");
+			break;
+		default:
+			CoreLog->warn("Invalid client type {} set, defaulting to 0 (Ragexe)", tmp_value);
+			general_conf().set_client_type(CLIENT_TYPE_RAGEXE);
+			break;
+		}
+	}
+
+	if (!cfg.lookupValue("packet_version", tmp_value)) {
+		CoreLog->warn("No packet version defined for packet handling, defaulting to {}", 20141022);
+		general_conf().set_packet_version(20141022);
+	} else {
+		CoreLog->info("Server has been configured to use PacketVersion '{}' for packet handling.", tmp_value);
+		general_conf().set_packet_version(tmp_value);
 	}
 
 	return true;
@@ -203,7 +249,7 @@ void Server::initialize_mysql()
 {
 	std::string conn_uri = database_conf().get_username() + ":" + database_conf().get_password() + "@127.0.0.1/" + database_conf().get_database();
 
-	_mysql_client = std::make_shared<mysqlx::Client>("mysqlx://root:sagun123@localhost:33060/horizon");
+	_mysql_client = std::make_shared<mysqlx::Client>("mysqlx://" + conn_uri);
 
 	try {
 		mysqlx::Session s = _mysql_client->getSession();

@@ -15,35 +15,51 @@
 # or viewing without permission.
 ###################################################
 
+find_path(CONCPP_ROOT_DIR
+        NAMES mysql-connector-c++
+        )
 
-if(NOT EXISTS "${CONCPP_INCLUDE_DIR}/mysqlx/xdevapi.h")
+find_path(CONCPP_INCLUDE_DIR
+        NAMES mysqlx/xdevapi.h
+        HINTS ${CONCPP_ROOT_DIR}/mysql-connector-c++/include
+        )
+
+if((NOT CONCPP_INCLUDE_DIR) OR CONCPP_INCLUDE_DIR STREQUAL "CONCPP_INCLUDE_DIR-NOTFOUND")
   message(FATAL_ERROR
     "Could not find MySQL Connector/C++ 8.0 headers at specified"
     " location: ${CONCPP_INCLUDE_DIR}"
   )
 endif()
 
-set(CONCPP_STATIC_LIB_DIR "${CONCPP_LIB_DIR}")
-if(VS)
-   set(CONCPP_STATIC_LIB_DIR "${CONCPP_STATIC_LIB_DIR}/${VS}")
+if (PLATFORM EQUAL 64)
+  set(CONCPP_STATIC_LIB_DIR "lib64")
+else()
+  set(CONCPP_STATIC_LIB_DIR "lib")
 endif()
 
-set(libconcpp_name mysqlcppconn8)
-set(libconcpp_jdbc_name mysqlcppconn)
+find_path(CONCPP_LIB_DIR
+        NAMES ${CONCPP_STATIC_LIB_DIR}
+        HINTS ${CONCPP_ROOT_DIR}/mysql-connector-c++
+        )
 
-find_library(CONCPP_LIB NAMES ${libconcpp_name}
+if((NOT CONCPP_LIB_DIR) OR CONCPP_LIB_DIR STREQUAL "CONCPP_LIB_DIR-NOTFOUND")
+  message(FATAL_ERROR
+    "Could not find MySQL Connector/C++ 8.0 libraries at specified"
+    " location: ${CONCPP_LIB_DIR}"
+  )
+endif()
+
+set(CONCPP_STATIC_LIB_DIR "${CONCPP_LIB_DIR}/${CONCPP_STATIC_LIB_DIR}")
+set(LIBCPPCONN_NAME mysqlcppconn8-static)
+
+find_library(CONCPP_LIB NAMES ${LIBCPPCONN_NAME}
   PATHS "${CONCPP_STATIC_LIB_DIR}"
   NO_DEFAULT_PATH
 )
 
-find_library(CONCPP_LIB_DEBUG NAMES ${libconcpp_name}
-  PATHS "${CONCPP_STATIC_LIB_DIR}/Debug"
-  NO_DEFAULT_PATH
-)
-
-if(NOT CONCPP_LIB AND NOT CONCPP_LIB_DEBUG)
+if(NOT CONCPP_LIB)
   message(FATAL_ERROR
-    "Could not find MySQL Connector/C++ 8.0 library ${libconcpp_name} at specified"
+    "Could not find MySQL Connector/C++ 8.0 library ${LIBCPPCONN_NAME} at specified"
     " location: ${CONCPP_STATIC_LIB_DIR}"
   )
 endif()
@@ -52,25 +68,8 @@ endif()
 
 if(CONCPP_LIB)
   list(APPEND CONCPP_LIBS optimized "${CONCPP_LIB}")
-  if(NOT CONCPP_LIB_DEBUG)
-    if(WIN32)
-      message(WARNING "Could not find debug libraries, building in debug mode will not work")
-    else()
-      message(WARNING "Using generic library also for debug builds")
-      list(APPEND CONCPP_LIBS general "${CONCPP_LIB}")
-    endif()
-  endif()
-endif()
-
-if(CONCPP_LIB_DEBUG)
-  list(APPEND CONCPP_LIBS debug "${CONCPP_LIB_DEBUG}")
-  if(NOT CONCPP_LIB)
-    if(WIN32)
-      message(WARNING "Only debug libraries found, building in release mode will not work")
-    else()
-      message(WARNING "Using debug library also for non-debug builds")
-      list(APPEND CONCPP_LIBS general "${CONCPP_LIB_DEBUG}")
-    endif()
+  if(NOT WIN32)
+    list(APPEND CONCPP_LIBS general "${CONCPP_LIB}")
   endif()
 endif()
 

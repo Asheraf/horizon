@@ -38,8 +38,10 @@ enum packets {
 	CA_LOGIN4               = 0x027c,
 	CA_LOGIN_HAN            = 0x02b0,
 	CA_SSO_LOGIN_REQ        = 0x0825,
+	//CA_SSO_LOGIN_REQa       = 0x825a, /* unused */
 	CA_LOGIN_OTP            = 0x0acf,
-	//PACKET_ID_CA_SSO_LOGIN_REQa       = 0x825a, /* unused */
+	CA_MIN                  = CA_LOGIN,
+	CA_MAX                  = CA_LOGIN_OTP,
 	/**
 	 * Response Packets
 	 */
@@ -130,11 +132,11 @@ struct PACKET_CA_LOGIN_PCBANG : public Packet
 	PACKET_CA_LOGIN_PCBANG() : Packet(Horizon::Auth::CA_LOGIN_PCBANG) { }
 
 	uint32 version{};	      ///< Client Version
-	char id[24]{};          ///< Username
-	char password[24]{};    ///< Password
-	uint8 clienttype{};     ///< Client Type
-	char ip[16]{};          ///< IP Address
-	char mac_address[13]{}; ///< MAC Address
+	char id[24]{};            ///< Username
+	char password[24]{};      ///< Password
+	uint8 clienttype{};       ///< Client Type
+	char ip[16]{};            ///< IP Address
+	char mac_address[13]{};   ///< MAC Address
 };
 
 struct PACKET_CA_LOGIN_HAN : public Packet
@@ -154,37 +156,37 @@ struct PACKET_CA_SSO_LOGIN_REQ : public Packet
 {
 	PACKET_CA_SSO_LOGIN_REQ() : Packet(Horizon::Auth::CA_SSO_LOGIN_REQ) { }
 
-	int16 packet_len{};     ///< Length (variable length)
-	uint32 version{};       ///< Clientver
-	uint8 clienttype{};     ///< Clienttype
-	char id[24]{};          ///< Username
-	char password[27]{};    ///< Password
-	int8 mac_address[17]{}; ///< MAC Address
-	char ip[15]{};          ///< IP Address
-	char t1[];            ///< SSO Login Token (variable length)
+	int16 packet_len{};       ///< Length (variable length)
+	uint32 version{};         ///< Clientver
+	uint8 clienttype{};       ///< Clienttype
+	char id[24]{};            ///< Username
+	char password[27]{};      ///< Password
+	int8 mac_address[17]{};   ///< MAC Address
+	char ip[15]{};            ///< IP Address
+	/*char t1[];*/            ///< SSO Login Token (variable length)
 };
 
 struct PACKET_CA_LOGIN_OTP : public Packet
 {
 	PACKET_CA_LOGIN_OTP() : Packet(Horizon::Auth::CA_LOGIN_OTP) { }
 
-	char login[25]{};       ///< Username
-	char password[32]{};    ///< Password encrypted by rijndael
-	char flagsStr[5]{};     ///< Unknown flags. Normally string: G000
+	char login[25]{};         ///< Username
+	char password[32]{};      ///< Password encrypted by rijndael
+	char flagsStr[5]{};       ///< Unknown flags. Normally string: G000
 };
 
 struct PACKET_CA_CONNECT_INFO_CHANGED : public Packet
 {
 	PACKET_CA_CONNECT_INFO_CHANGED() : Packet(Horizon::Auth::CA_CONNECT_INFO_CHANGED) { }
 
-	char id[24]{};    ///< account.userid
+	char id[24]{};            ///< account.userid
 };
 
 struct PACKET_CA_EXE_HASHCHECK : public Packet
 {
 	PACKET_CA_EXE_HASHCHECK() : Packet(Horizon::Auth::CA_EXE_HASHCHECK) { }
 
-	uint8 hash_value[16]; ///< Client MD5 hash
+	uint8 hash_value[16];     ///< Client MD5 hash
 };
 
 struct PACKET_CA_REQ_HASH : public Packet
@@ -196,9 +198,12 @@ struct PACKET_SC_NOTIFY_BAN : public Packet
 {
 	PACKET_SC_NOTIFY_BAN() : Packet(Horizon::Auth::SC_NOTIFY_BAN) { }
 
-	uint8 error_code; ///< Error code
+	uint8 error_code;        ///< Error code
 };
 
+/**
+ * AC_*
+ */
 struct PACKET_AC_REFUSE_LOGIN : public Packet
 {
 	PACKET_AC_REFUSE_LOGIN() : Packet(Horizon::Auth::AC_REFUSE_LOGIN)
@@ -206,16 +211,16 @@ struct PACKET_AC_REFUSE_LOGIN : public Packet
 		memset(block_date, '\0', 20);
 	}
 
-	uint8 error_code;    ///< Error code
-	char block_date[20]; ///< Ban expiration date
+	uint8 error_code;       ///< Error code
+	char block_date[20];    ///< Ban expiration date
 };
 
 struct PACKET_AC_REFUSE_LOGIN_R2 : public Packet
 {
 	PACKET_AC_REFUSE_LOGIN_R2() : Packet(Horizon::Auth::AC_REFUSE_LOGIN_R2) { }
 
-	uint32 error_code;   ///< Error code
-	char block_date[20]; ///< Ban expiration date
+	uint32 error_code;      ///< Error code
+	char block_date[20];    ///< Ban expiration date
 };
 
 struct PACKET_AC_ACCEPT_LOGIN : public Packet
@@ -230,20 +235,20 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 	char last_login_time[26]; ///< Last login timestamp
 	uint8 sex;                ///< Account sex
 	struct character_server_list {
-		uint32 ip;         ///< Server IP address
-		int16 port;        ///< Server port
-		char name[20];     ///< Server name
-		uint16 usercount;  ///< Online users
-		uint16 is_new;     ///< Server state
-		uint16 type;       ///< Server type @ character_server_types
-	} server_list[];
+		uint32 ip;            ///< Server IP address
+		int16 port;           ///< Server port
+		char name[20];        ///< Server name
+		uint16 usercount;     ///< Online users
+		uint16 is_new;        ///< Server state
+		uint16 type;          ///< Server type @ character_server_types
+	};
 };
 
 struct PACKET_AC_ACK_HASH : public Packet
 {
 	PACKET_AC_ACK_HASH() : Packet(Horizon::Auth::AC_ACK_HASH) { }
 
-	uint8 secret[];   ///< Challenge string
+	/*uint8 secret[];*/       ///< Challenge string
 };
 
 #pragma pack(pop)

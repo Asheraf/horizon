@@ -20,7 +20,6 @@
 
 #include "Core/Logging/Logger.hpp"
 #include "Server/Common/Horizon.hpp"
-#include "Server/Inter/PacketHandler/Packets.hpp"
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -28,7 +27,7 @@
 #include <memory>
 #include <boost/optional.hpp>
 
-typedef boost::function<void(PacketBuffer &)> PacketHandlerFunc;
+typedef boost::function<bool(PacketBuffer &)> PacketHandlerFunc;
 typedef std::unordered_map<uint16_t, PacketHandlerFunc> PacketHandlerMap;
 
 namespace Horizon
@@ -66,7 +65,11 @@ public:
 		}
 
 		PacketHandlerFunc func = *optional_handler;
-		func(buf);
+
+		if (!func(buf)) {
+			_socket.lock()->delayed_close_socket();
+			return false;
+		}
 
 		return true;
 	}
@@ -99,7 +102,17 @@ public:
 	 * @brief Send an Asynchronous packet by queueing
 	 *        a buffer of a particular size to the
 	 *        connected session.
-	 * @param T type of the packet being queued.
+	 * @param[in|out] buf    packet buffer to be queued.
+	 */
+	void send_packet(PacketBuffer &buf)
+	{
+		send_packet(buf, buf.size());
+	}
+
+	/**
+	 * @brief Send an Asynchronous packet by queueing
+	 *        a buffer of a particular size to the
+	 *        connected session.
 	 * @param[in|out] buf    packet buffer to be queued.
 	 * @param[in]     size   size of the buffer to be queued (default sizeof type T)
 	 */
@@ -171,7 +184,7 @@ public:
 	uint16_t send_and_receive_packet(SEND_T &send_pkt, RECV_T *recv_pkt)
 	{
 		PacketBuffer buf;
-		uint16_t op_code = 0x0;
+		uint16_t packet_id = 0x0;
 
 		buf << send_pkt;
 
@@ -190,15 +203,15 @@ public:
 			recv_size = get_socket()->sync_read(recv_buf, sizeof(RECV_T));
 
 			if (recv_size > 0) {
-				op_code = 0x0;
-				memcpy(&op_code, recv_buf.get_read_pointer(), sizeof(uint16_t));
+				packet_id = 0x0;
+				memcpy(&packet_id, recv_buf.get_read_pointer(), sizeof(uint16_t));
 
-				if (recv_pkt->op_code == op_code)
+				if (recv_pkt->packet_id == packet_id)
 					memcpy(recv_pkt, (RECV_T *) recv_buf.get_read_pointer(), recv_size);
 			}
 		}
 
-		return op_code;
+		return packet_id;
 	}
 
 	/**

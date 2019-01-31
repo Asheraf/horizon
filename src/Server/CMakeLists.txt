@@ -18,7 +18,6 @@
 add_subdirectory(Common)
 
 # Targets
-add_subdirectory(Inter)
 add_subdirectory(Auth)
 add_subdirectory(Char)
 add_subdirectory(Zone)

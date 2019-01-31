@@ -17,7 +17,5 @@
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(PACKET_HANDLER_SOURCES
-	${DIR}/InterPacketHandler.hpp
 	${DIR}/PacketHandler.hpp
-	${DIR}/InterPackets.hpp
 	PARENT_SCOPE)

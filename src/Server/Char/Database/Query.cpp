@@ -45,7 +45,7 @@ Horizon::Char::Database::Query::~Query()
 void Horizon::Char::Database::Query::InitializeQueryStrings()
 {
 	addQueryString(SELECT_ALL_CHARS_BY_AID,
-		"SELECT c.id, c.account_id, c.slot, c.name, c.online, c.gender, c.deleted, "
+		"SELECT c.id, c.account_id, c.slot, c.name, c.online, c.gender, c.deleted_at, "
 		"csd.job_class, csd.base_level, csd.job_level, csd.base_experience, csd.job_experience, "
 		"csd.zeny, csd.strength, csd.agility, csd.vitality, csd.intelligence, csd.dexterity, csd.luck, "
 		"csd.maximum_hp, csd.hp, csd.maximum_sp, csd.sp, csd.status_points, csd.skill_points, csd.body_state, "
@@ -69,26 +69,26 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 		"INNER JOIN `character_family_data` cfd ON c.id = cfd.id "
 		"INNER JOIN `character_companion_data` ccd ON c.id = ccd.id "
 		"INNER JOIN `character_access_data` cad ON c.id = cad.id "
-		"WHERE c.account_id = ? AND c.deleted = 0");
+		"WHERE c.account_id = ? AND c.deleted_at IS NULL");
 	addQueryString(CHECK_EXISTING_CHAR_BY_NAME,
-		"SELECT `id`, `account_id`, `slot`, `name`, `online`, `gender`, `deleted` FROM `characters` WHERE `name` = ?");
+		"SELECT COUNT(*) FROM `characters` WHERE `name` = ?");
 }
 
 std::shared_ptr<Horizon::Models::Character::Character>
 Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record)
 {
-	Horizon::Models::Character::Character c;
-	Horizon::Models::Character::Status csd;
-	Horizon::Models::Character::UISettings cus;
-	Horizon::Models::Character::View cvd;
-	Horizon::Models::Character::Position cpd;
-	Horizon::Models::Character::Misc cmd;
-	Horizon::Models::Character::Group cgd;
-	Horizon::Models::Character::Family cfd;
-	Horizon::Models::Character::Companion ccd;
-	Horizon::Models::Character::Access cad;
-
 	int char_id = record[0];
+
+	Horizon::Models::Character::Character c(char_id);
+	Horizon::Models::Character::Status csd(char_id);
+	Horizon::Models::Character::UISettings cus(char_id);
+	Horizon::Models::Character::View cvd(char_id);
+	Horizon::Models::Character::Position cpd(char_id);
+	Horizon::Models::Character::Misc cmd(char_id);
+	Horizon::Models::Character::Group cgd(char_id);
+	Horizon::Models::Character::Family cfd(char_id);
+	Horizon::Models::Character::Companion ccd(char_id);
+	Horizon::Models::Character::Access cad(char_id);
 
 	// Character
 	c.set_character_id(char_id);
@@ -222,7 +222,7 @@ int Horizon::Char::Database::Query::CheckExistingCharByName(std::string name)
 	mysqlx::RowResult res = sql_session.sql(*query).bind(name).execute();
 	mysqlx::Row record = res.fetchOne();
 
-	if (record)
+	if (record && record[0].get<int>() > 0)
 		found = 1;
 
 	return found;

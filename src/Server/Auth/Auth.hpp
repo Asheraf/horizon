@@ -51,8 +51,6 @@ public:
 	/* Auth Server Configuration */
 	struct auth_server_config &get_auth_config() { return _auth_config; }
 
-	void establish_inter_connection();
-
 	void initialize_core();
 	/* CLI */
 	void initialize_cli_commands();

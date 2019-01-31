@@ -20,11 +20,9 @@
 #include "Libraries/BCrypt/BCrypt.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
-#include "Server/Auth/SocketMgr/InterSocketMgr.hpp"
-#include "Server/Auth/Interface/InterAPI.hpp"
-#include "Server/Auth/PacketHandler/InterPacketHandler.hpp"
-#include "Server/Inter/PacketHandler/Packets.hpp"
 #include "Server/Common/Models/Character/Group.hpp"
+#include "Server/Common/Models/GameAccount.hpp"
+#include "Server/Common/Models/SessionData.hpp"
 #include "Server/Auth/Auth.hpp"
 
 #include <string>
@@ -62,16 +60,10 @@ bool Horizon::Auth::PacketHandler::validate_session_data(std::shared_ptr<GameAcc
 {
 	std::shared_ptr<SessionData> session_data = std::make_shared<SessionData>();
 
-	if (AuthInterAPI->get_session_data(game_account->get_id()) != nullptr) {
-		// @TODO Check if online in char-server & map-server.
-		AuthInterAPI->delete_game_account(game_account->get_id());
-		AuthInterAPI->delete_session(game_account->get_id());
-		return false;
-	}
-	
 	// Game Account Data.
 	game_account->set_last_ip(get_socket()->remote_ip_address());
 	game_account->set_last_login((int) time(nullptr));
+	game_account->update(AuthServer);
 	
 	// Session Data.
 	session_data->set_auth_code(game_account->get_id()); // @TODO Change to something unique to prevent session hijaking.
@@ -81,15 +73,14 @@ bool Horizon::Auth::PacketHandler::validate_session_data(std::shared_ptr<GameAcc
 	session_data->set_character_slots(game_account->get_character_slots());
 	session_data->set_group_id(game_account->get_group_id());
 
+	session_data->save(AuthServer);
+
 	get_socket()->get_session()->set_session_data(session_data);
 
-	// Send session data to inter.
-	AuthInterAPI->store_session_data(session_data);
-	AuthInterAPI->store_game_account(game_account);
 	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
+bool Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 {
 	PACKET_CA_LOGIN pkt;
 	bool authenticated = false;
@@ -100,18 +91,12 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 	if (pkt.version < MINIMUM_PACKETVER || pkt.version > MAXIMUM_PACKETVER) {
 		Send_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
 		AuthLog->info("Authentication of account '{}' rejected. Unsupported Version.", pkt.username, pkt.version);
-		return;
-	}
-
-	if (!InterSocktMgr->connector_pool_size(INTER_SESSION_NAME)) {
-		Send_AC_REFUSE_LOGIN(login_error_codes::ERR_NONE);
-		AuthLog->info("Authentication of account '{}' rejected. Inter server not available.", pkt.username);
-		return;
+		return false;
 	}
 
 	AuthLog->info("Authentication of account '{}' requested. (Client Version: {}, Type: {})", pkt.username, pkt.version, pkt.client_type);
 
-	switch (AuthServer->get_auth_config().getPassHashMethod())
+	switch (AuthServer->get_auth_config().get_pass_hash_method())
 	{
 	case PASS_HASH_NONE:
 	case PASS_HASH_MD5:
@@ -127,80 +112,75 @@ void Horizon::Auth::PacketHandler::Handle_CA_LOGIN(PacketBuffer &packet)
 
 		AuthLog->info("Authentication of account '{}' granted.", pkt.username);
 
-		if (validate_session_data(game_account, pkt.version, pkt.client_type) == false) {
-			Send_AC_REFUSE_LOGIN(login_error_codes::ERR_SESSION_CONNECTED);
-			AuthLog->info("Refused connection for account '{}', already online.", pkt.username);
-			get_socket()->delayed_close_socket();
-			if (AuthInterAPI->get_session_data(game_account->get_id()) != nullptr) {
-				// @TODO Check if online in char-server & map-server.
-				AuthInterAPI->delete_game_account(game_account->get_id());
-				AuthInterAPI->delete_session(game_account->get_id());
-			}
-		} else {
-			Send_AC_ACCEPT_LOGIN();
-		}
+		validate_session_data(game_account, pkt.version, pkt.client_type);
+		Send_AC_ACCEPT_LOGIN();
 	} else {
 		Send_AC_REFUSE_LOGIN(login_error_codes::ERR_UNREGISTERED_ID);
 		AuthLog->info("Rejected unknown account '{}' or incorrect password.", pkt.username);
+		return false;
 	}
+
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_REQ_HASH(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_REQ_HASH(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_REQ_HASH pkt;
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_LOGIN2(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_LOGIN2(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN2 pkt;
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_LOGIN3(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_LOGIN3(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN3 pkt;
-
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_CONNECT_INFO_CHANGED pkt;
-
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_EXE_HASHCHECK(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_EXE_HASHCHECK(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_EXE_HASHCHECK pkt;
-
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_PCBANG(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_LOGIN_PCBANG(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_PCBANG pkt;
-
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_LOGIN4(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_LOGIN4(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN4 pkt;
-
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_HAN(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_LOGIN_HAN(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_HAN pkt;
-
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_SSO_LOGIN_REQ(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_SSO_LOGIN_REQ(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_SSO_LOGIN_REQ pkt;
-
+	return true;
 }
 
-void Horizon::Auth::PacketHandler::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
+bool Horizon::Auth::PacketHandler::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
 {
 	PACKET_CA_LOGIN_OTP pkt;
-
+	return true;
 }
 
 /**

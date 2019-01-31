@@ -68,6 +68,8 @@ public:
 	
 	void update(uint32_t diff);
 
+	void cleanup_on_error();
+
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
 	std::shared_ptr<Character> _character;

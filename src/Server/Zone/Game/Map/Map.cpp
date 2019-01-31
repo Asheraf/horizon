@@ -19,72 +19,68 @@
 #include "Core/Logging/Logger.hpp"
 #include "Utility/Utility.hpp"
 #include "Core/Multithreading/WorkerThreadPool.hpp"
-#include "Server/Zone/Game/Map/Grid/Cell/Cell.hpp"
-#include "Grid/Notifiers/GridNotifiers.hpp"
-#include "Grid/Container/GridReferenceContainer.hpp"
-#include "Grid/Container/GridReferenceContainerVisitor.hpp"
-#include "Grid/Grid.hpp"
+#include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
+#include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
+#include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
+#include "Server/Zone/Game/Map/Grid/Grid.hpp"
 
-#include <future>
 #include <type_traits>
 #include <functional>
+#include <fstream>
 
-Horizon::Zone::Game::Map::Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
-: _name(name), _width(width), _height(height),
-  _grid_width((width / MAX_GRID_WIDTH)), _grid_height((height / MAX_GRID_WIDTH)),
-  _cells(boost::extents[width][height]),
-  _gridholder(_grid_width, _grid_height),
-  _pathfinder(new AStar::Generator({width, height}, std::bind(&Map::checkCollisionInPath, this, std::placeholders::_1, std::placeholders::_2), true, &AStar::Heuristic::manhattan))
+using namespace Horizon::Zone::Game;
+
+Map::Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
+: _name(name), _width(width), _height(height), _grid_bounds((width / MAX_CELLS_PER_GRID), (height / MAX_CELLS_PER_GRID)),
+  _gridholder(GridCoords(width, height)),
+  _pathfinder(AStar::Generator({width, height}, std::bind(&Map::checkCollisionInPath, this, std::placeholders::_1, std::placeholders::_2)))
 {
-	for (int y = 0, idx = 0; y < height; y++)
-		for (int x = 0; x < width; x++)
-			_cells[x][y] = new Cell(cells.at(idx++));
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			_cells[x][y] = Cell(cells.at(y * width + x));
+		}
+	}
 }
 
-bool Horizon::Zone::Game::Map::checkCollisionInPath(uint16_t x, uint16_t y)
+bool Map::checkCollisionInPath(uint16_t x, uint16_t y)
 {
 	if (x < 0 || y < 0 || x > _width || y > _height)
-		return false;
-	if (_cells[x][y]->isWalkable())
-		return false;
+		return true;
 
-	return true;
+	if (!_cells[x][y].isWalkable())
+		return true;
+
+	return false;
 }
 
-Horizon::Zone::Game::Map::~Map()
+Map::~Map()
 {
 	CoreLog->info("Performing cleanup on map '{}'...", _name);
-
-	for (int x = 0; x < _width; ++x)
-		for (int y = 0; y < _height; ++y)
-			std::free(_cells[x][y]);
 }
 
-bool Horizon::Zone::Game::Map::ensureGrid(GridCoords coords)
+bool Map::ensureGrid(GridCoords coords)
 {
-	_gridholder.initialize_grid(coords, false);
 	return true;
 }
 
-void Horizon::Zone::Game::Map::ensureAllGrids()
+void Map::ensureAllGrids()
 {
-	for (int x = 0; x < _grid_width; x++) {
-		for (int y = 0; y < _grid_height; y++) {
+	int grid_count = 0;
+
+	for (int x = 0; x < _grid_bounds.x(); x++) {
+		for (int y = 0; y < _grid_bounds.y(); y++) {
+			grid_count++;
 			ensureGrid(GridCoords(x, y));
 		}
 	}
+
+	ZoneLog->info("Initialized {} grids for map '{}'", grid_count, _name);
 }
 
-void Horizon::Zone::Game::Map::update(uint32_t diff)
+void Map::update(uint32_t diff)
 {
 	GridUpdater updater(diff);
-	GridReferenceContainerVisitor<MapEntityContainer, GridUpdater> map_updater(updater);
-	
-	for (int x = 0; x < _grid_width; x++) {
-		for (int y = 0; y < _grid_height; y++) {
-			GridCoords gcoords(x, y);
-			if (_gridholder.get_grid(gcoords) != nullptr)
-				_gridholder.get_grid(gcoords)->Visit(map_updater);
-		}
-	}
+	GridReferenceContainerVisitor<GridUpdater, MapEntityContainer> map_updater(updater);
+
+	_gridholder.visit_all(map_updater);
 }

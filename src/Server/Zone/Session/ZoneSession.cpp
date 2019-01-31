@@ -1,6 +1,9 @@
 #include "ZoneSession.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
+#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Map/MapManager.hpp"
+#include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/PacketHandler/PacketHandler.hpp"
 #include "Server/Zone/PacketHandler/PacketHandlerFactory.hpp"
 #include "Server/Zone/PacketHandler/Versions/PacketHandler20141022.hpp"
@@ -8,6 +11,7 @@
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
+#include "Server/Zone/Zone.hpp"
 
 using namespace Horizon::Zone;
 
@@ -75,4 +79,16 @@ void ZoneSession::update(uint32_t diff)
 
 		_packet_handler->handle_received_packet(*buf);
 	}
+}
+
+void ZoneSession::cleanup_on_error()
+{
+	std::shared_ptr<Player> player = get_player();
+	get_session_data()->remove(ZoneServer);
+
+	if (get_character())
+		get_character()->save(ZoneServer, CHAR_SAVE_ALL);
+
+	if (player && player->get_map())
+		MapMgr->remove_player_from_map(player->get_map()->get_name(), player);
 }

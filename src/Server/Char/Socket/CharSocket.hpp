@@ -54,6 +54,7 @@ public:
 protected:
 	void read_handler() override;
 	void on_close() override;
+	void on_error() override;
 	/* */
 private:
 	PacketQueueType _packet_recv_queue;

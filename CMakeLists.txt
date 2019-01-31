@@ -20,16 +20,10 @@
 cmake_minimum_required (VERSION 3.10 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set (PROJECT_NAME "Horizon" CXX)
-set (AUTH_TARGET_NAME auth)
-SET(CMAKE_BUILD_TYPE Debug)
+set(PROJECT_NAME "Horizon" CXX)
+set(AUTH_TARGET_NAME auth)
+set(CMAKE_BUILD_TYPE Debug)
 project (${PROJECT_NAME})
-
-EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
-message( STATUS "Architecture: ${ARCHITECTURE}" )
-
-# Include External Projects Module
-include(ExternalProject)
 
 # Compiler Options.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
@@ -134,25 +128,25 @@ include(FindSPDLog)
 #################
 # MySQL Library
 #################
-set (MYSQL_FIND_REQUIRED true)
+set(MYSQL_FIND_REQUIRED true)
 include(FindMySQL)
 
 #################
 # Readline Library
 #################
-set (Readline_FIND_REQUIRED true)
+set(Readline_FIND_REQUIRED true)
 include(FindReadline)
 
 #################
 # MySQL CPP Connector
 #################
-set (mysqlcppconn_FIND_REQUIRED true)
+set(mysqlcppconn_FIND_REQUIRED true)
 include(FindMySQLConnector)
 
 #################
 # Find Libconfig++
 #################
-set (Config++_FIND_REQUIRED true)
+set(Config++_FIND_REQUIRED true)
 include(FindConfig++)
 
 #################
@@ -170,4 +164,4 @@ endif()
 #################
 add_subdirectory(src)
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)
+file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/logs)

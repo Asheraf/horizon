@@ -39,9 +39,9 @@ void VisitorHelper(VISITOR &v, GridReferenceContainer<OBJECT_TYPES> &c)
 }
 
 /*============================*
- * ReferenceTypeContainerVisitor
+ * TypeContainerVisitor
  *============================*/
-template<class TYPE_CONTAINER, class VISITOR>
+template<class VISITOR, class TYPE_CONTAINER>
 class GridReferenceContainerVisitor
 {
 public:

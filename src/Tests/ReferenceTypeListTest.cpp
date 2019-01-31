@@ -284,7 +284,7 @@ void VisitorHelper(VISITOR &v, TypeRefContainer<OBJECT_TYPES> &c)
 /*============================*
  * TypeContainerVisitor
  *============================*/
-template<class TYPE_CONTAINER, class VISITOR>
+template<class VISITOR, class TYPE_CONTAINER>
 class TypeContainerVisitor
 {
 public:
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(ReferenceTypeListTest)
 	GenericTestObject *res = nullptr;
 	CompareGenericTestObjectID check(ID_CHECK);
 	GenericTestObjectSearcher<CompareGenericTestObjectID> searcher(res, check);
-	TypeContainerVisitor<TypeRefContainer<MyTypes>, GenericTestObjectSearcher<CompareGenericTestObjectID>>  id_searcher(searcher);
+	TypeContainerVisitor<GenericTestObjectSearcher<CompareGenericTestObjectID>, TypeRefContainer<MyTypes>>  id_searcher(searcher);
 	id_searcher.Visit(refContainer);
 
 	BOOST_CHECK_EQUAL(res->get_id(), ID_CHECK);

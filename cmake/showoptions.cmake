@@ -25,12 +25,9 @@ message("")
 
 # output information about installation-directories and locations
 
-message("* Install core to        : ${CMAKE_INSTALL_PREFIX}")
-if( UNIX )
-  message("* Install libraries to   : ${LIB_DIR}")
-  message("* Install configs to     : ${CONF_DIR}")
-endif()
-message("")
+message("* Install core to            : ${CMAKE_INSTALL_PREFIX}")
+message("* Install configs to         : ${CONF_DIR}")
+message("* Install static database to : ${DB_DIR}")
 
 # Show infomation about the options selected during configuration
 

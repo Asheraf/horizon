@@ -30,9 +30,9 @@ void AuthSession::set_game_account(std::shared_ptr<GameAccount> account) { _game
 std::shared_ptr<SessionData> AuthSession::get_session_data() { return _session_data; }
 void AuthSession::set_session_data(std::shared_ptr<SessionData> session_data) { _session_data.swap(session_data); }
 
-int AuthSession::get_packet_version(uint16_t op_code, PacketBuffer buf)
+int AuthSession::get_packet_version(uint16_t packet_id, PacketBuffer buf)
 {
-	switch (op_code)
+	switch (packet_id)
 	{
 	case CA_LOGIN:
 	{

@@ -19,7 +19,6 @@
 #define HORIZON_SESSIONDATA_H
 
 #include "Server/Common/Horizon.hpp"
-#include "Server/Common/Base/PacketHandler/InterPackets.hpp"
 #include <ctime>
 
 class SessionData
@@ -35,33 +34,70 @@ public:
 	}
 
 	/**
-	 * Serialize into struct.
+	 * Load all fields from the database into this instance.
+	 * @param server
+	 * @param char_id
+	 * @return
 	 */
-	SessionData &operator >> (PACKET_INTER_SESSION &pkt)
+	bool load(Server *server, uint32_t game_account_id)
 	{
-		pkt.game_account_id = get_game_account_id();
-		pkt.auth_code = get_auth_code();
-		pkt.client_type = get_client_type();
-		pkt.client_version = get_client_version();
-		pkt.group_id = get_group_id();
-		pkt.character_slots = get_character_slots();
+		std::string query = "SELECT `auth_code`, `client_version`, `client_type`, `character_slots`, `group_id`, `connect_time` FROM `session_data` WHERE game_account_id = ?";
 
-		return *this;
+		try {
+			auto s = server->get_mysql_client()->getSession();
+			auto record = s.sql(query).bind(game_account_id).execute().fetchOne();
+
+			if (record) {
+				set_game_account_id(game_account_id);
+				set_auth_code(record[0].get<int>());
+				set_client_version(record[1].get<int>());
+				set_client_type(record[2].get<int>());
+				set_character_slots(record[3].get<int>());
+				set_group_id(record[4].get<int>());
+				set_connect_time(record[5].get<int>());
+
+				s.close();
+				return true;
+			}
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("SessionData::load: {}", e.what());
+		}
+
+		return false;
 	}
 
-	/**
-	 * Serialize into struct.
-	 */
-	SessionData &operator << (PACKET_INTER_SESSION &pkt)
+	void save(Server *server)
 	{
-		set_game_account_id(pkt.game_account_id);
-		set_auth_code(pkt.auth_code);
-		set_client_version(pkt.client_version);
-		set_client_type(pkt.client_type);
-		set_character_slots(pkt.character_slots);
-		set_group_id(pkt.group_id);
-		
-		return *this;
+		std::string query = "REPLACE INTO `session_data` (`auth_code`, `game_account_id`, `client_version`, `client_type`, `character_slots`, `group_id`, `connect_time`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+		try {
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query).bind(get_auth_code(),
+							  get_game_account_id(),
+							  get_client_version(),
+							  get_client_type(),
+							  get_character_slots(),
+							  get_group_id(),
+							  get_connect_time())
+						.execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("SessionData::save: {}", e.what());
+		}
+	}
+
+	void remove(Server *server)
+	{
+		std::string query = "DELETE FROM `session_data` WHERE game_account_id = ?";
+
+		try {
+			auto s = server->get_mysql_client()->getSession();
+			s.sql(query).bind(get_game_account_id()).execute();
+			s.close();
+		} catch (const mysqlx::Error &e) {
+			CoreLog->warn("SessionData::remove: {}", e.what());
+		}
 	}
 
 	/* Auth Code */

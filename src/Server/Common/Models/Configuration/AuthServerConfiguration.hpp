@@ -23,7 +23,7 @@
 #include <cstring>
 #include <ctime>
 
-enum HashingMethods
+enum login_hash_method
 {
 	PASS_HASH_NONE   = 0,
 	PASS_HASH_MD5    = 1,
@@ -32,14 +32,14 @@ enum HashingMethods
 
 struct auth_server_logging_config : public logging
 {
-	uint32_t getLoginMaxTries() const { return login_max_tries; }
-	void setLoginMaxTries(uint32_t login_max_tries) { auth_server_logging_config::login_max_tries = login_max_tries; }
+	uint32_t get_login_max_tries() const { return login_max_tries; }
+	void set_login_max_tries(uint32_t login_max_tries) { auth_server_logging_config::login_max_tries = login_max_tries; }
 
-	time_t getLoginFailBanTime() const { return login_fail_ban_time; }
-	void setLoginFailBanTime(time_t login_fail_ban_time) { auth_server_logging_config::login_fail_ban_time = login_fail_ban_time; }
+	time_t get_login_fail_ban_time() const { return login_fail_ban_time; }
+	void set_login_fail_ban_time(time_t login_fail_ban_time) { auth_server_logging_config::login_fail_ban_time = login_fail_ban_time; }
 
-	time_t getLoginFailCheckTime() const { return login_fail_check_time; }
-	void setLoginFailCheckTime(time_t login_fail_check_time) { auth_server_logging_config::login_fail_check_time = login_fail_check_time; }
+	time_t get_login_fail_check_time() const { return login_fail_check_time; }
+	void set_login_fail_check_time(time_t login_fail_check_time) { auth_server_logging_config::login_fail_check_time = login_fail_check_time; }
 
 	/* Member Variables */
 	uint32_t login_max_tries = 3;                                ///< Max login tries.
@@ -50,19 +50,19 @@ struct auth_server_logging_config : public logging
 struct auth_server_config
 {
 	/* Pass Hash Method */
-	HashingMethods getPassHashMethod() const { return pass_hash_method; }
-	void setPassHashMethod(HashingMethods pass_hash_method) { auth_server_config::pass_hash_method = pass_hash_method; }
+	login_hash_method get_pass_hash_method() const { return pass_hash_method; }
+	void set_pass_hash_method(login_hash_method pass_hash_method) { auth_server_config::pass_hash_method = pass_hash_method; }
 	/* Client Date Format */
-	const std::string &getClientDateFormat() const { return client_date_format; }
-	void setClientDateFormat(const std::string &date_format) { auth_server_config::client_date_format = date_format; }
+	const std::string &get_client_date_format() const { return client_date_format; }
+	void set_client_date_format(const std::string &date_format) { auth_server_config::client_date_format = date_format; }
 	/* Logs Configuration */
-	auth_server_logging_config &getLogConf() { return logs; }
+	auth_server_logging_config &get_log_conf() { return logs; }
 
 	/* Member Variables */
-	enum HashingMethods pass_hash_method = PASS_HASH_NONE;                   ///< Password Hashing Method.
+	login_hash_method pass_hash_method = PASS_HASH_NONE;                   ///< Password Hashing Method.
 	std::string client_date_format = "%Y-%m-%d %H:%M:%S";                    ///< Date format sent to clients.
 	/* Authentication Server Logging Configuration */
-	struct auth_server_logging_config logs;
+	auth_server_logging_config logs;
 };
 
 #endif // HORIZON_AUTHSERVERCONFIGURATION_HPP

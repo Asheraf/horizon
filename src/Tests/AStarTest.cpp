@@ -46,8 +46,8 @@ bool check_collision(uint16_t x, uint16_t y)
 BOOST_AUTO_TEST_CASE(AStarTest)
 {
 	Horizon::Zone::AStar::Generator astar({MAP_WIDTH, MAP_HEIGHT}, &check_collision, true, &Horizon::Zone::AStar::Heuristic::manhattan);
-	Horizon::Zone::AStar::Vec2i start = { 50, 120 };
-	Horizon::Zone::AStar::Vec2i end = { 250, 300 };
+	Horizon::Zone::AStar::Vec2i start = { 50, 40 };
+	Horizon::Zone::AStar::Vec2i end = { 250, 350 };
 	int idx = 0;
 
 	cell[0] = (Cell **) std::malloc(sizeof(Cell *) * MAP_WIDTH * MAP_HEIGHT);

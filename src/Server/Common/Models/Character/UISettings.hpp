@@ -30,7 +30,10 @@ namespace Character
 class UISettings
 {
 public:
-	UISettings() {}
+	UISettings(uint32_t char_id)
+	: _character_id(char_id)
+	{ }
+
 	~UISettings() {}
 
 	/**
@@ -85,22 +88,22 @@ public:
 	}
 
 	/* Character ID */
-	uint32_t get_character_id() const { return character_id; }
-	void set_character_id(uint32_t character_id) { UISettings::character_id = character_id; }
+	uint32_t get_character_id() const { return _character_id; }
+	void set_character_id(uint32_t character_id) { _character_id = character_id; }
 	/* Font */
-	uint8_t get_font() const { return font; }
-	void set_font(uint8_t font) { UISettings::font = font; }
+	uint8_t get_font() const { return _font; }
+	void set_font(uint8_t font) { _font = font; }
 	/* Show Equip */
-	uint8_t get_show_equip() const { return show_equip; }
-	void set_show_equip(uint8_t show_equip) { UISettings::show_equip = show_equip; }
+	uint8_t get_show_equip() const { return _show_equip; }
+	void set_show_equip(uint8_t show_equip) { _show_equip = show_equip; }
 	/* Allow Party */
-	uint8_t get_allow_party() const { return allow_party; }
-	void set_allow_party(uint8_t allow_party) { UISettings::allow_party = allow_party; }
+	uint8_t get_allow_party() const { return _allow_party; }
+	void set_allow_party(uint8_t allow_party) { _allow_party = allow_party; }
 private:
-	uint32_t character_id{0};
-	uint8_t font{0};
-	uint8_t show_equip{0};
-	uint8_t allow_party{0};
+	uint32_t _character_id{0};
+	uint8_t _font{0};
+	uint8_t _show_equip{0};
+	uint8_t _allow_party{0};
 };
 }
 }

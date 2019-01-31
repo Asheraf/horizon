@@ -24,6 +24,22 @@ bind_ip: "0.0.0.0"
 bind_port: 6121
 
 ###################################################
+# Client Type
+# Default: 0 (Ragexe)
+# Types: 0 = Ragexe
+#        1 = RagexeRE
+#        2 = Zero
+#        3 = AD
+#        4 = Sakray
+###################################################
+client_type: 0
+
+###################################################
+# Packet Version allowed.
+###################################################
+packet_version: 20141022
+
+###################################################
 # network_threads
 # Description: Number of threads for network.
 # Default:        1 - (Recommended 1 thread per 1000 connections)
@@ -52,21 +68,12 @@ database: {
 global_io_threads: 2
 
 ###################################################
-# Server Update Interval (in milliseconds)
+# Server Update Interval (in microseconds)
 # - The interval through which a server will update
 #   its events and global timers.
-# Default: 500ms
+# Default: 500µs
 ###################################################
 core_update_interval: 500
-
-###################################################
-# Inter Server Settings
-###################################################
-inter_server: {
-    ip_address: "127.0.0.1"
-    port: 9998
-    password: "ABCDEF"
-}
 
 ###################################################
 # Log all requests to the character server
@@ -81,10 +88,10 @@ log: {
 # New character settings.
 ###################################################
 new_character: {
-    start_map: "new_1-1"
-    start_x: 53
+    start_map: "prontera"
+    start_x: 101
     start_y: 111
-    start_zeny: 0
+    start_zeny: 10000
     start_items: {
       ID1201: 1
       ID2301: 1

@@ -19,58 +19,46 @@ friend class Horizon::Zone::Game::MapManager;
 public:
 	typedef Grid<ACTIVE_OBJECT, ZONE_OBJECT_TYPES> GridType;
 
-	GridHolder(int width, int height)
-	: _height(height), _width(width),
-	  _grids(boost::extents[width][height])
+	GridHolder(GridCoords bounds)
+	: _bounds(bounds)
 	{
 	}
 
 	~GridHolder()
 	{
-		for (uint16_t x = 0; x < _width; ++x)
-			for (uint16_t y = 0; y < _height; ++y)
-				delete _grids[x][y];
 	}
 
-	GridType *get_grid(GridCoords &coords)
+	GridType &get_grid(GridCoords const &coords)
 	{
-		assert(coords.x() < _width);
-		assert(coords.y() < _height);
+		assert(coords.x() < _bounds.x());
+		assert(coords.y() < _bounds.y());
 
 		return _grids[coords.x()][coords.y()];
 	}
 
-	void initialize_grid(GridCoords &coords, bool unused)
+	uint16_t height() { return _bounds.y(); }
+	uint16_t width() { return _bounds.x(); }
+
+	template<class VISITOR, class CONTAINER_TYPE>
+	void visit_all(GridReferenceContainerVisitor<VISITOR, GridReferenceContainer<CONTAINER_TYPE>> &visitor)
 	{
-		assert(coords.x() < _width);
-		assert(coords.y() < _height);
-
-		_grids[coords.x()][coords.y()] = unused ? nullptr : new GridType();
-	}
-
-	uint16_t height() { return _height; }
-	uint16_t width() { return _width; }
-
-	template<class CONTAINER_TYPE, class VISITOR>
-	void VisitAll(GridReferenceContainerVisitor<GridReferenceContainer<CONTAINER_TYPE>, VISITOR> &visitor)
-	{
-		for (uint16_t x = 0; x < _width; ++x) {
-			for (uint16_t y = 0; y < _height; ++y) {
+		for (uint16_t x = 0; x < _bounds.x(); ++x) {
+			for (uint16_t y = 0; y < _bounds.y(); ++y) {
 				GridCoords c(x, y);
-				get_grid(c).Visit(visitor);
+				get_grid(c).visit(visitor);
 			}
 		}
 	}
 
-	template<class CONTAINER_TYPE, class VISITOR>
-	void Visit(GridCoords coords, GridReferenceContainerVisitor<GridReferenceContainer<CONTAINER_TYPE>, VISITOR> &visitor)
+	template<class VISITOR, class CONTAINER_TYPE>
+	void visit(GridCoords coords, GridReferenceContainerVisitor<VISITOR, GridReferenceContainer<CONTAINER_TYPE>> &visitor)
 	{
 		get_grid(coords).Visit(visitor);
 	}
 
 private:
-	uint16_t _height{0}, _width{0};
-	boost::multi_array<GridType *, 2> _grids;
+	GridCoords _bounds;
+	GridType _grids[MAX_GRIDS_PER_MAP][MAX_GRIDS_PER_MAP];
 };
 
 #endif /* HORIZON_ZONE_GAME_GRIDHOLDER_HPP */

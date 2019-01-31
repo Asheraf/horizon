@@ -30,9 +30,13 @@ struct zone_server_configuration
 	void set_mapcache_file_name(std::string const &name) { _map_cache_file_name = name; }
 	std::string &get_mapcache_file_name() { return _map_cache_file_name; }
 
+	void set_map_container_count(uint32_t threads) { _map_container_count = threads; }
+	uint32_t get_map_container_count() { return _map_container_count; }
+
 private:
-	std::string _db_path{"../db/"};
+	std::string _db_path{"db/"};
 	std::string _map_cache_file_name{"maps.dat"};
+	uint32_t _map_container_count;
 };
 
 #endif /* HORIZON_CHARSERVERCONFIGURATION_HPP */

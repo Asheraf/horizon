@@ -18,10 +18,14 @@
 #include "ZoneSocket.hpp"
 
 #include "Server/Common/Models/Character/Character.hpp"
-#include "Server/Zone/Game/Models/Entities/Unit/Player/Player.hpp"
-#include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
+#include "Server/Common/Models/SessionData.hpp"
+#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Map/MapManager.hpp"
+#include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/PacketHandler/PacketHandlerFactory.hpp"
+#include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
+#include "Server/Zone/Zone.hpp"
 
 using namespace Horizon::Zone;
 
@@ -55,9 +59,14 @@ void ZoneSocket::start()
 void ZoneSocket::on_close()
 {
 	ZoneLog->info("Closed connection from {}.", remote_ip_address());
+}
 
-	/* Perform socket manager cleanup. */
-	ClientSocktMgr->clear_socket(shared_from_this());
+void ZoneSocket::on_error()
+{
+	// Session cleanup if client has not exited properly.
+	if (get_session()) {
+		get_session()->cleanup_on_error();
+	}
 }
 
 /**
@@ -76,11 +85,21 @@ bool ZoneSocket::update()
 void ZoneSocket::read_handler()
 {
 	while (get_read_buffer().get_active_size()) {
-		uint16_t op_code = 0x0;
-		memcpy(&op_code, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
+		uint16_t packet_id = 0x0;
+		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
 
-		PacketBuffer buf(op_code, get_read_buffer().get_read_pointer(), get_read_buffer().get_active_size());
-		get_read_buffer().read_completed(get_read_buffer().get_active_size());
+		int16_t packet_length = GET_CZ_PACKETLEN(packet_id);
+
+		if (packet_length == -1) {
+			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
+		} else if (packet_length == 0) {
+			ZoneLog->warn("Received non-existent packet id {0:x}, disconnecting session...", packet_id);
+			close_socket();
+			break;
+		}
+
+		PacketBuffer buf(packet_id, get_read_buffer().get_read_pointer(), packet_length);
+		get_read_buffer().read_completed(packet_length);
 
 		_packet_recv_queue.push(std::move(buf));
 	}

@@ -30,11 +30,9 @@ namespace Character
 class Status
 {
 public:
-	Status() {}
-	~Status() {}
 
-	Status(uint32_t zeny)
-	: _base_level(1), _job_level(1), _zeny(zeny)
+	Status(uint32_t char_id)
+	: _character_id(char_id), _base_level(1), _job_level(1), _zeny(0)
 	{
 		//
 	}
@@ -42,8 +40,11 @@ public:
 	Status(uint32_t z, uint8_t str, uint8_t agi, uint8_t int_, uint8_t vit, uint8_t dex, uint8_t luk)
 	: _base_level(1), _job_level(1), _zeny(z), _strength(str), _agility(agi), _vitality(vit), _intelligence(int_), _dexterity(dex), _luck(luk)
 	{
-		//
+		_hp = _maximum_hp = (40 * (100 + vit)/100);
+		_sp = _maximum_sp = (11 * (100 + int_)/100);
 	}
+	
+	~Status() {}
 
 	/**
 	 * Load all fields from the database into this instance.

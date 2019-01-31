@@ -20,7 +20,6 @@
 
 #include "Server/Char/PacketHandler/PacketHandler.hpp"
 #include "Server/Char/PacketHandler/Versions/PacketHandler20120307.hpp"
-#include "Server/Char/PacketHandler/InterPacketHandler.hpp"
 
 #include <memory>
 
@@ -29,7 +28,6 @@ namespace Horizon
 namespace Char
 {
 class CharSocket;
-class InterSocket;
 class PacketHandlerFactory
 {
 public:
@@ -47,16 +45,6 @@ public:
 			return std::make_shared<PacketHandler20120307>(socket);
 
 		return std::make_shared<PacketHandler>(socket);
-	}
-
-	/**
-	 * @brief Build an InterPacketHandler instance for an inter-server connection.
-	 * @param[in|out] session    shared_ptr to a InterSession instance.
-	 * @return shared pointer to a new instance of Horizon::Char::InterPacketHandler.
-	 */
-	static std::shared_ptr<InterPacketHandler> create_inter_packet_handler(std::shared_ptr<InterSocket> socket)
-	{
-		return std::make_shared<InterPacketHandler>(socket);
 	}
 };
 }

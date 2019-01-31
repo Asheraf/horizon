@@ -41,10 +41,10 @@ public:
 	
 	bool ReadConfig();
 	void initialize_cli_commands();
-	void establish_inter_connection();
+	
 	void initialize_core();
 
-	character_server_configuration &getCharConfig() { return _char_server_config; }
+	character_server_configuration &get_char_config() { return _char_server_config; }
 
 	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
 

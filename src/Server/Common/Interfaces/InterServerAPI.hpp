@@ -53,18 +53,24 @@ public:
 	std::shared_ptr<SessionData> get_session_data(uint32_t auth_code)
 	{
 		std::shared_ptr<SessionData> session_data = std::make_shared<SessionData>();
-		PACKET_INTER_SESSION_REQ send_pkt;
-		PACKET_INTER_SESSION_GET recv_pkt;
+		PACKET_CI_SESSION_REQ send_pkt;
+		PACKET_IC_SESSION_REQ_ACK recv_pkt;
 
 		send_pkt.auth_code = auth_code;
 
 		if (_inter_socket != nullptr
-			&& _inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_SESSION_GET) {
+			&& _inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::IC_SESSION_REQ_ACK) {
 			*session_data << recv_pkt.s;
 			return session_data;
 		}
 
 		return nullptr;
+	}
+
+	void request_authorisation()
+	{
+		if (_inter_socket != nullptr)
+			_inter_socket->get_session()->get_packet_handler()->Send_CI_CONNECT_AUTH();
 	}
 
 	/**
@@ -75,7 +81,7 @@ public:
 	void delete_session(uint32_t auth_code)
 	{
 		if (_inter_socket != nullptr)
-			_inter_socket->get_session()->get_packet_handler()->Send_INTER_SESSION_DEL(auth_code);
+			_inter_socket->get_session()->get_packet_handler()->Send_CI_SESSION_DEL(auth_code);
 	}
 
 	/**
@@ -85,7 +91,7 @@ public:
 	void store_session_data(std::shared_ptr<SessionData> const &session_data)
 	{
 		if (_inter_socket != nullptr)
-			_inter_socket->get_session()->get_packet_handler()->Send_INTER_SESSION_SET(*session_data);
+			_inter_socket->get_session()->get_packet_handler()->Send_CI_SESSION_SET(*session_data);
 	}
 
 	/**
@@ -98,13 +104,13 @@ public:
 	std::shared_ptr<GameAccount> get_game_account(uint32_t account_id)
 	{
 		std::shared_ptr<GameAccount> game_account = std::make_shared<GameAccount>();
-		PACKET_INTER_GAME_ACCOUNT_REQ send_pkt;
-		PACKET_INTER_GAME_ACCOUNT_GET recv_pkt;
+		PACKET_CI_GAME_ACCOUNT_REQ send_pkt;
+		PACKET_IC_GAME_ACCOUNT_REQ_ACK recv_pkt;
 
 		send_pkt.account_id = account_id;
 
 		if (_inter_socket != nullptr
-			&& _inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_GAME_ACCOUNT_GET) {
+			&& _inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::IC_GAME_ACCOUNT_REQ_ACK) {
 			*game_account << recv_pkt.s;
 			return game_account;
 		}
@@ -120,7 +126,7 @@ public:
 	void delete_game_account(uint32_t account_id)
 	{
 		if (_inter_socket != nullptr)
-			_inter_socket->get_session()->get_packet_handler()->Send_INTER_GAME_ACCOUNT_DEL(account_id);
+			_inter_socket->get_session()->get_packet_handler()->Send_CI_GAME_ACCOUNT_DEL(account_id);
 	}
 
 	/**
@@ -130,22 +136,23 @@ public:
 	void store_game_account(std::shared_ptr<GameAccount> game_account)
 	{
 		if (_inter_socket != nullptr)
-			_inter_socket->get_session()->get_packet_handler()->Send_INTER_GAME_ACCOUNT_SET(*game_account);
+			_inter_socket->get_session()->get_packet_handler()->Send_CI_GAME_ACCOUNT_SET(*game_account);
 	}
 
-	bool pingInterServer()
+	bool ping_inter_server()
 	{
-		PACKET_INTER_PING send_pkt;
-		PACKET_INTER_PONG recv_pkt;
+		PACKET_CI_PING send_pkt;
+		PACKET_IC_PONG recv_pkt;
 
-		if (_inter_socket != nullptr && _inter_socket->get_session()->get_packet_handler() &&
-			_inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::INTER_PONG)
+		if (_inter_socket != nullptr && _inter_socket->get_session() && _inter_socket->get_session()->get_packet_handler()
+			&&_inter_socket->get_session()->get_packet_handler()->send_and_receive_packet(send_pkt, &recv_pkt) == Horizon::Base::inter_packets::IC_PONG)
 			return true;
 
 		return false;
 	}
 
-	void set_inter_socket(std::shared_ptr<SessionType> socket) { _inter_socket.swap(socket); }
+	std::shared_ptr<SessionType> get_inter_socket() { return std::atomic_load(&_inter_socket); }
+	void set_inter_socket(std::shared_ptr<SessionType> socket) { std::atomic_store(&_inter_socket, socket); }
 
 private:
 	std::shared_ptr<SessionType> _inter_socket;

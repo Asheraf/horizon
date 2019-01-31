@@ -32,41 +32,41 @@ typedef ThreadSafeQueue<PacketBuffer> PacketQueueType;
 #pragma pack(push, 1)
 struct Packet
 {
-	Packet(uint16_t id) : op_code(id) { }
-	uint16_t op_code;
+	Packet(uint16_t id) : packet_id(id) { }
+	uint16_t packet_id;
 };
 #pragma pack(pop)
 
 class PacketBuffer : public ByteBuffer
 {
 public:
-	PacketBuffer() : ByteBuffer(0), op_code(0x0000)
+	PacketBuffer() : ByteBuffer(0), packet_id(0x0000)
 	{
 	}
 
 	PacketBuffer(uint16_t id, uint8_t *data, size_t size)
-	: ByteBuffer(size), op_code(id)
+	: ByteBuffer(size), packet_id(id)
 	{
 		append(&*data, size);
 	}
 
 	PacketBuffer(uint16_t id, size_t reserve = 200)
-	: ByteBuffer(reserve), op_code(id)
+	: ByteBuffer(reserve), packet_id(id)
 	{
 	}
 
-	PacketBuffer(PacketBuffer &&packet) : ByteBuffer(std::move(packet)), op_code(packet.op_code)
+	PacketBuffer(PacketBuffer &&packet) : ByteBuffer(std::move(packet)), packet_id(packet.packet_id)
 	{
 	}
 
-	PacketBuffer(PacketBuffer const &right) : ByteBuffer(right), op_code(right.op_code)
+	PacketBuffer(PacketBuffer const &right) : ByteBuffer(right), packet_id(right.packet_id)
 	{
 	}
 
 	PacketBuffer & operator = (PacketBuffer const &right)
 	{
 		if (this != &right) {
-			op_code = right.op_code;
+			packet_id = right.packet_id;
 			ByteBuffer::operator=(right);
 		}
 
@@ -76,7 +76,7 @@ public:
 	PacketBuffer & operator = (PacketBuffer &&right)
 	{
 		if (this != &right) {
-			op_code = right.op_code;
+			packet_id = right.packet_id;
 			ByteBuffer::operator=(std::move(right));
 		}
 
@@ -119,14 +119,14 @@ public:
 	{
 		clear();
 		_storage.reserve(newres);
-		op_code = id;
+		packet_id = id;
 	}
 
-	uint16_t getOpCode() { return op_code; };
-	void SetOpcode(uint16_t code) { op_code = code; }
+	uint16_t getOpCode() { return packet_id; };
+	void SetOpcode(uint16_t code) { packet_id = code; }
 
 protected:
-	uint16_t op_code;
+	uint16_t packet_id;
 };
 
 

@@ -14,7 +14,7 @@
 # or viewing without permission.
 #########################################################
 
-CREATE TABLE `game_account` (
+CREATE TABLE `game_accounts` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(23) NOT NULL DEFAULT '',
   `password` varchar(64) NOT NULL DEFAULT '',
@@ -45,7 +45,7 @@ CREATE TABLE `characters` (
   `name` varchar(30) NOT NULL DEFAULT '',
   `online` tinyint(2) NOT NULL DEFAULT 0,
   `gender` enum('M','F','U') NOT NULL DEFAULT 'U',
-  `deleted` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_key` (`name`),
   CONSTRAINT FOREIGN KEY (account_id) REFERENCES game_account(id)
@@ -159,4 +159,16 @@ CREATE TABLE `character_position_data` (
   `saved_y` smallint(4) unsigned NOT NULL DEFAULT 111,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `session_data` (
+  `auth_code` int(11) unsigned NOT NULL,
+  `game_account_id` int(11) unsigned NOT NULL,
+  `client_version` int(11) unsigned NOT NULL DEFAULT 0,
+  `client_type` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `character_slots` int(11) unsigned NOT NULL DEFAULT 0,
+  `group_id` int(11) unsigned NOT NULL DEFAULT 0,
+  `connect_time` int(11) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`auth_code`),
+  CONSTRAINT FOREIGN KEY (game_account_id) REFERENCES game_accounts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

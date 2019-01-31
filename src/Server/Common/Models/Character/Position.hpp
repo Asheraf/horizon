@@ -30,14 +30,18 @@ namespace Character
 class Position
 {
 public:
-	Position() {}
-	~Position() {}
+	Position(uint32_t char_id)
+	: _character_id(char_id)
+	{}
 
-	Position(std::string const &start_map, uint16_t start_x, uint16_t start_y)
-	: _saved_map(start_map), _saved_x(start_x), _saved_y(start_y)
+	Position(uint32_t char_id, std::string const &start_map, uint16_t start_x, uint16_t start_y)
+	: _character_id(char_id), _current_map(start_map), _current_x(start_x), _current_y(start_y),
+	_saved_map(start_map), _saved_x(start_x), _saved_y(start_y)
 	{
 		//
 	}
+
+	~Position() {}
 
 	/**
 	 * Load all fields from the database into this instance.

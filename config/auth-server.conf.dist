@@ -24,6 +24,22 @@ bind_ip: "0.0.0.0"
 bind_port: 6900
 
 ###################################################
+# Client Type
+# Default: 0 (Ragexe)
+# Types: 0 = Ragexe
+#        1 = RagexeRE
+#        2 = Zero
+#        3 = AD
+#        4 = Sakray
+###################################################
+client_type: 0
+
+###################################################
+# Packet Version allowed.
+###################################################
+packet_version: 20141022
+
+###################################################
 # Auth Server Database Settings
 ###################################################
 database: {
@@ -42,24 +58,6 @@ database: {
 # Note: Cannot be less than 1.
 ###################################################
 network_threads: 2
-
-###################################################
-# Inter Server Settings
-###################################################
-inter_server: {
-    ip_address: "127.0.0.1"
-    port: 9998
-    password: "ABCDEF"
-}
-
-###################################################
-# Check the client's version before allowing a connection.
-# Default: 0 (disabled)
-###################################################
-client_versions: {
-    min: 20141022
-    max: 20170101
-}
 
 ###################################################
 # Global Thread Pool
@@ -117,10 +115,11 @@ client_date_format: "%Y-%m-%d %H:%M:%S"
 ####################################################
 character_servers: (
 {
-    name: "Asgard"
-    host: "localhost"
-    port: 6121
-    type: 0
-    is_new: 1
+    Id: 1
+    Name: "Asgard"
+    Host: "localhost"
+    Port: 6121
+    Type: 0
+    IsNew: 1
 }
 )

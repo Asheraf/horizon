@@ -35,9 +35,10 @@ public:
 	explicit PacketHandler20171113(std::shared_ptr<AuthSocket> socket);
 	~PacketHandler20171113() override;
 
-	void Handle_CA_LOGIN_OTP(PacketBuffer &buf) override;
-	void Handle_Poly(PacketBuffer &buf);
 	void initialize_handlers() override;
+
+	bool Handle_CA_LOGIN_OTP(PacketBuffer &buf) override;
+	bool Handle_Poly(PacketBuffer &buf);
 };
 }
 }

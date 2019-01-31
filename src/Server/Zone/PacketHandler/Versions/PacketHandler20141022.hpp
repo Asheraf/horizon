@@ -27,10 +27,15 @@ namespace Horizon
 {
 namespace Zone
 {
+namespace Game
+{
+	class Entity;
+}
 namespace PacketVer20141022
 {
 enum packets
 {
+	/* */
 	CZ_ENTER               = 0x093b,
 	CZ_REQUEST_TIME        = 0x035f,
 	CZ_REQNAME             = 0x096a,
@@ -40,6 +45,11 @@ enum packets
 };
 
 #pragma pack(push, 1)
+struct PACKET_ZC_NOTIFY_STANDENTRY10 : public Horizon::Zone::PACKET_ZC_NOTIFY_STANDENTRY10
+{
+	PACKET_ZC_NOTIFY_STANDENTRY10() : Horizon::Zone::PACKET_ZC_NOTIFY_STANDENTRY10(ZC_NOTIFY_STANDENTRY10) { }
+};
+
 struct PACKET_CZ_ENTER : public Horizon::Zone::PACKET_CZ_ENTER
 {
 	PACKET_CZ_ENTER() : Horizon::Zone::PACKET_CZ_ENTER(CZ_ENTER) { }
@@ -52,6 +62,11 @@ struct PACKET_CZ_REQUEST_MOVE : public Horizon::Zone::PACKET_CZ_REQUEST_MOVE
 {
 	PACKET_CZ_REQUEST_MOVE() : Horizon::Zone::PACKET_CZ_REQUEST_MOVE(CZ_REQUEST_MOVE) { }
 };
+struct PACKET_CZ_CHANGE_DIR : public Horizon::Zone::PACKET_CZ_CHANGE_DIR
+{
+	PACKET_CZ_CHANGE_DIR() : Horizon::Zone::PACKET_CZ_CHANGE_DIR(CZ_CHANGE_DIR) { }
+};
+	
 #pragma pack(pop)
 }
 
@@ -63,7 +78,12 @@ public:
 	PacketHandler20141022(std::shared_ptr<ZoneSocket> socket);
 	~PacketHandler20141022();
 
-	virtual void initialize_handlers();
+	virtual void initialize_handlers() override;
+
+	void Handle_CZ_CHANGE_DIRECTION(PacketBuffer &buf) override;
+	void Handle_CZ_CHANGE_DIRECTION2(PacketBuffer &buf) override;
+
+	void Send_ZC_NOTIFY_STANDENTRY10(Game::Entity *entity) override;
 };
 }
 }

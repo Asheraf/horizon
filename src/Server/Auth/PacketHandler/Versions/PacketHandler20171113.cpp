@@ -32,18 +32,19 @@ Horizon::Auth::PacketHandler20171113::~PacketHandler20171113()
 {
 }
 
-void Horizon::Auth::PacketHandler20171113::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
-{
-
-}
-
-void Horizon::Auth::PacketHandler20171113::Handle_Poly(PacketBuffer &/*buf*/)
-{
-	AuthLog->info("20171113 Poly Overloaded!");
-}
-
 void Horizon::Auth::PacketHandler20171113::initialize_handlers()
 {
 	PacketHandler20170315::initialize_handlers();
 	add_packet_handler(CA_LOGIN, boost::bind(&PacketHandler::Handle_CA_LOGIN, this, boost::placeholders::_1));
+}
+
+bool Horizon::Auth::PacketHandler20171113::Handle_CA_LOGIN_OTP(PacketBuffer &/*packet*/)
+{
+	return true;
+}
+
+bool Horizon::Auth::PacketHandler20171113::Handle_Poly(PacketBuffer &/*buf*/)
+{
+	AuthLog->info("20171113 Poly Overloaded!");
+	return true;
 }

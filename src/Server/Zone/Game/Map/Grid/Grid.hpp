@@ -24,8 +24,8 @@ public:
 		assert(obj->is_valid());
 	}
 
-	template <class T>
-	void Visit(GridReferenceContainerVisitor<GridReferenceContainer<GRID_OBJECT_TYPES>, T> &visitor)
+	template <class VISITOR>
+	void visit(GridReferenceContainerVisitor<VISITOR, GridReferenceContainer<GRID_OBJECT_TYPES>> &visitor)
 	{
 		visitor.Visit(_container);
 	}

@@ -32,8 +32,10 @@ namespace Character
 class Family
 {
 public:
-	Family() {}
-	~Family() {}
+	Family(uint32_t char_id) : _character_id(char_id)
+	{ }
+	
+	~Family() { }
 
 	/**
 	 * Load all fields from the database into this instance.
@@ -85,27 +87,27 @@ public:
 	}
 
 	/* Character Id */
-	uint32_t get_character_id() const { return character_id; }
-	void set_character_id(uint32_t character_id) { Family::character_id = character_id; }
+	uint32_t get_character_id() const { return _character_id; }
+	void set_character_id(uint32_t character_id) { _character_id = character_id; }
 	/* Parter Account ID */
-	uint32_t get_partner_aid() const { return parter_aid; }
-	void set_partner_aid(uint32_t parter_aid) { Family::parter_aid = parter_aid; }
+	uint32_t get_partner_aid() const { return _parter_aid; }
+	void set_partner_aid(uint32_t parter_aid) { _parter_aid = parter_aid; }
 	/* Father Account ID */
-	uint32_t get_father_aid() const { return father_aid; }
-	void set_father_aid(uint32_t father_aid) { Family::father_aid = father_aid; }
+	uint32_t get_father_aid() const { return _father_aid; }
+	void set_father_aid(uint32_t father_aid) { _father_aid = father_aid; }
 	/* Mother Account ID */
-	uint32_t get_mother_aid() const { return mother_aid; }
-	void set_mother_aid(uint32_t mother_aid) { Family::mother_aid = mother_aid; }
+	uint32_t get_mother_aid() const { return _mother_aid; }
+	void set_mother_aid(uint32_t mother_aid) { _mother_aid = mother_aid; }
 	/* Child Account ID */
-	uint32_t get_child_aid() const { return child_aid; }
-	void set_child_aid(uint32_t child_aid) { Family::child_aid = child_aid; }
+	uint32_t get_child_aid() const { return _child_aid; }
+	void set_child_aid(uint32_t child_aid) { _child_aid = child_aid; }
 
 private:
-	uint32_t character_id{0};
-	uint32_t parter_aid{0};
-	uint32_t father_aid{0};
-	uint32_t mother_aid{0};
-	uint32_t child_aid{0};
+	uint32_t _character_id{0};
+	uint32_t _parter_aid{0};
+	uint32_t _father_aid{0};
+	uint32_t _mother_aid{0};
+	uint32_t _child_aid{0};
 };
 }
 }

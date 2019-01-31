@@ -18,8 +18,9 @@
 #ifndef HORIZON_NETWORKING_CONNECTSOCKETMGR_HPP
 #define HORIZON_NETWORKING_CONNECTSOCKETMGR_HPP
 
-#include "Core/Multithreading/LockedLookupTable.hpp"
 #include "Core/Networking/SocketMgr.hpp"
+
+#include <shared_mutex>
 
 namespace Horizon
 {
@@ -32,9 +33,8 @@ class Connector;
 template <class SocketType>
 class ConnectSocketMgr : public SocketMgr<SocketType>
 {
+	typedef std::map<std::string, std::shared_ptr<SocketType>> ConnectionMap;
 	typedef SocketMgr<SocketType> BaseSocketMgr;
-	typedef LockedLookupTable<uint32_t, std::shared_ptr<SocketType>> SocketTableType;
-	typedef LockedLookupTable<std::string, std::shared_ptr<SocketTableType>>  NetworkConnectorPool;
 public:
 	ConnectSocketMgr() { }
 	~ConnectSocketMgr() { }
@@ -66,8 +66,8 @@ public:
 		// Set the socket factory. & Start attempting to connect.
 		connector->set_socket_factory(std::bind(&BaseSocketMgr::get_new_socket, this));
 		connector->connect_with_callback(
-					boost::bind(&ConnectSocketMgr<SocketType>::on_socket_open,
-						this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3), connections);
+					std::bind(&ConnectSocketMgr<SocketType>::on_socket_open,
+						this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), connections);
 
 		return connector;
 	}
@@ -81,108 +81,52 @@ public:
 	}
 
 	/**
-	 * Add a connected socket of a SocketType to the connector pool.
-	 * @param[in|out] conn_name   const reference to the connection name string.
-	 * @param[in|out] socket     reference to the shared pointer of SocketType.
-	 */
-	void add_connector_pool_socket(std::string const &conn_name, std::shared_ptr<SocketType> const &socket)
-	{
-		std::shared_ptr<SocketTableType> socket_table = _network_connector_pool.at(conn_name);
-
-		if (socket_table == nullptr) {
-			socket_table = std::make_shared<SocketTableType>();
-			_network_connector_pool.insert(conn_name, socket_table);
-		}
-
-		socket_table->insert(socket->get_socket_id(), socket);
-	}
-
-	/**
-	 * Get the size of the connection pool for a given connection.
-	 * @param[in|out] conn_name   const reference to the connection name string.
-	 */
-	std::size_t connector_pool_size(std::string const &conn_name)
-	{
-		auto socket_table = _network_connector_pool.at(conn_name);
-
-		if (socket_table != nullptr)
-			return socket_table->size();
-
-		return 0;
-	}
-
-	/**
-	 * Get a random socket from the list of connected sockets in a connector pool.
-	 * @param[in|out] conn_name   const reference to the connection name string.
-	 */
-	std::shared_ptr<SocketType> get_connector_socket(std::string const &conn_name)
-	{
-		auto socket_table = _network_connector_pool.at(conn_name);
-
-		if (socket_table != nullptr) {
-			auto socket_map = socket_table->get_map();
-			int size = socket_map.size();
-
-			if (size > 0) {
-				int rand_idx = (rand() % size);
-				int idx = 0;
-
-				for (auto sock : socket_map)
-					if (idx++ == rand_idx)
-						return sock.second;
-			}
-		}
-
-		return nullptr;
-	}
-
-	/**
-	 * Remove a connected socket of a SocketType from the connector pool.
-	 * @param[in|out] conn_name   const reference to the connection name string.
-	 * @param[in|out] socket     reference to the shared pointer of SocketType.
-	 */
-	void finalize_connector_socket(std::string const &conn_name, std::shared_ptr<SocketType> const &socket)
-	{
-		auto socket_table = _network_connector_pool.at(conn_name);
-
-		if (socket_table != nullptr) {
-			if (socket_table->at(socket->get_socket_id())) {
-				socket_table->erase(socket->get_socket_id());
-				CoreLog->info("SocketMgr::remove_connector_socket: successfully removed '{}' connected socket ID - {}.", conn_name, socket->get_socket_id());
-			}
-		}
-	}
-
-	/**
 	 * @brief On Server Type Socket Open / Start Routine.
 	 *        - Move the socket ownership from the caller to a new socket and add it to a thread.
-	 * @param[in|out] conn_name      as the name of the connection.
+	 * @param[in] conn_name      as the name of the connection.
 	 * @param[in]     socket         shared pointer.
 	 * @param[in]     thread_index   index of the thread that the socket is being moved from.
 	 */
-	virtual void on_socket_open(std::string const &conn_name, std::shared_ptr<tcp::socket> const &tcp_socket, uint32_t thread_index)
+	void on_socket_open(std::string const &conn_name, std::shared_ptr<tcp::socket> const &tcp_socket, uint32_t thread_index)
 	{
 		std::shared_ptr<SocketType> socket = SocketMgr<SocketType>::on_socket_open(std::move(tcp_socket), thread_index);
-		// Add socket to connector map.
-		add_connector_pool_socket(conn_name, socket);
+		add_socket_to_connections(conn_name, socket);
 	}
 
-	void close_connection(std::string const &conn_name)
+	void add_socket_to_connections(std::string const &conn_name, std::shared_ptr<SocketType> sock)
 	{
-		auto socket_table = _network_connector_pool.at(conn_name);
+		std::unique_lock<std::shared_mutex> _connection_map_mtx;
 
-		if (socket_table != nullptr) {
-			auto socket_map = socket_table->get_map();
-			for (auto sock : socket_map)
-				if (sock.second->is_open())
-					sock.second->close_socket();
-			
-			_network_connector_pool.erase(conn_name);
+		_connection_map.emplace(conn_name, sock);
+	}
+
+	std::shared_ptr<SocketType> get_socket_from_connections(std::string const &conn_name)
+	{
+		std::shared_lock<std::shared_mutex> _connection_map_mtx;
+
+		try {
+			return _connection_map.at(conn_name);
+		} catch (std::out_of_range &e) {
+			return std::shared_ptr<SocketType>();
 		}
 	}
 
+	void remove_socket_from_connections(std::string const &conn_name)
+	{
+		std::unique_lock<std::shared_mutex> _connection_map_mtx;
+
+		auto socket = _connection_map.find(conn_name);
+
+		if (socket != _connection_map.end())
+			socket->second->delayed_close_socket();
+
+		_connection_map.erase(conn_name);
+	}
+
+
 private:
-	NetworkConnectorPool _network_connector_pool;
+	std::shared_mutex _connection_map_mtx;
+	ConnectionMap _connection_map;
 };
 }
 }

@@ -34,10 +34,6 @@
 	#define DEFAULT_PACKETVER MINIMUM_PACKETVER
 #endif
 
-#ifndef INTER_SESSION_NAME
-	#define INTER_SESSION_NAME "inter-server"
-#endif
-
 /* Maximum Character Slots (in multiples of 3) */
 #ifndef MAX_CHARACTER_SLOTS
 	#define MAX_CHARACTER_SLOTS 9

@@ -31,7 +31,9 @@ namespace Character
 class Access
 {
 public:
-	Access() {}
+	Access(uint32_t char_id) : _character_id(char_id)
+	{}
+	
 	~Access() {}
 
 	/**

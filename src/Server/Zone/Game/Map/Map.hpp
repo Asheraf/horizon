@@ -20,7 +20,9 @@
 
 #include "Grid/GridDefinitions.hpp"
 #include "Grid/GridHolder.hpp"
+#include "Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Path/AStar.hpp"
+#include "Server/Zone/Game/Map/Grid/Cell/Cell.hpp"
 
 #include <cassert>
 #include <unordered_map>
@@ -30,7 +32,6 @@
 #include <vector>
 #include <memory>
 #include <boost/multi_array.hpp>
-#include <boost/thread.hpp>
 
 namespace Horizon
 {
@@ -38,7 +39,6 @@ namespace Zone
 {
 namespace Game
 {
-class Cell;
 class Map
 {
 friend class MapManager;
@@ -46,6 +46,7 @@ public:
 	Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells);
 	~Map();
 
+	std::string get_name() { return _name; }
 	int getArea() { return _width * _height; }
 	uint16_t getWidth() { return _width; }
 	uint16_t getHeight() { return _height; }
@@ -58,19 +59,23 @@ public:
 	template <class T>
 	bool addEntityToMap(T *entity, MapCoords coords);
 
-	AStar::Generator *get_pathfinder() { return _pathfinder; }
+	template<class T, class CONTAINER>
+	void visit(GridCoords const &grid, GridReferenceContainerVisitor<T, CONTAINER> &visitor);
+
+	template<class T, class CONTAINER>
+	void visit(GridCoords const &lower_bound, GridCoords const &upper_bound, GridReferenceContainerVisitor<T, CONTAINER> &visitor);
+
+	AStar::Generator &get_pathfinder() { return _pathfinder; }
 
 	void update(uint32_t diff);
 	
 private:
 	std::string _name{""};
 	uint16_t _width{0}, _height{0};
-	uint16_t _grid_width{0}, _grid_height{0};
-	boost::multi_array<Cell *, 2> _cells;
+	GridCoords _grid_bounds;
+	Cell _cells[MAX_CELLS_PER_MAP][MAX_CELLS_PER_MAP]{{0}};
 	GridHolderType _gridholder;
-	boost::mutex _grid_init_mutex;
-	// Path Finding 
-	AStar::Generator *_pathfinder;
+	AStar::Generator _pathfinder;
 };
 }
 }
@@ -79,10 +84,26 @@ private:
 template <class T>
 bool Horizon::Zone::Game::Map::addEntityToMap(T *entity, MapCoords mcoords)
 {
-	GridCoords gcoords(mcoords.x() / MAX_GRID_WIDTH, mcoords.y() / MAX_GRID_WIDTH);
-	_gridholder.get_grid(gcoords)->add_object<T>(entity);
+	GridCoords gcoords(mcoords.x() / MAX_CELLS_PER_GRID, mcoords.y() / MAX_CELLS_PER_GRID);
+	_gridholder.get_grid(gcoords).add_object<T>(entity);
 	entity->set_grid_coords(gcoords);
 	return true;
+}
+
+template<class T, class CONTAINER>
+inline void Horizon::Zone::Game::Map::visit(GridCoords const &grid, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
+{
+	_gridholder.get_grid(grid).visit(visitor);
+}
+
+template<class T, class CONTAINER>
+inline void Horizon::Zone::Game::Map::visit(GridCoords const &lower_bound, GridCoords const &upper_bound, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
+{
+	for (int y = upper_bound.y(); y >= lower_bound.y(); --y) {
+		for (int x = lower_bound.x(); x <= upper_bound.x(); ++x) {
+			visit(GridCoords(x, y), visitor);
+		}
+	}
 }
 
 #endif /* HORIZON_ZONE_GAME_MAP_HPP */

@@ -54,12 +54,12 @@ PacketHandler::~PacketHandler()
 void PacketHandler::initialize_handlers()
 {
 #define HANDLER_FUNC(packet) add_packet_handler(packet, boost::bind(&PacketHandler::Handle_ ## packet, this, boost::placeholders::_1));
-	HANDLER_FUNC(CHAR_KEEP_ALIVE);
-	HANDLER_FUNC(CHAR_CREATE);
-	HANDLER_FUNC(CHAR_DELETE_START);
-	HANDLER_FUNC(CHAR_DELETE_CANCEL);
-	HANDLER_FUNC(CHAR_DELETE_ACCEPT);
-	HANDLER_FUNC(CHAR_SELECT);
+	HANDLER_FUNC(CH_KEEP_ALIVE);
+	HANDLER_FUNC(CH_CREATE);
+	HANDLER_FUNC(CH_DELETE_START);
+	HANDLER_FUNC(CH_DELETE_CANCEL);
+	HANDLER_FUNC(CH_DELETE_ACCEPT);
+	HANDLER_FUNC(CH_SELECT);
 #undef HANDLER_FUNC
 }
 
@@ -71,23 +71,25 @@ void PacketHandler::initialize_handlers()
  * @brief Receive and handle the CHAR_CONNCET packet.
  * @param[in|out] buf    Validated PacketBuffer received by the char-server.
  */
-void PacketHandler::Handle_CHAR_CONNECT(PACKET_CHAR_CONNECT &/*pkt*/)
+bool PacketHandler::Handle_CH_CONNECT(PACKET_CH_CONNECT &/*pkt*/)
 {
 	CharQuery->AllCharactersByAccount(get_socket()->get_session()->get_game_account());
 	
 	// Send acceptance notice to client.
-	Send_CHAR_ACCOUNT_ID();         // 1st
+	Send_HC_ACCOUNT_ID();         // 1st
 
 	// Send character list info.
-	Send_CHAR_SLOT_INFO_ACK();      // 2nd
-	Send_CHAR_LIST_ACK();           // 3rd
-	Send_CHAR_BAN_LIST_ACK();       // 4th
-	Send_CHAR_PINCODE_STATE_ACK();  // 5th
+	Send_HC_SLOT_INFO_ACK();      // 2nd
+	Send_HC_CHAR_LIST_ACK();           // 3rd
+	Send_HC_BAN_LIST_ACK();       // 4th
+	Send_HC_PINCODE_STATE_ACK();  // 5th
+
+	return true;
 }
 
-void PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
+bool PacketHandler::Handle_CH_CREATE(PacketBuffer &buf)
 {
-	PACKET_CHAR_CREATE pkt;
+	PACKET_CH_CREATE pkt;
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
 	character_gender_types gender;
 	buf >> pkt;
@@ -100,36 +102,56 @@ void PacketHandler::Handle_CHAR_CREATE(PacketBuffer &buf)
 
 	// Check if the name already exists.
 	if (CharQuery->CheckExistingCharByName(pkt.name)) {
-		Send_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_ALREADY_EXISTS);
-		return;
+		Send_HC_CREATE_ERROR_ACK(HC_CREATE_ERROR_ALREADY_EXISTS);
+		return false;
 	}
 
 	// Check if the slot is not a premium.
 	if (pkt.slot > game_account->get_character_slots()) {
-		Send_CHAR_CREATE_ERROR_ACK(CHAR_CREATE_ERROR_CHAR_SLOT);
-		return;
+		Send_HC_CREATE_ERROR_ACK(HC_CREATE_ERROR_CHAR_SLOT);
+		return false;
 	}
 
-	std::shared_ptr<Character> character = std::make_shared<Character>(
-			game_account->get_id(), pkt.name, pkt.slot, gender);
-	character->set_status_data(std::make_shared<Status>(
-			CharServer->getCharConfig().getStartZeny(), pkt.str, pkt.agi, pkt.int_, pkt.vit, pkt.dex, pkt.luk));
-	character->set_view_data(std::make_shared<View>(pkt.hair_style, pkt.hair_color));
-	character->set_position_data(std::make_shared<Position>(
-			CharServer->getCharConfig().getStartMap(), CharServer->getCharConfig().getStartX(), CharServer->getCharConfig().getStartY()));
-	
-	// Save character to sql.
+	std::shared_ptr<Character> character = std::make_shared<Character>(game_account->get_id(), pkt.name, pkt.slot, gender);
+	// Create models and save to sql.
 	character->create(CharServer);
+
+	// Status
+	std::shared_ptr<Status> status = character->get_status_data();
+	status->set_zeny(CharServer->get_char_config().get_start_zeny());
+
+	// View
+	std::shared_ptr<View> view = character->get_view_data();
+	view->set_hair_style_id(pkt.hair_style);
+	view->set_hair_style_id(pkt.hair_color);
+	view->save(CharServer);
+
+	// Position
+	std::string start_map = CharServer->get_char_config().get_start_map();
+	uint16_t start_x = CharServer->get_char_config().get_start_x();
+	uint16_t start_y = CharServer->get_char_config().get_start_y();
+
+	std::shared_ptr<Position> p = character->get_position_data();
+	p->set_saved_map(start_map);
+	p->set_saved_x(start_x);
+	p->set_saved_y(start_y);
+	p->set_current_map(start_map);
+	p->set_current_x(start_x);
+	p->set_current_y(start_y);
+	p->save(CharServer);
+
 	// Add character to account.
 	game_account->add_character(character);
-	Send_CHAR_CREATE_SUCCESS_ACK(character);
+	Send_HC_CREATE_SUCCESS_ACK(character);
+
+	return true;
 }
 
-void PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
+bool PacketHandler::Handle_CH_DELETE_START(PacketBuffer &buf)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
 	std::shared_ptr<Character> character = nullptr;
-	PACKET_CHAR_DELETE_START pkt;
+	PACKET_CH_DELETE_START pkt;
 	character_delete_result result;
 
 	buf >> pkt;
@@ -138,36 +160,37 @@ void PacketHandler::Handle_CHAR_DELETE_START(PacketBuffer &buf)
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", game_account->get_id());
-		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_DATABASE_ERR, 0);
-		return;
+		Send_HC_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_DATABASE_ERR, 0);
+		return false;
 	}
 
 	if (character->get_access_data()->get_delete_date() > 0) {
-		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_UNKNOWN, 0);
-		return;
+		Send_HC_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_UNKNOWN, 0);
+		return false;
 	}
 
 	if (character->get_group_data()->get_guild_id() > 0) {
-		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_GUILD_ERR, 0);
-		return;
+		Send_HC_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_GUILD_ERR, 0);
+		return false;
 	}
 
 	if (character->get_group_data()->get_party_id() > 0) {
-		Send_CHAR_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_PARTY_ERR, 0);
-		return;
+		Send_HC_DELETE_START_ACK(pkt.character_id, CHAR_DEL_RESULT_PARTY_ERR, 0);
+		return false;
 	}
 
-	character->get_access_data()->set_delete_date(CharServer->getCharConfig().getCharacterDeletionTime() + time(nullptr));
-	character->get_access_data()->save(CharServer);
+	character->get_access_data()->set_delete_date(CharServer->get_char_config().get_character_deletion_time() + std::time(0));
+	character->save(CharServer, CHAR_SAVE_ACCESS_DATA);
 	result = CHAR_DEL_RESULT_SUCCESS;
-	Send_CHAR_DELETE_START_ACK(character->get_character_id(), result, character->get_access_data()->get_delete_date() - time(nullptr));
+	Send_HC_DELETE_START_ACK(character->get_character_id(), result, character->get_access_data()->get_delete_date() - std::time(0));
+	return true;
 }
 
-void PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
+bool PacketHandler::Handle_CH_DELETE_ACCEPT(PacketBuffer &buf)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
 	std::shared_ptr<Character> character = nullptr;
-	PACKET_CHAR_DELETE_ACCEPT pkt;
+	PACKET_CH_DELETE_ACCEPT pkt;
 
 	buf >> pkt;
 
@@ -175,37 +198,39 @@ void PacketHandler::Handle_CHAR_DELETE_ACCEPT(PacketBuffer &buf)
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", game_account->get_id());
-		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_UNKNOWN);
-		return;
+		Send_HC_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_UNKNOWN);
+		return false;
 	}
 
-	if (character->get_access_data()->get_delete_date() > time(nullptr)) {
+	if (character->get_access_data()->get_delete_date() > std::time(0)) {
 		CharLog->warn("Attempted to delete character Id {} which is not ready for deletion, in account '{}'", character->get_character_id(), game_account->get_id());
-		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_TIME_ERR);
-		return;
+		Send_HC_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_TIME_ERR);
+		return false;
 	}
 
-	const char *birth_date = game_account->get_birthdate().c_str();
+	const char *birth_date = game_account->get_birth_date().c_str();
 	if (std::strncmp(&birth_date[2], &pkt.birthdate[0], 2)        // YY
 		|| std::strncmp(&birth_date[5], &pkt.birthdate[2], 2)     // MM
 		|| std::strncmp(&birth_date[8], &pkt.birthdate[4], 2)) {  // DD
-		Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_BIRTHDAY_ERR);
-		return;
+		Send_HC_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_BIRTHDAY_ERR);
+		return false;
 	}
 
-	Send_CHAR_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_SUCCESS);
+	Send_HC_DELETE_ACCEPT_ACK(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_SUCCESS);
 
 	game_account->remove_character(pkt.character_id);
-	character->set_deleted(true);
+	character->set_deleted_at(std::time(0));
 	character->save(CharServer);
-	Send_CHAR_RESEND_CHAR_LIST();
+	Send_HC_RESEND_CHAR_LIST();
+
+	return true;
 }
 
-void PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
+bool PacketHandler::Handle_CH_DELETE_CANCEL(PacketBuffer &buf)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
 	std::shared_ptr<Character> character;
-	PACKET_CHAR_DELETE_CANCEL pkt;
+	PACKET_CH_DELETE_CANCEL pkt;
 
 	buf >> pkt;
 
@@ -213,32 +238,35 @@ void PacketHandler::Handle_CHAR_DELETE_CANCEL(PacketBuffer &buf)
 
 	if (character == nullptr) {
 		CharLog->warn("Attempted to delete non-existant character for account Id '{}'", game_account->get_id());
-		Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
-		return;
+		Send_HC_DELETE_CANCEL_ACK(pkt.character_id, false);
+		return false;
 	}
 
 	if (character->get_access_data()->get_delete_date() == 0) {
 		CharLog->warn("Attempted to delete character that wasn't set for deletion in account Id '{}'", game_account->get_id());
-		Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, false);
-		return;
+		Send_HC_DELETE_CANCEL_ACK(pkt.character_id, false);
+		return false;
 	}
 
 	character->get_access_data()->set_delete_date(0);
-	character->get_access_data()->save(CharServer);
+	character->save(CharServer, CHAR_SAVE_ACCESS_DATA);
 
-	Send_CHAR_DELETE_CANCEL_ACK(pkt.character_id, true);
+	Send_HC_DELETE_CANCEL_ACK(pkt.character_id, true);
+	return true;
 }
 
-void PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
+bool PacketHandler::Handle_CH_SELECT(PacketBuffer &buf)
 {
-	PACKET_CHAR_SELECT pkt;
+	PACKET_CH_SELECT pkt;
 	AccountCharacterMapType characters = get_socket()->get_session()->get_game_account()->get_all_characters();
 	std::shared_ptr<Character> character;
 
 	buf >> pkt;
 
-	if (characters.empty())
-		return;
+	if (characters.empty()) {
+		Send_HC_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
+		return false;
+	}
 
 	for (auto &it : characters) {
 		character = it.second;
@@ -250,18 +278,27 @@ void PacketHandler::Handle_CHAR_SELECT(PacketBuffer &buf)
 			break;
 	}
 
-	Send_CHAR_SEND_ZONE_INFO(character);
+	Send_HC_SEND_ZONE_INFO(character);
+
+	// Close the socket as the character has been transfered and there is no connection.
+	get_socket()->delayed_close_socket();
+	return true;
 }
 
 /**
- * @brief Receive and handle the CHAR_KEEP_ALIVE packet.
+ * @brief Receive and handle the CA_KEEP_ALIVE packet.
  * @param[in|out] buf    Validated PacketBuffer received by the char-server.
  */
-void PacketHandler::Handle_CHAR_KEEP_ALIVE(PacketBuffer &/*buf*/)
+bool PacketHandler::Handle_CH_KEEP_ALIVE(PacketBuffer &/*buf*/)
 {
 	// We do nothing here as yet, its just a keep-alive.
-	// PACKET_CHAR_KEEP_ALIVE pkt;
-	// buf >> pkt;
+//	PACKET_CH_KEEP_ALIVE pkt;
+//
+//	buf >> pkt;
+
+	_last_ping_time = std::time(0);
+	
+	return true;
 }
 
 /*==============*
@@ -269,12 +306,12 @@ void PacketHandler::Handle_CHAR_KEEP_ALIVE(PacketBuffer &/*buf*/)
  *==============*/
 
 /**
- * @brief Send to the client with the CHAR_CONNECT_ERROR packet.
+ * @brief Send to the client with the AC_CONNECT_ERROR packet.
  * @param[in] error    error code to be sent, @see character_connect_errors.
  */
-void PacketHandler::Send_CHAR_CONNECT_ERROR(character_connect_errors error)
+void PacketHandler::Send_HC_CONNECT_ERROR(character_connect_errors error)
 {
-	PACKET_CHAR_CONNECT_ERROR pkt;
+	PACKET_HC_CONNECT_ERROR pkt;
 	pkt.error = error;
 	send_packet(pkt);
 }
@@ -284,7 +321,7 @@ void PacketHandler::Send_CHAR_CONNECT_ERROR(character_connect_errors error)
  * @note This packet has no ID but is required by the client.
  * @param[in] account_id   Account ID of the session.
  */
-void PacketHandler::Send_CHAR_ACCOUNT_ID()
+void PacketHandler::Send_HC_ACCOUNT_ID()
 {
 	PACKET_CHAR_ACCOUNT_ID pkt;
 	pkt.account_id = get_socket()->get_session()->get_game_account()->get_id();
@@ -292,13 +329,13 @@ void PacketHandler::Send_CHAR_ACCOUNT_ID()
 }
 
 /**
- * @brief Send to the client with the CHAR_SLOT_INFO_ACK packet on client connection.
+ * @brief Send to the client with the AC_SLOT_INFO_ACK packet on client connection.
  * @see packets
  */
-void PacketHandler::Send_CHAR_SLOT_INFO_ACK()
+void PacketHandler::Send_HC_SLOT_INFO_ACK()
 {
 	std::shared_ptr<SessionData> session_data = get_socket()->get_session()->get_session_data();
-	PACKET_CHAR_SLOT_INFO_ACK pkt;
+	PACKET_HC_SLOT_INFO_ACK pkt;
 
 	pkt.total_slots = MAX_CHARACTER_SLOTS;
 	pkt.premium_slots = session_data->get_character_slots();
@@ -311,13 +348,13 @@ void PacketHandler::Send_CHAR_SLOT_INFO_ACK()
 }
 
 /**
- * @brief Send to the client with the CHAR_LIST_ACK packet on client connection.
+ * @brief Send to the client with the AC_CHAR_LIST_ACK packet on client connection.
  * @see packets
  */
-void PacketHandler::Send_CHAR_LIST_ACK()
+void PacketHandler::Send_HC_CHAR_LIST_ACK()
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	PACKET_CHAR_LIST_ACK pkt;
+	PACKET_HC_CHAR_LIST_ACK pkt;
 	PacketBuffer buf;
 	std::vector<character_list_data> char_list;
 	int char_list_length = 0;
@@ -343,10 +380,10 @@ void PacketHandler::Send_CHAR_LIST_ACK()
 	CharLog->info("Sent character-list information to AID {}", game_account->get_id());
 }
 
-void PacketHandler::Send_CHAR_RESEND_CHAR_LIST()
+void PacketHandler::Send_HC_RESEND_CHAR_LIST()
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	PACKET_CHAR_RESEND_CHAR_LIST pkt;
+	PACKET_HC_CHAR_LIST_ACK pkt;
 	PacketBuffer buf;
 	std::vector<character_list_data> char_list;
 	int char_list_length = 0;
@@ -373,32 +410,32 @@ void PacketHandler::Send_CHAR_RESEND_CHAR_LIST()
 }
 
 /**
- * @brief Send to the client with the CHAR_BAN_LIST_ACK packet on client connection.
+ * @brief Send to the client with the AC_BAN_LIST_ACK packet on client connection.
  * @see packets
  */
-void PacketHandler::Send_CHAR_BAN_LIST_ACK()
+void PacketHandler::Send_HC_BAN_LIST_ACK()
 {
-	PACKET_CHAR_BAN_LIST_ACK pkt;
+	PACKET_HC_BAN_LIST_ACK pkt;
 	send_packet(pkt);
 	CharLog->info("Send character ban-list information to AID {}", get_socket()->get_session()->get_game_account()->get_id());
 }
 
 /**
- * @brief Send to the client with the CHAR_PINCODE_STATE_ACK packet on client connection.
+ * @brief Send to the client with the AC_PINCODE_STATE_ACK packet on client connection.
  * @see packets
  */
-void PacketHandler::Send_CHAR_PINCODE_STATE_ACK()
+void PacketHandler::Send_HC_PINCODE_STATE_ACK()
 {
-	PACKET_CHAR_PINCODE_STATE_ACK pkt;
+	PACKET_HC_PINCODE_STATE_ACK pkt;
 	pkt.pincode_seed = rand() % 0xFFFF;
 	pkt.account_id = get_socket()->get_session()->get_game_account()->get_id();
 	pkt.state = PINCODE_CORRECT;
 	send_packet(pkt);
 }
 
-void PacketHandler::Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Character> character)
+void PacketHandler::Send_HC_CREATE_SUCCESS_ACK(std::shared_ptr<Character> character)
 {
-	PACKET_CHAR_CREATE_SUCCESS_ACK pkt;
+	PACKET_HC_CREATE_SUCCESS_ACK pkt;
 
 	pkt.data.create(character);
 
@@ -410,52 +447,52 @@ void PacketHandler::Send_CHAR_CREATE_SUCCESS_ACK(std::shared_ptr<Character> char
 	send_packet(pkt);
 }
 
-void PacketHandler::Send_CHAR_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date)
+void PacketHandler::Send_HC_DELETE_START_ACK(uint32_t character_id, character_delete_result result, time_t deletion_date)
 {
-	PACKET_CHAR_DELETE_START_ACK pkt;
+	PACKET_HC_DELETE_START_ACK pkt;
 	pkt.character_id = character_id;
 	pkt.result = result;
 	pkt.deletion_date = deletion_date;
 	send_packet(pkt);
 }
 
-void PacketHandler::Send_CHAR_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result)
+void PacketHandler::Send_HC_DELETE_ACCEPT_ACK(uint32_t character_id, character_delete_accept_result result)
 {
-	PACKET_CHAR_DELETE_ACCEPT_ACK pkt;
+	PACKET_HC_DELETE_ACCEPT_ACK pkt;
 	pkt.character_id = character_id;
 	pkt.result = result;
 	send_packet(pkt);
 }
 
-void PacketHandler::Send_CHAR_DELETE_CANCEL_ACK(uint32_t character_id, bool success)
+void PacketHandler::Send_HC_DELETE_CANCEL_ACK(uint32_t character_id, bool success)
 {
-	PACKET_CHAR_DELETE_CANCEL_ACK pkt;
+	PACKET_HC_DELETE_CANCEL_ACK pkt;
 	pkt.character_id = character_id;
 	pkt.result = success ? 1 : 2;
 	send_packet(pkt);
 }
 
-void PacketHandler::Send_CHAR_CREATE_ERROR_ACK(char_create_error_types error)
+void PacketHandler::Send_HC_CREATE_ERROR_ACK(char_create_error_types error)
 {
-	PACKET_CHAR_CREATE_ERROR_ACK pkt;
+	PACKET_HC_CREATE_ERROR_ACK pkt;
 	pkt.error_code = (uint8_t) error;
 	send_packet(pkt);
 }
 
-void PacketHandler::Send_CHAR_SEND_ZONE_INFO(std::shared_ptr<Character> character)
+void PacketHandler::Send_HC_SEND_ZONE_INFO(std::shared_ptr<Character> character)
 {
-	PACKET_CHAR_SEND_ZONE_INFO pkt;
+	PACKET_HC_SEND_ZONE_INFO pkt;
 	std::string map_name;
 
 	if ((map_name = character->get_position_data()->get_current_map()).empty())
 		if ((map_name = character->get_position_data()->get_saved_map()).empty())
-			map_name = CharServer->getCharConfig().getStartMap().c_str();
+			map_name = CharServer->get_char_config().get_start_map().c_str();
 
 	map_name += ".gat";
 
 	pkt.char_id = character->get_character_id();
-	pkt.ip_address = inet_addr(CharServer->getCharConfig().getZoneServerIP().c_str());
-	pkt.port = CharServer->getCharConfig().getZoneServerPort();
+	pkt.ip_address = inet_addr(CharServer->get_char_config().get_zone_server_ip().c_str());
+	pkt.port = CharServer->get_char_config().get_zone_server_port();
 	strncpy(pkt.mapname,
 			map_name.c_str(),
 			MAP_NAME_LENGTH_EXT);

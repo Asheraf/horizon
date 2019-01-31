@@ -34,8 +34,9 @@ public:
 	~PacketHandler20170315() override;
 
 	void Send_AC_ACCEPT_LOGIN() override;
-	void Handle_TEST_POLY(PacketBuffer &pkt);
 	void initialize_handlers() override;
+
+	bool Handle_TEST_POLY(PacketBuffer &pkt);
 };
 }
 }

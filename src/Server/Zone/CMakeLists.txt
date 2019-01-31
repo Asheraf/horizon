@@ -15,6 +15,18 @@
 # or viewing without permission.
 ###################################################
 
+###############
+# LuaJit
+###############
+set(LUAJIT_FIND_REQUIRED true)
+include(FindLuaJit)
+
+###############
+# Sol2
+###############
+set(SOL2_FIND_REQUIRED true)
+include(FindSol2)
+
 CollectSourceFiles(
     ${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE_SOURCES
@@ -37,6 +49,7 @@ target_link_libraries(zone
         ${CONCPP_LIBS}
         ${Readline_LIBRARY}
 		${CONFIG++_LIBRARY}
+		${LUA_LIBRARIES}
 )
 
 set(INCLUDE_DIRS
@@ -54,9 +67,18 @@ target_include_directories(zone
         ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 		${CONFIG++_INCLUDE_DIR}
+		${LUA_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# LuaJit linker flags for macOS to avoid crashes.
+if (APPLE)
+set_target_properties(zone
+	PROPERTIES
+	LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
+	)
+endif()
 
 install(TARGETS zone
     DESTINATION ${CMAKE_INSTALL_PREFIX}

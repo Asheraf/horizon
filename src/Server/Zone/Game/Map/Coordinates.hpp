@@ -2,6 +2,8 @@
 #define HORIZON_ZONE_GAME_MAP_COORDINATES_HPP
 
 #include <cstdint>
+#include <stdlib.h>
+#include <algorithm>
 
 template <uint16_t UPPER_BOUNDS>
 class Coordinates
@@ -36,8 +38,35 @@ public:
 		return !(*this == right);
 	}
 
-	uint16_t x() { return _x; }
-	uint16_t y() { return _y; }
+	template <uint16_t BOUNDS>
+	bool within_range(Coordinates<BOUNDS> &bounds, int range)
+	{
+		int x_diff = _x - bounds.x();
+		int y_diff = _y - bounds.y();
+
+		return abs(x_diff) <= range && abs(y_diff) <= range;
+	}
+
+	template<uint16_t BOUNDS>
+	Coordinates<BOUNDS> at_range(int range) const
+	{
+		int x = std::max(0, std::min((_x + range), (int) BOUNDS));
+		int y = std::max(0, std::min((_y + range), (int) BOUNDS));
+
+		return Coordinates<BOUNDS>(x, y);
+	}
+
+	template<uint16_t BOUNDS, uint16_t SCALED_BOUNDS>
+	Coordinates<SCALED_BOUNDS> scale() const
+	{
+		int x = _x / BOUNDS;
+		int y = _y / BOUNDS;
+
+		return Coordinates<SCALED_BOUNDS>(x, y);
+	}
+
+	uint16_t x() const { return _x; }
+	uint16_t y() const { return _y; }
 
 	void inc_x(uint16_t val)
 	{

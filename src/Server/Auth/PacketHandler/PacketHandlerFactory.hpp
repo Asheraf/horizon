@@ -19,7 +19,6 @@
 #define HORIZON_AUTH_PACKETHANDLERFACTORY_HPP
 
 #include "Server/Auth/PacketHandler/PacketHandler.hpp"
-#include "Server/Auth/PacketHandler/InterPacketHandler.hpp"
 #include "Server/Auth/PacketHandler/Versions/PacketHandler20170315.hpp"
 #include "Server/Auth/PacketHandler/Versions/PacketHandler20171113.hpp"
 
@@ -28,7 +27,6 @@ namespace Horizon
 namespace Auth
 {
 class AuthSocket;
-class InterSocket;
 class PacketHandlerFactory
 {
 public:
@@ -50,16 +48,6 @@ public:
 			return std::make_shared<PacketHandler20170315>(socket);
 
 		return std::make_shared<PacketHandler>(socket);
-	}
-
-	/**
-	 * @brief Creates a packet handler object for a server connected to the auth-server.
-	 * @param[in] session    constant reference to the session in question.
-	 * @return shared pointer to a new packet handler object.
-	 */
-	static std::shared_ptr<InterPacketHandler> create_inter_packet_handler(std::shared_ptr<InterSocket> socket)
-	{
-		return std::make_shared<InterPacketHandler>(socket);
 	}
 };
 }

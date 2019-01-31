@@ -34,37 +34,38 @@ namespace Char
 {
 enum packets : short
 {
-	CHAR_CONNECT            = 0x65,
-	CHAR_SELECT             = 0x66,
-	CHAR_CREATE             = 0x67,
-	CHAR_DELETE             = 0x68,
-	CHAR_LIST_ACK           = 0x6b,
-	CHAR_CONNECT_ERROR      = 0x6c,
-	CHAR_CREATE_SUCCESS_ACK = 0x6d,
-	CHAR_CREATE_ERROR_ACK   = 0x6e,
-	CHAR_SEND_ZONE_INFO     = 0x71,
-	CHAR_KEEP_ALIVE         = 0x187,
-	CHAR_BAN_LIST_ACK       = 0x20d,
-	CHAR_SLOT_INFO_ACK      = 0x82d,
-	CHAR_CREATE_2015        = 0xa39,
-	CHAR_RENAME_1           = 0x8fc,
-	CHAR_RENAME_2           = 0x28d,
-	CHAR_RENAME_CONFIRM     = 0x28f,
-	CHAR_RENAME_ACK         = 0x290,
-	CHAR_DELETE_2           = 0x1fb,
-	CHAR_DELETE_START       = 0x827,
-	CHAR_DELETE_START_ACK   = 0x828,
-	CHAR_DELETE_ACCEPT      = 0x829,
-	CHAR_DELETE_ACCEPT_ACK  = 0x82a,
-	CHAR_DELETE_CANCEL      = 0x82b,
-	CHAR_DELETE_CANCEL_ACK  = 0x82c,
-	CHAR_PINCODE_INIT       = 0x8c5,
-	CHAR_PINCODE_CHANGE     = 0x8be,
-	CHAR_PINCODE_CHECK      = 0x8b8,
-	CHAR_PINCODE_ACTIVATE   = 0x8ba,
-	CHAR_REQUEST_CHARACTERS = 0x9a1,
-	CHAR_PINCODE_STATE_ACK  = 0x8b9,
-	CHAR_RESEND_CHAR_LIST   = 0x99d,
+	CH_CONNECT                 = 0x065,
+	CH_SELECT                  = 0x066,
+	CH_CREATE                  = 0x067,
+	CH_DELETE                  = 0x068,
+	CH_KEEP_ALIVE              = 0x187,
+	CH_CREATE_2015             = 0xa39,
+	CH_CHAR_RENAME_1           = 0x8fc,
+	CH_CHAR_RENAME_2           = 0x28d,
+	CH_RENAME_CONFIRM          = 0x28f,
+	CH_DELETE_2                = 0x1fb,
+	CH_DELETE_START            = 0x827,
+	CH_DELETE_ACCEPT           = 0x829,
+	CH_DELETE_CANCEL           = 0x82b,
+	CH_PINCODE_INIT            = 0x8c5,
+	CH_PINCODE_CHANGE          = 0x8be,
+	CH_PINCODE_CHECK           = 0x8b8,
+	CH_PINCODE_ACTIVATE        = 0x8ba,
+	CH_REQUEST_CHARACTERS      = 0x9a1,
+	/* HC */
+	HC_PINCODE_STATE_ACK       = 0x8b9,
+	HC_DELETE_CANCEL_ACK       = 0x82c,
+	HC_DELETE_ACCEPT_ACK       = 0x82a,
+	HC_DELETE_START_ACK        = 0x828,
+	HC_BAN_LIST_ACK            = 0x20d,
+	HC_SLOT_INFO_ACK           = 0x82d,
+	HC_CHAR_LIST_ACK           = 0x06b,
+	HC_CONNECT_ERROR           = 0x06c,
+	HC_CREATE_SUCCESS_ACK      = 0x06d,
+	HC_CREATE_ERROR_ACK        = 0x06e,
+	HC_SEND_ZONE_INFO          = 0x071,
+	HC_RENAME_ACK              = 0x290,
+	HC_ACK_CHARINFO_PER_PAGE   = 0x99d,
 };
 }
 }
@@ -172,9 +173,9 @@ struct character_list_data
 	uint8_t gender{};                ///< 146 0: Female, 1: Male, 99: Account-based.
 };
 
-struct PACKET_CHAR_CONNECT : public Packet
+struct PACKET_CH_CONNECT : public Packet
 {
-	PACKET_CHAR_CONNECT()  : Packet(Horizon::Char::packets::CHAR_CONNECT) {}
+	PACKET_CH_CONNECT()  : Packet(Horizon::Char::packets::CH_CONNECT) {}
 	// 0065 <account id>.L <login id1>.L <login id2>.L <???>.W <sex>.B
 	uint32_t account_id{};
 	uint32_t auth_code{};
@@ -183,15 +184,15 @@ struct PACKET_CHAR_CONNECT : public Packet
 	uint8_t gender{};
 };
 
-struct PACKET_CHAR_SELECT : public Packet
+struct PACKET_CH_SELECT : public Packet
 {
-	PACKET_CHAR_SELECT() : Packet(Horizon::Char::packets::CHAR_SELECT) {}
+	PACKET_CH_SELECT() : Packet(Horizon::Char::packets::CH_SELECT) {}
 	uint8_t slot{};
 };
 
-struct PACKET_CHAR_CREATE : public Packet
+struct PACKET_CH_CREATE : public Packet
 {
-	PACKET_CHAR_CREATE() : Packet(Horizon::Char::packets::CHAR_CREATE) {}
+	PACKET_CH_CREATE() : Packet(Horizon::Char::packets::CH_CREATE) {}
 	//S 0067 <name>.24B <str>.B <agi>.B <vit>.B <int>.B <dex>.B <luk>.B <slot>.B <hair color>.W <hair style>.W
 	char name[MAX_UNIT_NAME_LENGTH];
 	uint8_t str{};
@@ -205,30 +206,30 @@ struct PACKET_CHAR_CREATE : public Packet
 	uint16_t hair_style{};
 };
 
-struct PACKET_CHAR_CREATE_SUCCESS_ACK : public Packet
+struct PACKET_HC_CREATE_SUCCESS_ACK : public Packet
 {
-	PACKET_CHAR_CREATE_SUCCESS_ACK() : Packet(Horizon::Char::packets::CHAR_CREATE_SUCCESS_ACK) { }
+	PACKET_HC_CREATE_SUCCESS_ACK() : Packet(Horizon::Char::packets::HC_CREATE_SUCCESS_ACK) { }
 	character_list_data data;
 };
 
 enum char_create_error_types : uint8_t
 {
-	CHAR_CREATE_ERROR_ALREADY_EXISTS = 0x00,
-	CHAR_CREATE_ERROR_DENIED         = 0xFF,
-	CHAR_CREATE_ERROR_UNDERAGE       = 0x01,
-	CHAR_CREATE_ERROR_SYMBOLS        = 0x02,
-	CHAR_CREATE_ERROR_CHAR_SLOT      = 0x03
+	HC_CREATE_ERROR_ALREADY_EXISTS = 0x00,
+	HC_CREATE_ERROR_DENIED         = 0xFF,
+	HC_CREATE_ERROR_UNDERAGE       = 0x01,
+	HC_CREATE_ERROR_SYMBOLS        = 0x02,
+	HC_CREATE_ERROR_CHAR_SLOT      = 0x03
 };
 
-struct PACKET_CHAR_CREATE_ERROR_ACK : public Packet
+struct PACKET_HC_CREATE_ERROR_ACK : public Packet
 {
-	PACKET_CHAR_CREATE_ERROR_ACK() : Packet(Horizon::Char::packets::CHAR_CREATE_ERROR_ACK) { }
+	PACKET_HC_CREATE_ERROR_ACK() : Packet(Horizon::Char::packets::HC_CREATE_ERROR_ACK) { }
 	uint8_t error_code;
 };
 
-struct PACKET_CHAR_SEND_ZONE_INFO : public Packet
+struct PACKET_HC_SEND_ZONE_INFO : public Packet
 {
-	PACKET_CHAR_SEND_ZONE_INFO() : Packet(Horizon::Char::packets::CHAR_SEND_ZONE_INFO) { }
+	PACKET_HC_SEND_ZONE_INFO() : Packet(Horizon::Char::packets::HC_SEND_ZONE_INFO) { }
 	uint32_t char_id;
 	char mapname[MAP_NAME_LENGTH_EXT];
 	uint32_t ip_address;
@@ -240,17 +241,17 @@ enum class character_connect_errors : uint8_t
 	CHAR_ERR_REJECTED_FROM_SERVER = 0, // 0 = Rejected from server.
 };
 
-struct PACKET_CHAR_CONNECT_ERROR : public Packet
+struct PACKET_HC_CONNECT_ERROR : public Packet
 {
-	PACKET_CHAR_CONNECT_ERROR() : Packet(Horizon::Char::packets::CHAR_CONNECT_ERROR) {}
+	PACKET_HC_CONNECT_ERROR() : Packet(Horizon::Char::packets::HC_CONNECT_ERROR) {}
 	character_connect_errors error;
 };
 
-struct PACKET_CHAR_SLOT_INFO_ACK : public Packet
+struct PACKET_HC_SLOT_INFO_ACK : public Packet
 {
-	PACKET_CHAR_SLOT_INFO_ACK() : Packet(Horizon::Char::packets::CHAR_SLOT_INFO_ACK) { }
+	PACKET_HC_SLOT_INFO_ACK() : Packet(Horizon::Char::packets::HC_SLOT_INFO_ACK) { }
 
-	uint16_t packet_len{sizeof(PACKET_CHAR_SLOT_INFO_ACK)};
+	uint16_t packet_len{sizeof(PACKET_HC_SLOT_INFO_ACK)};
 	uint8_t total_slots{MAX_CHARACTER_SLOTS};
 	uint8_t premium_slots{MAX_CHARACTER_SLOTS};
 	uint8_t unknown_byte{0};
@@ -265,24 +266,24 @@ struct PACKET_CHAR_ACCOUNT_ID
 	uint32_t account_id;
 };
 
-struct PACKET_CHAR_LIST_ACK : public Packet
+struct PACKET_HC_CHAR_LIST_ACK : public Packet
 {
-	PACKET_CHAR_LIST_ACK() : Packet(Horizon::Char::packets::CHAR_LIST_ACK) { }
+	PACKET_HC_CHAR_LIST_ACK() : Packet(Horizon::Char::packets::HC_CHAR_LIST_ACK) { }
 
-	uint16_t packet_len{sizeof(PACKET_CHAR_LIST_ACK)};
+	uint16_t packet_len{sizeof(PACKET_HC_CHAR_LIST_ACK)};
 	uint8_t max_char_slots{MAX_CHARACTER_SLOTS};
 	uint8_t permitted_slots{MAX_CHARACTER_SLOTS};
 	uint8_t total_premium_slots{MAX_CHARACTER_SLOTS};         ///< Total out of the max_char_slots that are premium. (if not permitted will show red)
 	uint8_t unknown_bytes[20]{0}; ///< 20 Unknown bytes.
-	character_list_data character_list[];
+	/*character_list_data character_list[];*/
 };
 
-struct PACKET_CHAR_RESEND_CHAR_LIST : public Packet
+struct PACKET_HC_ACK_CHARINFO_PER_PAGE : public Packet
 {
-	PACKET_CHAR_RESEND_CHAR_LIST() : Packet(Horizon::Char::packets::CHAR_RESEND_CHAR_LIST) { }
+	PACKET_HC_ACK_CHARINFO_PER_PAGE() : Packet(Horizon::Char::packets::HC_ACK_CHARINFO_PER_PAGE) { }
 
-	uint16_t packet_len{sizeof(PACKET_CHAR_RESEND_CHAR_LIST)};
-	character_list_data character_list[];
+	uint16_t packet_len{sizeof(PACKET_HC_ACK_CHARINFO_PER_PAGE)};
+	/*character_list_data character_list[];*/
 };
 
 struct char_ban_list_data
@@ -291,16 +292,16 @@ struct char_ban_list_data
 	char timestamp[20];
 };
 
-struct PACKET_CHAR_BAN_LIST_ACK : public Packet
+struct PACKET_HC_BAN_LIST_ACK : public Packet
 {
-	PACKET_CHAR_BAN_LIST_ACK() : Packet(Horizon::Char::packets::CHAR_BAN_LIST_ACK) { }
+	PACKET_HC_BAN_LIST_ACK() : Packet(Horizon::Char::packets::HC_BAN_LIST_ACK) { }
 
-	uint16_t packet_length{sizeof(PACKET_CHAR_BAN_LIST_ACK)};
+	uint16_t packet_length{sizeof(PACKET_HC_BAN_LIST_ACK)};
 };
 
-struct PACKET_CHAR_CREATE_2015 : public Packet
+struct PACKET_CH_CREATE_2015 : public Packet
 {
-	PACKET_CHAR_CREATE_2015() : Packet(Horizon::Char::packets::CHAR_CREATE_2015) {}
+	PACKET_CH_CREATE_2015() : Packet(Horizon::Char::packets::CH_CREATE_2015) {}
 	// S 0a39 <name>.24B <slot>.B <hair color>.W <hair style>.W <starting job class ID>.W <Unknown>.(W or 2 B's)??? <sex>.B
 	char name[MAX_UNIT_NAME_LENGTH];
 	uint8_t slot{};
@@ -311,23 +312,23 @@ struct PACKET_CHAR_CREATE_2015 : public Packet
 	uint8_t gender{};
 };
 
-struct PACKET_CHAR_DELETE : public Packet
+struct PACKET_CH_DELETE : public Packet
 {
-	PACKET_CHAR_DELETE() : Packet(Horizon::Char::packets::CHAR_DELETE) {}
+	PACKET_CH_DELETE() : Packet(Horizon::Char::packets::CH_DELETE) {}
 	uint32_t character_id{};
 	char email[MAX_EMAIL_LENGTH]{};
 };
 
-struct PACKET_CHAR_DELETE_2 : public Packet
+struct PACKET_CH_DELETE_2 : public Packet
 {
-	PACKET_CHAR_DELETE_2() : Packet(Horizon::Char::packets::CHAR_DELETE_2) {}
+	PACKET_CH_DELETE_2() : Packet(Horizon::Char::packets::CH_DELETE_2) {}
 	uint32_t character_id{};
 	char email[MAX_EMAIL_LENGTH]{};
 };
 
-struct PACKET_CHAR_DELETE_START : public Packet
+struct PACKET_CH_DELETE_START : public Packet
 {
-	PACKET_CHAR_DELETE_START() : Packet(Horizon::Char::packets::CHAR_DELETE_START) {}
+	PACKET_CH_DELETE_START() : Packet(Horizon::Char::packets::CH_DELETE_START) {}
 	uint32_t character_id{};
 };
 
@@ -341,18 +342,18 @@ enum character_delete_result : int
 	CHAR_DEL_RESULT_PARTY_ERR      = 5, /// 5: To delete a character you must withdraw from the party.
 };
 
-struct PACKET_CHAR_DELETE_START_ACK : public Packet
+struct PACKET_HC_DELETE_START_ACK : public Packet
 {
-	PACKET_CHAR_DELETE_START_ACK() : Packet(Horizon::Char::packets::CHAR_DELETE_START_ACK) {}
+	PACKET_HC_DELETE_START_ACK() : Packet(Horizon::Char::packets::HC_DELETE_START_ACK) {}
 	// HC: <0828>.W <char id>.L <Msg:0-5>.L <deleteDate>.L
 	uint32_t character_id{};
 	character_delete_result result{};
 	uint32_t deletion_date{};
 };
 
-struct PACKET_CHAR_DELETE_ACCEPT : public Packet
+struct PACKET_CH_DELETE_ACCEPT : public Packet
 {
-	PACKET_CHAR_DELETE_ACCEPT() : Packet(Horizon::Char::packets::CHAR_DELETE_ACCEPT) {}
+	PACKET_CH_DELETE_ACCEPT() : Packet(Horizon::Char::packets::CH_DELETE_ACCEPT) {}
 	uint32_t character_id{0};
 	char birthdate[CLIENT_BIRTHDATE_STRING_LENGTH]{0};
 };
@@ -367,56 +368,56 @@ enum character_delete_accept_result : uint32_t
 	CHAR_DEL_ACCEPT_RESULT_BIRTHDAY_ERR   = 5, /// 5: Date of birth do not match.
 };
 
-struct PACKET_CHAR_DELETE_ACCEPT_ACK : public Packet
+struct PACKET_HC_DELETE_ACCEPT_ACK : public Packet
 {
-	PACKET_CHAR_DELETE_ACCEPT_ACK() : Packet(Horizon::Char::packets::CHAR_DELETE_ACCEPT_ACK) {}
+	PACKET_HC_DELETE_ACCEPT_ACK() : Packet(Horizon::Char::packets::HC_DELETE_ACCEPT_ACK) {}
 	uint32_t character_id{0};
 	character_delete_accept_result result{CHAR_DEL_ACCEPT_RESULT_SUCCESS};
 };
 
-struct PACKET_CHAR_DELETE_CANCEL : public Packet
+struct PACKET_CH_DELETE_CANCEL : public Packet
 {
-	PACKET_CHAR_DELETE_CANCEL() : Packet(Horizon::Char::packets::CHAR_DELETE_CANCEL) {}
+	PACKET_CH_DELETE_CANCEL() : Packet(Horizon::Char::packets::CH_DELETE_CANCEL) {}
 	uint32_t character_id{};
 };
 
-struct PACKET_CHAR_DELETE_CANCEL_ACK : public Packet
+struct PACKET_HC_DELETE_CANCEL_ACK : public Packet
 {
-	PACKET_CHAR_DELETE_CANCEL_ACK() : Packet(Horizon::Char::packets::CHAR_DELETE_CANCEL_ACK) {}
+	PACKET_HC_DELETE_CANCEL_ACK() : Packet(Horizon::Char::packets::HC_DELETE_CANCEL_ACK) {}
 	uint32_t character_id{0};
 	uint32_t result{0}; // either 1 or 2.
 };
 
-struct PACKET_CHAR_KEEP_ALIVE : public Packet
+struct PACKET_CH_KEEP_ALIVE : public Packet
 {
-	PACKET_CHAR_KEEP_ALIVE() : Packet(Horizon::Char::packets::CHAR_KEEP_ALIVE) {}
+	PACKET_CH_KEEP_ALIVE() : Packet(Horizon::Char::packets::CH_KEEP_ALIVE) {}
 	uint32_t account_id{};
 };
 
-struct PACKET_CHAR_RENAME_1 : public Packet
+struct PACKET_CH_CHAR_RENAME_1 : public Packet
 {
-	PACKET_CHAR_RENAME_1() : Packet(Horizon::Char::packets::CHAR_RENAME_1) {}
+	PACKET_CH_CHAR_RENAME_1() : Packet(Horizon::Char::packets::CH_CHAR_RENAME_1) {}
 	uint32_t character_id{};
 	char new_name[MAX_UNIT_NAME_LENGTH];
 };
 
-struct PACKET_CHAR_RENAME_2 : public Packet
+struct PACKET_CH_CHAR_RENAME_2 : public Packet
 {
-	PACKET_CHAR_RENAME_2() : Packet(Horizon::Char::packets::CHAR_RENAME_2) {}
+	PACKET_CH_CHAR_RENAME_2() : Packet(Horizon::Char::packets::CH_CHAR_RENAME_2) {}
 	uint32_t account_id{};
 	uint32_t character_id{};
 	char new_name[MAX_UNIT_NAME_LENGTH];
 };
 
-struct PACKET_CHAR_RENAME_CONFIRM : public Packet
+struct PACKET_CH_RENAME_CONFIRM : public Packet
 {
-	PACKET_CHAR_RENAME_CONFIRM() : Packet(Horizon::Char::packets::CHAR_RENAME_CONFIRM) {}
+	PACKET_CH_RENAME_CONFIRM() : Packet(Horizon::Char::packets::CH_RENAME_CONFIRM) {}
 	uint32_t character_id{};
 };
 
-struct PACKET_CHAR_RENAME_ACK : public Packet
+struct PACKET_HC_RENAME_ACK : public Packet
 {
-	PACKET_CHAR_RENAME_ACK() : Packet(Horizon::Char::packets::CHAR_RENAME_ACK) {}
+	PACKET_HC_RENAME_ACK() : Packet(Horizon::Char::packets::HC_RENAME_ACK) {}
 	uint16_t character_slot{};
 };
 
@@ -433,9 +434,9 @@ enum pincode_state : short
 	PINCODE_INCORRECT      = 8
 };
 
-struct PACKET_CHAR_PINCODE_STATE_ACK : public Packet
+struct PACKET_HC_PINCODE_STATE_ACK : public Packet
 {
-	PACKET_CHAR_PINCODE_STATE_ACK() : Packet(Horizon::Char::packets::CHAR_PINCODE_STATE_ACK) {}
+	PACKET_HC_PINCODE_STATE_ACK() : Packet(Horizon::Char::packets::HC_PINCODE_STATE_ACK) {}
 	uint32_t pincode_seed;
 	uint32_t account_id;
 	pincode_state state;

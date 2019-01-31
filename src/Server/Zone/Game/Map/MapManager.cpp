@@ -16,25 +16,28 @@
  **************************************************/
 
 #include "MapManager.hpp"
+#include "MapThreadContainer.hpp"
+
 #include "Server/Zone/Game/Map/Map.hpp"
+#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
 #include "Core/Multithreading/WorkerThreadPool.hpp"
 #include "Server/Zone/Zone.hpp"
+
 #include <algorithm>
 
-Horizon::Zone::Game::MapManager::~MapManager()
-{
-	auto mapdb = _map_data_db.get_map();
+using namespace Horizon::Zone::Game;
 
-	for (auto m : mapdb)
-		delete m.second;
+MapManager::~MapManager()
+{
+	
 }
 
-bool Horizon::Zone::Game::MapManager::initialize()
+bool MapManager::initialize()
 {
 	return LoadMapCache();
 }
 
-bool Horizon::Zone::Game::MapManager::LoadMapCache()
+bool MapManager::LoadMapCache()
 {
 	Horizon::Libraries::MapCache m;
 	std::string db_path = ZoneServer->get_zone_config().get_database_path();
@@ -71,36 +74,56 @@ bool Horizon::Zone::Game::MapManager::LoadMapCache()
 			return false;
 	}
 
-	ZoneLog->debug("Initializing grids...");
+	int map_container_count = ZoneServer->get_zone_config().get_map_container_count();
+	int container_idx = 0, map_counter = 0, total_maps = 0;
+	int mcache_size = m.getMCache()->maps.size();
+	int container_max = std::ceil((double) mcache_size / map_container_count);
 
-	for (auto &i : m.getMCache()->maps) {
-		Map *map = new Map(i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
-		map->ensureAllGrids();
-		_map_data_db.insert(i.first, map);
-		ZoneLog->info("Initialized grid for map '{}'", i.second.name());
+	ZoneLog->info("Initializing {} map containers with {} maps per container for a total of {} maps...", map_container_count, container_max, mcache_size);
+
+	for (int i = 0; i < map_container_count; i++) {
+		_map_containers.push_back(std::make_shared<MapThreadContainer>());
 	}
 
-	ZoneLog->info("Done initializing '{}' maps.", _map_data_db.size());
+	for (auto &i : m.getMCache()->maps) {
+		std::shared_ptr<Map> map = std::make_shared<Map>(i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
+		_map_containers[container_idx]->add_map(std::move(map));
+		map_counter++;
+		total_maps++;
+
+		if (container_max == map_counter || total_maps == mcache_size) {
+			_map_containers[container_idx]->initialize_maps();
+			_map_containers[container_idx++]->start();
+			map_counter = 0;
+		}
+	}
+
+	ZoneLog->info("Done initializing '{}' maps.", total_maps);
 	
 	return true;
 }
 
-void Horizon::Zone::Game::MapManager::update(uint32_t diff)
+std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p)
 {
-	auto mapdb = _map_data_db.get_map();
-
-#define MAX_THREADS 8
-	WorkerThreadPool pool;
-	std::future<typename std::result_of<std::function<void()>()>::type> fut[MAX_THREADS];
-
-	for (auto it = mapdb.begin(); it != mapdb.end();) {
-		for (int i = 0; i < MAX_THREADS && it != mapdb.end(); i++, std::advance(it, 1))
-			fut[i] = pool.submit([it, diff] () { it->second->update(diff); });
-
-		for (int i = 0; i < MAX_THREADS; i++)
-			fut[i].wait();
+	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
+		std::shared_ptr<Map> map = (*i)->get_map(map_name);
+		if (map) {
+			(*i)->add_player(map_name, p);
+			return map;
+		}
 	}
 
-	_scheduler.Update(diff);
-#undef MAX_THREADS
+	return nullptr;
+}
+
+bool MapManager::remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p)
+{
+	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
+		if ((*i)->find_map(map_name)) {
+			(*i)->remove_player(p);
+			return true;
+		}
+	}
+
+	return false;
 }

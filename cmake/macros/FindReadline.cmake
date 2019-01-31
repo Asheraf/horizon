@@ -50,12 +50,12 @@ find_library(Readline_LIBRARY
 
 if(Readline_INCLUDE_DIR AND Readline_LIBRARY AND Ncurses_LIBRARY)
     set(READLINE_FOUND TRUE)
-else(Readline_INCLUDE_DIR AND Readline_LIBRARY AND Ncurses_LIBRARY)
+else()
     FIND_LIBRARY(Readline_LIBRARY NAMES readline)
     include(FindPackageHandleStandardArgs)
     FIND_PACKAGE_HANDLE_STANDARD_ARGS(Readline DEFAULT_MSG Readline_INCLUDE_DIR Readline_LIBRARY)
     MARK_AS_ADVANCED(Readline_INCLUDE_DIR Readline_LIBRARY)
-endif(Readline_INCLUDE_DIR AND Readline_LIBRARY AND Ncurses_LIBRARY)
+endif()
 
 mark_as_advanced(
         Readline_ROOT_DIR

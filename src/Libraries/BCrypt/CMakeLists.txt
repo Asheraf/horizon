@@ -17,9 +17,18 @@
 
 # BCrypt CPP Interface
 
-execute_process(COMMAND make clean WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-execute_process(COMMAND make clean WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3)
-execute_process(COMMAND make bcrypt.a WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+find_path (BCRYPT_STATIC_DIR
+	NAMES bcrypt.a
+	HINTS ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+if (BCRYPT_STATIC_DIR STREQUAL "BCRYPT_STATIC_DIR-NOTFOUND")
+	execute_process(COMMAND make clean WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+	execute_process(COMMAND make clean WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3)
+	execute_process(COMMAND make bcrypt.a WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+message(STATUS "BCrypt libraries compiled. ")
 
 add_library(bcryptcpp
 	STATIC
@@ -29,8 +38,8 @@ add_library(bcryptcpp
 target_link_libraries(bcryptcpp
 	${CMAKE_CURRENT_SOURCE_DIR}/bcrypt.a)
 
-set_target_properties(bcryptcpp 
-	PROPERTIES 
+set_target_properties(bcryptcpp
+	PROPERTIES
 	LINKER_LANGUAGE CXX
         FOLDER
         "BCrypt")

@@ -6,6 +6,18 @@ CollectSourceFiles(
 	TEST_SOURCES
 )
 
+###############
+# LuaJit
+###############
+set(LUAJIT_FIND_REQUIRED true)
+include(FindLuaJit)
+
+###############
+# Sol2
+###############
+set(SOL2_FIND_REQUIRED true)
+include(FindSol2)
+
 set(CORE_DIR ${PROJECT_SOURCE_DIR}/src/Core)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
@@ -20,6 +32,9 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 		set (ADD_SOURCES
 			${CORE_DIR}/Multithreading/TaskScheduler/TaskScheduler.cpp
 			${CORE_DIR}/Multithreading/TaskScheduler/TaskScheduler.hpp)
+	elseif (TEST_NAME STREQUAL "Sol2Test")
+		set (ADD_LIBS ${LUA_LIBRARIES})
+		set (ADD_INCLUDE_DIRS ${LUA_INCLUDE_DIR} ${SOL2_INCLUDE_DIR})
 	endif ()
 
 	# Add compile target
@@ -34,7 +49,16 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 	target_include_directories(${TEST_NAME}
 		PUBLIC
 			${PROJECT_SOURCE_DIR}/src
-			${Boost_INCLUDE_DIRS})
+			${Boost_INCLUDE_DIRS}
+			${ADD_INCLUDE_DIRS})
+
+	# LuaJit linker flags on macOS to avoid crashes.
+	if (APPLE AND TEST_NAME STREQUAL "Sol2Test")
+		set_target_properties(${TEST_NAME}
+			PROPERTIES
+			LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
+			)
+	endif()
 
 	# I like to move testing binaries into a testBin directory
 	set_target_properties(${TEST_NAME} PROPERTIES

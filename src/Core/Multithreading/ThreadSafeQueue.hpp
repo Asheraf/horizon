@@ -17,7 +17,7 @@
 #define HORIZON_CORE_MULTITHREADING_THREADSAFEQUEUE_HPP
 
 #include <memory>
-#include <boost/thread.hpp>
+#include <thread>
 
 template<typename T>
 class ThreadSafeQueue
@@ -29,20 +29,20 @@ private:
         std::unique_ptr<node> next;
     };
 
-    boost::mutex head_mutex;
+    std::mutex head_mutex;
     std::unique_ptr<node> head;
-    boost::mutex tail_mutex;
+    std::mutex tail_mutex;
     node *tail;
 
     node *get_tail()
     {
-		boost::unique_lock<boost::mutex> tail_lock(tail_mutex);
+		std::unique_lock<std::mutex> tail_lock(tail_mutex);
         return tail;
     }
 
     std::unique_ptr<node> pop_head()
     {
-        boost::unique_lock<boost::mutex> head_lock(head_mutex);
+        std::unique_lock<std::mutex> head_lock(head_mutex);
 
         if(head.get() == get_tail())
             return nullptr;
@@ -80,7 +80,7 @@ public:
             std::make_shared<T>(std::move(new_value)));
         std::unique_ptr<node> p(new node);
 		node *new_tail = p.get();
-        boost::unique_lock<boost::mutex> tail_lock(tail_mutex);
+        std::unique_lock<std::mutex> tail_lock(tail_mutex);
         tail->data = new_data;
         tail->next = std::move(p);
         tail = new_tail;
@@ -89,8 +89,8 @@ public:
 	std::size_t size()
 	{
 		int count = 0;
-		boost::unique_lock<boost::mutex> head_lock(head_mutex);
-		boost::unique_lock<boost::mutex> tail_lock(tail_mutex);
+		std::unique_lock<std::mutex> head_lock(head_mutex);
+		std::unique_lock<std::mutex> tail_lock(tail_mutex);
 		node const *n = head.get();
 
 		while ((n = n->next.get())) {
@@ -102,7 +102,7 @@ public:
 
 	bool empty()
 	{
-		boost::unique_lock<boost::mutex> head_lock(head_mutex);
+		std::unique_lock<std::mutex> head_lock(head_mutex);
 
 		if(head.get() == get_tail())
 			return true;
@@ -112,7 +112,7 @@ public:
 
 	std::shared_ptr<T> front()
 	{
-		boost::unique_lock<boost::mutex> head_lock(head_mutex);
+		std::unique_lock<std::mutex> head_lock(head_mutex);
 		std::shared_ptr<T> front = head != nullptr ? std::make_shared<T>(*head->data) : nullptr;
 		return std::move(front);
 	}

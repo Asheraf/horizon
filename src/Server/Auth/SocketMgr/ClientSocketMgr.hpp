@@ -21,6 +21,7 @@
 #include "Core/Networking/AcceptSocketMgr.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
+#include "Server/Auth/PacketHandler/Packets.hpp"
 
 namespace Horizon
 {
@@ -44,13 +45,35 @@ public:
 	{
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
+
+		initialize_packet_version_length_db();
 		
 		return true;
+	}
+
+	void initialize_packet_version_length_db()
+	{
+#define ADD_PVL_VARIABLE(name) add_packet_length(Horizon::Auth::packets::name, -1);
+#define ADD_PVL_FIXED(name) add_packet_length(Horizon::Auth::packets::name, sizeof(PACKET_ ## name));
+		ADD_PVL_FIXED(CA_LOGIN)
+		ADD_PVL_FIXED(CA_REQ_HASH)
+		ADD_PVL_FIXED(CA_LOGIN2)
+		ADD_PVL_FIXED(CA_LOGIN3)
+		ADD_PVL_FIXED(CA_CONNECT_INFO_CHANGED)
+		ADD_PVL_FIXED(CA_EXE_HASHCHECK)
+		ADD_PVL_FIXED(CA_LOGIN_PCBANG)
+		ADD_PVL_FIXED(CA_LOGIN4)
+		ADD_PVL_FIXED(CA_LOGIN_HAN)
+		ADD_PVL_VARIABLE(CA_SSO_LOGIN_REQ)
+		ADD_PVL_FIXED(CA_LOGIN_OTP)
+#undef ADD_PVL_VARIABLE
+#undef ADD_PVL_FIXED
 	}
 };
 }
 }
 
 #define ClientSocktMgr Horizon::Auth::ClientSocketMgr::getInstance()
+#define GET_CA_PACKETLEN(id) ClientSocktMgr->get_packet_length(id)
 
 #endif // HORIZON_AUTH_CLIENTSOCKETMGR_HPP

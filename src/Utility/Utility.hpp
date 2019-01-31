@@ -23,10 +23,13 @@
 #include <chrono>
 #include <cstring>
 
-inline uint32_t getMSTime();
-inline uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime);
-inline uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime);
-inline const char *TimeStamp2String(char *str, size_t size, time_t timestamp, const char *format);
+uint32_t getMSTime();
+uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime);
+uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime);
+
+uint32_t get_sys_time();
+
+const char *TimeStamp2String(char *str, size_t size, time_t timestamp, const char *format);
 // Reorders bytes from network to little endian (Windows).
 // Necessary for sending port numbers to the RO client until Gravity notices that they forgot ntohs() calls.
 uint16_t ntows(uint16_t netshort);

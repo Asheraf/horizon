@@ -21,6 +21,8 @@
 #include "Core/Multithreading/LockedLookupTable.hpp"
 #include "Tools/MapCache/MapCache.hpp"
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
+#include "MapThreadContainer.hpp"
+#include <vector>
 
 enum mapmgr_task_schedule_group
 {
@@ -33,7 +35,14 @@ namespace Zone
 {
 namespace Game
 {
+
+namespace Entities
+{
+	class Player;
+}
+
 class Map;
+
 class MapManager
 {
 public:
@@ -49,15 +58,24 @@ public:
 	bool initialize();
 	bool LoadMapCache();
 
-	Map *getMap(std::string const &map) { return _map_data_db.at(map); }
+	std::shared_ptr<Map> add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p);
+	bool remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p);
 
-	void update(uint32_t diff);
+	std::shared_ptr<Map> get_map(std::string map_name) const
+	{
+		for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
+			std::shared_ptr<Map> map = (*i)->get_map(map_name);
+			if (map) return map;
+		}
+		
+		return nullptr;
+	}
 
 	TaskScheduler &getScheduler() { return _scheduler; }
 
 private:
-	LockedLookupTable<std::string, Map *> _map_data_db;
 	TaskScheduler _scheduler;
+	std::vector<std::shared_ptr<MapThreadContainer>> _map_containers;
 };
 }
 }

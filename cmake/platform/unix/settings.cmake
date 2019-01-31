@@ -1,18 +1,21 @@
 # Set Default output directory.
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set (CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/bin" CACHE PATH "default install path" FORCE )
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set (CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/bin/Debug" CACHE PATH "default install path" FORCE )
+  else()
+    set (CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/bin" CACHE PATH "default install path" FORCE )
+  endif()
 endif()
 
 # set default configuration directory
 if (NOT CONF_DIR)
   set(CONF_DIR ${CMAKE_INSTALL_PREFIX}/config)
-  message(STATUS "UNIX: Using default configuration directory")
+  message(STATUS "UNIX: Using default configuration directory ${CONF_DIR}")
 endif()
 
-# set default library directory
-if (NOT LIB_DIR)
-  set(LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
-  message(STATUS "UNIX: Using default library directory")
+if (NOT DB_DIR)
+  set(DB_DIR ${CMAKE_INSTALL_PREFIX}/db)
+  message(STATUS "UNIX: Using deafult library directory ${DB_DIR}")
 endif()
 
 # configure uninstaller

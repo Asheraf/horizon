@@ -21,10 +21,13 @@
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
-#include "Server/Zone/Game/Models/Entities/Unit/Player/Player.hpp"
-#include "Server/Zone/Interface/InterAPI.hpp"
+#include "Server/Zone/Game/Entities/Entity.hpp"
+#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Map/MapManager.hpp"
+#include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/PacketHandler/Packets.hpp"
 #include "Server/Zone/Socket/ZoneSocket.hpp"
+#include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/Zone.hpp"
 #include "Utility/Utility.hpp"
@@ -56,89 +59,120 @@ void PacketHandler::initialize_handlers()
 {
 #define HANDLER_FUNC(packet) add_packet_handler(packet, boost::bind(&PacketHandler::Handle_ ## packet, this, boost::placeholders::_1));
 	HANDLER_FUNC(CZ_LOGIN_TIMESTAMP);
+	HANDLER_FUNC(CZ_RESTART);
+	HANDLER_FUNC(CZ_REQ_DISCONNECT);
+	HANDLER_FUNC(CZ_CHANGE_DIRECTION);
+	HANDLER_FUNC(CZ_CHANGE_DIRECTION2);
 #undef HANDLER_FUNC
 }
 
 /*==============*
  * Handler Methods
  *==============*/
-void PacketHandler::Handle_CZ_LOGIN_TIMESTAMP(PacketBuffer &buf)
+bool PacketHandler::Handle_CZ_LOGIN_TIMESTAMP(PacketBuffer &buf)
 {
 	PACKET_CZ_LOGIN_TIMESTAMP pkt;
+
 	buf >> pkt;
+
 	ZoneLog->info("Account '{}' has successfully logged in.", get_socket()->get_session()->get_game_account()->get_id());
+
+	return true;
 }
 
-void PacketHandler::Handle_CZ_REQUEST_TIME(PacketBuffer &buf)
+bool PacketHandler::Handle_CZ_REQUEST_TIME(PacketBuffer &buf)
 {
 	PACKET_CZ_REQUEST_TIME pkt(buf.getOpCode());
+
 	buf >> pkt;
+
 	Send_ZC_NOTIFY_TIME();
+
+	return true;
 }
 
-void PacketHandler::Handle_CZ_REQNAME(PacketBuffer &buf)
+bool PacketHandler::Handle_CZ_REQNAME(PacketBuffer &buf)
 {
 	PACKET_CZ_REQNAME pkt(buf.getOpCode());
+
 	buf >> pkt;
+
 	// find and return guid name.
+
+	return true;
 }
 
-void PacketHandler::Handle_CZ_ENTER(PacketBuffer &buf)
+bool PacketHandler::Handle_CZ_ENTER(PacketBuffer &buf)
 {
 	std::shared_ptr<ZoneSession> session = get_socket()->get_session();
+
 	PACKET_CZ_ENTER pkt(buf.getOpCode());
+
 	buf >> pkt;
 
-	session->set_session_data(ZoneInterAPI->get_session_data(pkt.auth_code));
-	if (session->get_session_data() == nullptr) {
+	std::shared_ptr<SessionData> session_data = std::make_shared<SessionData>();
+
+	if (!session_data->load(ZoneServer, pkt.account_id)) {
 		ZoneLog->info("New connection attempt from unauthorized session '{}'.", pkt.auth_code);
 		session->get_packet_handler()->Send_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
-		return;
+		return false;
 	}
 
-	session->set_game_account(ZoneInterAPI->get_game_account(pkt.account_id));
-	if (session->get_game_account() == nullptr) {
+	std::shared_ptr<GameAccount> game_account = std::make_shared<GameAccount>();
+
+	if (!game_account->load(ZoneServer, pkt.account_id)) {
 		ZoneLog->info("New connection attempt from unknown account '{}'.", pkt.account_id);
 		session->get_packet_handler()->Send_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
-		return;
+		return false;
 	}
 
-	session->set_character(std::make_shared<Character>());
+	session->set_session_data(session_data);
+	session->set_game_account(game_account);
+
+	session->set_character(std::make_shared<Character>(pkt.char_id));
+
 	if (!session->get_character()->load_all(ZoneServer, pkt.char_id)) {
 		ZoneLog->info("Attempted connection for non-existent character {} by account {}.", pkt.account_id, pkt.char_id);
 		session->get_packet_handler()->Send_ZC_ERROR(ZONE_SERV_ERROR_REJECT);
-		return;
+		return false;
 	}
 
 	// Send initial packets.
 	Send_ZC_ACCOUNT_ID();
 	Send_ZC_ACCEPT_CONNECTION();
 
-	// Initilaize The Player
-	MapCoords mcoords(session->get_character()->get_position_data()->get_current_x(),
-					  session->get_character()->get_position_data()->get_current_y());
-
-	std::shared_ptr<Player> player = std::make_shared<Player>(pkt.account_id,
-															  session->get_character()->get_position_data()->get_current_map(),
-															  mcoords,
-															  session);
-	session->set_player(player);
-	player->initialize();
-	ZoneServer->add_player(session->get_game_account()->get_id(), player);
+	std::shared_ptr<Position> position = session->get_character()->get_position_data();
 	
-	//get_packet_handler()->Send_ZC_NPCACK_MAPMOVE("prontera", 101, 120);
+	// Initilaize The Player
+	MapCoords mcoords(position->get_current_x(), position->get_current_y());
+
+	std::shared_ptr<Player> player = std::make_shared<Player>(pkt.account_id, mcoords, session);
+	session->set_player(player);
+
+	player->set_map(MapMgr->add_player_to_map(position->get_current_map(), player));
+
+	player->initialize();
+
+	// Remove socket from updates on zone server after initial connection
+	// it will be managed by the map container thread.
+	ClientSocktMgr->set_socket_for_removal(get_socket()->get_socket_id());
+
 	ZoneLog->info("New connection established for account '{}' using version '{}' from '{}'.",
 				  pkt.account_id, session->get_session_data()->get_client_version(), get_socket()->remote_ip_address());
+
+	return true;
 }
 
-void PacketHandler::Handle_CZ_REQUEST_ACT(PacketBuffer &buf)
+bool PacketHandler::Handle_CZ_REQUEST_ACT(PacketBuffer &buf)
 {
 	PACKET_CZ_REQUEST_ACT pkt(buf.getOpCode());
 	buf >> pkt;
 	printf("act %d %d\n", pkt.target_guid, pkt.action);
+
+	return true;
 }
 
-void PacketHandler::Handle_CZ_REQUEST_MOVE(PacketBuffer &buf)
+bool PacketHandler::Handle_CZ_REQUEST_MOVE(PacketBuffer &buf)
 {
 	uint16_t x = 0, y = 0;
 	uint8_t dir = 0;
@@ -149,6 +183,102 @@ void PacketHandler::Handle_CZ_REQUEST_MOVE(PacketBuffer &buf)
 	UnpackPosition(pkt.packed_destination, &x, &y, &dir);
 
 	get_socket()->get_session()->get_player()->move_to_pos(x, y);
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_RESTART(PacketBuffer &buf)
+{
+	PACKET_CZ_RESTART pkt(buf.getOpCode());
+
+	buf >> pkt;
+
+	switch (pkt.type)
+	{
+	case 0: std::cout << "Respawn" << std::endl; break;
+	case 1: Send_ZC_RESTART_ACK(1); break;
+	}
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_REQ_DISCONNECT(PacketBuffer &buf)
+{
+	PACKET_CZ_REQ_DISCONNECT pkt;
+	auto session = get_socket()->get_session();
+	auto player = session->get_player();
+
+	buf >> pkt;
+
+	session->get_session_data()->remove(ZoneServer);
+
+	session->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
+
+	if (player->get_map())
+		MapMgr->remove_player_from_map(player->get_map()->get_name(), player);
+
+	ZoneLog->info("Character '{}' has logged out. {}", session->get_character()->get_name(), pkt.type);
+
+	Send_ZC_ACK_REQ_DISCONNECT(true);
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_CHOOSE_MENU(PacketBuffer &buf)
+{
+	PACKET_CZ_CHOOSE_MENU pkt;
+
+	buf >> pkt;
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_REQ_NEXT_SCRIPT(PacketBuffer &buf)
+{
+	PACKET_CZ_REQ_NEXT_SCRIPT pkt;
+
+	buf >> pkt;
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_INPUT_EDITDLG(PacketBuffer &buf)
+{
+	PACKET_CZ_INPUT_EDITDLG pkt;
+
+	buf >> pkt;
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_INPUT_EDITDLGSTR(PacketBuffer &buf)
+{
+	PACKET_CZ_INPUT_EDITDLGSTR pkt;
+
+	buf >> pkt;
+
+	char message[pkt.packet_length - 6];
+	buf.read(message, sizeof(message));
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_CLOSE_DIALOG(PacketBuffer &buf)
+{
+	PACKET_CZ_CLOSE_DIALOG pkt;
+
+	buf >> pkt;
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_CHANGE_DIRECTION(PacketBuffer &buf)
+{
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_CHANGE_DIRECTION2(PacketBuffer &buf)
+{
+	return true;
 }
 
 /*==============*
@@ -158,6 +288,32 @@ void PacketHandler::Send_ZC_ERROR(zone_server_reject_types error)
 {
 	PACKET_ZC_ERROR pkt;
 	pkt.error = error;
+	send_packet(pkt);
+}
+
+void PacketHandler::Send_ZC_RESTART_ACK(uint8_t type)
+{
+	auto session = get_socket()->get_session();
+	auto player = session->get_player();
+
+	PACKET_ZC_RESTART_ACK pkt;
+
+	pkt.type = type;
+
+	if (player->get_map())
+		MapMgr->remove_player_from_map(player->get_map()->get_name(), player);
+
+	session->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
+
+	ZoneLog->info("Character '{}' has moved to the character server.", session->get_character()->get_name());
+
+	send_packet(pkt);
+}
+
+void PacketHandler::Send_ZC_ACK_REQ_DISCONNECT(bool allowed)
+{
+	PACKET_ZC_ACK_REQ_DISCONNECT pkt;
+	pkt.type = allowed ? 0 : 1;
 	send_packet(pkt);
 }
 
@@ -227,7 +383,7 @@ void PacketHandler::Send_ZC_NOTIFY_PLAYERMOVE(uint16_t x1, uint16_t y1)
 	std::shared_ptr<Player> player = get_socket()->get_session()->get_player();
 	PACKET_ZC_NOTIFY_PLAYERMOVE pkt;
 
-	pkt.timestamp = (uint32_t) time(nullptr);
+	pkt.timestamp = get_sys_time();
 	x0 = player->get_map_coords().x();
 	y0 = player->get_map_coords().y();
 	PackPosition(pkt.packed_pos, x0, y0, x1, y1, 8, 8);
@@ -251,6 +407,61 @@ void PacketHandler::Send_ZC_PAR_CHANGE(uint16_t type, uint16_t value)
 	pkt.value = value;
 	send_packet(pkt);
 }
+
+void PacketHandler::Send_ZC_SAY_DIALOG(uint16_t npc_id, std::string &message)
+{
+	PACKET_ZC_SAY_DIALOG pkt;
+	PacketBuffer buf;
+
+	pkt.npc_id = npc_id;
+
+	buf << pkt;
+	buf.append(message.c_str(), message.length());
+
+	send_packet(buf);
+}
+
+void PacketHandler::Send_ZC_WAIT_DIALOG(uint16_t npc_id)
+{
+	PACKET_ZC_WAIT_DIALOG pkt;
+
+	pkt.npc_id = npc_id;
+
+	send_packet(pkt);
+}
+
+void PacketHandler::Send_ZC_MENU_LIST(uint16_t npc_id, std::string &menu_list)
+{
+	PACKET_ZC_MENU_LIST pkt;
+	PacketBuffer buf;
+
+	pkt.npc_id = npc_id;
+	pkt.packet_length = sizeof(PACKET_ZC_MENU_LIST) + menu_list.size();
+
+	buf.append(pkt);
+	buf.append(menu_list.c_str(), menu_list.size());
+
+	send_packet(buf);
+}
+
+void PacketHandler::Send_ZC_OPEN_EDITDLG(uint16_t npc_id)
+{
+	PACKET_ZC_OPEN_EDITDLG pkt;
+
+	pkt.npc_id = npc_id;
+
+	send_packet(pkt);
+}
+
+void PacketHandler::Send_ZC_OPEN_EDITDLGSTR(uint16_t npc_id)
+{
+	PACKET_ZC_OPEN_EDITDLGSTR pkt;
+
+	pkt.npc_id = npc_id;
+
+	send_packet(pkt);
+}
+
 
 void PacketHandler::Send_ZC_INITIAL_STATUS()
 {
@@ -284,5 +495,12 @@ void PacketHandler::Send_ZC_NOTIFY_GROUNDSKILL(uint16_t skill_id, uint32_t guid,
 	pkt.x = x;
 	pkt.y = y;
 	pkt.duration = duration;
+	send_packet(pkt);
+}
+
+void PacketHandler::Send_ZC_NOTIFY_STANDENTRY10(Game::Entity *entity)
+{
+	PACKET_ZC_NOTIFY_STANDENTRY10 pkt(ZC_NOTIFY_STANDENTRY10);
+	// set here params.
 	send_packet(pkt);
 }

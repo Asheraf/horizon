@@ -16,8 +16,9 @@
  **************************************************/
 
 #include "Utility.hpp"
+#include <sys/time.h>
 
-inline uint32_t getMSTime()
+uint32_t getMSTime()
 {
 	using namespace std::chrono;
 
@@ -26,7 +27,7 @@ inline uint32_t getMSTime()
 	return uint32_t(duration_cast<milliseconds>(steady_clock::now() - ApplicationStartTime).count());
 }
 
-inline uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime)
+uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime)
 {
 	// getMSTime() have limited data range and this is case when it overflow in this tick
 	if (oldMSTime > newMSTime)
@@ -35,12 +36,21 @@ inline uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime)
 		return newMSTime - oldMSTime;
 }
 
-inline uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
+uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
 {
 	return getMSTimeDiff(oldMSTime, getMSTime());
 }
 
-inline const char *TimeStamp2String(char *str, size_t size, time_t timestamp, const char *format)
+uint32_t get_sys_time()
+{
+	struct timeval tval;
+
+	gettimeofday(&tval, NULL);
+
+	return (uint32_t) (tval.tv_sec * 1000 + tval.tv_usec / 1000);
+}
+
+const char *TimeStamp2String(char *str, size_t size, time_t timestamp, const char *format)
 {
 	size_t len = 0;
 

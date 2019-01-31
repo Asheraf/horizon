@@ -11,7 +11,7 @@ namespace Zone
 namespace Game
 {
 #pragma pack(push, 1)
-class Cell
+struct Cell
 {
 public:
     Cell(uint8_t type)
@@ -19,6 +19,12 @@ public:
     {
 		validateType(type);
     }
+
+	Cell()
+	: _walkable(0), _shootable(0), _is_water(0)
+	{
+
+	}
 
     ~Cell()
     {
@@ -61,9 +67,9 @@ public:
 	void setWater() { _is_water = 1; }
 
 private:
-	unsigned int _walkable : 1;
-	unsigned int _shootable : 1;
-	unsigned int _is_water : 1;
+	unsigned _walkable : 1;
+	unsigned _shootable : 1;
+	unsigned _is_water : 1;
 };
 #pragma pack(pop)
 }

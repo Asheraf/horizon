@@ -6,7 +6,15 @@
 #      | | | | (_) | |  | |/ / (_) | | | |        #
 #      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
 ###################################################
-#         Zone Server Configuration File          #
+# This file is part of Horizon (c).
+# Copyright (c) 2018 Horizon Dev Team.
+#
+# Base Author - Sagun Khosla. (sagunxp@gmail.com)
+#
+# Under a proprietary license this file is not for use
+# or viewing without permission.
+###################################################
+#    Zone Server Configuration File               #
 ###################################################
 
 ###################################################
@@ -16,13 +24,20 @@ bind_ip: "0.0.0.0"
 bind_port: 5121
 
 ###################################################
-# Inter Server Settings
+# Client Type
+# Default: 0 (Ragexe)
+# Types: 0 = Ragexe
+#        1 = RagexeRE
+#        2 = Zero
+#        3 = AD
+#        4 = Sakray
 ###################################################
-inter_server: {
-	ip_address: "127.0.0.1"
-	port: 9998
-	password: "ABCDEF"
-}
+client_type: 0
+
+###################################################
+# Packet Version allowed.
+###################################################
+packet_version: 20141022
 
 ###################################################
 # Global Thread Pool
@@ -30,13 +45,22 @@ inter_server: {
 #        - Core Signal handling
 #        - Socket Networking
 ###################################################
-global_io_threads: 5
+global_io_threads: 1
 
 ###################################################
-# Server Update Interval (in milliseconds)
+# Map Container Thread Pool
+# Used for
+#         - Map management
+#         - Game logic handling
+#         - Status/Damage/Scripts in managed maps.
+###################################################
+map_containers: 4
+
+###################################################
+# Server Update Interval (in microseconds)
 # - The interval through which a server will update
 #   its events and global timers.
-# Default: 500ms
+# Default: 500µs
 ###################################################
 core_update_interval: 500
 
@@ -70,5 +94,5 @@ log: {
 ###################################################
 # Static Database Settings
 ###################################################
-static_db_path: "../db/"
+static_db_path: "db/"
 map_cache_file_name: "maps.dat"

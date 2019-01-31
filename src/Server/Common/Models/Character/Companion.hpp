@@ -32,7 +32,9 @@ namespace Character
 class Companion
 {
 public:
-	Companion() {}
+	Companion(uint32_t char_id) : _character_id(char_id)
+	{}
+
 	~Companion() {}
 
 	/**
@@ -83,23 +85,23 @@ public:
 	}
 	
 	/* Character Id */
-	uint32_t get_character_id() const { return character_id; }
-	void set_character_id(uint32_t character_id) { Companion::character_id = character_id; }
+	uint32_t get_character_id() const { return _character_id; }
+	void set_character_id(uint32_t character_id) { _character_id = character_id; }
 	/* Pet ID */
-	uint32_t get_pet_id() const { return pet_id; }
-	void set_pet_id(uint32_t pet_id) { Companion::pet_id = pet_id; }
+	uint32_t get_pet_id() const { return _pet_id; }
+	void set_pet_id(uint32_t pet_id) { _pet_id = pet_id; }
 	/* Homun ID */
-	uint32_t get_homun_id() const { return homun_id; }
-	void set_homun_id(uint32_t homun_id) { Companion::homun_id = homun_id; }
+	uint32_t get_homun_id() const { return _homun_id; }
+	void set_homun_id(uint32_t homun_id) { _homun_id = homun_id; }
 	/* Elemental ID */
-	uint32_t get_elemental_id() const { return elemental_id; }
-	void set_elemental_id(uint32_t elemental_id) { Companion::elemental_id = elemental_id; }
+	uint32_t get_elemental_id() const { return _elemental_id; }
+	void set_elemental_id(uint32_t elemental_id) { _elemental_id = elemental_id; }
 
 private:
-	uint32_t character_id{0};
-	uint32_t pet_id{0};
-	uint32_t homun_id{0};
-	uint32_t elemental_id{0};
+	uint32_t _character_id{0};
+	uint32_t _pet_id{0};
+	uint32_t _homun_id{0};
+	uint32_t _elemental_id{0};
 };
 }
 }

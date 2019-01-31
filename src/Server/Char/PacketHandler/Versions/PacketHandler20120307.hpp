@@ -32,12 +32,12 @@ namespace PacketVer20120307
 {
 enum packets
 {
-	CHAR_CREATE        = 0x970,
+	CH_CREATE        = 0x970,
 };
 #pragma pack(push, 1)
-struct PACKET_CHAR_CREATE : public Packet
+struct PACKET_CH_CREATE : public Packet
 {
-	PACKET_CHAR_CREATE() : Packet(Horizon::Char::PacketVer20120307::CHAR_CREATE) {}
+	PACKET_CH_CREATE() : Packet(Horizon::Char::PacketVer20120307::CH_CREATE) {}
 	// S 0970 <name>.24B <slot>.B <hair color>.W <hair style>.W
 	char name[MAX_UNIT_NAME_LENGTH]{0};
 	uint8_t slot{0};
@@ -61,7 +61,8 @@ public:
 	virtual ~PacketHandler20120307();
 
 	void initialize_handlers();
-	void Handle_CHAR_CREATE(PacketBuffer &buf);
+
+	bool Handle_CH_CREATE(PacketBuffer &buf);
 };
 }
 }

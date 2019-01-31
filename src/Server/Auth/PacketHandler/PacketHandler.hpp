@@ -50,17 +50,17 @@ public:
 	/**
 	 * Client To Auth
 	 */
-	virtual void Handle_CA_LOGIN(PacketBuffer &packet);
-	virtual void Handle_CA_REQ_HASH(PacketBuffer &packet);
-	virtual void Handle_CA_LOGIN2(PacketBuffer &packet);
-	virtual void Handle_CA_LOGIN3(PacketBuffer &packet);
-	virtual void Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &packet);
-	virtual void Handle_CA_EXE_HASHCHECK(PacketBuffer &packet);
-	virtual void Handle_CA_LOGIN_PCBANG(PacketBuffer &packet);
-	virtual void Handle_CA_LOGIN4(PacketBuffer &packet);
-	virtual void Handle_CA_LOGIN_HAN(PacketBuffer &packet);
-	virtual void Handle_CA_SSO_LOGIN_REQ(PacketBuffer &packet);
-	virtual void Handle_CA_LOGIN_OTP(PacketBuffer &packet);
+	virtual bool Handle_CA_LOGIN(PacketBuffer &packet);
+	virtual bool Handle_CA_REQ_HASH(PacketBuffer &packet);
+	virtual bool Handle_CA_LOGIN2(PacketBuffer &packet);
+	virtual bool Handle_CA_LOGIN3(PacketBuffer &packet);
+	virtual bool Handle_CA_CONNECT_INFO_CHANGED(PacketBuffer &packet);
+	virtual bool Handle_CA_EXE_HASHCHECK(PacketBuffer &packet);
+	virtual bool Handle_CA_LOGIN_PCBANG(PacketBuffer &packet);
+	virtual bool Handle_CA_LOGIN4(PacketBuffer &packet);
+	virtual bool Handle_CA_LOGIN_HAN(PacketBuffer &packet);
+	virtual bool Handle_CA_SSO_LOGIN_REQ(PacketBuffer &packet);
+	virtual bool Handle_CA_LOGIN_OTP(PacketBuffer &packet);
 
 	/**
 	 * Auth To Client

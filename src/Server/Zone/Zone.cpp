@@ -17,12 +17,12 @@
 
 #include "Zone.hpp"
 
-#include "Server/Zone/Interface/InterAPI.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
-#include "Server/Zone/SocketMgr/InterSocketMgr.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp" // required by clientmgr for update()
-#include "Server/Zone/Game/Models/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/StaticDB/StaticDB.hpp"
+#include "Server/Zone/Game/Script/ScriptMgr.hpp"
 
 #include <boost/asio.hpp>
 #include <iostream>
@@ -31,6 +31,7 @@
 
 using namespace std;
 using boost::asio::ip::udp;
+using namespace Horizon::Zone::Game;
 
 /**
  * Zone Main server constructor.
@@ -71,37 +72,6 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 		return false;
 	}
 
-	/**
-	 * Inter Server Settings
-	 * @brief Definitions of the Inter-server networking configuration.
-	 */
-	const libconfig::Setting &inter_server = cfg.getRoot()["inter_server"];
-
-	if (!inter_server.lookupValue("ip_address", tmp_string)) {
-		zone_config_error("inter_server.ip_address", "127.0.0.1");
-		network_conf().set_inter_server_ip("127.0.0.1");
-	} else {
-		network_conf().set_inter_server_ip(tmp_string);
-	}
-
-	if (!inter_server.lookupValue("port", tmp_value)) {
-		zone_config_error("inter_server.port", 9998);
-		network_conf().set_inter_server_port(9998);
-	} else {
-		network_conf().set_inter_server_port(tmp_value);
-	}
-
-	if (!inter_server.lookupValue("password", tmp_string)) {
-		zone_config_error("inter_server.password", "ABCDEF");
-		network_conf().set_inter_server_password(tmp_string);
-	} else {
-		network_conf().set_inter_server_password(tmp_string);
-	}
-
-	ZoneLog->info("Outbound connections: Inter-Server configured to tcp://{}:{} {}",
-				  network_conf().get_inter_server_ip(), network_conf().get_inter_server_port(),
-				  (network_conf().get_inter_server_password().length()) ? "using password" : "not using password");
-
 	if (cfg.lookupValue("static_db_path", tmp_string))
 		get_zone_config().set_database_path(tmp_string);
 
@@ -109,6 +79,13 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 
 	if (cfg.lookupValue("map_cache_file_name", tmp_string))
 		get_zone_config().set_mapcache_file_name(tmp_string);
+
+	if (cfg.lookupValue("map_containers", tmp_value) || tmp_value < 1) {
+		get_zone_config().set_map_container_count(tmp_value);
+	} else {
+		ZoneLog->warn("Invalid value or no configuration found for 'map_containers', defaulting to 1.");
+		get_zone_config().set_map_container_count(1);
+	}
 
 	/**
 	 * Process Configuration that is common between servers.
@@ -135,9 +112,6 @@ void Horizon::Zone::ZoneMain::update(uint32_t diff)
 	 */
 	ClientSocktMgr->update_socket_sessions(diff);
 
-	for (auto &p : _player_map)
-		p.second.lock()->update(diff);
-	
 	/**
 	 * Process map-related updates.
 	 */
@@ -158,15 +132,19 @@ void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 void Horizon::Zone::ZoneMain::initialize_core()
 {
 	/**
-	 * Establish a connection to the inter-server.
-	 */
-	if (!general_conf().is_test_run())
-		establish_inter_connection();
-
-	/**
 	 * Map Manager.
 	 */
 	MapMgr->initialize();
+
+	/**
+	 * Static Databases
+	 */
+	StaticDB->load_all();
+
+	/**
+	 * Script Manager
+	 */
+	ScriptMgr->initialize();
 	
 	/**
 	 * Core Signal Handler
@@ -188,10 +166,7 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	while (!is_shutting_down() && !general_conf().is_test_run()) {
 		uint32_t diff = general_conf().get_core_update_interval();
 
-		std::chrono::time_point<std::chrono::system_clock> start_t = std::chrono::system_clock::now();
 		update(diff);
-		std::chrono::time_point<std::chrono::system_clock> end_t = std::chrono::system_clock::now();
-		//printf("cycle time - %dμs\n", (int) std::chrono::duration_cast<std::chrono::microseconds>(end_t - start_t).count());
 
 		std::this_thread::sleep_for(std::chrono::microseconds(diff));
 	}
@@ -205,7 +180,6 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	 * Stop all networks
 	 */
 	ClientSocktMgr->stop_network();
-	InterSocktMgr->stop_network();
 
 	/* Cancel signal handling. */
 	signals.cancel();
@@ -217,29 +191,6 @@ void Horizon::Zone::ZoneMain::initialize_core()
 void Horizon::Zone::ZoneMain::initialize_cli_commands()
 {
 	Server::initialize_cli_commands();
-}
-
-/**
- * Create connection-pool of Inter-server connections.
- */
-void Horizon::Zone::ZoneMain::establish_inter_connection()
-{
-	if (InterSocktMgr->start(INTER_SESSION_NAME, this,
-		network_conf().get_inter_server_ip(), network_conf().get_inter_server_port(), 1))
-	{
-		ZoneInterAPI->set_inter_socket(InterSocktMgr->get_connector_socket(INTER_SESSION_NAME));
-		_task_scheduler.Schedule(Seconds(12),
-			 [this] (TaskContext inter_ping) {
-				 if (!ZoneInterAPI->pingInterServer()) {
-					 InterSocktMgr->close_connection(INTER_SESSION_NAME);
-					 establish_inter_connection();
-					 return;
-				 }
-
-				 if (!is_shutting_down())
-					 inter_ping.Repeat();
-			 });
-	}
 }
 
 /**

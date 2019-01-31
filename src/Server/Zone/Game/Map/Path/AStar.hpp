@@ -33,7 +33,7 @@ class Heuristic
 {
 	static Vec2i getDelta(Vec2i source_, Vec2i target_)
 	{
-		return { abs(source_.x - target_.x),  abs(source_.y - target_.y) };
+		return { abs(target_.x - source_.x),  abs(target_.y - source_.y) };
 	}
 
 public:

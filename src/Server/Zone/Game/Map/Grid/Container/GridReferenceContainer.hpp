@@ -35,28 +35,24 @@ namespace GridTypeListIterator
 	template<class SPECIFIC_TYPE>
 	SPECIFIC_TYPE *Insert(GridTypeListContainer<SPECIFIC_TYPE> &elements, SPECIFIC_TYPE *obj)
 	{
-		printf("here1");
 		obj->add_reference(elements._element);
 		return obj;
 	}
 	template<class SPECIFIC_TYPE>
 	SPECIFIC_TYPE *Insert(GridTypeListContainer<TypeNull> &/*elements*/, SPECIFIC_TYPE */*obj*/)
 	{
-		printf("herenull");
 		return nullptr;
 	}
 	// this is a missed
 	template<class SPECIFIC_TYPE, class T>
 	SPECIFIC_TYPE *Insert(GridTypeListContainer<T> &/*elements*/, SPECIFIC_TYPE */*obj*/)
 	{
-		printf("herenull1");
 		return nullptr;                                        // a missed
 	}
 	// Recursion
 	template<class SPECIFIC_TYPE, class HEAD, class TAIL>
 	SPECIFIC_TYPE* Insert(GridTypeListContainer<TypeList<HEAD, TAIL>> &elements, SPECIFIC_TYPE* obj)
 	{
-		printf("here1");
 		SPECIFIC_TYPE *t = Insert(elements._elements, obj);
 		return (t != nullptr ? t : Insert(elements._tail_elements, obj));
 	}
