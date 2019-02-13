@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -15,21 +15,22 @@
  * or viewing without permission.
  **************************************************/
 
+/* This is an auto-generated file, please do not edit manually. */
+
 #ifndef HORIZON_AUTH_CLIENTSOCKETMGR_HPP
 #define HORIZON_AUTH_CLIENTSOCKETMGR_HPP
-
 #include "Core/Networking/AcceptSocketMgr.hpp"
+
+#include "Server/Auth/Auth.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
-#include "Server/Auth/Session/AuthSession.hpp"
-#include "Server/Auth/PacketHandler/Packets.hpp"
+#include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
 
 namespace Horizon
 {
 namespace Auth
 {
 /**
- * Auth Accept Socket Manager for clients.
- * @brief Singleton class
+ * Manager of client sockets and initialization of the packet db * @brief Singleton class
  */
 class ClientSocketMgr : public Horizon::Networking::AcceptSocketMgr<AuthSocket>
 {
@@ -45,35 +46,132 @@ public:
 	{
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
+			
+		client_types type = AuthServer->general_conf().get_client_type();
+		uint32_t packet_version = AuthServer->general_conf().get_packet_version();
 
-		initialize_packet_version_length_db();
+		/**
+		 * Load base packet versions before overriding them with the configured version.
+		 */
+		if (packet_version >= 0) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE();
+			} else if (type == CLIENT_TYPE_ZERO) {
+				initialize_packet_length_db_Zero();
+			}
+		}
+
+		if (packet_version >= 20180704) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe_20180704();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE_20180704();
+			}
+		} else if (packet_version >= 20180627) {
+			if (type == CLIENT_TYPE_ZERO) {
+				initialize_packet_length_db_Zero_20180627();
+			}
+		} else if (packet_version >= 20171213) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe_20171213();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE_20171213();
+			}
+		} else if (packet_version >= 20171123) {
+			if (type == CLIENT_TYPE_ZERO) {
+				initialize_packet_length_db_Zero_20171123();
+			}
+		} else if (packet_version >= 20171115) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe_20171115();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE_20171115();
+			}
+		} else if (packet_version >= 20171113) {
+			if (type == CLIENT_TYPE_ZERO) {
+				initialize_packet_length_db_Zero_20171113();
+			}
+		} else if (packet_version >= 20171018) {
+			if (type == CLIENT_TYPE_ZERO) {
+				initialize_packet_length_db_Zero_20171018();
+			}
+		} else if (packet_version >= 20170705) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe_20170705();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE_20170705();
+			}
+		} else if (packet_version >= 20170621) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe_20170621();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE_20170621();
+			}
+		} else if (packet_version >= 20170614) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe_20170614();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE_20170614();
+			}
+		} else if (packet_version >= 20170228) {
+			if (type == CLIENT_TYPE_RAGEXE) {
+				initialize_packet_length_db_Ragexe_20170228();
+			} else if (type == CLIENT_TYPE_RAGEXE_RE) {
+				initialize_packet_length_db_RE_20170228();
+			}
+		}
 		
 		return true;
 	}
 
-	void initialize_packet_version_length_db()
-	{
-#define ADD_PVL_VARIABLE(name) add_packet_length(Horizon::Auth::packets::name, -1);
-#define ADD_PVL_FIXED(name) add_packet_length(Horizon::Auth::packets::name, sizeof(PACKET_ ## name));
-		ADD_PVL_FIXED(CA_LOGIN)
-		ADD_PVL_FIXED(CA_REQ_HASH)
-		ADD_PVL_FIXED(CA_LOGIN2)
-		ADD_PVL_FIXED(CA_LOGIN3)
-		ADD_PVL_FIXED(CA_CONNECT_INFO_CHANGED)
-		ADD_PVL_FIXED(CA_EXE_HASHCHECK)
-		ADD_PVL_FIXED(CA_LOGIN_PCBANG)
-		ADD_PVL_FIXED(CA_LOGIN4)
-		ADD_PVL_FIXED(CA_LOGIN_HAN)
-		ADD_PVL_VARIABLE(CA_SSO_LOGIN_REQ)
-		ADD_PVL_FIXED(CA_LOGIN_OTP)
-#undef ADD_PVL_VARIABLE
-#undef ADD_PVL_FIXED
-	}
+	/* Ragexe Base Packets */
+	void initialize_packet_length_db_Ragexe();
+	/* RE Base Packets */
+	void initialize_packet_length_db_RE();
+	/* Zero Base Packets */
+	void initialize_packet_length_db_Zero();
+	/* 20170228 Ragexe */
+	void initialize_packet_length_db_Ragexe_20170228();
+	/* 20170228 RE */
+	void initialize_packet_length_db_RE_20170228();
+	/* 20170614 Ragexe */
+	void initialize_packet_length_db_Ragexe_20170614();
+	/* 20170614 RE */
+	void initialize_packet_length_db_RE_20170614();
+	/* 20170621 Ragexe */
+	void initialize_packet_length_db_Ragexe_20170621();
+	/* 20170621 RE */
+	void initialize_packet_length_db_RE_20170621();
+	/* 20170705 Ragexe */
+	void initialize_packet_length_db_Ragexe_20170705();
+	/* 20170705 RE */
+	void initialize_packet_length_db_RE_20170705();
+	/* 20171018 Zero */
+	void initialize_packet_length_db_Zero_20171018();
+	/* 20171113 Zero */
+	void initialize_packet_length_db_Zero_20171113();
+	/* 20171115 Ragexe */
+	void initialize_packet_length_db_Ragexe_20171115();
+	/* 20171115 RE */
+	void initialize_packet_length_db_RE_20171115();
+	/* 20171123 Zero */
+	void initialize_packet_length_db_Zero_20171123();
+	/* 20171213 Ragexe */
+	void initialize_packet_length_db_Ragexe_20171213();
+	/* 20171213 RE */
+	void initialize_packet_length_db_RE_20171213();
+	/* 20180627 Zero */
+	void initialize_packet_length_db_Zero_20180627();
+	/* 20180704 Ragexe */
+	void initialize_packet_length_db_Ragexe_20180704();
+	/* 20180704 RE */
+	void initialize_packet_length_db_RE_20180704();
+
 };
 }
 }
-
 #define ClientSocktMgr Horizon::Auth::ClientSocketMgr::getInstance()
-#define GET_CA_PACKETLEN(id) ClientSocktMgr->get_packet_length(id)
-
-#endif // HORIZON_AUTH_CLIENTSOCKETMGR_HPP
+#define GET_AUTH_PACKETLEN(id) ClientSocktMgr->get_packet_length(id)
+#endif /* HORIZON_AUTH_CLIENTSOCKETMGR_HPP */

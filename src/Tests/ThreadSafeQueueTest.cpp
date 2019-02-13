@@ -32,20 +32,20 @@ BOOST_AUTO_TEST_CASE(ThreadSafeQueueTest)
 	std::atomic<bool> go;
 
 	for (int i = 0; i < MAX_PUSHES; i++)
-		queue.push(i);
+		queue.push(std::move(i));
 
 	BOOST_CHECK_EQUAL(queue.size(), MAX_PUSHES);
 
 	t[0] = new std::thread([&queue, &go]() {
 		while (!go);
 		for (int i = 0; i < MAX_PUSHES; i++)
-			queue.push(i);
+			queue.push(std::move(i));
 	});
 
 	t[1] = new std::thread([&queue, &go]() {
 		while (!go);
 		for (int i = 0; i < MAX_PUSHES; i++)
-			queue.push(i);
+			queue.push(std::move(i));
 	});
 
 	t[2] = new std::thread([&queue, &go]() {

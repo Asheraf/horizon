@@ -68,10 +68,10 @@ network_threads: 2
 global_io_threads: 2
 
 ###################################################
-# Server Update Interval (in milliseconds)
+# Server Update Interval (in microseconds)
 # - The interval through which a server will update
 #   its events and global timers.
-# Default: 500ms
+# Default: 500µs
 ###################################################
 core_update_interval: 500
 

@@ -17,8 +17,8 @@
 
 #include "CharSession.hpp"
 
-#include "Server/Char/PacketHandler/PacketHandler.hpp"
-#include "Server/Char/PacketHandler/PacketHandlerFactory.hpp"
+#include "Server/Char/Packets/PacketHandler.hpp"
+#include "Server/Char/Packets/PacketHandlerFactory.hpp"
 #include "Server/Char/Socket/CharSocket.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Models/SessionData.hpp"
@@ -26,11 +26,13 @@
 #include "Server/Char/Char.hpp"
 
 using namespace Horizon::Char;
-
+using namespace Horizon::Models::Character;
 CharSession::CharSession(std::shared_ptr<CharSocket> socket)
 : Horizon::Networking::Session<CharSocket>(socket)
 {
-	//
+	_client_type = CharServer->general_conf().get_client_type();
+	_packet_version = CharServer->general_conf().get_packet_version();
+	set_packet_handler(PacketHandlerFactory::create_packet_handler(socket, _client_type, _packet_version));
 }
 
 CharSession::~CharSession()
@@ -51,42 +53,6 @@ void CharSession::set_game_account(std::shared_ptr<GameAccount> account) { _game
 std::shared_ptr<SessionData> CharSession::get_session_data() { return _session_data; }
 void CharSession::set_session_data(std::shared_ptr<SessionData> session_data) { _session_data.swap(session_data); }
 
-/**
- * @brief Validate and handle the initial char-server connection (Packet CH_CONNECT)
- * @param[in] buf Copied instance of the PacketBuffer.
- */
-void CharSession::handle_new_connection(PacketBuffer &buf)
-{
-	PACKET_CH_CONNECT pkt;
-
-	buf >> pkt;
-
-	// Set a default packet handler through the scope of this request.
-	// We reset it towards the end of this request, once we have the packet version.
-	set_packet_handler(PacketHandlerFactory::create_packet_handler(get_socket(), 0));
-
-	std::shared_ptr<SessionData> session_data = std::make_shared<SessionData>();
-	if (!session_data->load(CharServer, pkt.account_id)) {
-		get_packet_handler()->Send_HC_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
-		get_socket()->delayed_close_socket();
-		return;
-	}
-
-	std::shared_ptr<GameAccount> game_account = std::make_shared<GameAccount>();
-	if (!game_account->load(CharServer, pkt.account_id)) {
-		get_packet_handler()->Send_HC_CONNECT_ERROR(character_connect_errors::CHAR_ERR_REJECTED_FROM_SERVER);
-		get_socket()->delayed_close_socket();
-		return;
-	}
-
-	set_session_data(session_data);
-	set_game_account(game_account);
-
-	// Create a packet handler for this session.
-	set_packet_handler(PacketHandlerFactory::create_packet_handler(get_socket(), _session_data->get_client_version()));
-	get_packet_handler()->Handle_CH_CONNECT(pkt);
-}
-
 void CharSession::update(uint32_t /*diff*/)
 {
 	std::shared_ptr<PacketBuffer> buf;
@@ -97,20 +63,6 @@ void CharSession::update(uint32_t /*diff*/)
 	}
 
 	while ((buf = get_socket()->get_packet_recv_queue().try_pop())) {
-		/**
-		 * Devise the a suitable packet handler
-		 * based on the client's packet version.
-		 */
-		if (buf->getOpCode() == CH_CONNECT) {
-			handle_new_connection(*buf);
-			return;
-		}
-
-		if (_packet_handler == nullptr) {
-			CharLog->error("Packet handler was null!");
-			return;
-		}
-
 		_packet_handler->handle_received_packet(*buf);
 	}
 }

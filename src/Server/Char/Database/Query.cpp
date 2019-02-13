@@ -189,7 +189,7 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 	return std::make_shared<Horizon::Models::Character::Character>(c);
 }
 
-int Horizon::Char::Database::Query::AllCharactersByAccount(std::shared_ptr<GameAccount> account)
+int Horizon::Char::Database::Query::load_all_characters_for_account(std::shared_ptr<GameAccount> account)
 {
 	auto sql_session = CharServer->get_mysql_client()->getSession();
 

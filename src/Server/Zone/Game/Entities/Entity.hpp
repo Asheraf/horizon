@@ -24,34 +24,32 @@ namespace Zone
 namespace Game
 {
 class Map;
-class Entity
+class Entity : public std::enable_shared_from_this<Entity>
 {
 public:
-	Entity(uint32_t guid, entity_type type);
-	Entity(uint32_t guid, entity_type type, MapCoords map_coords);
-	Entity(uint32_t guid, entity_type type, MapCoords map_coords, GridCoords grid_coords);
+	Entity(uint32_t guid, entity_types type);
+	Entity(uint32_t guid, entity_types type, MapCoords map_coords);
+	Entity(uint32_t guid, entity_types type, MapCoords map_coords, GridCoords grid_coords);
 	~Entity();
 
 	virtual void initialize();
-	uint32_t get_guid() const { return _guid; }
-	bool isInZone() { return _in_zone; }
-	void setInZone() { _in_zone = true; }
 
-	entity_type get_type() const { return _type; }
-	void set_type(entity_type type) { _type = type; }
+	uint32_t get_guid() const { return _guid; }
+	void set_guid(uint32_t guid) { _guid = guid; }
+
+	entity_types get_type() const { return _type; }
+	void set_type(entity_types type) { _type = type; }
 
 	std::shared_ptr<Map> get_map() { return _map.expired() ? nullptr : _map.lock(); }
 	void set_map(std::shared_ptr<Map> map) { _map = map; }
 
 	/* Map Coords */
-	MapCoords &get_map_coords() { return _map_coords; }
+	MapCoords const &get_map_coords() const { return _map_coords; }
 	void set_map_coords(MapCoords const &coords) { _map_coords = coords; }
 
 	/* Grid Coords */
-	GridCoords &get_grid_coords() { return _grid_coords; }
+	GridCoords const &get_grid_coords() const { return _grid_coords; }
 	void set_grid_coords(GridCoords const &coords) { _grid_coords = coords; }
-
-	void addToGrid();
 
 	/* Update */
 	virtual void update(uint32_t diff);
@@ -63,8 +61,7 @@ public:
 
 private:
 	uint32_t _guid{0};
-	entity_type _type{ENTITY_UNKNOWN};
-	bool _in_zone{false};
+	entity_types _type{ENTITY_UNKNOWN};
 	MapCoords _map_coords{0, 0};
 	GridCoords _grid_coords{0, 0};
 	TaskScheduler _scheduler;

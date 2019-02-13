@@ -22,7 +22,6 @@
 #include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
-#include "Server/Zone/PacketHandler/PacketHandlerFactory.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/Zone.hpp"
@@ -88,7 +87,7 @@ void ZoneSocket::read_handler()
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
 
-		int16_t packet_length = GET_CZ_PACKETLEN(packet_id);
+		int16_t packet_length = GET_ZONE_PACKETLEN(packet_id);
 
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
@@ -98,9 +97,14 @@ void ZoneSocket::read_handler()
 			break;
 		}
 
-		PacketBuffer buf(packet_id, get_read_buffer().get_read_pointer(), packet_length);
+		PacketBuffer buf(get_read_buffer().get_read_pointer(), packet_length);
 		get_read_buffer().read_completed(packet_length);
 
 		_packet_recv_queue.push(std::move(buf));
 	}
+}
+
+void ZoneSocket::update_session(uint32_t diff)
+{
+	get_session()->update(diff);
 }

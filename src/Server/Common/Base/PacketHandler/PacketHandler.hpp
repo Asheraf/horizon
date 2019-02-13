@@ -78,33 +78,14 @@ public:
 	 * @brief Send an Asynchronous packet by queueing
 	 *        a buffer of a particular size to the
 	 *        connected session.
-	 * @param T type of the packet being queued.
-	 * @param[in|out] pkt    packet buffer to be queued.
-	 */
-	template <typename T>
-	void send_packet(T pkt)
-	{
-		PacketBuffer buf;
-
-		buf << pkt;
-
-		if (!get_socket()->is_open())
-			return;
-
-		if (!buf.empty()) {
-			MessageBuffer buffer;
-			buffer.write(buf.contents(), sizeof(T));
-			get_socket()->queue_packet(std::move(buffer));
-		}
-	}
-
-	/**
-	 * @brief Send an Asynchronous packet by queueing
-	 *        a buffer of a particular size to the
-	 *        connected session.
 	 * @param[in|out] buf    packet buffer to be queued.
 	 */
 	void send_packet(PacketBuffer &buf)
+	{
+		send_packet(buf, buf.size());
+	}
+
+	void send_packet(PacketBuffer &&buf)
 	{
 		send_packet(buf, buf.size());
 	}

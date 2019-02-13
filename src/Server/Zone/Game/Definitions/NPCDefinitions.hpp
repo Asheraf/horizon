@@ -9,6 +9,7 @@
 #define HORIZON_ZONE_GAME_NPC_DEFINITIONS_HPP
 
 #include <string>
+#include "EntityDefinitions.hpp"
 
 #define NPC_START_GUID 500000000
 
@@ -29,7 +30,7 @@ struct npc_data
 	std::string map_name{};
 	std::string parent{};
 	uint16_t x{0}, y{0};
-	uint8_t direction{0};
+	directions direction{DIR_SOUTH};
 	int sprite_id{0};
 };
 

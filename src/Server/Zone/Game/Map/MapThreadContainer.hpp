@@ -32,7 +32,8 @@ public:
 	MapThreadContainer() { }
 	~MapThreadContainer()
 	{
-		if (_thread.joinable()) _thread.join();
+		if (_thread.joinable())
+			_thread.join();
 	}
 
 	bool find_map(std::string name) const { return _managed_maps.find(name) != _managed_maps.end() ? true : false; }

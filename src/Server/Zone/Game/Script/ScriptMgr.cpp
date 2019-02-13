@@ -99,7 +99,7 @@ void ScriptManager::load_scripts_internal()
 						return;
 					}
 
-					nd.direction = npc_info_table[4].get<uint8_t>();
+					nd.direction = (directions) npc_info_table[4].get<uint8_t>();
 
 					if (npc_info_table[5].get_type() != sol::type::string) {
 						ZoneLog->error("Invalid 'Name' for NPC entry {}@{} in file '{}'.", table_name, script_count, file_name);
@@ -124,12 +124,12 @@ void ScriptManager::load_scripts_internal()
 						return;
 					}
 
-					std::shared_ptr<NPC> npc = std::make_shared<NPC>(script_count, nd);
+					std::shared_ptr<Horizon::Zone::Game::Entities::NPC> npc = std::make_shared<Horizon::Zone::Game::Entities::NPC>(script_count, nd);
 					npc->set_map(map);
 
 					npc->initialize();
 
-					_npc_db.emplace(nd.npc_name, npc);
+					_npc_db.emplace(npc->get_guid(), npc);
 
 					script_count++;
 				} catch (sol::error &e) {

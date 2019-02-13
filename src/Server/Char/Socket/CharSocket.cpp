@@ -17,8 +17,8 @@
 
 #include "CharSocket.hpp"
 
-#include "Server/Char/PacketHandler/PacketHandlerFactory.hpp"
-#include "Server/Char/PacketHandler/PacketHandler.hpp"
+#include "Server/Char/Packets/PacketHandlerFactory.hpp"
+#include "Server/Char/Packets/PacketHandler.hpp"
 #include "Server/Char/Session/CharSession.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
 
@@ -87,7 +87,7 @@ void CharSocket::read_handler()
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
 
-		int16_t packet_length = GET_CH_PACKETLEN(packet_id);
+		int16_t packet_length = GET_CHAR_PACKETLEN(packet_id);
 
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
@@ -97,9 +97,14 @@ void CharSocket::read_handler()
 			break;
 		}
 
-		PacketBuffer buf(packet_id, get_read_buffer().get_read_pointer(), packet_length);
+		PacketBuffer buf(get_read_buffer().get_read_pointer(), packet_length);
 		get_read_buffer().read_completed(packet_length);
 
 		_packet_recv_queue.push(std::move(buf));
 	}
+}
+
+void CharSocket::update_session(uint32_t diff)
+{
+	get_session()->update(diff);
 }

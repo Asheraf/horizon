@@ -17,9 +17,9 @@ class GridObject
 public:
 	virtual ~GridObject() { }
 
-	bool is_valid() const { return _ref.is_valid(); }
-	void add_reference(GridRefManager<T> &m) { assert(!is_valid()); _ref.link(&m, (T*) this); }
-	void remove_reference() { assert(is_valid()); _ref.erase(); }
+	bool has_valid_grid_reference() const { return _ref.is_valid(); }
+	void add_grid_reference(GridRefManager<T> &m) { assert(!has_valid_grid_reference()); _ref.link(&m, (T*) this); }
+	void remove_grid_reference() { assert(has_valid_grid_reference()); _ref.remove(); }
 
 	GridReference<T> &get_reference() { return _ref; }
 

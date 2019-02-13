@@ -38,7 +38,7 @@ private:
 
 	std::unordered_map<std::string, std::string> _scripts;
 	std::unordered_map<std::string, std::unordered_map<std::string, int>> _constants;
-	std::unordered_map<std::string, std::shared_ptr<Entities::NPC>> _npc_db;
+	std::unordered_map<uint32_t, std::shared_ptr<Entities::NPC>> _npc_db;
 	sol::state _lua_state;
 };
 }

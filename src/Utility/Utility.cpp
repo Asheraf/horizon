@@ -36,6 +36,11 @@ uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime)
 		return newMSTime - oldMSTime;
 }
 
+uint32_t rgb2bgr(uint32_t rgb)
+{
+	return (((rgb) & 0x0000FF) << 16 | ((rgb) & 0x00FF00) | ((rgb) & 0xFF0000) >> 16);
+}
+
 uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
 {
 	return getMSTimeDiff(oldMSTime, getMSTime());

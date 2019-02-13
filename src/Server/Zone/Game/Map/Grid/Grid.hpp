@@ -21,7 +21,7 @@ public:
 	void add_object(SPECIFIC_OBJECT *obj)
 	{
 		_container.template insert<SPECIFIC_OBJECT>(obj);
-		assert(obj->is_valid());
+		assert(obj->has_valid_grid_reference());
 	}
 
 	template <class VISITOR>

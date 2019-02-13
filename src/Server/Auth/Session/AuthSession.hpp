@@ -2,6 +2,7 @@
 #define HORIZON_AUTH_SESSION_AUTHSESSION_HPP
 
 #include "Core/Networking/Session.hpp"
+#include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
 
 #include <memory>
 
@@ -33,11 +34,13 @@ public:
 	/* */
 	int get_packet_version(uint16_t packet_id, PacketBuffer buf);
 	void update(uint32_t diff);
-
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
 	std::shared_ptr<SessionData> _session_data;
 	std::shared_ptr<GameAccount> _game_account;
+	/* */
+	client_types _client_type;
+	uint32_t _packet_version;
 };
 }
 }

@@ -169,6 +169,7 @@ public:
 		_socket->close();
 
 		if (error) {
+			on_error();
 			CoreLog->error("Error when shutting down socket from IP {} (error code: {} - {})",
 						   remote_ip_address(), error.value(), error.message().c_str());
 		}
@@ -190,8 +191,9 @@ protected:
 
 		_is_writing_async = true;
 
-		_socket->async_write_some(boost::asio::null_buffers(), boost::bind(&Socket<SocketType>::write_handler_wrapper,
-																		   this, boost::placeholders::_1, boost::placeholders::_2));
+		_socket->async_write_some(boost::asio::null_buffers(),
+								  boost::bind(&Socket<SocketType>::write_handler_wrapper,
+											  this, boost::placeholders::_1, boost::placeholders::_2));
 
 		return true;
 	}

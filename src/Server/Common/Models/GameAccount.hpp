@@ -357,7 +357,7 @@ public:
 	/**
 	 * @brief retrieve a std::map of all characters from the account.
 	 */
-	const AccountCharacterMapType &get_all_characters() const { return _characters; }
+	const AccountCharacterMapType &get_characters() const { return _characters; }
 	
 private:
 	uint32_t _id{};                                   ///< Account Id

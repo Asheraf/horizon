@@ -2,25 +2,15 @@
 #define HORIZON_CHAR_SESSION_CHARSESSION_HPP
 
 #include "Core/Networking/Session.hpp"
+#include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
+
+#include "Server/Common/Models/Character/Character.hpp"
+#include "Server/Common/Models/GameAccount.hpp"
+#include "Server/Common/Models/SessionData.hpp"
 
 #include <memory>
 
-namespace Horizon
-{
-	namespace Models
-	{
-		namespace Character
-		{
-			class Character;
-		}
-	}
-}
-
-using namespace Horizon::Models::Character;
-
 class PacketBuffer;
-class GameAccount;
-class SessionData;
 
 namespace Horizon
 {
@@ -39,8 +29,8 @@ public:
 	std::shared_ptr<PacketHandler> get_packet_handler();
 	void set_packet_handler(std::shared_ptr<PacketHandler> handler);
 	/* Character */
-	std::shared_ptr<Character> get_character();
-	void set_character(std::shared_ptr<Character> character);
+	std::shared_ptr<Horizon::Models::Character::Character> get_character();
+	void set_character(std::shared_ptr<Horizon::Models::Character::Character> character);
 	/* Game Account */
 	std::shared_ptr<GameAccount> get_game_account();
 	void set_game_account(std::shared_ptr<GameAccount> account);
@@ -53,9 +43,11 @@ public:
 
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
-	std::shared_ptr<Character> _character;
+	std::shared_ptr<Horizon::Models::Character::Character> _character;
 	std::shared_ptr<GameAccount> _game_account;
 	std::shared_ptr<SessionData> _session_data;
+	client_types _client_type;
+	int32_t _packet_version;
 };
 }
 }

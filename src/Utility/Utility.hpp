@@ -29,6 +29,8 @@ uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime);
 
 uint32_t get_sys_time();
 
+uint32_t rgb2bgr(uint32_t rgb);
+
 const char *TimeStamp2String(char *str, size_t size, time_t timestamp, const char *format);
 // Reorders bytes from network to little endian (Windows).
 // Necessary for sending port numbers to the RO client until Gravity notices that they forgot ntohs() calls.

@@ -35,7 +35,7 @@ namespace GridTypeListIterator
 	template<class SPECIFIC_TYPE>
 	SPECIFIC_TYPE *Insert(GridTypeListContainer<SPECIFIC_TYPE> &elements, SPECIFIC_TYPE *obj)
 	{
-		obj->add_reference(elements._element);
+		obj->add_grid_reference(elements._element);
 		return obj;
 	}
 	template<class SPECIFIC_TYPE>
@@ -103,7 +103,7 @@ public:
 	template <class SPECIFIC_TYPE>
 	bool insert(SPECIFIC_TYPE *obj)
 	{
-		assert(obj && !obj->is_valid());
+		assert(obj && !obj->has_valid_grid_reference());
 		SPECIFIC_TYPE* t = GridTypeListIterator::Insert(_elements, obj);
 		return (t != NULL);
 	}

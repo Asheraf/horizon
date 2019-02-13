@@ -25,7 +25,6 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
 
 /* Public */
 Server::Server(std::string /*name*/, std::string config_file_path, std::string config_file_name)
@@ -296,12 +295,10 @@ void Server::process_cli_commands()
 
 void Server::initialize_core()
 {
-	boost::thread_group global_thread_group;
-
 	int global_thread_count = std::max(general_conf().get_io_thread_count(), 1);
 
 	for (int i = 0; i < global_thread_count; ++i)
-		global_thread_group.create_thread(boost::bind(&boost::asio::io_service::run, boost::ref(get_io_service())));
+		_global_thread_group.create_thread(boost::bind(&boost::asio::io_service::run, boost::ref(get_io_service())));
 
 	CoreLog->info("A global I/O thread pool of {} threads have been created.", global_thread_count);
 
@@ -318,8 +315,13 @@ void Server::initialize_core()
 
 void Server::finalize_core()
 {
-	if (!general_conf().is_test_run())
+	if (!general_conf().is_test_run()) {
 		m_CLIThread.join();
+
+		get_io_service().stop();
+
+		_global_thread_group.join_all();
+	}
 }
 
 boost::asio::io_service &Server::get_io_service()

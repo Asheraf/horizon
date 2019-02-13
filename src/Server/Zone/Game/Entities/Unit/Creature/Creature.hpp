@@ -14,9 +14,9 @@ namespace Entities
 class Creature : public Unit
 {
 public:
-	Creature(uint32_t guid, entity_type type);
-	Creature(uint32_t guid, entity_type type, MapCoords mcoords);
-	Creature(uint32_t guid, entity_type type, MapCoords mcoords, GridCoords gcoords);
+	Creature(uint32_t guid, entity_types type);
+	Creature(uint32_t guid, entity_types type, MapCoords mcoords);
+	Creature(uint32_t guid, entity_types type, MapCoords mcoords, GridCoords gcoords);
 	~Creature();
 
 private:

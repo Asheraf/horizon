@@ -66,7 +66,7 @@ public:
 
 	void InitializeQueryStrings();
 
-	int AllCharactersByAccount(std::shared_ptr<GameAccount> account);
+	int load_all_characters_for_account(std::shared_ptr<GameAccount> account);
 	std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
 	int CheckExistingCharByName(std::string name);
 };

@@ -8,17 +8,17 @@
 
 using namespace Horizon::Zone::Game;
 
-Entity::Entity(uint32_t guid, entity_type type)
+Entity::Entity(uint32_t guid, entity_types type)
 : _guid(guid), _type(type)
 {
 }
 
-Entity::Entity(uint32_t guid, entity_type type, MapCoords map_coords)
+Entity::Entity(uint32_t guid, entity_types type, MapCoords map_coords)
 : _guid(guid), _type(type), _map_coords(map_coords)
 {
 }
 
-Entity::Entity(uint32_t guid, entity_type type, MapCoords map_coords, GridCoords grid_coords)
+Entity::Entity(uint32_t guid, entity_types type, MapCoords map_coords, GridCoords grid_coords)
 : _guid(guid), _type(type), _map_coords(map_coords), _grid_coords(grid_coords)
 {
 }
@@ -29,22 +29,6 @@ Entity::~Entity()
 
 void Entity::initialize()
 {
-	addToGrid();
-}
-
-void Entity::addToGrid()
-{
-	std::shared_ptr<Map> map = get_map();
-
-	if (!map)
-		return;
-
-	if (_type == ENTITY_PLAYER) {
-		map->addEntityToMap<Entities::Player>((static_cast<Entities::Player *>(this)), _map_coords);
-		setInZone();
-	} else if (_type == ENTITY_NPC) {
-		map->addEntityToMap<Entities::NPC>((static_cast<Entities::NPC *>(this)), _map_coords);
-	}
 }
 
 void Entity::update(uint32_t /*diff*/)

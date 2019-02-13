@@ -51,19 +51,22 @@ public:
 	uint16_t getWidth() { return _width; }
 	uint16_t getHeight() { return _height; }
 	GridHolderType &getGridHolder() { return _gridholder; }
-	bool ensureGrid(GridCoords coords);
-	void ensureAllGrids();
+	bool ensure_grid(GridCoords coords);
+	void ensure_all_grids();
 
-	bool checkCollisionInPath(uint16_t x, uint16_t y);
+	bool is_obstruction(uint16_t x, uint16_t y);
 
 	template <class T>
-	bool addEntityToMap(T *entity, MapCoords coords);
+	bool ensure_grid_for_entity(T *entity, MapCoords coords);
 
 	template<class T, class CONTAINER>
 	void visit(GridCoords const &grid, GridReferenceContainerVisitor<T, CONTAINER> &visitor);
 
 	template<class T, class CONTAINER>
 	void visit(GridCoords const &lower_bound, GridCoords const &upper_bound, GridReferenceContainerVisitor<T, CONTAINER> &visitor);
+
+	template<class T, class CONTAINER>
+	void visit_in_range(MapCoords const &map_coords, uint16_t range, GridReferenceContainerVisitor<T, CONTAINER> &visitor);
 
 	AStar::Generator &get_pathfinder() { return _pathfinder; }
 
@@ -72,7 +75,7 @@ public:
 private:
 	std::string _name{""};
 	uint16_t _width{0}, _height{0};
-	GridCoords _grid_bounds;
+	GridCoords _max_grids;
 	Cell _cells[MAX_CELLS_PER_MAP][MAX_CELLS_PER_MAP]{{0}};
 	GridHolderType _gridholder;
 	AStar::Generator _pathfinder;
@@ -82,11 +85,17 @@ private:
 }
 
 template <class T>
-bool Horizon::Zone::Game::Map::addEntityToMap(T *entity, MapCoords mcoords)
+bool Horizon::Zone::Game::Map::ensure_grid_for_entity(T *entity, MapCoords mcoords)
 {
-	GridCoords gcoords(mcoords.x() / MAX_CELLS_PER_GRID, mcoords.y() / MAX_CELLS_PER_GRID);
-	_gridholder.get_grid(gcoords).add_object<T>(entity);
-	entity->set_grid_coords(gcoords);
+	GridCoords new_gcoords = mcoords.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>();
+
+	if (entity->get_grid_coords() != new_gcoords) {
+		if (entity->has_valid_grid_reference())
+			entity->remove_grid_reference();
+		entity->set_grid_coords(new_gcoords);
+		_gridholder.get_grid(new_gcoords).template add_object(entity);
+	}
+	
 	return true;
 }
 
@@ -94,6 +103,15 @@ template<class T, class CONTAINER>
 inline void Horizon::Zone::Game::Map::visit(GridCoords const &grid, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
 {
 	_gridholder.get_grid(grid).visit(visitor);
+}
+
+template<class T, class CONTAINER>
+inline void Horizon::Zone::Game::Map::visit_in_range(MapCoords const &map_coords, uint16_t range, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
+{
+	MapCoords lower_bounds = map_coords.at_range<MAX_CELLS_PER_MAP>(-range);
+	MapCoords upper_bounds = map_coords.at_range<MAX_CELLS_PER_MAP>(range);
+
+	visit(lower_bounds.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>(), upper_bounds.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>(), visitor);
 }
 
 template<class T, class CONTAINER>

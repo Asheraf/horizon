@@ -170,6 +170,10 @@ void Horizon::Zone::ZoneMain::initialize_core()
 
 		std::this_thread::sleep_for(std::chrono::microseconds(diff));
 	}
+	/**
+	 * Cancel all pending tasks.
+	 */
+	_task_scheduler.CancelAll();
 
 	/**
 	 * Server shutdown routine begins here...
@@ -180,6 +184,11 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	 * Stop all networks
 	 */
 	ClientSocktMgr->stop_network();
+
+	/**
+	 * Unmanage globally managed sockets.
+	 */
+	ClientSocktMgr->unmanage_sockets();
 
 	/* Cancel signal handling. */
 	signals.cancel();

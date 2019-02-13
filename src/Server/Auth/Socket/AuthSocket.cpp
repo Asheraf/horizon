@@ -18,8 +18,8 @@
 #include "AuthSocket.hpp"
 
 #include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
-#include "Server/Auth/PacketHandler/PacketHandlerFactory.hpp"
-#include "Server/Auth/PacketHandler/PacketHandler.hpp"
+#include "Server/Auth/Packets/PacketHandlerFactory.hpp"
+#include "Server/Auth/Packets/PacketHandler.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
 
 #include <random>
@@ -85,7 +85,7 @@ void AuthSocket::read_handler()
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
 
-		int16_t packet_length = GET_CA_PACKETLEN(packet_id);
+		int16_t packet_length = GET_AUTH_PACKETLEN(packet_id);
 
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
@@ -95,8 +95,13 @@ void AuthSocket::read_handler()
 			break;
 		}
 
-		PacketBuffer pkt(packet_id, get_read_buffer().get_read_pointer(), packet_length);
+		PacketBuffer pkt(get_read_buffer().get_read_pointer(), packet_length);
 		get_read_buffer().read_completed(packet_length);
 		_packet_recv_queue.push(std::move(pkt));
 	}
+}
+
+void AuthSocket::update_session(uint32_t diff)
+{
+	get_session()->update(diff);
 }

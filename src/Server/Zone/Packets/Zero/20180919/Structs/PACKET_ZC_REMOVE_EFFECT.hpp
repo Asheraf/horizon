@@ -1,0 +1,65 @@
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
+
+#ifndef HORIZON_ZONE_ZERO_20180919_PACKET_ZC_REMOVE_EFFECT_HPP
+#define HORIZON_ZONE_ZERO_20180919_PACKET_ZC_REMOVE_EFFECT_HPP
+
+#include "Server/Zone/Packets/Zero/20180919/PacketsZero20180919.hpp"
+#include "Server/Zone/Packets/Zero/20180905/Structs/PACKET_ZC_REMOVE_EFFECT.hpp"
+
+#include "Server/Common/PacketBuffer.hpp"
+
+
+namespace Horizon
+{
+namespace Zone
+{
+namespace Zero20180919
+{
+struct PACKET_ZC_REMOVE_EFFECT : public Horizon::Zone::Zero20180905::PACKET_ZC_REMOVE_EFFECT
+{
+	PACKET_ZC_REMOVE_EFFECT(uint16_t packet_id = ZC_REMOVE_EFFECT) : Horizon::Zone::Zero20180905::PACKET_ZC_REMOVE_EFFECT(packet_id) { }
+
+	virtual PacketBuffer serialize() override
+	{
+		return Zero20180905::PACKET_ZC_REMOVE_EFFECT::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Zero20180905::PACKET_ZC_REMOVE_EFFECT::deserialize(buf);
+	}
+
+	virtual Zero20180905::PACKET_ZC_REMOVE_EFFECT & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	{
+		return right = serialize();
+	}
+
+	/* Size: 10 bytes */
+	/* Changed from 6 in version 20180905 to 10 */
+};
+}
+}
+}
+
+#endif /* HORIZON_ZONE_ZERO_20180919_PACKET_ZC_REMOVE_EFFECT_HPP */

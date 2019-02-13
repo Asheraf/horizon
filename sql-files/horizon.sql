@@ -164,11 +164,13 @@ CREATE TABLE `character_position_data` (
 CREATE TABLE `session_data` (
   `auth_code` int(11) unsigned NOT NULL,
   `game_account_id` int(11) unsigned NOT NULL,
-  `client_version` int(11) unsigned NOT NULL DEFAULT 0,
-  `client_type` tinyint(3) unsigned NOT NULL DEFAULT 0,
-  `character_slots` int(11) unsigned NOT NULL DEFAULT 0,
-  `group_id` int(11) unsigned NOT NULL DEFAULT 0,
-  `connect_time` int(11) unsigned NOT NULL DEFAULT 0,
+  `client_version` int(11) unsigned NOT NULL DEFAULT '0',
+  `client_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `character_slots` int(11) unsigned NOT NULL DEFAULT '0',
+  `group_id` int(11) unsigned NOT NULL DEFAULT '0',
+  `connect_time` int(11) unsigned NOT NULL DEFAULT '0',
+  `current_server` enum('AUTH','CHAR','ZONE') NOT NULL,
   PRIMARY KEY (`auth_code`),
-  CONSTRAINT FOREIGN KEY (game_account_id) REFERENCES game_accounts(id)
+  KEY `game_account_id` (`game_account_id`),
+  CONSTRAINT FOREIGN KEY (`game_account_id`) REFERENCES `game_accounts` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

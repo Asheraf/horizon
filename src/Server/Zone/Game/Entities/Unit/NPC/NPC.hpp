@@ -25,7 +25,10 @@ public:
 	void initialize() override;
 	virtual void update_status() override;
 	virtual void stop_movement() override;
-	virtual void update_viewport() override;
+
+	virtual void on_movement_begin() override;
+	virtual void on_movement_step() override;
+	virtual void on_movement_end() override;
 
 private:
 };

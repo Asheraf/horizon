@@ -16,21 +16,32 @@ namespace Entities
 class Unit : public Entity
 {
 public:
-	Unit(uint32_t guid, entity_type type);
-	Unit(uint32_t guid, entity_type type, MapCoords mcoords);
-	Unit(uint32_t guid, entity_type type, MapCoords mcoords, GridCoords gcoords);
+	Unit(uint32_t guid, entity_types type);
+	Unit(uint32_t guid, entity_types type, MapCoords mcoords);
+	Unit(uint32_t guid, entity_types type, MapCoords mcoords, GridCoords gcoords);
 	~Unit();
 
 	virtual void initialize() override;
-	virtual bool move_to_pos(uint16_t x, uint16_t y);
-	bool schedule_movement(MapCoords mcoords);
-	void move();
-	virtual void update(uint32_t diff) override;
-	virtual void update_status() = 0;
-	virtual void update_position(uint16_t /*x*/, uint16_t /*y*/) { }
-	virtual void stop_movement() = 0;
-	virtual void update_viewport() = 0;
 
+	virtual bool move_to_pos(uint16_t x, uint16_t y);
+
+	bool is_walking() { return (get_dest_pos() != MapCoords(0, 0)); }
+
+	bool schedule_movement(MapCoords mcoords);
+
+	void move();
+
+	virtual void update(uint32_t diff) override;
+
+	virtual void update_status() = 0;
+	virtual void stop_movement() = 0;
+
+	/* Move events */
+	virtual void on_movement_begin() = 0;
+	virtual void on_movement_step() = 0;
+	virtual void on_movement_end() = 0;
+
+	virtual void notify_nearby_players_of_movement(MapCoords const &to);
 	/**
 	 * Unit Data
 	 */
@@ -70,8 +81,8 @@ public:
 	uint8_t get_gender() const { return _gender; }
 	void set_gender(uint8_t id) { _gender = id; }
 
-	uint8_t get_posture() const { return _posture; }
-	void set_posture(uint8_t id) { _posture = id; }
+	entity_posture_types get_posture() const { return _posture; }
+	void set_posture(entity_posture_types posture) { _posture = posture; }
 
 	uint16_t get_base_level() const { return _base_level; }
 	void set_base_level(uint16_t lvl) { _base_level = lvl; }
@@ -92,11 +103,16 @@ public:
 	void set_sp(uint32_t sp) { _sp = sp; }
 
 	const std::string &get_name() const { return _name; }
-	void set_name(std::string &name) { _name = name; }
+	void set_name(const std::string &name) { _name = name; }
 
-	const uint8_t get_direction() const { return _facing_dir; }
-	void set_direction(uint8_t dir) { _facing_dir = dir; }
+	directions get_direction() const { return _facing_dir; }
+	void set_direction(directions dir) { _facing_dir = dir; }
 
+	MapCoords const &get_dest_pos() const { return _dest_pos; }
+
+	uint16_t get_movement_speed() const { return _movement_speed; }
+	void set_movement_speed(uint16_t speed) { _movement_speed = speed; }
+	
 private:
 	MapCoords _changed_dest_pos{0, 0}, _dest_pos{0, 0};
 	AStar::CoordinateList _walk_path;
@@ -108,7 +124,10 @@ private:
 	uint16_t _job_id{0}, _hair_color_id{0}, _cloth_color_id{0};
 	uint32_t _weapon_id{0}, _shield_id{0}, _robe_id{0}, _head_top_id{0}, _head_mid_id{0}, _head_bottom_id{0};
 	uint32_t _hair_style_id{0}, _body_style_id{0};
-	uint8_t _gender{0}, _posture{0}, _facing_dir{DIR_NORTH};
+	uint8_t _gender{0};
+	entity_posture_types _posture{0};
+	directions _facing_dir{DIR_NORTH};
+	uint16_t _movement_speed{DEFAULT_MOVEMENT_SPEED};
 };
 }
 }

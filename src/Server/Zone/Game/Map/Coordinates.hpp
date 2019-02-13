@@ -5,7 +5,12 @@
 #include <stdlib.h>
 #include <algorithm>
 
-template <uint16_t UPPER_BOUNDS>
+static const int8_t _directions[8][2] = {
+	{ 0, 1 }, { -1, 1 }, { -1, 0 }, { -1,-1 },
+	{ 0,-1 }, { 1, -1 }, { 1, 0 }, { 1, 1 },
+};
+
+template <uint16_t MAX_COORDINATES>
 class Coordinates
 {
 public:
@@ -15,31 +20,44 @@ public:
 		//
 	}
 
-	Coordinates(const Coordinates<UPPER_BOUNDS> &obj)
+	Coordinates(const Coordinates<MAX_COORDINATES> &obj)
 	: _x(obj._x), _y(obj._y)
 	{
 		//
 	}
 
-	Coordinates<UPPER_BOUNDS> &operator= (const Coordinates<UPPER_BOUNDS> &obj)
+	Coordinates<MAX_COORDINATES> operator = (const Coordinates<MAX_COORDINATES> &right)
 	{
-		_x = obj._x;
-		_y = obj._y;
+		_x = right._x;
+		_y = right._y;
 		return *this;
 	}
 
-	bool operator == (const Coordinates<UPPER_BOUNDS> &right)
+	bool operator == (Coordinates<MAX_COORDINATES> const &right) const
 	{
 		return (_x == right._x && _y == right._y);
 	}
 
-	bool operator != (const Coordinates<UPPER_BOUNDS> &right)
+	bool operator != (Coordinates<MAX_COORDINATES> const &right) const
 	{
 		return !(*this == right);
 	}
 
+	int8_t direction_to(Coordinates<MAX_COORDINATES> const &to) const
+	{
+		int8_t diff_x = (to.x() - _x);
+		int8_t diff_y = (to.y()- _y);
+		
+		for (int i = 0; i < 8; i++) {
+			if (diff_x == _directions[i][0] && diff_y  == _directions[i][1])
+				return i;
+		}
+
+		return -1;
+	}
+
 	template <uint16_t BOUNDS>
-	bool within_range(Coordinates<BOUNDS> &bounds, int range)
+	bool within_range(Coordinates<BOUNDS> const &bounds, int range) const
 	{
 		int x_diff = _x - bounds.x();
 		int y_diff = _y - bounds.y();
@@ -56,13 +74,13 @@ public:
 		return Coordinates<BOUNDS>(x, y);
 	}
 
-	template<uint16_t BOUNDS, uint16_t SCALED_BOUNDS>
-	Coordinates<SCALED_BOUNDS> scale() const
+	template<uint16_t BLOCK_SIZE, uint16_t BLOCK_COUNT>
+	Coordinates<BLOCK_COUNT> scale() const
 	{
-		int x = _x / BOUNDS;
-		int y = _y / BOUNDS;
+		int x = _x / BLOCK_SIZE;
+		int y = _y / BLOCK_SIZE;
 
-		return Coordinates<SCALED_BOUNDS>(x, y);
+		return Coordinates<BLOCK_COUNT>(x, y);
 	}
 
 	uint16_t x() const { return _x; }
@@ -70,10 +88,10 @@ public:
 
 	void inc_x(uint16_t val)
 	{
-		if (_x + val < UPPER_BOUNDS)
+		if (_x + val < MAX_COORDINATES)
 			_x += val;
 		else
-			_x = UPPER_BOUNDS - 1;
+			_x = MAX_COORDINATES - 1;
 	}
 
 	void dec_x(uint16_t val)
@@ -86,10 +104,10 @@ public:
 
 	void inc_y(uint16_t val)
 	{
-		if (_y + val < UPPER_BOUNDS)
+		if (_y + val < MAX_COORDINATES)
 			_y += val;
 		else
-			_y = UPPER_BOUNDS - 1;
+			_y = MAX_COORDINATES - 1;
 	}
 
 	void dec_y(uint16_t val)
@@ -102,7 +120,7 @@ public:
 
 	bool valid() const
 	{
-		return _x < UPPER_BOUNDS && _y < UPPER_BOUNDS;
+		return _x < MAX_COORDINATES && _y < MAX_COORDINATES;
 	}
 
 private:

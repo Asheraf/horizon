@@ -177,22 +177,6 @@ public:
 		return *this;
 	}
 
-	ByteBuffer &operator<<(const std::string &value)
-	{
-		if (size_t len = value.length())
-			append((uint8_t const*)value.c_str(), len);
-		append((uint8_t)0);
-		return *this;
-	}
-
-	ByteBuffer &operator<<(const char *str)
-	{
-		if (size_t len = (str ? strlen(str) : 0))
-			append((uint8_t const *) str, len);
-		append((uint8_t) 0);
-		return *this;
-	}
-
 	ByteBuffer &operator>>(bool &value)
 	{
 		value = read<char>() > 0 ? true : false;
@@ -264,19 +248,6 @@ public:
 		return *this;
 	}
 
-	ByteBuffer &operator>>(std::string& value)
-	{
-		value.clear();
-		while (rpos() < size())
-		{
-			char c = read<char>();
-			if (c == 0)
-				break;
-			value += c;
-		}
-		return *this;
-	}
-
 	uint8_t& operator[](size_t const pos)
 	{
 		if (pos >= size())
@@ -299,7 +270,7 @@ public:
 		return _rpos;
 	}
 
-	void rfinish()
+	void finish_reading()
 	{
 		_rpos = wpos();
 	}
@@ -337,57 +308,12 @@ public:
 		return val;
 	}
 
-	void read(uint8_t *dest, size_t len)
+	void read(char *dest, size_t len)
 	{
 		if (_rpos  + len > size())
 			throw ByteBufferPositionException(false, _rpos, len, size());
-		std::memcpy(dest, &_storage[_rpos], len);
+		std::memcpy((void *) dest, &_storage[_rpos], len);
 		_rpos += len;
-	}
-
-	void readPackGUID(uint64_t& guid)
-	{
-		if (rpos() + 1 > size())
-			throw ByteBufferPositionException(false, _rpos, 1, size());
-
-		guid = 0;
-
-		uint8_t guidmark = 0;
-		(*this) >> guidmark;
-
-		for (int i = 0; i < 8; ++i)
-		{
-			if (guidmark & (uint8_t(1) << i))
-			{
-				if (rpos() + 1 > size())
-					throw ByteBufferPositionException(false, _rpos, 1, size());
-
-				uint8_t bit;
-				(*this) >> bit;
-				guid |= (uint64_t(bit) << (i * 8));
-			}
-		}
-	}
-
-	uint32_t ReadPackedTime()
-	{
-		uint32_t packedDate = read<uint32_t>();
-		tm lt = tm();
-
-		lt.tm_min = packedDate & 0x3F;
-		lt.tm_hour = (packedDate >> 6) & 0x1F;
-		//lt.tm_wday = (packedDate >> 11) & 7;
-		lt.tm_mday = ((packedDate >> 14) & 0x3F) + 1;
-		lt.tm_mon = (packedDate >> 20) & 0xF;
-		lt.tm_year = ((packedDate >> 24) & 0x1F) + 100;
-
-		return uint32_t(mktime(&lt));
-	}
-
-	ByteBuffer& ReadPackedTime(uint32_t& time)
-	{
-		time = ReadPackedTime();
-		return *this;
 	}
 
 	uint8_t* contents()
@@ -475,42 +401,6 @@ public:
 			append(buffer.contents(), buffer.wpos());
 	}
 
-	// can be used in SMSG_MONSTER_MOVE opcode
-	void appendPackXYZ(float x, float y, float z)
-	{
-		uint32_t packed = 0;
-		packed |= ((int)(x / 0.25f) & 0x7FF);
-		packed |= ((int)(y / 0.25f) & 0x7FF) << 11;
-		packed |= ((int)(z / 0.25f) & 0x3FF) << 22;
-		*this << packed;
-	}
-
-	void appendPackGUID(uint64_t guid)
-	{
-		uint8_t packGUID[8+1];
-		packGUID[0] = 0;
-		size_t size = 1;
-		for (uint8_t i = 0;guid != 0;++i)
-		{
-			if (guid & 0xFF)
-			{
-				packGUID[0] |= uint8_t(1 << i);
-				packGUID[size] =  uint8_t(guid & 0xFF);
-				++size;
-			}
-
-			guid >>= 8;
-		}
-		append(packGUID, size);
-	}
-
-	void AppendPackedTime(time_t time)
-	{
-		tm lt;
-		localtime_r(&time, &lt);
-		append<uint32_t>((lt.tm_year - 100) << 24 | lt.tm_mon  << 20 | (lt.tm_mday - 1) << 14 | lt.tm_wday << 11 | lt.tm_hour << 6 | lt.tm_min);
-	}
-
 	void put(size_t pos, const uint8_t *src, size_t cnt)
 	{
 		if (pos + cnt > size())
@@ -532,94 +422,6 @@ protected:
 	size_t _rpos, _wpos;
 	std::vector<uint8_t> _storage;
 };
-
-template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> v)
-{
-	b << (uint32_t)v.size();
-	for (typename std::vector<T>::iterator i = v.begin(); i != v.end(); ++i) {
-		b << *i;
-	}
-	return b;
-}
-
-template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<T> &v)
-{
-	uint32_t vsize;
-	b >> vsize;
-	v.clear();
-	while (vsize--) {
-		T t;
-		b >> t;
-		v.push_back(t);
-	}
-	return b;
-}
-
-template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> v)
-{
-	b << (uint32_t)v.size();
-	for (typename std::list<T>::iterator i = v.begin(); i != v.end(); ++i) {
-		b << *i;
-	}
-	return b;
-}
-
-template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v)
-{
-	uint32_t vsize;
-	b >> vsize;
-	v.clear();
-	while (vsize--) {
-		T t;
-		b >> t;
-		v.push_back(t);
-	}
-	return b;
-}
-
-template <typename K, typename V>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m)
-{
-	b << (uint32_t)m.size();
-	for (typename std::map<K, V>::iterator i = m.begin(); i != m.end(); ++i) {
-		b << i->first << i->second;
-	}
-	return b;
-}
-
-template <typename K, typename V>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m)
-{
-	uint32_t msize;
-	b >> msize;
-	m.clear();
-	while (msize--) {
-		K k;
-		V v;
-		b >> k >> v;
-		m.insert(make_pair(k, v));
-	}
-	return b;
-}
-
-/// @todo Make a ByteBuffer.cpp and move all this inlining to it.
-template<> inline std::string ByteBuffer::read<std::string>()
-{
-	std::string tmp;
-	*this >> tmp;
-	return tmp;
-}
-
-template<>
-inline void ByteBuffer::read_skip<char*>()
-{
-	std::string temp;
-	*this >> temp;
-}
 
 template<>
 inline void ByteBuffer::read_skip<char const*>()

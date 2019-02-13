@@ -50,6 +50,8 @@ public:
 	void set_session(std::shared_ptr<CharSession> session);
 
 	PacketQueueType &get_packet_recv_queue() { return _packet_recv_queue; }
+
+	void update_session(uint32_t diff);
 	
 protected:
 	void read_handler() override;

@@ -52,7 +52,7 @@ void Horizon::Zone::Game::MapThreadContainer::start_internal(uint32_t core_updat
 void Horizon::Zone::Game::MapThreadContainer::initialize_maps()
 {
 	for (auto mi = _managed_maps.begin(); mi != _managed_maps.end(); mi++) {
-		mi->second->ensureAllGrids();
+		mi->second->ensure_all_grids();
 	}
 }
 

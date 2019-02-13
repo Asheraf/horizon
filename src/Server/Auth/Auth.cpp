@@ -251,6 +251,11 @@ void AuthMain::initialize_core()
 	}
 
 	/**
+	 * Cancel all pending tasks.
+	 */
+	_task_scheduler.CancelAll();
+
+	/**
 	 * Server shutdown routine begins here...
 	 */
 	Server::finalize_core();
@@ -259,6 +264,11 @@ void AuthMain::initialize_core()
 	 * Stop all networks
 	 */
 	ClientSocktMgr->stop_network();
+
+	/**
+	 * Unmanage globally managed sockets.
+	 */
+	ClientSocktMgr->unmanage_sockets();
 
 	/* Cancel signal handling. */
 	signals.cancel();

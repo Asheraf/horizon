@@ -4,9 +4,8 @@
 #include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
-#include "Server/Zone/PacketHandler/PacketHandler.hpp"
-#include "Server/Zone/PacketHandler/PacketHandlerFactory.hpp"
-#include "Server/Zone/PacketHandler/Versions/PacketHandler20141022.hpp"
+#include "Server/Zone/Packets/PacketHandler.hpp"
+#include "Server/Zone/Packets/PacketHandlerFactory.hpp"
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Models/SessionData.hpp"
@@ -14,11 +13,15 @@
 #include "Server/Zone/Zone.hpp"
 
 using namespace Horizon::Zone;
+using namespace Horizon::Models::Character;
+using namespace Horizon::Zone::Game::Entities;
 
 ZoneSession::ZoneSession(std::shared_ptr<ZoneSocket> socket)
 : Session(socket)
 {
-	//
+	_client_type = ZoneServer->general_conf().get_client_type();
+	_packet_version = ZoneServer->general_conf().get_packet_version();
+	set_packet_handler(PacketHandlerFactory::create_packet_handler(socket, _client_type, _packet_version));
 }
 
 ZoneSession::~ZoneSession()
@@ -43,24 +46,6 @@ std::shared_ptr<Player> ZoneSession::get_player() { return _player; }
 void ZoneSession::set_player(std::shared_ptr<Player> p) { _player.swap(p); }
 
 /**
- * @brief Validate and handle the initial char-server connection (Packet CZ_ENTER)
- * @param[in] buf   Copied instance of the PacketBuffer.
- */
-void ZoneSession::handle_new_connection(PacketBuffer &buf)
-{
-	switch (buf.getOpCode())
-	{
-		case PacketVer20141022::CZ_ENTER:
-		{
-			_packet_handler = PacketHandlerFactory::create_packet_handler(get_socket(), 20141022);
-			break;
-		}
-		default:
-			ZoneLog->info("New connection attempt from unknown client version. Packet Id: '{0:x}'.", buf.getOpCode());
-	}
-}
-
-/**
  * Update loop for each Zone Session.
  * @thread called from main thread via the client manager.
  */
@@ -69,14 +54,6 @@ void ZoneSession::update(uint32_t diff)
 	std::shared_ptr<PacketBuffer> buf;
 
 	while ((buf = get_socket()->get_packet_recv_queue().try_pop())) {
-		if (_packet_handler == nullptr)
-			handle_new_connection(*buf);
-
-		if (_packet_handler == nullptr) {
-			ZoneLog->error("Packet handler was null!");
-			return;
-		}
-
 		_packet_handler->handle_received_packet(*buf);
 	}
 }

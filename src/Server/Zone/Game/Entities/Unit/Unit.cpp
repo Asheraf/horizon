@@ -3,24 +3,24 @@
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Player/Player.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
-#include "Server/Zone/PacketHandler/PacketHandler.hpp"
+#include "Core/Logging/Logger.hpp"
 #include <chrono>
 #include <boost/optional.hpp>
 
 using namespace Horizon::Zone::Game;
 using namespace Horizon::Zone::Game::Entities;
 
-Unit::Unit(uint32_t guid, entity_type type)
+Unit::Unit(uint32_t guid, entity_types type)
 : Entity::Entity(guid, type)
 {
 }
 
-Unit::Unit(uint32_t guid, entity_type type, MapCoords mcoords)
+Unit::Unit(uint32_t guid, entity_types type, MapCoords mcoords)
 : Entity::Entity(guid, type, mcoords)
 {
 }
 
-Unit::Unit(uint32_t guid, entity_type type, MapCoords mcoords, GridCoords gcoords)
+Unit::Unit(uint32_t guid, entity_types type, MapCoords mcoords, GridCoords gcoords)
 : Entity::Entity(guid, type, mcoords, gcoords)
 {
 }
@@ -69,7 +69,8 @@ bool Unit::schedule_movement(MapCoords coords)
 			static_cast<Player *>(this)->stop_movement();
 		printf("path exceeds 14 cells.\n");
 	} else if (_walk_path.size() > 0) {
-		update_position(_dest_pos.x(), _dest_pos.y());
+		on_movement_begin();
+		notify_nearby_players_of_movement(coords);
 		move();
 	}
 
@@ -78,6 +79,7 @@ bool Unit::schedule_movement(MapCoords coords)
 
 void Unit::move()
 {
+	MapCoords my_coords = get_map_coords();
 	AStar::Vec2i c = _walk_path.at(0); // get current step.
 	// character speed = 150
 	// move cost 14 if diagonal 10 otherwise
@@ -92,17 +94,23 @@ void Unit::move()
 	}
 
 	getScheduler().Schedule(Milliseconds(step_time), ENTITY_SCHEDULE_WALK,
-		[this, c, step_time] (TaskContext /*movement*/)
+		[this, c, step_time, my_coords] (TaskContext /*movement*/)
 		{
-			set_map_coords({ (uint16_t) c.x, (uint16_t) c.y });
+			MapCoords step_coords(c.x, c.y);
+
+			set_direction((directions) my_coords.direction_to(step_coords));
+
+			set_map_coords(step_coords);
+
 			_walk_path.erase(_walk_path.begin());
 
-			update_viewport();
+			on_movement_step();
 			
 			printf("%d %d %d %d\n", c.x, c.y, c.move_cost, step_time);
 			
 			if (_dest_pos == MapCoords(c.x, c.y)) {
 				_dest_pos = { 0, 0 };
+				on_movement_end();
 			}
 
 			if (_changed_dest_pos != MapCoords(0, 0)) {
@@ -128,6 +136,14 @@ bool Unit::move_to_pos(uint16_t x, uint16_t y)
 	schedule_movement(_dest_pos);
 
 	return true;
+}
+
+void Unit::notify_nearby_players_of_movement(MapCoords const &to)
+{
+	GridMovementNotifier movement_notifier(static_cast<Entity *>(this)->weak_from_this());
+	GridReferenceContainerVisitor<GridMovementNotifier, GridReferenceContainer<AllEntityTypes>> entity_visitor(movement_notifier);
+
+	get_map()->visit_in_range(get_map_coords(), MAX_VIEW_RANGE, entity_visitor);
 }
 
 void Unit::update(uint32_t diff)

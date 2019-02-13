@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <boost/thread.hpp>
 #include <libconfig.h++>
 
 using boost::asio::ip::tcp;
@@ -102,6 +103,7 @@ protected:
 	// CLI command holder to be thread safe
 	ThreadSafeQueue<CLICommand> m_CLICmdQueue;
 	std::thread m_CLIThread;
+	boost::thread_group _global_thread_group;
 	std::atomic<bool> _shut_down;
 	std::atomic<int> _shutdown_signal;
 	std::unordered_map<std::string, std::function<bool(void)>> m_CLIFunctionMap;

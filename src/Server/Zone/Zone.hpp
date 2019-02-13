@@ -39,7 +39,6 @@ namespace Horizon
 		}
 	}
 }
-using namespace Horizon::Zone::Game::Entities;
 
 namespace Horizon
 {

@@ -26,8 +26,6 @@ namespace Horizon
 	}
 }
 
-using namespace Horizon::Zone::Game::Entities;
-
 template <class ACTIVE_OBJECT, class ZONE_OBJECT_TYPES>
 class GridHolder;
 
@@ -37,9 +35,18 @@ class GridHolder;
 #define MAX_CELLS_PER_MAP MAX_CELLS_PER_GRID * MAX_GRIDS_PER_MAP
 #define GRID_UPDATE_DELAY 60000 ///< In milliseconds. (@TODO change to config)
 
-typedef TYPELIST_8(Player, NPC, Elemental, Homunculus, Mercenary, Pet, Monster, Skill) AllEntityTypes;
-
-typedef GridHolder<Player, AllEntityTypes> GridHolderType;
+#define entity_ns(e) Horizon::Zone::Game::Entities::e
+typedef TYPELIST_8(entity_ns(Player),
+entity_ns(NPC),
+entity_ns(Elemental),
+entity_ns(Homunculus),
+entity_ns(Mercenary),
+entity_ns(Pet),
+entity_ns(Monster),
+entity_ns(Skill))
+AllEntityTypes;
+typedef GridHolder<entity_ns(Player), AllEntityTypes> GridHolderType;
+#undef entity_ns
 
 typedef Coordinates<MAX_GRIDS_PER_MAP> GridCoords;
 typedef Coordinates<MAX_CELLS_PER_MAP> MapCoords;

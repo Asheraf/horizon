@@ -167,7 +167,7 @@ public:
 
 		for (auto sock : _socket_map)
 			if (sock.second->get_session() != nullptr)
-				sock.second->get_session()->update(diff);
+				sock.second->update_session(diff);
 	}
 
 	int16_t get_packet_length(uint16_t packet_id)
@@ -185,7 +185,18 @@ public:
 	{
 		std::unique_lock<std::shared_mutex> lock(_packet_len_db_mtx);
 
+		auto it = _packet_length_db.find(packet_id);
+		
+		if (it != _packet_length_db.end())
+			_packet_length_db.erase(it);
+
 		_packet_length_db.emplace(packet_id, length);
+	}
+
+	void unmanage_sockets()
+	{
+		std::unique_lock<std::shared_mutex> lock(_socket_mtx);
+		_socket_map.clear();
 	}
 
 private:

@@ -29,13 +29,13 @@ class PacketBuffer;
 
 typedef ThreadSafeQueue<PacketBuffer> PacketQueueType;
 
-#pragma pack(push, 1)
 struct Packet
 {
 	Packet(uint16_t id) : packet_id(id) { }
-	uint16_t packet_id;
+	virtual ~Packet() { }
+	
+	uint16_t packet_id{0};
 };
-#pragma pack(pop)
 
 class PacketBuffer : public ByteBuffer
 {
@@ -44,18 +44,20 @@ public:
 	{
 	}
 
-	PacketBuffer(uint16_t id, uint8_t *data, size_t size)
-	: ByteBuffer(size), packet_id(id)
+	PacketBuffer(uint8_t *data, size_t size)
+	: ByteBuffer(size)
 	{
-		append(&*data, size);
+		append(reinterpret_cast<char *>(data), size);
+		memcpy(&packet_id, data, sizeof(uint16_t));
 	}
 
-	PacketBuffer(uint16_t id, size_t reserve = 200)
+	PacketBuffer(uint16_t id, size_t reserve = 50)
 	: ByteBuffer(reserve), packet_id(id)
 	{
+		append(id);
 	}
 
-	PacketBuffer(PacketBuffer &&packet) : ByteBuffer(std::move(packet)), packet_id(packet.packet_id)
+	PacketBuffer(PacketBuffer &&buf) : ByteBuffer(std::move(buf)), packet_id(buf.packet_id)
 	{
 	}
 
@@ -63,9 +65,10 @@ public:
 	{
 	}
 
-	PacketBuffer & operator = (PacketBuffer const &right)
+	PacketBuffer operator = (PacketBuffer const &right)
 	{
 		if (this != &right) {
+			append(right.packet_id);
 			packet_id = right.packet_id;
 			ByteBuffer::operator=(right);
 		}
@@ -73,7 +76,7 @@ public:
 		return *this;
 	}
 
-	PacketBuffer & operator = (PacketBuffer &&right)
+	PacketBuffer operator = (PacketBuffer &&right)
 	{
 		if (this != &right) {
 			packet_id = right.packet_id;
@@ -81,45 +84,6 @@ public:
 		}
 
 		return *this;
-	}
-
-	template<class PACKET_TYPE>
-	PacketBuffer & operator << (PACKET_TYPE &pkt)
-	{
-		append<PACKET_TYPE>(&pkt, sizeof(PACKET_TYPE));
-		return *this;
-	}
-
-	template<class PACKET_TYPE>
-	PacketBuffer & operator << (std::pair<PACKET_TYPE *, std::size_t> &pkt)
-	{
-		append<PACKET_TYPE>(pkt.first, pkt.second);
-		return *this;
-	}
-
-	template <class PACKET_TYPE>
-	void read(PACKET_TYPE *dest, size_t len)
-	{
-		if (_rpos  + len > size())
-			throw ByteBufferPositionException(false, _rpos, len, size());
-
-		std::memcpy(dest, &_storage[_rpos], len);
-
-		_rpos += len;
-	}
-
-	template <class PACKET_TYPE>
-	PacketBuffer & operator >> (PACKET_TYPE &pkt)
-	{
-		read(&pkt, sizeof(PACKET_TYPE));
-		return *this;
-	}
-
-	void initialize(uint16_t id, size_t newres = 200)
-	{
-		clear();
-		_storage.reserve(newres);
-		packet_id = id;
 	}
 
 	uint16_t getOpCode() { return packet_id; };

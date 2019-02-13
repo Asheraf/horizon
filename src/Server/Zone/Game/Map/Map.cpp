@@ -31,9 +31,9 @@
 using namespace Horizon::Zone::Game;
 
 Map::Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
-: _name(name), _width(width), _height(height), _grid_bounds((width / MAX_CELLS_PER_GRID), (height / MAX_CELLS_PER_GRID)),
+: _name(name), _width(width), _height(height), _max_grids((width / MAX_CELLS_PER_GRID), (height / MAX_CELLS_PER_GRID)),
   _gridholder(GridCoords(width, height)),
-  _pathfinder(AStar::Generator({width, height}, std::bind(&Map::checkCollisionInPath, this, std::placeholders::_1, std::placeholders::_2)))
+  _pathfinder(AStar::Generator({width, height}, std::bind(&Map::is_obstruction, this, std::placeholders::_1, std::placeholders::_2)))
 {
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
@@ -42,7 +42,7 @@ Map::Map(std::string const &name, uint16_t width, uint16_t height, std::vector<u
 	}
 }
 
-bool Map::checkCollisionInPath(uint16_t x, uint16_t y)
+bool Map::is_obstruction(uint16_t x, uint16_t y)
 {
 	if (x < 0 || y < 0 || x > _width || y > _height)
 		return true;
@@ -58,19 +58,19 @@ Map::~Map()
 	CoreLog->info("Performing cleanup on map '{}'...", _name);
 }
 
-bool Map::ensureGrid(GridCoords coords)
+bool Map::ensure_grid(GridCoords coords)
 {
 	return true;
 }
 
-void Map::ensureAllGrids()
+void Map::ensure_all_grids()
 {
 	int grid_count = 0;
 
-	for (int x = 0; x < _grid_bounds.x(); x++) {
-		for (int y = 0; y < _grid_bounds.y(); y++) {
+	for (int x = 0; x < _max_grids.x(); x++) {
+		for (int y = 0; y < _max_grids.y(); y++) {
 			grid_count++;
-			ensureGrid(GridCoords(x, y));
+			ensure_grid(GridCoords(x, y));
 		}
 	}
 
