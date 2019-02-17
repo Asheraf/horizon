@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -21,8 +21,6 @@
 #include "Server/Auth/Auth.hpp"
 #include "Server/Auth/Packets/Ragexe/PacketStructs.hpp"
 #include "Server/Auth/Packets/Ragexe/Packets.hpp"
-#include "Server/Auth/Packets/Ragexe/20170228/PacketHandlerRagexe20170228.hpp"
-#include "Server/Auth/Packets/RE/20170228/PacketHandlerRE20170228.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
 #include "Server/Common/Models/Character/Group.hpp"

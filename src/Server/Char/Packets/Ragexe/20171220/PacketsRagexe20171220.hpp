@@ -27,6 +27,7 @@ namespace Ragexe20171220
 enum packets
 {
 	HC_SECOND_PASSWD_LOGIN = 0x0ae9,
+	HC_UPDATE_CHARINFO = 0x08e3,
 };
 }
 }

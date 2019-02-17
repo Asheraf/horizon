@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_REQUEST_TIME_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_REQUEST_TIME.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_REQUEST_TIME.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_REQUEST_TIME : public Horizon::Zone::Ragexe20171129::PACKET_CZ_REQUEST_TIME
+struct PACKET_CZ_REQUEST_TIME : public Horizon::Zone::Ragexe::PACKET_CZ_REQUEST_TIME
 {
-	PACKET_CZ_REQUEST_TIME(uint16_t packet_id = CZ_REQUEST_TIME) : Horizon::Zone::Ragexe20171129::PACKET_CZ_REQUEST_TIME(packet_id) { }
+	PACKET_CZ_REQUEST_TIME(uint16_t packet_id = CZ_REQUEST_TIME) : Horizon::Zone::Ragexe::PACKET_CZ_REQUEST_TIME(packet_id) { }
 
 	/* Size: 6 bytes */
 };

@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_SSILIST_ITEM_CLICK_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_SSILIST_ITEM_CLICK.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_SSILIST_ITEM_CLICK.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,11 +30,33 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_SSILIST_ITEM_CLICK : public Horizon::Zone::Ragexe20171129::PACKET_CZ_SSILIST_ITEM_CLICK
+struct PACKET_CZ_SSILIST_ITEM_CLICK : public Horizon::Zone::Ragexe::PACKET_CZ_SSILIST_ITEM_CLICK
 {
-	PACKET_CZ_SSILIST_ITEM_CLICK(uint16_t packet_id = CZ_SSILIST_ITEM_CLICK) : Horizon::Zone::Ragexe20171129::PACKET_CZ_SSILIST_ITEM_CLICK(packet_id) { }
+	PACKET_CZ_SSILIST_ITEM_CLICK(uint16_t packet_id = CZ_SSILIST_ITEM_CLICK) : Horizon::Zone::Ragexe::PACKET_CZ_SSILIST_ITEM_CLICK(packet_id) { }
+
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_CZ_SSILIST_ITEM_CLICK::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_CZ_SSILIST_ITEM_CLICK::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_CZ_SSILIST_ITEM_CLICK & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
 
 	/* Size: 12 bytes */
+	/* Changed from 14 in version 0 to 12 */
 };
 }
 }

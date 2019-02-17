@@ -34,7 +34,29 @@ struct PACKET_ZC_ACK_ADD_ITEM_RODEX : public Horizon::Zone::Ragexe::PACKET_ZC_AC
 {
 	PACKET_ZC_ACK_ADD_ITEM_RODEX(uint16_t packet_id = ZC_ACK_ADD_ITEM_RODEX) : Horizon::Zone::Ragexe::PACKET_ZC_ACK_ADD_ITEM_RODEX(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ACK_ADD_ITEM_RODEX::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ACK_ADD_ITEM_RODEX::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ACK_ADD_ITEM_RODEX & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 53 bytes */
+	/* Changed from 63 in version 0 to 53 */
 };
 }
 }

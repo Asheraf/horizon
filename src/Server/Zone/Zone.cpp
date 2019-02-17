@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -22,7 +22,6 @@
 #include "Server/Zone/Session/ZoneSession.hpp" // required by clientmgr for update()
 #include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
 #include "Server/Zone/Game/StaticDB/StaticDB.hpp"
-#include "Server/Zone/Game/Script/ScriptMgr.hpp"
 
 #include <boost/asio.hpp>
 #include <iostream>
@@ -111,11 +110,6 @@ void Horizon::Zone::ZoneMain::update(uint32_t diff)
 	 * Process Packets.
 	 */
 	ClientSocktMgr->update_socket_sessions(diff);
-
-	/**
-	 * Process map-related updates.
-	 */
-	//MapMgr->update(diff);
 }
 
 /**
@@ -125,7 +119,8 @@ void Horizon::Zone::ZoneMain::update(uint32_t diff)
 void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
 {
 	if (!error) {
-		ZoneServer->shutdown(SIGINT);
+		ZoneServer->set_shutdown_stage(SHUTDOWN_INITIATED);
+		ZoneServer->set_shutdown_signal(SIGINT);
 	}
 }
 
@@ -140,11 +135,6 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	 * Static Databases
 	 */
 	StaticDB->load_all();
-
-	/**
-	 * Script Manager
-	 */
-	ScriptMgr->initialize();
 	
 	/**
 	 * Core Signal Handler
@@ -163,32 +153,18 @@ void Horizon::Zone::ZoneMain::initialize_core()
 
 	Server::initialize_core();
 
-	while (!is_shutting_down() && !general_conf().is_test_run()) {
+	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
 		uint32_t diff = general_conf().get_core_update_interval();
-
 		update(diff);
-
 		std::this_thread::sleep_for(std::chrono::microseconds(diff));
 	}
-	/**
-	 * Cancel all pending tasks.
-	 */
-	_task_scheduler.CancelAll();
 
 	/**
 	 * Server shutdown routine begins here...
 	 */
-	Server::finalize_core();
-
-	/**
-	 * Stop all networks
-	 */
+	_task_scheduler.CancelAll();
 	ClientSocktMgr->stop_network();
-
-	/**
-	 * Unmanage globally managed sockets.
-	 */
-	ClientSocktMgr->unmanage_sockets();
+	Server::finalize_core();
 
 	/* Cancel signal handling. */
 	signals.cancel();

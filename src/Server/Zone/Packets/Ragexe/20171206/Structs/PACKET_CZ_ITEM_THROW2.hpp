@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_ITEM_THROW2_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171101/Structs/PACKET_CZ_ITEM_THROW2.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_ITEM_THROW2.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,11 +30,33 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_ITEM_THROW2 : public Horizon::Zone::Ragexe20171101::PACKET_CZ_ITEM_THROW2
+struct PACKET_CZ_ITEM_THROW2 : public Horizon::Zone::Ragexe::PACKET_CZ_ITEM_THROW2
 {
-	PACKET_CZ_ITEM_THROW2(uint16_t packet_id = CZ_ITEM_THROW2) : Horizon::Zone::Ragexe20171101::PACKET_CZ_ITEM_THROW2(packet_id) { }
+	PACKET_CZ_ITEM_THROW2(uint16_t packet_id = CZ_ITEM_THROW2) : Horizon::Zone::Ragexe::PACKET_CZ_ITEM_THROW2(packet_id) { }
+
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_CZ_ITEM_THROW2::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_CZ_ITEM_THROW2::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_CZ_ITEM_THROW2 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
 
 	/* Size: 2 bytes */
+	/* Changed from 6 in version 0 to 2 */
 };
 }
 }

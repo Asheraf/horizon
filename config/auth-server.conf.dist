@@ -40,6 +40,14 @@ client_type: 0
 packet_version: 20141022
 
 ###################################################
+# network_threads
+# Description: Number of threads for network.
+# Default:        1 - (Recommended 1 thread per 1000 connections)
+# Note: Cannot be less than 1.
+###################################################
+network_threads: 2
+
+###################################################
 # Auth Server Database Settings
 ###################################################
 database: {
@@ -50,14 +58,6 @@ database: {
     password: "ragnarok"
     connection_threads: 2
 }
-
-###################################################
-# network_threads
-# Description: Number of threads for network.
-# Default:        1 - (Recommended 1 thread per 1000 connections)
-# Note: Cannot be less than 1.
-###################################################
-network_threads: 2
 
 ###################################################
 # Global Thread Pool

@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -44,7 +44,7 @@ class NetworkThread
 	typedef std::vector<std::shared_ptr<SocketType>> SocketContainer;
 public:
 	NetworkThread()
-	: _connections(0), _stopped(false), _updateTimer(_io_service)
+	: _connections(0), _finalizing(false), _update_timer(_io_service)
 	{
 		// Constructor
 	}
@@ -55,21 +55,26 @@ public:
 	 */
 	virtual ~NetworkThread()
 	{
-		Stop();
-
-		if (_thread != nullptr)
-			Wait();
+		finalize();
 	}
 
 	/**
 	 * @brief Halts the IO Service and marks the network thread as stopped.
 	 */
-	void Stop()
+	void finalize()
 	{
-		if (_stopped.exchange(true))
+		if (_finalizing.exchange(true))
 			return;
+	}
 
+	void join()
+	{
 		_io_service.stop();
+		
+		if (_thread != nullptr && _thread->joinable()) {
+			_thread->join();
+			_thread.reset(nullptr);
+		}
 	}
 
 	/**
@@ -86,27 +91,16 @@ public:
 	}
 
 	/**
-	 * @brief Join the network thread with the main thread.
-	 */
-	void Wait()
-	{
-		assert(_thread);
-		_thread->join();
-	}
-
-	/**
 	 * @brief Adds a new socket to a queue that is processed
 	 *        frequently within this network thread. The method
 	 *        update() is called regularly to add new sockets
 	 *        to the thread's active socket list.
 	 */
-	virtual void AddSocket(std::shared_ptr<SocketType> sock)
+	virtual void add_socket(std::shared_ptr<SocketType> sock)
 	{
 		std::lock_guard<std::mutex> lock(_new_socket_queue_lock);
 
 		_new_socket_queue.push_back(sock);  // Add socket to queue.
-
-		socket_added(sock); // event for child classes.
 	}
 
 	/**
@@ -125,9 +119,6 @@ public:
 	int32_t connection_count() const { return _connections; }
 
 protected:
-	virtual void socket_added(std::shared_ptr<SocketType> /*sock*/) { }
-	virtual void socket_removed(std::shared_ptr<SocketType> /*sock*/) { }
-
 	/**
 	 * @brief Run the I/O Service loop within this network thread.
 	 *        Before running, this method gives the I/O service some work
@@ -135,10 +126,10 @@ protected:
 	 */
 	void run()
 	{
-		CoreLog->trace("Thread for new I/O service initiated.");
+		CoreLog->trace("Network thread {:p} is ready for managing connections.", (void *) this);
 
-		_updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
-		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
+		_update_timer.expires_from_now(boost::posix_time::milliseconds(10));
+		_update_timer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
 
 		_io_service.run();
 
@@ -154,23 +145,18 @@ protected:
 	 */
 	void update()
 	{
-		if (_stopped)
-			return;
-
-		_updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
-		_updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
+		_update_timer.expires_from_now(boost::posix_time::milliseconds(10));
+		_update_timer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
 
 		add_new_sockets();
 
 		_active_sockets.erase(std::remove_if(_active_sockets.begin(), _active_sockets.end(),
 			[this] (std::shared_ptr<SocketType> sock)
 			{
-				if (!sock->update()) {
+				if (!sock->update() || _finalizing) {
 
 					if (sock->is_open())
 						sock->close_socket();
-
-					socket_removed(sock);
 
 					--_connections;
 
@@ -192,15 +178,16 @@ protected:
 	 */
 	void add_new_sockets()
 	{
+		if (_finalizing)
+			return;
+
 		std::lock_guard<std::mutex> lock(_new_socket_queue_lock);
 
 		if (_new_socket_queue.empty())
 			return;
 
 		for (std::shared_ptr<SocketType> sock : _new_socket_queue) {
-			if (!sock->is_open()) {
-				socket_removed(sock);
-			} else {
+			if (sock->is_open()) {
 				_active_sockets.push_back(sock);
 				// Start receiving from the socket.
 				sock->start();
@@ -216,7 +203,7 @@ protected:
 
 private:
 	std::atomic<int32_t> _connections;
-	std::atomic<bool> _stopped;
+	std::atomic<bool> _finalizing;
 
 	std::unique_ptr<std::thread> _thread;
 
@@ -226,7 +213,7 @@ private:
 	std::mutex _new_socket_queue_lock;
 
 	boost::asio::io_service _io_service;
-	boost::asio::deadline_timer _updateTimer;
+	boost::asio::deadline_timer _update_timer;
 };
 }
 }

@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_ACK_STORE_PASSWORD_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_ACK_STORE_PASSWORD.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_ACK_STORE_PASSWORD.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_ACK_STORE_PASSWORD : public Horizon::Zone::Ragexe20171129::PACKET_CZ_ACK_STORE_PASSWORD
+struct PACKET_CZ_ACK_STORE_PASSWORD : public Horizon::Zone::Ragexe::PACKET_CZ_ACK_STORE_PASSWORD
 {
-	PACKET_CZ_ACK_STORE_PASSWORD(uint16_t packet_id = CZ_ACK_STORE_PASSWORD) : Horizon::Zone::Ragexe20171129::PACKET_CZ_ACK_STORE_PASSWORD(packet_id) { }
+	PACKET_CZ_ACK_STORE_PASSWORD(uint16_t packet_id = CZ_ACK_STORE_PASSWORD) : Horizon::Zone::Ragexe::PACKET_CZ_ACK_STORE_PASSWORD(packet_id) { }
 
 	/* Size: 36 bytes */
 };

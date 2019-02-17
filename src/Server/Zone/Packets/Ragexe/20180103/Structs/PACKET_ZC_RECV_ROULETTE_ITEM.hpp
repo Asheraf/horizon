@@ -34,7 +34,29 @@ struct PACKET_ZC_RECV_ROULETTE_ITEM : public Horizon::Zone::Ragexe::PACKET_ZC_RE
 {
 	PACKET_ZC_RECV_ROULETTE_ITEM(uint16_t packet_id = ZC_RECV_ROULETTE_ITEM) : Horizon::Zone::Ragexe::PACKET_ZC_RECV_ROULETTE_ITEM(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_RECV_ROULETTE_ITEM::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_RECV_ROULETTE_ITEM::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_RECV_ROULETTE_ITEM & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 5 bytes */
+	/* Changed from 7 in version 0 to 5 */
 };
 }
 }

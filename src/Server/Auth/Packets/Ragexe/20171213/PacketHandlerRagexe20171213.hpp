@@ -20,7 +20,8 @@
 
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Auth/Packets/Ragexe/20171213/Structs/PACKET_AC_LOGIN_OTP.hpp"
-#include "Server/Auth/Packets/Ragexe/20171115/PacketHandlerRagexe20171115.hpp"
+#include "Server/Auth/Packets/Ragexe/20171213/Structs/PACKET_AC_ACCEPT_LOGIN.hpp"
+#include "Server/Auth/Packets/PacketHandler.hpp"
 
 namespace Horizon
 {
@@ -29,7 +30,7 @@ namespace Auth
 
 class AuthSocket;
 
-class PacketHandlerRagexe20171213 : public PacketHandlerRagexe20171115
+class PacketHandlerRagexe20171213 : public PacketHandler
 {
 public:
 	PacketHandlerRagexe20171213(std::shared_ptr<AuthSocket> socket);
@@ -37,6 +38,7 @@ public:
 
 	virtual void initialize_handlers() override;
 
+	virtual void Send_AC_ACCEPT_LOGIN() override;
 };
 }
 }

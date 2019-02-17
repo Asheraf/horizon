@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -39,7 +39,6 @@ using boost::asio::ip::tcp;
 
 #define READ_BLOCK_SIZE 4096
 
-class SocketMgr;
 namespace Horizon
 {
 namespace Networking

@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_JOIN_BATTLE_FIELD_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_JOIN_BATTLE_FIELD.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_JOIN_BATTLE_FIELD.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_JOIN_BATTLE_FIELD : public Horizon::Zone::Ragexe20171129::PACKET_CZ_JOIN_BATTLE_FIELD
+struct PACKET_CZ_JOIN_BATTLE_FIELD : public Horizon::Zone::Ragexe::PACKET_CZ_JOIN_BATTLE_FIELD
 {
-	PACKET_CZ_JOIN_BATTLE_FIELD(uint16_t packet_id = CZ_JOIN_BATTLE_FIELD) : Horizon::Zone::Ragexe20171129::PACKET_CZ_JOIN_BATTLE_FIELD(packet_id) { }
+	PACKET_CZ_JOIN_BATTLE_FIELD(uint16_t packet_id = CZ_JOIN_BATTLE_FIELD) : Horizon::Zone::Ragexe::PACKET_CZ_JOIN_BATTLE_FIELD(packet_id) { }
 
 	/* Size: 8 bytes */
 };

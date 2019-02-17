@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_GANGSI_RANK_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_GANGSI_RANK.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_GANGSI_RANK.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,33 +30,11 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_GANGSI_RANK : public Horizon::Zone::Ragexe20171129::PACKET_CZ_GANGSI_RANK
+struct PACKET_CZ_GANGSI_RANK : public Horizon::Zone::Ragexe::PACKET_CZ_GANGSI_RANK
 {
-	PACKET_CZ_GANGSI_RANK(uint16_t packet_id = CZ_GANGSI_RANK) : Horizon::Zone::Ragexe20171129::PACKET_CZ_GANGSI_RANK(packet_id) { }
-
-	virtual PacketBuffer serialize() override
-	{
-		return Ragexe20171129::PACKET_CZ_GANGSI_RANK::serialize();
-	}
-
-	virtual void deserialize(PacketBuffer &buf) override
-	{
-		Ragexe20171129::PACKET_CZ_GANGSI_RANK::deserialize(buf);
-	}
-
-	virtual Ragexe20171129::PACKET_CZ_GANGSI_RANK & operator << (PacketBuffer &right) override
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right) override 
-	{
-		return right = serialize();
-	}
+	PACKET_CZ_GANGSI_RANK(uint16_t packet_id = CZ_GANGSI_RANK) : Horizon::Zone::Ragexe::PACKET_CZ_GANGSI_RANK(packet_id) { }
 
 	/* Size: 4 bytes */
-	/* Changed from 2 in version 20171129 to 4 */
 };
 }
 }

@@ -34,7 +34,29 @@ struct PACKET_ZC_NOTIFY_OFFLINE_STORE : public Horizon::Zone::Ragexe::PACKET_ZC_
 {
 	PACKET_ZC_NOTIFY_OFFLINE_STORE(uint16_t packet_id = ZC_NOTIFY_OFFLINE_STORE) : Horizon::Zone::Ragexe::PACKET_ZC_NOTIFY_OFFLINE_STORE(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_NOTIFY_OFFLINE_STORE::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_NOTIFY_OFFLINE_STORE::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_NOTIFY_OFFLINE_STORE & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 57 bytes */
+	/* Changed from 61 in version 0 to 57 */
 };
 }
 }

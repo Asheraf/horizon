@@ -1,3 +1,20 @@
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
+
 #include "AuthSession.hpp"
 
 #include "Server/Auth/Packets/PacketHandler.hpp"
@@ -15,8 +32,6 @@ AuthSession::AuthSession(std::shared_ptr<AuthSocket> socket)
 {
 	_client_type = AuthServer->general_conf().get_client_type();
 	_packet_version = AuthServer->general_conf().get_packet_version();
-
-	set_packet_handler(PacketHandlerFactory::create_packet_handler(socket, _client_type, _packet_version));
 }
 
 AuthSession::~AuthSession()
@@ -33,6 +48,11 @@ void AuthSession::set_game_account(std::shared_ptr<GameAccount> account) { _game
 /* Session Data */
 std::shared_ptr<SessionData> AuthSession::get_session_data() { return _session_data; }
 void AuthSession::set_session_data(std::shared_ptr<SessionData> session_data) { _session_data.swap(session_data); }
+
+void AuthSession::initialize()
+{
+	set_packet_handler(PacketHandlerFactory::create_packet_handler(get_socket(), _client_type, _packet_version));
+}
 
 void AuthSession::update(uint32_t /*diff*/)
 {

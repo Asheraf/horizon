@@ -34,7 +34,29 @@ struct PACKET_ZC_ITEM_FALL_ENTRY4 : public Horizon::Zone::Ragexe::PACKET_ZC_ITEM
 {
 	PACKET_ZC_ITEM_FALL_ENTRY4(uint16_t packet_id = ZC_ITEM_FALL_ENTRY4) : Horizon::Zone::Ragexe::PACKET_ZC_ITEM_FALL_ENTRY4(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ITEM_FALL_ENTRY4::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ITEM_FALL_ENTRY4::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ITEM_FALL_ENTRY4 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 19 bytes */
+	/* Changed from 21 in version 0 to 19 */
 };
 }
 }

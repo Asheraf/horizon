@@ -34,7 +34,29 @@ struct PACKET_CZ_ADD_FRIENDS : public Horizon::Zone::Ragexe20180221::PACKET_CZ_A
 {
 	PACKET_CZ_ADD_FRIENDS(uint16_t packet_id = CZ_ADD_FRIENDS) : Horizon::Zone::Ragexe20180221::PACKET_CZ_ADD_FRIENDS(packet_id) { }
 
-	/* Size: 26 bytes */
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe20180221::PACKET_CZ_ADD_FRIENDS::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe20180221::PACKET_CZ_ADD_FRIENDS::deserialize(buf);
+	}
+
+	virtual Ragexe20180221::PACKET_CZ_ADD_FRIENDS & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	{
+		return right = serialize();
+	}
+
+	/* Size: 2 bytes */
+	/* Changed from 26 in version 20180221 to 2 */
 };
 }
 }

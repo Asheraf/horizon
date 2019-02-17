@@ -1,9 +1,19 @@
-//
-//  GridNotifiersImpl.h
-//  zone
-//
-//  Created by SagunKho on 05/02/2019.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERSIMPL_HPP
 #define HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERSIMPL_HPP
@@ -22,6 +32,7 @@ void GridViewPortUpdater::update(GridRefManager<T> &m)
 	}
 }
 
+
 template <class T>
 void GridMovementNotifier::notify(GridRefManager<T> &m)
 {
@@ -39,6 +50,22 @@ void GridMovementNotifier::notify(GridRefManager<T> &m)
 			pl->add_entity_to_viewport(_entity);
 		}
 
+	}
+}
+
+template <class T>
+void GridEntitySearcher::search(GridRefManager<T> &m)
+{
+	if (!_result.expired())
+		return;
+
+	using namespace Horizon::Zone::Game;
+	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
+		std::weak_ptr<Entity> entity = iter->source()->weak_from_this();
+		if (!entity.expired() && _predicate(entity)) {
+			_result = entity;
+			return;
+		}
 	}
 }
 

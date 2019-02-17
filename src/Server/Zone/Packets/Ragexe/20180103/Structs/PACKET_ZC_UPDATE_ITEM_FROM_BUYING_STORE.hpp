@@ -34,7 +34,29 @@ struct PACKET_ZC_UPDATE_ITEM_FROM_BUYING_STORE : public Horizon::Zone::Ragexe::P
 {
 	PACKET_ZC_UPDATE_ITEM_FROM_BUYING_STORE(uint16_t packet_id = ZC_UPDATE_ITEM_FROM_BUYING_STORE) : Horizon::Zone::Ragexe::PACKET_ZC_UPDATE_ITEM_FROM_BUYING_STORE(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_UPDATE_ITEM_FROM_BUYING_STORE::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_UPDATE_ITEM_FROM_BUYING_STORE::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_UPDATE_ITEM_FROM_BUYING_STORE & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 10 bytes */
+	/* Changed from 12 in version 0 to 10 */
 };
 }
 }

@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20180314_PACKET_CZ_REQUEST_MOVE2_HPP
 
 #include "Server/Zone/Packets/Ragexe/20180314/PacketsRagexe20180314.hpp"
-#include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_REQUEST_MOVE2.hpp"
+#include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQUEST_MOVE2.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20180314
 {
-struct PACKET_CZ_REQUEST_MOVE2 : public Horizon::Zone::Ragexe20171220::PACKET_CZ_REQUEST_MOVE2
+struct PACKET_CZ_REQUEST_MOVE2 : public Horizon::Zone::Ragexe20180213::PACKET_CZ_REQUEST_MOVE2
 {
-	PACKET_CZ_REQUEST_MOVE2(uint16_t packet_id = CZ_REQUEST_MOVE2) : Horizon::Zone::Ragexe20171220::PACKET_CZ_REQUEST_MOVE2(packet_id) { }
+	PACKET_CZ_REQUEST_MOVE2(uint16_t packet_id = CZ_REQUEST_MOVE2) : Horizon::Zone::Ragexe20180213::PACKET_CZ_REQUEST_MOVE2(packet_id) { }
 
 	/* Size: 2 bytes */
 };

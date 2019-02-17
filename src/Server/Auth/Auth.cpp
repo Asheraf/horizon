@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -217,7 +217,8 @@ void AuthMain::initialize_cli_commands()
 void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
-		AuthServer->shutdown(SIGINT);
+		AuthServer->set_shutdown_stage(SHUTDOWN_INITIATED);
+		AuthServer->set_shutdown_signal(SIGINT);
 	}
 }
 
@@ -243,7 +244,7 @@ void AuthMain::initialize_core()
 
 	uint32_t diff = general_conf().get_core_update_interval();
 	/* Server Update Loop */
-	while (!is_shutting_down() && !general_conf().is_test_run()) {
+	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
 		process_cli_commands();
 		_task_scheduler.Update();
 		ClientSocktMgr->update_socket_sessions(diff);
@@ -251,24 +252,13 @@ void AuthMain::initialize_core()
 	}
 
 	/**
-	 * Cancel all pending tasks.
-	 */
-	_task_scheduler.CancelAll();
-
-	/**
 	 * Server shutdown routine begins here...
 	 */
+	_task_scheduler.CancelAll();
+	ClientSocktMgr->stop_network();
 	Server::finalize_core();
 
-	/**
-	 * Stop all networks
-	 */
-	ClientSocktMgr->stop_network();
-
-	/**
-	 * Unmanage globally managed sockets.
-	 */
-	ClientSocktMgr->unmanage_sockets();
+	set_shutdown_stage(SHUTDOWN_CLEANUP_COMPLETE);
 
 	/* Cancel signal handling. */
 	signals.cancel();

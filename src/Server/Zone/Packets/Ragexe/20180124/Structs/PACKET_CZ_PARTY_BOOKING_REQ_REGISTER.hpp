@@ -34,7 +34,29 @@ struct PACKET_CZ_PARTY_BOOKING_REQ_REGISTER : public Horizon::Zone::Ragexe201801
 {
 	PACKET_CZ_PARTY_BOOKING_REQ_REGISTER(uint16_t packet_id = CZ_PARTY_BOOKING_REQ_REGISTER) : Horizon::Zone::Ragexe20180117::PACKET_CZ_PARTY_BOOKING_REQ_REGISTER(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe20180117::PACKET_CZ_PARTY_BOOKING_REQ_REGISTER::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe20180117::PACKET_CZ_PARTY_BOOKING_REQ_REGISTER::deserialize(buf);
+	}
+
+	virtual Ragexe20180117::PACKET_CZ_PARTY_BOOKING_REQ_REGISTER & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	{
+		return right = serialize();
+	}
+
 	/* Size: 18 bytes */
+	/* Changed from 26 in version 20180117 to 18 */
 };
 }
 }

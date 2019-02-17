@@ -34,7 +34,29 @@ struct PACKET_ZC_ADD_EXCHANGE_ITEM2 : public Horizon::Zone::Ragexe::PACKET_ZC_AD
 {
 	PACKET_ZC_ADD_EXCHANGE_ITEM2(uint16_t packet_id = ZC_ADD_EXCHANGE_ITEM2) : Horizon::Zone::Ragexe::PACKET_ZC_ADD_EXCHANGE_ITEM2(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ADD_EXCHANGE_ITEM2::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ADD_EXCHANGE_ITEM2::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ADD_EXCHANGE_ITEM2 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 20 bytes */
+	/* Changed from 30 in version 0 to 20 */
 };
 }
 }

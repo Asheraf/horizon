@@ -39,7 +39,12 @@ struct PACKET_CZ_CONTACTNPC : public Packet
 		return PacketBuffer(packet_id);
 	}
 
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
+	virtual void deserialize(PacketBuffer &buf)
+	{
+		buf >> packet_id;
+		buf >> guid;
+		buf >> type;
+	}
 
 	virtual PACKET_CZ_CONTACTNPC & operator << (PacketBuffer &right)
 	{
@@ -53,6 +58,8 @@ struct PACKET_CZ_CONTACTNPC : public Packet
 	}
 
 	/* Size: 7 bytes */
+	uint32_t guid{0};
+	uint8_t type{0};
 };
 }
 }

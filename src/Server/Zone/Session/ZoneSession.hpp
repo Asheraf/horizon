@@ -68,6 +68,8 @@ public:
 
 	void cleanup_on_error();
 
+	void initialize();
+
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
 	std::shared_ptr<Horizon::Models::Character::Character> _character;

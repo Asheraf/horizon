@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20180103_PACKET_CZ_USE_SKILL2_HPP
 
 #include "Server/Zone/Packets/Ragexe/20180103/PacketsRagexe20180103.hpp"
-#include "Server/Zone/Packets/Ragexe/20171108/Structs/PACKET_CZ_USE_SKILL2.hpp"
+#include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_USE_SKILL2.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20180103
 {
-struct PACKET_CZ_USE_SKILL2 : public Horizon::Zone::Ragexe20171108::PACKET_CZ_USE_SKILL2
+struct PACKET_CZ_USE_SKILL2 : public Horizon::Zone::Ragexe20171220::PACKET_CZ_USE_SKILL2
 {
-	PACKET_CZ_USE_SKILL2(uint16_t packet_id = CZ_USE_SKILL2) : Horizon::Zone::Ragexe20171108::PACKET_CZ_USE_SKILL2(packet_id) { }
+	PACKET_CZ_USE_SKILL2(uint16_t packet_id = CZ_USE_SKILL2) : Horizon::Zone::Ragexe20171220::PACKET_CZ_USE_SKILL2(packet_id) { }
 
 	/* Size: 2 bytes */
 };

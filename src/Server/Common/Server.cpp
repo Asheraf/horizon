@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -265,7 +265,7 @@ void Server::initialize_command_line()
 		return;
 	}
 
-	m_CLIThread = std::thread(std::bind(&cli_thread_start, this));
+	_cli_thread = std::thread(std::bind(&cli_thread_start, this));
 	initialize_cli_commands();
 }
 
@@ -278,7 +278,7 @@ void Server::process_cli_commands()
 {
 	std::shared_ptr<CLICommand> command;
 
-	while ((command = m_CLICmdQueue.try_pop())) {
+	while ((command = _cli_cmd_queue.try_pop())) {
 		bool ret = false;
 		std::function<bool(void)> cmd_func = get_cli_command_func(command->m_command);
 
@@ -315,13 +315,19 @@ void Server::initialize_core()
 
 void Server::finalize_core()
 {
-	if (!general_conf().is_test_run()) {
-		m_CLIThread.join();
+	if (general_conf().is_test_run())
+		return;
 
-		get_io_service().stop();
+	int global_thread_count = std::max(general_conf().get_io_thread_count(), 1);
 
-		_global_thread_group.join_all();
-	}
+	if (_cli_thread.joinable())
+		_cli_thread.join();
+
+	get_io_service().stop();
+
+	_global_thread_group.join_all();
+
+	CoreLog->info("Shutting down global I/O thread pool of {} threads.", global_thread_count);
 }
 
 boost::asio::io_service &Server::get_io_service()

@@ -34,7 +34,29 @@ struct PACKET_CZ_REQ_REMOVE_BARGAIN_SALE_ITEM : public Horizon::Zone::Ragexe::PA
 {
 	PACKET_CZ_REQ_REMOVE_BARGAIN_SALE_ITEM(uint16_t packet_id = CZ_REQ_REMOVE_BARGAIN_SALE_ITEM) : Horizon::Zone::Ragexe::PACKET_CZ_REQ_REMOVE_BARGAIN_SALE_ITEM(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_CZ_REQ_REMOVE_BARGAIN_SALE_ITEM::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_CZ_REQ_REMOVE_BARGAIN_SALE_ITEM::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_CZ_REQ_REMOVE_BARGAIN_SALE_ITEM & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 8 bytes */
+	/* Changed from 10 in version 0 to 8 */
 };
 }
 }

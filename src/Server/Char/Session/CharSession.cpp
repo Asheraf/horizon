@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -32,7 +32,6 @@ CharSession::CharSession(std::shared_ptr<CharSocket> socket)
 {
 	_client_type = CharServer->general_conf().get_client_type();
 	_packet_version = CharServer->general_conf().get_packet_version();
-	set_packet_handler(PacketHandlerFactory::create_packet_handler(socket, _client_type, _packet_version));
 }
 
 CharSession::~CharSession()
@@ -52,6 +51,11 @@ void CharSession::set_game_account(std::shared_ptr<GameAccount> account) { _game
 /* Session Data */
 std::shared_ptr<SessionData> CharSession::get_session_data() { return _session_data; }
 void CharSession::set_session_data(std::shared_ptr<SessionData> session_data) { _session_data.swap(session_data); }
+
+void CharSession::initialize()
+{
+	set_packet_handler(PacketHandlerFactory::create_packet_handler(get_socket(), _client_type, _packet_version));
+}
 
 void CharSession::update(uint32_t /*diff*/)
 {

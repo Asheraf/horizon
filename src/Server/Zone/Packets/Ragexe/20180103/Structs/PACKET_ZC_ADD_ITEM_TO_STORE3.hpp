@@ -34,7 +34,29 @@ struct PACKET_ZC_ADD_ITEM_TO_STORE3 : public Horizon::Zone::Ragexe::PACKET_ZC_AD
 {
 	PACKET_ZC_ADD_ITEM_TO_STORE3(uint16_t packet_id = ZC_ADD_ITEM_TO_STORE3) : Horizon::Zone::Ragexe::PACKET_ZC_ADD_ITEM_TO_STORE3(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ADD_ITEM_TO_STORE3::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ADD_ITEM_TO_STORE3::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ADD_ITEM_TO_STORE3 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 47 bytes */
+	/* Changed from 57 in version 0 to 47 */
 };
 }
 }

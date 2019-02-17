@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -23,8 +23,11 @@
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Client.hpp"
 #include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/Unit/Unit.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
+#include "Server/Zone/Game/Map/MapThreadContainer.hpp"
+#include "Server/Zone/Game/Map/Script/ScriptMgr.hpp"
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
@@ -38,6 +41,7 @@
 #include <algorithm>
 
 using namespace Horizon::Zone;
+using namespace Horizon::Zone::Game;
 using namespace Horizon::Zone::Game::Entities;
 using namespace Horizon::Models::Character;
 
@@ -47,6 +51,7 @@ using namespace Horizon::Models::Character;
 PacketHandler::PacketHandler(std::shared_ptr<ZoneSocket> socket)
 : Horizon::Base::PacketHandler<ZoneSocket>(socket)
 {
+	_session = socket->get_session();
 	initialize_handlers();
 }
 
@@ -68,7 +73,13 @@ void PacketHandler::initialize_handlers()
 	HANDLER_FUNC(CZ_REQ_DISCONNECT)
 	HANDLER_FUNC(CZ_CHANGE_DIRECTION)
 	HANDLER_FUNC(CZ_CHANGE_DIRECTION2)
+	// Chat
 	HANDLER_FUNC(CZ_REQUEST_CHAT)
+	// Script
+	HANDLER_FUNC(CZ_CONTACTNPC)
+	HANDLER_FUNC(CZ_REQ_NEXT_SCRIPT)
+	HANDLER_FUNC(CZ_CLOSE_DIALOG)
+	HANDLER_FUNC(CZ_CHOOSE_MENU)
 #undef HANDLER_FUNC
 }
 
@@ -99,11 +110,17 @@ bool PacketHandler::Handle_CZ_REQUEST_TIME(PacketBuffer &buf)
 
 bool PacketHandler::Handle_CZ_REQNAME(PacketBuffer &buf)
 {
+	std::shared_ptr<Player> player = get_socket()->get_session()->get_player();
 	Ragexe::PACKET_CZ_REQNAME pkt(buf.getOpCode());
-
 	pkt << buf;
 
-	// find and return guid name.
+	std::shared_ptr<Game::Entity> entity = player->get_nearby_entity(pkt.guid);
+
+	if (entity == nullptr)
+		return true;
+
+	std::shared_ptr<Unit> unit = std::dynamic_pointer_cast<Unit>(entity);
+	Send_ZC_ACK_REQNAME(unit->get_guid(), unit->get_name());
 
 	return true;
 }
@@ -151,6 +168,7 @@ void PacketHandler::process_player_entry()
 
 	std::shared_ptr<Player> player = std::make_shared<Player>(session->get_game_account()->get_id(), mcoords, session);
 	session->set_player(player);
+	set_player(player);
 
 	player->set_map(MapMgr->add_player_to_map(position->get_current_map(), player));
 
@@ -158,7 +176,7 @@ void PacketHandler::process_player_entry()
 
 	// Remove socket from updates on zone server after initial connection
 	// it will be managed by the map container thread.
-	ClientSocktMgr->set_socket_for_removal(get_socket()->get_socket_id());
+	ClientSocktMgr->set_socket_for_removal(get_socket());
 
 	ZoneLog->info("New connection established for account '{}' using version '{}' from '{}'.",
 				  session->get_game_account()->get_id(), session->get_session_data()->get_client_version(), get_socket()->remote_ip_address());
@@ -195,7 +213,7 @@ bool PacketHandler::Handle_CZ_REQUEST_MOVE(PacketBuffer &buf)
 {
 	Ragexe::PACKET_CZ_REQUEST_MOVE pkt;
 	pkt << buf;
-	get_socket()->get_session()->get_player()->move_to_pos(pkt.x, pkt.y);
+	get_player()->move_to_pos(pkt.x, pkt.y);
 	return true;
 }
 
@@ -217,19 +235,17 @@ bool PacketHandler::Handle_CZ_RESTART(PacketBuffer &buf)
 bool PacketHandler::Handle_CZ_REQ_DISCONNECT(PacketBuffer &buf)
 {
 	Ragexe::PACKET_CZ_REQ_DISCONNECT pkt;
-	auto session = get_socket()->get_session();
-	auto player = session->get_player();
 
 	pkt << buf;
 
-	session->get_session_data()->remove(ZoneServer);
+	get_session()->get_session_data()->remove(ZoneServer);
 
-	session->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
+	get_session()->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
 
-	if (player->get_map())
-		MapMgr->remove_player_from_map(player->get_map()->get_name(), player);
+	if (get_player()->get_map())
+		MapMgr->remove_player_from_map(get_player()->get_map()->get_name(), get_player());
 
-	ZoneLog->info("Character '{}' has logged out. {}", session->get_character()->get_name(), pkt.type);
+	ZoneLog->info("Character '{}' has logged out. {}", get_session()->get_character()->get_name(), pkt.type);
 
 	Send_ZC_ACK_REQ_DISCONNECT(true);
 	return true;
@@ -241,14 +257,57 @@ bool PacketHandler::Handle_CZ_CHOOSE_MENU(PacketBuffer &buf)
 
 	pkt << buf;
 
+	auto scr_mgr = get_player()->get_map()->get_map_container()->get_script_manager();
+	scr_mgr->continue_npc_script_for_player(get_player(), pkt.guid, pkt.choice);
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_CONTACTNPC(PacketBuffer &buf)
+{
+	uint32_t current_npc_guid = get_player()->get_npc_contact_guid();
+	Ragexe::PACKET_CZ_CONTACTNPC pkt;
+
+	pkt << buf;
+
+	if (current_npc_guid != 0 && current_npc_guid != pkt.guid) {
+		ZoneLog->warn("Player {} has attempted to contact npc {} while already engaged in another npc {}. Possible hacking!", get_player()->get_name(), pkt.guid, current_npc_guid);
+		return true;
+	}
+
+	auto scr_mgr = get_player()->get_map()->get_map_container()->get_script_manager();
+
+	scr_mgr->contact_npc_for_player(get_player(), pkt.guid);
+
 	return true;
 }
 
 bool PacketHandler::Handle_CZ_REQ_NEXT_SCRIPT(PacketBuffer &buf)
 {
+	uint32_t current_npc_guid = get_player()->get_npc_contact_guid();
 	Ragexe::PACKET_CZ_REQ_NEXT_SCRIPT pkt;
 
 	pkt << buf;
+
+	if (pkt.guid == current_npc_guid) {
+		auto scr_mgr = get_player()->get_map()->get_map_container()->get_script_manager();
+		scr_mgr->continue_npc_script_for_player(get_player(), pkt.guid);
+	} else {
+		ZoneLog->warn("Player {} has attempted to contact npc {} while already engaged in another npc {}. Possible hacking!", get_player()->get_name(), pkt.guid, current_npc_guid);
+	}
+
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_CLOSE_DIALOG(PacketBuffer &buf)
+{
+	Ragexe::PACKET_CZ_CLOSE_DIALOG pkt;
+
+	pkt << buf;
+
+	if (pkt.guid == get_player()->get_npc_contact_guid()) {
+		get_player()->set_npc_contact_guid(0);
+	}
 
 	return true;
 }
@@ -265,15 +324,6 @@ bool PacketHandler::Handle_CZ_INPUT_EDITDLG(PacketBuffer &buf)
 bool PacketHandler::Handle_CZ_INPUT_EDITDLGSTR(PacketBuffer &buf)
 {
 	Ragexe::PACKET_CZ_INPUT_EDITDLGSTR pkt;
-
-	pkt << buf;
-
-	return true;
-}
-
-bool PacketHandler::Handle_CZ_CLOSE_DIALOG(PacketBuffer &buf)
-{
-	Ragexe::PACKET_CZ_CLOSE_DIALOG pkt;
 
 	pkt << buf;
 
@@ -300,7 +350,7 @@ bool PacketHandler::Handle_CZ_CHANGE_DIRECTION2(PacketBuffer &buf)
 
 bool PacketHandler::Handle_CZ_REQUEST_CHAT(PacketBuffer &buf)
 {
-	uint32_t guid = get_socket()->get_session()->get_player()->get_guid();
+	uint32_t guid = get_player()->get_guid();
 	Ragexe::PACKET_CZ_REQUEST_CHAT pkt;
 
 	pkt << buf;
@@ -323,19 +373,16 @@ void PacketHandler::Send_ZC_REFUSE_ENTER(zone_server_reject_types error)
 
 void PacketHandler::Send_ZC_RESTART_ACK(uint8_t type)
 {
-	auto session = get_socket()->get_session();
-	auto player = session->get_player();
-
 	Ragexe::PACKET_ZC_RESTART_ACK pkt;
 
 	pkt.type = type;
 
-	if (player->get_map())
-		MapMgr->remove_player_from_map(player->get_map()->get_name(), player);
+	if (get_player()->get_map())
+		MapMgr->remove_player_from_map(get_player()->get_map()->get_name(), get_player());
 
-	session->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
+	get_session()->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
 
-	ZoneLog->info("Character '{}' has moved to the character server.", session->get_character()->get_name());
+	ZoneLog->info("Character '{}' has moved to the character server.", get_session()->get_character()->get_name());
 
 	send_packet(pkt.serialize());
 }
@@ -350,7 +397,7 @@ void PacketHandler::Send_ZC_ACK_REQ_DISCONNECT(bool allowed)
 void PacketHandler::Send_ZC_AID()
 {
 	Ragexe::PACKET_ZC_AID pkt;
-	pkt.account_id = get_socket()->get_session()->get_game_account()->get_id();
+	pkt.account_id = get_session()->get_game_account()->get_id();
 	send_packet(pkt.serialize());
 }
 
@@ -396,7 +443,7 @@ void PacketHandler::Send_ZC_NOTIFY_TIME()
 
 void PacketHandler::Send_ZC_NOTIFY_MOVE(uint32_t guid, MapCoords from, MapCoords to)
 {
-	std::shared_ptr<Character> character = get_socket()->get_session()->get_character();
+	std::shared_ptr<Character> character = get_session()->get_character();
 	Ragexe::PACKET_ZC_NOTIFY_MOVE pkt;
 
 	pkt.guid = guid;
@@ -406,13 +453,10 @@ void PacketHandler::Send_ZC_NOTIFY_MOVE(uint32_t guid, MapCoords from, MapCoords
 
 void PacketHandler::Send_ZC_NOTIFY_PLAYERMOVE(uint16_t to_x, uint16_t to_y)
 {
-	std::shared_ptr<Player> player = get_socket()->get_session()->get_player();
+	MapCoords mcoords = get_player()->get_map_coords();
 	Ragexe::PACKET_ZC_NOTIFY_PLAYERMOVE pkt;
 
-	uint16_t from_x = player->get_map_coords().x();
-	uint16_t from_y = player->get_map_coords().y();
-
-	send_packet(pkt.serialize(from_x, from_y, to_x, to_y));
+	send_packet(pkt.serialize(mcoords.x(), mcoords.y(), to_x, to_y));
 }
 
 void PacketHandler::Send_ZC_STOPMOVE(uint32_t guid, uint16_t x, uint16_t y)
@@ -432,7 +476,7 @@ void PacketHandler::Send_ZC_PAR_CHANGE(uint16_t type, uint16_t value)
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_ZC_SAY_DIALOG(uint16_t npc_id, std::string &message)
+void PacketHandler::Send_ZC_SAY_DIALOG(uint32_t npc_id, std::string &message)
 {
 	Ragexe::PACKET_ZC_SAY_DIALOG pkt;
 	pkt.packet_length = 8 + message.size();
@@ -440,23 +484,29 @@ void PacketHandler::Send_ZC_SAY_DIALOG(uint16_t npc_id, std::string &message)
 	send_packet(pkt.serialize(message));
 }
 
-void PacketHandler::Send_ZC_WAIT_DIALOG(uint16_t npc_id)
+void PacketHandler::Send_ZC_WAIT_DIALOG(uint32_t npc_id)
 {
 	Ragexe::PACKET_ZC_WAIT_DIALOG pkt;
 	pkt.guid = npc_id;
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_ZC_MENU_LIST(uint16_t npc_id, std::string &menu_list)
+void PacketHandler::Send_ZC_CLOSE_DIALOG(uint32_t npc_id)
+{
+	Ragexe::PACKET_ZC_CLOSE_DIALOG pkt;
+	pkt.guid = npc_id;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_MENU_LIST(uint32_t npc_id, std::string const &menu_list)
 {
 	Ragexe::PACKET_ZC_MENU_LIST pkt;
-
 	pkt.packet_length = 8 + menu_list.size();
 	pkt.guid = npc_id;
 	send_packet(pkt.serialize(menu_list));
 }
 
-void PacketHandler::Send_ZC_OPEN_EDITDLG(uint16_t npc_id)
+void PacketHandler::Send_ZC_OPEN_EDITDLG(uint32_t npc_id)
 {
 	Ragexe::PACKET_ZC_OPEN_EDITDLG pkt;
 
@@ -465,12 +515,10 @@ void PacketHandler::Send_ZC_OPEN_EDITDLG(uint16_t npc_id)
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_ZC_OPEN_EDITDLGSTR(uint16_t npc_id)
+void PacketHandler::Send_ZC_OPEN_EDITDLGSTR(uint32_t npc_id)
 {
 	Ragexe::PACKET_ZC_OPEN_EDITDLGSTR pkt;
-
 	pkt.guid = npc_id;
-
 	send_packet(pkt.serialize());
 }
 
@@ -532,7 +580,7 @@ void PacketHandler::Send_ZC_NOTIFY_CHAT(uint32_t guid, std::string message, play
 	pkt.guid = guid;
 	buf = pkt.serialize(message);
 
-	get_socket()->get_session()->get_player()->template notify_in_area<PacketBuffer>(buf, type, MAX_VIEW_RANGE);
+	get_player()->template notify_in_area<PacketBuffer>(buf, type);
 }
 
 void PacketHandler::Send_ZC_NOTIFY_PLAYERCHAT(std::string message)
@@ -551,5 +599,13 @@ void PacketHandler::Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_
 
 	PacketBuffer buf = pkt.serialize(message);
 
-	get_socket()->get_session()->get_player()->template notify_in_area<PacketBuffer>(buf, type, MAX_VIEW_RANGE);
+	get_player()->template notify_in_area<PacketBuffer>(buf, type);
+}
+
+void PacketHandler::Send_ZC_ACK_REQNAME(uint32_t guid, std::string name)
+{
+	Ragexe::PACKET_ZC_ACK_REQNAME pkt;
+	pkt.guid = guid;
+	std::strncpy(pkt.name, name.c_str(), sizeof(pkt.name));
+	send_packet(pkt.serialize());
 }

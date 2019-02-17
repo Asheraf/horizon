@@ -34,7 +34,29 @@ struct PACKET_ZC_ACK_WEAPONREFINE : public Horizon::Zone::Ragexe::PACKET_ZC_ACK_
 {
 	PACKET_ZC_ACK_WEAPONREFINE(uint16_t packet_id = ZC_ACK_WEAPONREFINE) : Horizon::Zone::Ragexe::PACKET_ZC_ACK_WEAPONREFINE(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ACK_WEAPONREFINE::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ACK_WEAPONREFINE::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ACK_WEAPONREFINE & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 8 bytes */
+	/* Changed from 10 in version 0 to 8 */
 };
 }
 }

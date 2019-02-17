@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -32,6 +32,14 @@
 
 using boost::asio::ip::tcp;
 
+enum shutdown_stages
+{
+	SHUTDOWN_NOT_STARTED      = 0,
+	SHUTDOWN_INITIATED        = 1,
+	SHUTDOWN_CLEANUP_COMPLETE = 2,
+	SHUTDOWN_COMPLETE         = 3
+};
+
 class Server
 {
 public:
@@ -41,13 +49,13 @@ public:
 	void parse_exec_args(const char *argv[], int argc);
 
 	/* Shutting Down Flags */
-	bool is_shutting_down() const { return _shut_down; };
-	void shutdown(int signal) {
-		if (_shut_down.exchange(true))
-			return;
-
-		_shutdown_signal.exchange(signal);
+	shutdown_stages get_shutdown_stage() const { return _shutdown_stage.load(); };
+	void set_shutdown_stage(shutdown_stages new_stage)
+	{
+		_shutdown_stage.exchange(new_stage);
 	};
+
+	void set_shutdown_signal(int signal) { _shutdown_signal.exchange(signal); }
 
 	/* Core I/O Service*/
 	boost::asio::io_service &get_io_service();
@@ -74,20 +82,25 @@ public:
 
 	virtual void initialize_cli_commands();
 	void process_cli_commands();
-	void queue_cli_command(CLICommand &&cmdMgr) { m_CLICmdQueue.push(std::move(cmdMgr)); }
-	void add_cli_command_func(std::string cmd, std::function<bool(void)> func) { m_CLIFunctionMap.insert(std::make_pair(cmd, func)); };
+	void queue_cli_command(CLICommand &&cmdMgr) { _cli_cmd_queue.push(std::move(cmdMgr)); }
+	void add_cli_command_func(std::string cmd, std::function<bool(void)> func) { _cli_function_map.insert(std::make_pair(cmd, func)); };
 	
 	/* CLI Function getter */
 	std::function<bool(void)> get_cli_command_func(std::string &cmd)
 	{
-		auto it = m_CLIFunctionMap.find(cmd);
-		return (it != m_CLIFunctionMap.end()) ? it->second : nullptr;
+		auto it = _cli_function_map.find(cmd);
+		return (it != _cli_function_map.end()) ? it->second : nullptr;
 	}
 
 	/**
 	 * CLI Commands
 	 */
-	bool clicmd_shutdown() { shutdown(SIGTERM); return true; }
+	bool clicmd_shutdown()
+	{
+		set_shutdown_stage(SHUTDOWN_INITIATED);
+		set_shutdown_signal(SIGTERM);
+		return true;
+	}
 
 	std::shared_ptr<mysqlx::Client> get_mysql_client() { return _mysql_client; }
 	
@@ -101,12 +114,12 @@ protected:
 	/* MySQL Client */
 	std::shared_ptr<mysqlx::Client> _mysql_client;
 	// CLI command holder to be thread safe
-	ThreadSafeQueue<CLICommand> m_CLICmdQueue;
-	std::thread m_CLIThread;
+	ThreadSafeQueue<CLICommand> _cli_cmd_queue;
+	std::thread _cli_thread;
 	boost::thread_group _global_thread_group;
-	std::atomic<bool> _shut_down;
+	std::atomic<shutdown_stages> _shutdown_stage;
 	std::atomic<int> _shutdown_signal;
-	std::unordered_map<std::string, std::function<bool(void)>> m_CLIFunctionMap;
+	std::unordered_map<std::string, std::function<bool(void)>> _cli_function_map;
 	/**
 	 * Core IO Service
 	 */

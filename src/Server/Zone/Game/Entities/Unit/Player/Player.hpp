@@ -23,18 +23,18 @@
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Zone/Game/Entities/Unit/Unit.hpp"
+#include "Server/Zone/Game/Entities/GridObject.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
+#include "Server/Zone/Game/Definitions/NPCDefinitions.hpp"
+
+#ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
+
+#include <sol.hpp>
 
 namespace Horizon
 {
-	namespace Zone
-	{
-		namespace Game
-		{
-			template<class T>
-			class GridObject;
-		}
-	}
 	namespace Models
 	{
 		namespace Character
@@ -88,13 +88,25 @@ public:
 	entity_viewport_entry create_viewport_entry(std::weak_ptr<Entity> entity);
 
 	template<typename ZC_PACKET_T>
-	void notify_in_area(ZC_PACKET_T &pkt, player_notifier_types type, uint16_t range);
+	void notify_in_area(ZC_PACKET_T &pkt, player_notifier_types type, uint16_t range = MAX_VIEW_RANGE);
+
+	uint32_t get_npc_contact_guid() { return _npc_contact_guid; }
+	void set_npc_contact_guid(uint32_t guid) { _npc_contact_guid = guid; }
+
+	void send_npc_dialog(uint32_t npc_guid, std::string dialog);
+	void send_npc_next_dialog(uint32_t npc_guid);
+	void send_npc_close_dialog(uint32_t npc_guid);
+	void send_npc_menu_list(uint32_t npc_guid, std::string const &menu);
+
+	sol::state &get_lua_state() { return _lua_state; }
 
 private:
 	std::weak_ptr<ZoneSession> _session;
 	std::weak_ptr<GameAccount> _game_account;
 	std::weak_ptr<Models::Character::Character> _character_model;
 	std::weak_ptr<PacketHandler> _packet_handler;
+	uint32_t _npc_contact_guid{0};
+	sol::state _lua_state;
 };
 }
 }

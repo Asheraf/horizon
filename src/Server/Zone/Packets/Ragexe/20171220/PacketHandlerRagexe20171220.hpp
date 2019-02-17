@@ -53,6 +53,7 @@
 #include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_SEARCH_STORE_INFO_NEXT_PAGE.hpp"
 #include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_SSILIST_ITEM_CLICK.hpp"
 #include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_USE_SKILL.hpp"
+#include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_USE_SKILL2.hpp"
 #include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_USE_SKILL_TOGROUND.hpp"
 #include "Server/Zone/Packets/Ragexe/20171220/Structs/PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX.hpp"
 #include "Server/Zone/Packets/Ragexe/20171213/PacketHandlerRagexe20171213.hpp"

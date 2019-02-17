@@ -34,7 +34,29 @@ struct PACKET_CZ_SIMPLE_BUY_CASH_POINT_ITEM : public Horizon::Zone::Ragexe::PACK
 {
 	PACKET_CZ_SIMPLE_BUY_CASH_POINT_ITEM(uint16_t packet_id = CZ_SIMPLE_BUY_CASH_POINT_ITEM) : Horizon::Zone::Ragexe::PACKET_CZ_SIMPLE_BUY_CASH_POINT_ITEM(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_CZ_SIMPLE_BUY_CASH_POINT_ITEM::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_CZ_SIMPLE_BUY_CASH_POINT_ITEM::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_CZ_SIMPLE_BUY_CASH_POINT_ITEM & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 10 bytes */
+	/* Changed from 12 in version 0 to 10 */
 };
 }
 }

@@ -34,7 +34,29 @@ struct PACKET_ZC_CASH_ITEM_DELETE : public Horizon::Zone::Ragexe::PACKET_ZC_CASH
 {
 	PACKET_ZC_CASH_ITEM_DELETE(uint16_t packet_id = ZC_CASH_ITEM_DELETE) : Horizon::Zone::Ragexe::PACKET_ZC_CASH_ITEM_DELETE(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_CASH_ITEM_DELETE::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_CASH_ITEM_DELETE::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_CASH_ITEM_DELETE & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 6 bytes */
+	/* Changed from 8 in version 0 to 6 */
 };
 }
 }

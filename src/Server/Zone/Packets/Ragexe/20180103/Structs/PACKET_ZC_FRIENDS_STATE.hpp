@@ -34,7 +34,29 @@ struct PACKET_ZC_FRIENDS_STATE : public Horizon::Zone::Ragexe::PACKET_ZC_FRIENDS
 {
 	PACKET_ZC_FRIENDS_STATE(uint16_t packet_id = ZC_FRIENDS_STATE) : Horizon::Zone::Ragexe::PACKET_ZC_FRIENDS_STATE(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_FRIENDS_STATE::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_FRIENDS_STATE::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_FRIENDS_STATE & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 11 bytes */
+	/* Changed from 35 in version 0 to 11 */
 };
 }
 }

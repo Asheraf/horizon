@@ -34,7 +34,29 @@ struct PACKET_ZC_CASH_TIME_COUNTER : public Horizon::Zone::Ragexe::PACKET_ZC_CAS
 {
 	PACKET_ZC_CASH_TIME_COUNTER(uint16_t packet_id = ZC_CASH_TIME_COUNTER) : Horizon::Zone::Ragexe::PACKET_ZC_CASH_TIME_COUNTER(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_CASH_TIME_COUNTER::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_CASH_TIME_COUNTER::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_CASH_TIME_COUNTER & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 8 bytes */
+	/* Changed from 10 in version 0 to 8 */
 };
 }
 }

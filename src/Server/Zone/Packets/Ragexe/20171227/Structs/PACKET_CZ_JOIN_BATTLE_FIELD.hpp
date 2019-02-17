@@ -34,7 +34,29 @@ struct PACKET_CZ_JOIN_BATTLE_FIELD : public Horizon::Zone::Ragexe20171220::PACKE
 {
 	PACKET_CZ_JOIN_BATTLE_FIELD(uint16_t packet_id = CZ_JOIN_BATTLE_FIELD) : Horizon::Zone::Ragexe20171220::PACKET_CZ_JOIN_BATTLE_FIELD(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe20171220::PACKET_CZ_JOIN_BATTLE_FIELD::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe20171220::PACKET_CZ_JOIN_BATTLE_FIELD::deserialize(buf);
+	}
+
+	virtual Ragexe20171220::PACKET_CZ_JOIN_BATTLE_FIELD & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	{
+		return right = serialize();
+	}
+
 	/* Size: 8 bytes */
+	/* Changed from 2 in version 20171220 to 8 */
 };
 }
 }

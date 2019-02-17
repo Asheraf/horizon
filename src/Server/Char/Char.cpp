@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -169,7 +169,8 @@ void Horizon::Char::CharMain::initialize_cli_commands()
 void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
-		CharServer->shutdown(SIGINT);
+		CharServer->set_shutdown_stage(SHUTDOWN_INITIATED);
+		CharServer->set_shutdown_signal(SIGINT);
 	}
 }
 
@@ -189,7 +190,7 @@ void Horizon::Char::CharMain::initialize_core()
 
 	uint32_t diff = general_conf().get_core_update_interval();
 
-	while (!is_shutting_down() && !general_conf().is_test_run()) {
+	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
 		process_cli_commands();
 		_task_scheduler.Update();
 		ClientSocktMgr->update_socket_sessions(diff);
@@ -210,11 +211,6 @@ void Horizon::Char::CharMain::initialize_core()
 	 * Stop all networks
 	 */
 	ClientSocktMgr->stop_network();
-
-	/**
-	 * Unmanage globally managed sockets.
-	 */
-	ClientSocktMgr->unmanage_sockets();
 
 	/* Cancel signal handling. */
 	signals.cancel();

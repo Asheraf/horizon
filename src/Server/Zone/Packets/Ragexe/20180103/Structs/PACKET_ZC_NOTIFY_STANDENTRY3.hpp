@@ -34,7 +34,29 @@ struct PACKET_ZC_NOTIFY_STANDENTRY3 : public Horizon::Zone::Ragexe::PACKET_ZC_NO
 {
 	PACKET_ZC_NOTIFY_STANDENTRY3(uint16_t packet_id = ZC_NOTIFY_STANDENTRY3) : Horizon::Zone::Ragexe::PACKET_ZC_NOTIFY_STANDENTRY3(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_NOTIFY_STANDENTRY3::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_NOTIFY_STANDENTRY3::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_NOTIFY_STANDENTRY3 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 58 bytes */
+	/* Changed from 62 in version 0 to 58 */
 };
 }
 }

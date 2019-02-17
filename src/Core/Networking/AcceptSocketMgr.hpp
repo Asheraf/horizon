@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -21,7 +21,7 @@
 #include "Core/Networking/SocketMgr.hpp"
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
 
-#include <shared_mutex>
+#include <mutex>
 
 namespace Horizon
 {
@@ -74,78 +74,45 @@ public:
 
 	/**
 	 * @brief Stop the Acceptor network and clear the client socket map.
-	 * Should not be called from network thread.
+	 * - Called from the main thread only.
 	 */
 	virtual void stop_network() override
 	{
-		BaseSocketMgr::stop_network();
-
 		if (_acceptor->is_open())
 			_acceptor->close();
+
+		BaseSocketMgr::stop_network();
 		
 		_socket_map.clear();
-	}
-	
-	/**
-	 * @brief Client (Player) Session Handlers.
-	 * - Can be called from any main or network threads.
-	 * @param[in] socket_id Id of the session to get.
-	 * @return shared_ptr to the session.
-	 */
-	std::shared_ptr<SocketType> get_socket(uint32_t socket_id)
-	{
-		std::shared_lock<std::shared_mutex> lock(_socket_mtx);
-
-		auto it = _socket_map.find(socket_id);
-
-		if (it != _socket_map.end())
-			return _socket_map.at(socket_id);
-
-		return nullptr;
-	}
-
-	/**
-	 * @brief Removes a client socket.
-	 * - Can be called from any main or network threads.
-	 * @param[in] socket_id Id of the socket to get.
-	 * @return shared_ptr to the session.
-	 */
-	void remove_socket(uint32_t socket_id)
-	{
-		std::unique_lock<std::shared_mutex> lock(_socket_mtx);
-
-		if (_socket_map.find(socket_id) != _socket_map.end()) {
-			_socket_map.erase(socket_id);
-			CoreLog->debug("SocketMgr::RemoveClientSession: successfully removed socket ID - {}.", socket_id);
-		}
 	}
 
 	/**
 	 * @brief On Socket Open / Start Event. Called as a callback from an Acceptor on successful socket acceptance.
 	 *        Moves the socket ownership from the caller to a network thread.
-	 * - Called from one of the network threads.
+	 * - Called from global I/O thread.
 	 * @param[in]     socket         shared pointer.
 	 * @param[in]     thread_index   index of the thread that the socket is being moved from.
 	 */
 	void on_socket_open(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
 	{
-		std::unique_lock<std::shared_mutex> lock(_socket_mtx);
-		
 		std::shared_ptr<SocketType> new_socket = BaseSocketMgr::on_socket_open(std::move(socket), thread_index);
-		_socket_map.insert(std::make_pair(new_socket->get_socket_id(), new_socket));
+
+		set_socket_for_management(new_socket);
 	}
 
 	/**
 	 * @brief Sets a socket for removal on the next session update call.
-	 * Called from main thread, through update_socket_sessions while holding
-	 * the unique_lock for _socket_mtx. Can also called from one of the network
-	 * threads when a socket is disconnecting.
-	 * @param[in] socket_id  Id of the socket to be removed.
+	 * - Thread safe.
+	 * @param[in] sock  socket to be removed.
 	 */
-	void set_socket_for_removal(uint32_t socket_id)
+	void set_socket_for_removal(std::weak_ptr<SocketType> sock)
 	{
-		if (_socket_map.find(socket_id) != _socket_map.end())
-			_socket_remove_queue.push(std::move(socket_id));
+		_socket_management_queue.push(std::make_pair(false, sock.lock()));
+	}
+
+	void set_socket_for_management(std::shared_ptr<SocketType> sock)
+	{
+		_socket_management_queue.push(std::make_pair(true, sock));
 	}
 
 	/**
@@ -155,24 +122,31 @@ public:
 	 */
 	void update_socket_sessions(uint32_t diff)
 	{
-		std::shared_ptr<uint32_t> remove_id;
-		
-		std::unique_lock<std::shared_mutex> lock(_socket_mtx);
+		std::shared_ptr<std::pair<bool, std::shared_ptr<SocketType>>> sock_buf;
 
-		while ((remove_id = _socket_remove_queue.try_pop())) {
-			auto sock = _socket_map.find(*remove_id);
-			if (sock != _socket_map.end())
-				_socket_map.erase(sock);
+		while ((sock_buf = _socket_management_queue.try_pop())) {
+			bool add = (*sock_buf).first;
+			std::shared_ptr<SocketType> socket = (*sock_buf).second;
+
+			auto socket_iter = _socket_map.find(socket->get_socket_id());
+
+			if (socket_iter != _socket_map.end())
+				_socket_map.erase(socket_iter);
+
+			if (add)
+				_socket_map.emplace(socket->get_socket_id(), socket);
 		}
 
-		for (auto sock : _socket_map)
-			if (sock.second->get_session() != nullptr)
+		for (auto sock : _socket_map) {
+			if (sock.second->get_session() != nullptr) {
 				sock.second->update_session(diff);
+			}
+		}
 	}
 
 	int16_t get_packet_length(uint16_t packet_id)
 	{
-		std::shared_lock<std::shared_mutex> lock(_packet_len_db_mtx);
+		std::lock_guard<std::mutex> lock(_packet_len_db_mtx);
 
 		try {
 			return _packet_length_db.at(packet_id);
@@ -183,7 +157,7 @@ public:
 
 	void add_packet_length(uint16_t packet_id, int16_t length)
 	{
-		std::unique_lock<std::shared_mutex> lock(_packet_len_db_mtx);
+		std::lock_guard<std::mutex> lock(_packet_len_db_mtx);
 
 		auto it = _packet_length_db.find(packet_id);
 		
@@ -193,17 +167,11 @@ public:
 		_packet_length_db.emplace(packet_id, length);
 	}
 
-	void unmanage_sockets()
-	{
-		std::unique_lock<std::shared_mutex> lock(_socket_mtx);
-		_socket_map.clear();
-	}
-
 private:
 	std::unique_ptr<AsyncAcceptor> _acceptor;       ///< unique pointer to an AsyncAcceptor object.
 	SocketMap _socket_map;                          ///< std::map of all connected and handled sockets.
-	std::shared_mutex _socket_mtx, _packet_len_db_mtx;
-	ThreadSafeQueue<uint32_t> _socket_remove_queue;
+	std::mutex _packet_len_db_mtx;
+	ThreadSafeQueue<std::pair<bool, std::shared_ptr<SocketType>>> _socket_management_queue;
 	std::map<uint16_t, int16_t> _packet_length_db;
 };
 }

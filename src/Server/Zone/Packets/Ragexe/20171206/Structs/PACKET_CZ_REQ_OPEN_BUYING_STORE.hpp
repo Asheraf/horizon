@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_REQ_OPEN_BUYING_STORE_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_REQ_OPEN_BUYING_STORE.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_REQ_OPEN_BUYING_STORE.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_REQ_OPEN_BUYING_STORE : public Horizon::Zone::Ragexe20171129::PACKET_CZ_REQ_OPEN_BUYING_STORE
+struct PACKET_CZ_REQ_OPEN_BUYING_STORE : public Horizon::Zone::Ragexe::PACKET_CZ_REQ_OPEN_BUYING_STORE
 {
-	PACKET_CZ_REQ_OPEN_BUYING_STORE(uint16_t packet_id = CZ_REQ_OPEN_BUYING_STORE) : Horizon::Zone::Ragexe20171129::PACKET_CZ_REQ_OPEN_BUYING_STORE(packet_id) { }
+	PACKET_CZ_REQ_OPEN_BUYING_STORE(uint16_t packet_id = CZ_REQ_OPEN_BUYING_STORE) : Horizon::Zone::Ragexe::PACKET_CZ_REQ_OPEN_BUYING_STORE(packet_id) { }
 
 	/* Size: -1 bytes */
 };

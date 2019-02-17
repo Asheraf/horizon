@@ -138,12 +138,12 @@ bool Unit::move_to_pos(uint16_t x, uint16_t y)
 	return true;
 }
 
-void Unit::notify_nearby_players_of_movement(MapCoords const &to)
+void Unit::notify_nearby_players_of_movement(MapCoords const &/*to*/)
 {
 	GridMovementNotifier movement_notifier(static_cast<Entity *>(this)->weak_from_this());
 	GridReferenceContainerVisitor<GridMovementNotifier, GridReferenceContainer<AllEntityTypes>> entity_visitor(movement_notifier);
 
-	get_map()->visit_in_range(get_map_coords(), MAX_VIEW_RANGE, entity_visitor);
+	get_map()->visit_in_range(get_map_coords(), entity_visitor);
 }
 
 void Unit::update(uint32_t diff)

@@ -34,7 +34,29 @@ struct PACKET_ZC_ACK_GENERATE_ROULETTE : public Horizon::Zone::Ragexe::PACKET_ZC
 {
 	PACKET_ZC_ACK_GENERATE_ROULETTE(uint16_t packet_id = ZC_ACK_GENERATE_ROULETTE) : Horizon::Zone::Ragexe::PACKET_ZC_ACK_GENERATE_ROULETTE(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ACK_GENERATE_ROULETTE::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ACK_GENERATE_ROULETTE::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ACK_GENERATE_ROULETTE & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 21 bytes */
+	/* Changed from 23 in version 0 to 21 */
 };
 }
 }

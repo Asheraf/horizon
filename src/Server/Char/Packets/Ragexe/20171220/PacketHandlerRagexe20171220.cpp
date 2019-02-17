@@ -17,9 +17,14 @@
 
 #include "PacketHandlerRagexe20171220.hpp"
 
+#include "Server/Char/Database/Query.hpp"
+#include "Server/Char/Session/CharSession.hpp"
+#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Common/Models/GameAccount.hpp"
+
 using namespace Horizon::Char;
 PacketHandlerRagexe20171220::PacketHandlerRagexe20171220(std::shared_ptr<CharSocket> socket)
-: PacketHandlerRagexe20170906(socket)
+: PacketHandler(socket)
 {
 	initialize_handlers();
 }
@@ -35,4 +40,35 @@ void PacketHandlerRagexe20171220::initialize_handlers()
 
 #define HANDLER_FUNC(packet) add_packet_handler(Ragexe20171220::packets::packet, boost::bind(&PacketHandlerRagexe20171220::Handle_ ## packet, this, boost::placeholders::_1));
 #undef HANDLER_FUNC
+}
+
+/**
+ * @brief Send to the client with the HC_ACCEPT_ENTER packet on client connection.
+ * @see packets
+ * @overload PacketHandler::Send_HC_ACCEPT_ENTER()
+ */
+void PacketHandlerRagexe20171220::Send_HC_ACCEPT_ENTER()
+{
+	std::shared_ptr<CharSession> session = get_socket()->get_session();
+	std::shared_ptr<GameAccount> game_account = session->get_game_account();
+
+	Ragexe20171220::PACKET_HC_ACCEPT_ENTER pkt;
+
+	CharQuery->load_all_characters_for_account(session->get_game_account());
+
+	auto char_list = game_account->get_characters();
+
+	pkt.packet_length = pkt.get_length(char_list.size());
+
+	PacketBuffer buf = pkt.serialize();
+
+	for (auto &c : char_list) {
+		Ragexe20171220::PACKET_HC_ACCEPT_ENTER::character_list_data character;
+		character.create_from_model(c.second);
+		character.serialize(buf);
+	}
+
+	send_packet(buf);
+
+	CharLog->info("Sent character-list information to AID {}", game_account->get_id());
 }

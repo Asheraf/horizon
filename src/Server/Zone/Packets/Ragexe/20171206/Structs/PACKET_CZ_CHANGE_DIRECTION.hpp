@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_CHANGE_DIRECTION_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_CHANGE_DIRECTION.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_CHANGE_DIRECTION.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_CHANGE_DIRECTION : public Horizon::Zone::Ragexe20171129::PACKET_CZ_CHANGE_DIRECTION
+struct PACKET_CZ_CHANGE_DIRECTION : public Horizon::Zone::Ragexe::PACKET_CZ_CHANGE_DIRECTION
 {
-	PACKET_CZ_CHANGE_DIRECTION(uint16_t packet_id = CZ_CHANGE_DIRECTION) : Horizon::Zone::Ragexe20171129::PACKET_CZ_CHANGE_DIRECTION(packet_id) { }
+	PACKET_CZ_CHANGE_DIRECTION(uint16_t packet_id = CZ_CHANGE_DIRECTION) : Horizon::Zone::Ragexe::PACKET_CZ_CHANGE_DIRECTION(packet_id) { }
 
 	/* Size: 5 bytes */
 };

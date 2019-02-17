@@ -34,7 +34,29 @@ struct PACKET_CZ_REFINE_ITEM_REQUEST : public Horizon::Zone::Ragexe::PACKET_CZ_R
 {
 	PACKET_CZ_REFINE_ITEM_REQUEST(uint16_t packet_id = CZ_REFINE_ITEM_REQUEST) : Horizon::Zone::Ragexe::PACKET_CZ_REFINE_ITEM_REQUEST(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_CZ_REFINE_ITEM_REQUEST::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_CZ_REFINE_ITEM_REQUEST::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_CZ_REFINE_ITEM_REQUEST & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 7 bytes */
+	/* Changed from 9 in version 0 to 7 */
 };
 }
 }

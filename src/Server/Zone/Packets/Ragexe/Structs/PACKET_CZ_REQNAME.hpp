@@ -39,7 +39,11 @@ struct PACKET_CZ_REQNAME : public Packet
 		return PacketBuffer(packet_id);
 	}
 
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
+	virtual void deserialize(PacketBuffer &buf)
+	{
+		buf >> packet_id;
+		buf >> guid;
+	}
 
 	virtual PACKET_CZ_REQNAME & operator << (PacketBuffer &right)
 	{
@@ -53,6 +57,7 @@ struct PACKET_CZ_REQNAME : public Packet
 	}
 
 	/* Size: 6 bytes */
+	uint32_t guid{0};
 };
 }
 }

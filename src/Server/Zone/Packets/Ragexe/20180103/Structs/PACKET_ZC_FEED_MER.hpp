@@ -34,7 +34,29 @@ struct PACKET_ZC_FEED_MER : public Horizon::Zone::Ragexe::PACKET_ZC_FEED_MER
 {
 	PACKET_ZC_FEED_MER(uint16_t packet_id = ZC_FEED_MER) : Horizon::Zone::Ragexe::PACKET_ZC_FEED_MER(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_FEED_MER::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_FEED_MER::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_FEED_MER & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 5 bytes */
+	/* Changed from 7 in version 0 to 5 */
 };
 }
 }

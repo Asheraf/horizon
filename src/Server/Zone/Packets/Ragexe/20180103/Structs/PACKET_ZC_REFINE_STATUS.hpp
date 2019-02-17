@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20180103_PACKET_ZC_REFINE_STATUS_HPP
 
 #include "Server/Zone/Packets/Ragexe/20180103/PacketsRagexe20180103.hpp"
-#include "Server/Zone/Packets/Ragexe/20170726/Structs/PACKET_ZC_REFINE_STATUS.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_REFINE_STATUS.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,11 +30,33 @@ namespace Zone
 {
 namespace Ragexe20180103
 {
-struct PACKET_ZC_REFINE_STATUS : public Horizon::Zone::Ragexe20170726::PACKET_ZC_REFINE_STATUS
+struct PACKET_ZC_REFINE_STATUS : public Horizon::Zone::Ragexe::PACKET_ZC_REFINE_STATUS
 {
-	PACKET_ZC_REFINE_STATUS(uint16_t packet_id = ZC_REFINE_STATUS) : Horizon::Zone::Ragexe20170726::PACKET_ZC_REFINE_STATUS(packet_id) { }
+	PACKET_ZC_REFINE_STATUS(uint16_t packet_id = ZC_REFINE_STATUS) : Horizon::Zone::Ragexe::PACKET_ZC_REFINE_STATUS(packet_id) { }
+
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_REFINE_STATUS::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_REFINE_STATUS::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_REFINE_STATUS & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
 
 	/* Size: 30 bytes */
+	/* Changed from 32 in version 0 to 30 */
 };
 }
 }

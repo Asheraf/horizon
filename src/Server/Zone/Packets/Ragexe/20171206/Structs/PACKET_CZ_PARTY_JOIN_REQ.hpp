@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_PARTY_JOIN_REQ_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_PARTY_JOIN_REQ.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_PARTY_JOIN_REQ.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,33 +30,33 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_PARTY_JOIN_REQ : public Horizon::Zone::Ragexe20171129::PACKET_CZ_PARTY_JOIN_REQ
+struct PACKET_CZ_PARTY_JOIN_REQ : public Horizon::Zone::Ragexe::PACKET_CZ_PARTY_JOIN_REQ
 {
-	PACKET_CZ_PARTY_JOIN_REQ(uint16_t packet_id = CZ_PARTY_JOIN_REQ) : Horizon::Zone::Ragexe20171129::PACKET_CZ_PARTY_JOIN_REQ(packet_id) { }
+	PACKET_CZ_PARTY_JOIN_REQ(uint16_t packet_id = CZ_PARTY_JOIN_REQ) : Horizon::Zone::Ragexe::PACKET_CZ_PARTY_JOIN_REQ(packet_id) { }
 
 	virtual PacketBuffer serialize() override
 	{
-		return Ragexe20171129::PACKET_CZ_PARTY_JOIN_REQ::serialize();
+		return Ragexe::PACKET_CZ_PARTY_JOIN_REQ::serialize();
 	}
 
 	virtual void deserialize(PacketBuffer &buf) override
 	{
-		Ragexe20171129::PACKET_CZ_PARTY_JOIN_REQ::deserialize(buf);
+		Ragexe::PACKET_CZ_PARTY_JOIN_REQ::deserialize(buf);
 	}
 
-	virtual Ragexe20171129::PACKET_CZ_PARTY_JOIN_REQ & operator << (PacketBuffer &right) override
+	virtual Ragexe::PACKET_CZ_PARTY_JOIN_REQ & operator << (PacketBuffer &right) override
 	{
 		deserialize(right);
 		return *this;
 	}
 
-	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
 	{
 		return right = serialize();
 	}
 
 	/* Size: 2 bytes */
-	/* Changed from 26 in version 20171129 to 2 */
+	/* Changed from 26 in version 0 to 2 */
 };
 }
 }

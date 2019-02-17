@@ -34,7 +34,29 @@ struct PACKET_CZ_SSILIST_ITEM_CLICK : public Horizon::Zone::Ragexe20171227::PACK
 {
 	PACKET_CZ_SSILIST_ITEM_CLICK(uint16_t packet_id = CZ_SSILIST_ITEM_CLICK) : Horizon::Zone::Ragexe20171227::PACKET_CZ_SSILIST_ITEM_CLICK(packet_id) { }
 
-	/* Size: 12 bytes */
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe20171227::PACKET_CZ_SSILIST_ITEM_CLICK::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe20171227::PACKET_CZ_SSILIST_ITEM_CLICK::deserialize(buf);
+	}
+
+	virtual Ragexe20171227::PACKET_CZ_SSILIST_ITEM_CLICK & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	{
+		return right = serialize();
+	}
+
+	/* Size: 2 bytes */
+	/* Changed from 12 in version 20171227 to 2 */
 };
 }
 }

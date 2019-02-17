@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20180213_PACKET_CZ_USE_SKILL_TOGROUND2_HPP
 
 #include "Server/Zone/Packets/Ragexe/20180213/PacketsRagexe20180213.hpp"
-#include "Server/Zone/Packets/Ragexe/20171101/Structs/PACKET_CZ_USE_SKILL_TOGROUND2.hpp"
+#include "Server/Zone/Packets/Ragexe/20180103/Structs/PACKET_CZ_USE_SKILL_TOGROUND2.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20180213
 {
-struct PACKET_CZ_USE_SKILL_TOGROUND2 : public Horizon::Zone::Ragexe20171101::PACKET_CZ_USE_SKILL_TOGROUND2
+struct PACKET_CZ_USE_SKILL_TOGROUND2 : public Horizon::Zone::Ragexe20180103::PACKET_CZ_USE_SKILL_TOGROUND2
 {
-	PACKET_CZ_USE_SKILL_TOGROUND2(uint16_t packet_id = CZ_USE_SKILL_TOGROUND2) : Horizon::Zone::Ragexe20171101::PACKET_CZ_USE_SKILL_TOGROUND2(packet_id) { }
+	PACKET_CZ_USE_SKILL_TOGROUND2(uint16_t packet_id = CZ_USE_SKILL_TOGROUND2) : Horizon::Zone::Ragexe20180103::PACKET_CZ_USE_SKILL_TOGROUND2(packet_id) { }
 
 	/* Size: 2 bytes */
 };

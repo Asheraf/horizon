@@ -26,6 +26,7 @@ namespace Ragexe20171213
 {
 enum packets
 {
+	AC_ACCEPT_LOGIN = 0x0ac4,
 	AC_LOGIN_OTP = 0x0ae3,
 };
 }

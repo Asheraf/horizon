@@ -1,12 +1,28 @@
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
-#ifndef HORIZON_ZONE_GAME_ENTITIES_ENTITY_HPP
-#define HORIZON_ZONE_GAME_ENTITIES_ENTITY_HPP
+#ifndef HORIZON_ZONE_GAME_ENTITY_HPP
+#define HORIZON_ZONE_GAME_ENTITY_HPP
 
 #include "Server/Common/Horizon.hpp"
-#include "Server/Zone/Game/Entities/GridObject.hpp"
-#include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
+#include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
+#include "Server/Zone/Game/Map/Coordinates.hpp"
 
 #include <stdlib.h>
 #include <memory>
@@ -59,6 +75,8 @@ public:
 
 	bool is_in_range_of(std::shared_ptr<Entity> entity, uint8_t range);
 
+	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
+	
 private:
 	uint32_t _guid{0};
 	entity_types _type{ENTITY_UNKNOWN};
@@ -71,4 +89,4 @@ private:
 }
 }
 
-#endif /* HORIZON_ZONE_GAME_ENTITIES_ENTITY_HPP */
+#endif /* HORIZON_ZONE_GAME_ENTITY_HPP */

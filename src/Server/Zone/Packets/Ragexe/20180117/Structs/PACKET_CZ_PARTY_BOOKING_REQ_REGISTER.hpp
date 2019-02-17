@@ -55,8 +55,8 @@ struct PACKET_CZ_PARTY_BOOKING_REQ_REGISTER : public Horizon::Zone::Ragexe201801
 		return right = serialize();
 	}
 
-	/* Size: 18 bytes */
-	/* Changed from 2 in version 20180103 to 18 */
+	/* Size: 26 bytes */
+	/* Changed from 2 in version 20180103 to 26 */
 };
 }
 }

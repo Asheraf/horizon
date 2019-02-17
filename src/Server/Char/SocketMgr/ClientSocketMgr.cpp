@@ -18,40 +18,14 @@
 #include "ClientSocketMgr.hpp"
 
 #include "Server/Char/Packets/Ragexe/Packets.hpp"
-#include "Server/Char/Packets/RE/Packets.hpp"
-#include "Server/Char/Packets/Zero/Packets.hpp"
 
 #include "Server/Char/Packets/PacketHandler.hpp"
-#include "Server/Char/Packets/Ragexe/20170104/PacketsRagexe20170104.hpp"
-#include "Server/Char/Packets/Ragexe/20170104/PacketHandlerRagexe20170104.hpp"
-#include "Server/Char/Packets/RE/20170104/PacketsRE20170104.hpp"
-#include "Server/Char/Packets/RE/20170104/PacketHandlerRE20170104.hpp"
-#include "Server/Char/Packets/Ragexe/20170228/PacketsRagexe20170228.hpp"
-#include "Server/Char/Packets/Ragexe/20170228/PacketHandlerRagexe20170228.hpp"
-#include "Server/Char/Packets/RE/20170228/PacketsRE20170228.hpp"
-#include "Server/Char/Packets/RE/20170228/PacketHandlerRE20170228.hpp"
-#include "Server/Char/Packets/RE/20170830/PacketsRE20170830.hpp"
-#include "Server/Char/Packets/RE/20170830/PacketHandlerRE20170830.hpp"
-#include "Server/Char/Packets/Ragexe/20170906/PacketsRagexe20170906.hpp"
-#include "Server/Char/Packets/Ragexe/20170906/PacketHandlerRagexe20170906.hpp"
 #include "Server/Char/Packets/Ragexe/20171220/PacketsRagexe20171220.hpp"
 #include "Server/Char/Packets/Ragexe/20171220/PacketHandlerRagexe20171220.hpp"
-#include "Server/Char/Packets/RE/20171220/PacketsRE20171220.hpp"
-#include "Server/Char/Packets/RE/20171220/PacketHandlerRE20171220.hpp"
-#include "Server/Char/Packets/Zero/20171220/PacketsZero20171220.hpp"
-#include "Server/Char/Packets/Zero/20171220/PacketHandlerZero20171220.hpp"
 #include "Server/Char/Packets/Ragexe/20180103/PacketsRagexe20180103.hpp"
 #include "Server/Char/Packets/Ragexe/20180103/PacketHandlerRagexe20180103.hpp"
-#include "Server/Char/Packets/RE/20180103/PacketsRE20180103.hpp"
-#include "Server/Char/Packets/RE/20180103/PacketHandlerRE20180103.hpp"
-#include "Server/Char/Packets/Zero/20180103/PacketsZero20180103.hpp"
-#include "Server/Char/Packets/Zero/20180103/PacketHandlerZero20180103.hpp"
 #include "Server/Char/Packets/Ragexe/20180117/PacketsRagexe20180117.hpp"
 #include "Server/Char/Packets/Ragexe/20180117/PacketHandlerRagexe20180117.hpp"
-#include "Server/Char/Packets/RE/20180117/PacketsRE20180117.hpp"
-#include "Server/Char/Packets/RE/20180117/PacketHandlerRE20180117.hpp"
-#include "Server/Char/Packets/Zero/20180117/PacketsZero20180117.hpp"
-#include "Server/Char/Packets/Zero/20180117/PacketHandlerZero20180117.hpp"
 
 using namespace Horizon::Char;
 
@@ -110,7 +84,7 @@ void ClientSocketMgr::initialize_packet_length_db_Ragexe()
 	ADD_PVL_DEF(HC_EDIT_SECOND_PASSWD, 8)
 	ADD_PVL_DEF(HC_MAKE_SECOND_PASSWD, 8)
 	ADD_PVL_DEF(HC_NOTIFY_ACCESSIBLE_MAPNAME, -1)
-	ADD_PVL_DEF(HC_NOTIFY_ZONESVR, 28)
+	ADD_PVL_DEF(HC_NOTIFY_ZONESVR, 156)
 	ADD_PVL_DEF(HC_NOT_AVAILABLE_SECOND_PASSWD, 8)
 	ADD_PVL_DEF(HC_QUEUE_ORDER, 12)
 	ADD_PVL_DEF(HC_REFUSE_DELETECHAR, 3)
@@ -120,66 +94,8 @@ void ClientSocketMgr::initialize_packet_length_db_Ragexe()
 	ADD_PVL_DEF(HC_REQUEST_CHARACTER_PASSWORD, 8)
 	ADD_PVL_DEF(HC_SECOND_PASSWD_LOGIN, 13)
 	ADD_PVL_DEF(HC_SECRETSCAN_DATA, -1)
+	ADD_PVL_DEF(HC_UPDATE_CHARINFO, 157)
 	ADD_PVL_DEF(HC_WAITING_LOGIN, 10)
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_RE()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::RE::packets::name, len);
-	ADD_PVL_DEF(CH_MAKE_CHAR, 37)
-	ADD_PVL_DEF(HC_SECOND_PASSWD_LOGIN, 12)
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_Zero()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Zero::packets::name, len);
-	ADD_PVL_DEF(HC_NOTIFY_ZONESVR, 156)
-	ADD_PVL_DEF(HC_UPDATE_CHARINFO, 157)
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_Ragexe_20170104()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Ragexe20170104::packets::name, len);
-	ADD_PVL_DEF(HC_ACCEPT_MAKECHAR, 149)
-	ADD_PVL_DEF(HC_UPDATE_CHARINFO, 149)
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_RE_20170104()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::RE20170104::packets::name, len);
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_Ragexe_20170228()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Ragexe20170228::packets::name, len);
-	ADD_PVL_DEF(HC_NOTIFY_ZONESVR, 156)
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_RE_20170228()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::RE20170228::packets::name, len);
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_RE_20170830()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::RE20170830::packets::name, len);
-	ADD_PVL_DEF(HC_ACCEPT_MAKECHAR, 157)
-	ADD_PVL_DEF(HC_UPDATE_CHARINFO, 157)
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_Ragexe_20170906()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Ragexe20170906::packets::name, len);
-	ADD_PVL_DEF(HC_ACCEPT_MAKECHAR, 157)
-	ADD_PVL_DEF(HC_UPDATE_CHARINFO, 157)
 #undef ADD_PVL_DEF
 }
 
@@ -190,18 +106,6 @@ void ClientSocketMgr::initialize_packet_length_db_Ragexe_20171220()
 #undef ADD_PVL_DEF
 }
 
-void ClientSocketMgr::initialize_packet_length_db_RE_20171220()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::RE20171220::packets::name, len);
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_Zero_20171220()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Zero20171220::packets::name, len);
-#undef ADD_PVL_DEF
-}
-
 void ClientSocketMgr::initialize_packet_length_db_Ragexe_20180103()
 {
 #define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Ragexe20180103::packets::name, len);
@@ -209,34 +113,10 @@ void ClientSocketMgr::initialize_packet_length_db_Ragexe_20180103()
 #undef ADD_PVL_DEF
 }
 
-void ClientSocketMgr::initialize_packet_length_db_RE_20180103()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::RE20180103::packets::name, len);
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_Zero_20180103()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Zero20180103::packets::name, len);
-#undef ADD_PVL_DEF
-}
-
 void ClientSocketMgr::initialize_packet_length_db_Ragexe_20180117()
 {
 #define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Ragexe20180117::packets::name, len);
 	ADD_PVL_DEF(HC_SECOND_PASSWD_LOGIN, 13)
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_RE_20180117()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::RE20180117::packets::name, len);
-#undef ADD_PVL_DEF
-}
-
-void ClientSocketMgr::initialize_packet_length_db_Zero_20180117()
-{
-#define ADD_PVL_DEF(name, len) add_packet_length(Horizon::Char::Zero20180117::packets::name, len);
 #undef ADD_PVL_DEF
 }
 

@@ -28,6 +28,8 @@ public:
 
 	virtual void update(uint32_t diff) = 0;
 
+	virtual void initialize() = 0;
+
 private:
 	std::weak_ptr<SocketType> _socket;
 };

@@ -34,7 +34,29 @@ struct PACKET_ZC_ITEM_PICKUP_ACK_V7 : public Horizon::Zone::Ragexe::PACKET_ZC_IT
 {
 	PACKET_ZC_ITEM_PICKUP_ACK_V7(uint16_t packet_id = ZC_ITEM_PICKUP_ACK_V7) : Horizon::Zone::Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V7(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V7::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V7::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V7 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 59 bytes */
+	/* Changed from 69 in version 0 to 59 */
 };
 }
 }

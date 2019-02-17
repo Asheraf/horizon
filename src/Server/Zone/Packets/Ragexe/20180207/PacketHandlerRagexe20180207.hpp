@@ -24,6 +24,7 @@
 #include "Server/Zone/Packets/Ragexe/20180207/Structs/PACKET_CZ_CHANGE_DIRECTION.hpp"
 #include "Server/Zone/Packets/Ragexe/20180207/Structs/PACKET_CZ_COMMAND_MER.hpp"
 #include "Server/Zone/Packets/Ragexe/20180207/Structs/PACKET_CZ_ENTER.hpp"
+#include "Server/Zone/Packets/Ragexe/20180207/Structs/PACKET_CZ_ENTER2.hpp"
 #include "Server/Zone/Packets/Ragexe/20180207/Structs/PACKET_CZ_GANGSI_RANK.hpp"
 #include "Server/Zone/Packets/Ragexe/20180207/Structs/PACKET_CZ_ITEMLISTWIN_RES.hpp"
 #include "Server/Zone/Packets/Ragexe/20180207/Structs/PACKET_CZ_ITEM_PICKUP.hpp"

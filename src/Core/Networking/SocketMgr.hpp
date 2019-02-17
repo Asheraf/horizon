@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -61,9 +61,9 @@ public:
 				return false;
 			}
 
-			_thread_map.insert(std::make_pair(i, network_thr));
-
 			network_thr->start();
+
+			_thread_map.insert(std::make_pair(i, network_thr));
 		}
 
 		return true;
@@ -74,30 +74,16 @@ public:
 	 */
 	virtual void stop_network()
 	{
-		CoreLog->info("Stopped {} network threads.", _thread_map.size());
-
-		/**
-		 * Clear the thread map.
-		 */
-		if (!_thread_map.empty()) {
-			for (auto &thr : _thread_map)
-				thr.second->Stop();
-
-			_thread_map.clear();
-		}
-
-		Wait();
-	}
-
-	/**
-	 * @brief Ask all network threads in the thread map to join
-	 *        with the main thread.
-	 */
-	void Wait()
-	{
-		if (!_thread_map.empty()) {
-			for (auto &thr : _thread_map)
-				thr.second->Wait();
+		/* Clear the thread map. */
+		for (auto it = _thread_map.begin(); it != _thread_map.end();) {
+			NetworkThreadPtr thr = it->second;
+			thr->finalize();
+			// Wait for thread to finalize all sockets.
+			while (thr->connection_count() > 0)
+				;
+			thr->join();
+			CoreLog->info("Finalized network thread {:p}.", (void *) thr.get());
+			it = _thread_map.erase(it);
 		}
 	}
 
@@ -137,7 +123,7 @@ public:
 			// Set Socket data
 			new_session->set_socket_id(++_last_socket_id);
 			// Add socket to thread.
-			NetworkThreadPtr(_thread_map.at(thread_index))->AddSocket(new_session);
+			NetworkThreadPtr(_thread_map.at(thread_index))->add_socket(new_session);
 		} catch (boost::system::system_error const &error) {
 			CoreLog->error("Networking: Failed to retrieve client's remote address {}", error.what());
 		}

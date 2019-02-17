@@ -34,7 +34,29 @@ struct PACKET_CZ_ITEMLISTWIN_RES : public Horizon::Zone::Ragexe20171227::PACKET_
 {
 	PACKET_CZ_ITEMLISTWIN_RES(uint16_t packet_id = CZ_ITEMLISTWIN_RES) : Horizon::Zone::Ragexe20171227::PACKET_CZ_ITEMLISTWIN_RES(packet_id) { }
 
-	/* Size: -1 bytes */
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe20171227::PACKET_CZ_ITEMLISTWIN_RES::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe20171227::PACKET_CZ_ITEMLISTWIN_RES::deserialize(buf);
+	}
+
+	virtual Ragexe20171227::PACKET_CZ_ITEMLISTWIN_RES & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	{
+		return right = serialize();
+	}
+
+	/* Size: 2 bytes */
+	/* Changed from -1 in version 20171227 to 2 */
 };
 }
 }

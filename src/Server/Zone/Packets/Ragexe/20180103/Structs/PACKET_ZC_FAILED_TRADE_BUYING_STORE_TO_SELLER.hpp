@@ -34,7 +34,29 @@ struct PACKET_ZC_FAILED_TRADE_BUYING_STORE_TO_SELLER : public Horizon::Zone::Rag
 {
 	PACKET_ZC_FAILED_TRADE_BUYING_STORE_TO_SELLER(uint16_t packet_id = ZC_FAILED_TRADE_BUYING_STORE_TO_SELLER) : Horizon::Zone::Ragexe::PACKET_ZC_FAILED_TRADE_BUYING_STORE_TO_SELLER(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_FAILED_TRADE_BUYING_STORE_TO_SELLER::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_FAILED_TRADE_BUYING_STORE_TO_SELLER::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_FAILED_TRADE_BUYING_STORE_TO_SELLER & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 6 bytes */
+	/* Changed from 8 in version 0 to 6 */
 };
 }
 }

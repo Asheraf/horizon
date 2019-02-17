@@ -38,6 +38,7 @@ public:
 	std::shared_ptr<SessionData> get_session_data();
 	void set_session_data(std::shared_ptr<SessionData> session_data);
 
+	void initialize();
 	void handle_new_connection(PacketBuffer &buf);
 	void update(uint32_t diff);
 

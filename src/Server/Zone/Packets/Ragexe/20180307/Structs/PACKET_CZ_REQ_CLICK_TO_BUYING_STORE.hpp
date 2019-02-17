@@ -34,7 +34,29 @@ struct PACKET_CZ_REQ_CLICK_TO_BUYING_STORE : public Horizon::Zone::Ragexe2018022
 {
 	PACKET_CZ_REQ_CLICK_TO_BUYING_STORE(uint16_t packet_id = CZ_REQ_CLICK_TO_BUYING_STORE) : Horizon::Zone::Ragexe20180221::PACKET_CZ_REQ_CLICK_TO_BUYING_STORE(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe20180221::PACKET_CZ_REQ_CLICK_TO_BUYING_STORE::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe20180221::PACKET_CZ_REQ_CLICK_TO_BUYING_STORE::deserialize(buf);
+	}
+
+	virtual Ragexe20180221::PACKET_CZ_REQ_CLICK_TO_BUYING_STORE & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	{
+		return right = serialize();
+	}
+
 	/* Size: 6 bytes */
+	/* Changed from 2 in version 20180221 to 6 */
 };
 }
 }

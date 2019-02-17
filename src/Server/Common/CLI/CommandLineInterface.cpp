@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -16,8 +16,12 @@
  **************************************************/
 
 #include "CommandLineInterface.hpp"
+#if defined(__APPLE__) || defined(__MACH__)
+#include <editline/readline.h>
+#else
 #include <readline/readline.h>
 #include <readline/history.h>
+#endif
 #include <Server/Common/Server.hpp>
 
 #define TERMINAL_STR "Horizon $> "
@@ -31,7 +35,7 @@ void cli_thread_start(Server *serv)
 {
 	printf("\a");
 
-	while (!serv->is_shutting_down())
+	while (serv->get_shutdown_stage() == SHUTDOWN_NOT_STARTED)
 	{
 
 		char *command_str;
@@ -58,7 +62,8 @@ void cli_thread_start(Server *serv)
 			free(command_str);
 			std::this_thread::sleep_for(std::chrono::milliseconds(serv->general_conf().get_core_update_interval() + 100)); // Sleep until core has updated.
 		} else if (feof(stdin)) {
-			serv->shutdown(SIGTERM);
+			serv->set_shutdown_stage(SHUTDOWN_INITIATED);
+			serv->set_shutdown_signal(SIGTERM);
 		}
 	}
 }

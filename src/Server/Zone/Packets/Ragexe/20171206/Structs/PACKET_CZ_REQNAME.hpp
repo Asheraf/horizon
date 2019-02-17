@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_REQNAME_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_REQNAME.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_REQNAME.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_REQNAME : public Horizon::Zone::Ragexe20171129::PACKET_CZ_REQNAME
+struct PACKET_CZ_REQNAME : public Horizon::Zone::Ragexe::PACKET_CZ_REQNAME
 {
-	PACKET_CZ_REQNAME(uint16_t packet_id = CZ_REQNAME) : Horizon::Zone::Ragexe20171129::PACKET_CZ_REQNAME(packet_id) { }
+	PACKET_CZ_REQNAME(uint16_t packet_id = CZ_REQNAME) : Horizon::Zone::Ragexe::PACKET_CZ_REQNAME(packet_id) { }
 
 	/* Size: 6 bytes */
 };

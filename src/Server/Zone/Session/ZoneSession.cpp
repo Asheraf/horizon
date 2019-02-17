@@ -21,7 +21,6 @@ ZoneSession::ZoneSession(std::shared_ptr<ZoneSocket> socket)
 {
 	_client_type = ZoneServer->general_conf().get_client_type();
 	_packet_version = ZoneServer->general_conf().get_packet_version();
-	set_packet_handler(PacketHandlerFactory::create_packet_handler(socket, _client_type, _packet_version));
 }
 
 ZoneSession::~ZoneSession()
@@ -45,11 +44,16 @@ void ZoneSession::set_session_data(std::shared_ptr<SessionData> session_data) { 
 std::shared_ptr<Player> ZoneSession::get_player() { return _player; }
 void ZoneSession::set_player(std::shared_ptr<Player> p) { _player.swap(p); }
 
+void ZoneSession::initialize()
+{
+	set_packet_handler(PacketHandlerFactory::create_packet_handler(get_socket(), _client_type, _packet_version));
+}
+
 /**
  * Update loop for each Zone Session.
  * @thread called from main thread via the client manager.
  */
-void ZoneSession::update(uint32_t diff)
+void ZoneSession::update(uint32_t /*diff*/)
 {
 	std::shared_ptr<PacketBuffer> buf;
 

@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -18,11 +18,12 @@
 #ifndef HORIZON_ZONE_GAME_MAP_HPP
 #define HORIZON_ZONE_GAME_MAP_HPP
 
-#include "Grid/GridDefinitions.hpp"
-#include "Grid/GridHolder.hpp"
-#include "Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Path/AStar.hpp"
+#include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/Cell/Cell.hpp"
+#include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
+#include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
+#include "Server/Zone/Game/Map/Grid/GridHolder.hpp"
 
 #include <cassert>
 #include <unordered_map>
@@ -43,9 +44,10 @@ class Map
 {
 friend class MapManager;
 public:
-	Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells);
+	Map(std::weak_ptr<MapThreadContainer>, std::string const &, uint16_t, uint16_t, std::vector<uint8_t> const &);
 	~Map();
 
+	std::shared_ptr<MapThreadContainer> get_map_container() { return _container.lock(); }
 	std::string get_name() { return _name; }
 	int getArea() { return _width * _height; }
 	uint16_t getWidth() { return _width; }
@@ -66,13 +68,12 @@ public:
 	void visit(GridCoords const &lower_bound, GridCoords const &upper_bound, GridReferenceContainerVisitor<T, CONTAINER> &visitor);
 
 	template<class T, class CONTAINER>
-	void visit_in_range(MapCoords const &map_coords, uint16_t range, GridReferenceContainerVisitor<T, CONTAINER> &visitor);
+	void visit_in_range(MapCoords const &map_coords, GridReferenceContainerVisitor<T, CONTAINER> &visitor, uint16_t range = MAX_VIEW_RANGE);
 
 	AStar::Generator &get_pathfinder() { return _pathfinder; }
-
-	void update(uint32_t diff);
 	
 private:
+	std::weak_ptr<MapThreadContainer> _container;
 	std::string _name{""};
 	uint16_t _width{0}, _height{0};
 	GridCoords _max_grids;
@@ -106,7 +107,7 @@ inline void Horizon::Zone::Game::Map::visit(GridCoords const &grid, GridReferenc
 }
 
 template<class T, class CONTAINER>
-inline void Horizon::Zone::Game::Map::visit_in_range(MapCoords const &map_coords, uint16_t range, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
+inline void Horizon::Zone::Game::Map::visit_in_range(MapCoords const &map_coords, GridReferenceContainerVisitor<T, CONTAINER> &visitor, uint16_t range)
 {
 	MapCoords lower_bounds = map_coords.at_range<MAX_CELLS_PER_MAP>(-range);
 	MapCoords upper_bounds = map_coords.at_range<MAX_CELLS_PER_MAP>(range);

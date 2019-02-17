@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -73,7 +73,7 @@ public:
 	 */
 	void connect_with_callback(ConnectorCallback callback, int connections = 1)
 	{
-		for (int i = 0; i < connections && !server->is_shutting_down(); i++) {
+		for (int i = 0; i < connections && server->get_shutdown_stage() >= SHUTDOWN_INITIATED; i++) {
 			std::shared_ptr<tcp::socket> socket;
 			uint32_t network_thread_idx;
 			boost::system::error_code error;
@@ -96,7 +96,7 @@ public:
 					callback(_connection_name, socket, network_thread_idx);
 					CoreLog->info("Successfully connected to '{}' at endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
 				}
-			} while (!socket->is_open() && !server->is_shutting_down());
+			} while (!socket->is_open() && server->get_shutdown_stage() >= SHUTDOWN_INITIATED);
 		}
 	}
 

@@ -34,7 +34,29 @@ struct PACKET_ZC_NOTIFY_BARGAIN_SALE_SELLING : public Horizon::Zone::Ragexe::PAC
 {
 	PACKET_ZC_NOTIFY_BARGAIN_SALE_SELLING(uint16_t packet_id = ZC_NOTIFY_BARGAIN_SALE_SELLING) : Horizon::Zone::Ragexe::PACKET_ZC_NOTIFY_BARGAIN_SALE_SELLING(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_NOTIFY_BARGAIN_SALE_SELLING::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_NOTIFY_BARGAIN_SALE_SELLING::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_NOTIFY_BARGAIN_SALE_SELLING & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 8 bytes */
+	/* Changed from 10 in version 0 to 8 */
 };
 }
 }

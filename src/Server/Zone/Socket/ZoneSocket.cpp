@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -47,8 +47,15 @@ void ZoneSocket::set_session(std::shared_ptr<ZoneSession> session) { std::atomic
  */
 void ZoneSocket::start()
 {
+	auto session = std::make_shared<ZoneSession>(shared_from_this());
+
+	set_session(session);
+
+	session->initialize();
+
 	ZoneLog->info("Established connection from {}.", remote_ip_address());
-	set_session(std::make_shared<ZoneSession>(shared_from_this()));
+
+	// Start async_read loop.
 	async_read();
 }
 

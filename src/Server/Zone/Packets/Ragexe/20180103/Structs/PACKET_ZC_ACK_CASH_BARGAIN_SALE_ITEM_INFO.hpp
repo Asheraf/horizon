@@ -34,7 +34,29 @@ struct PACKET_ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO : public Horizon::Zone::Ragexe:
 {
 	PACKET_ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO(uint16_t packet_id = ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO) : Horizon::Zone::Ragexe::PACKET_ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 10 bytes */
+	/* Changed from 12 in version 0 to 10 */
 };
 }
 }

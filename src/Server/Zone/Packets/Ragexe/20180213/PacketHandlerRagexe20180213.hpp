@@ -43,6 +43,7 @@
 #include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQUEST_ACT.hpp"
 #include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQUEST_ACT2.hpp"
 #include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQUEST_MOVE.hpp"
+#include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQUEST_MOVE2.hpp"
 #include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQUEST_TIME.hpp"
 #include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQUEST_TIME2.hpp"
 #include "Server/Zone/Packets/Ragexe/20180213/Structs/PACKET_CZ_REQ_CLICK_TO_BUYING_STORE.hpp"

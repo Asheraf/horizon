@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20180103_PACKET_CZ_REQNAME_BYGID2_HPP
 
 #include "Server/Zone/Packets/Ragexe/20180103/PacketsRagexe20180103.hpp"
-#include "Server/Zone/Packets/Ragexe/20171108/Structs/PACKET_CZ_REQNAME_BYGID2.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_REQNAME_BYGID2.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,11 +30,33 @@ namespace Zone
 {
 namespace Ragexe20180103
 {
-struct PACKET_CZ_REQNAME_BYGID2 : public Horizon::Zone::Ragexe20171108::PACKET_CZ_REQNAME_BYGID2
+struct PACKET_CZ_REQNAME_BYGID2 : public Horizon::Zone::Ragexe::PACKET_CZ_REQNAME_BYGID2
 {
-	PACKET_CZ_REQNAME_BYGID2(uint16_t packet_id = CZ_REQNAME_BYGID2) : Horizon::Zone::Ragexe20171108::PACKET_CZ_REQNAME_BYGID2(packet_id) { }
+	PACKET_CZ_REQNAME_BYGID2(uint16_t packet_id = CZ_REQNAME_BYGID2) : Horizon::Zone::Ragexe::PACKET_CZ_REQNAME_BYGID2(packet_id) { }
+
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_CZ_REQNAME_BYGID2::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_CZ_REQNAME_BYGID2::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_CZ_REQNAME_BYGID2 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
 
 	/* Size: 2 bytes */
+	/* Changed from 6 in version 0 to 2 */
 };
 }
 }

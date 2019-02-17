@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -47,8 +47,15 @@ void AuthSocket::set_session(std::shared_ptr<AuthSession> session) { std::atomic
  */
 void AuthSocket::start()
 {
+	auto session = std::make_shared<AuthSession>(shared_from_this());
+
+	set_session(session);
+
+	session->initialize();
+
 	AuthLog->info("Established connection from {}.", remote_ip_address());
-	set_session(std::make_shared<AuthSession>(shared_from_this()));
+
+	// Starts the async_read loop.
 	async_read();
 }
 
@@ -62,7 +69,8 @@ void AuthSocket::on_close()
 	/**
 	 * @brief Perform socket manager cleanup.
 	 */
-	ClientSocktMgr->remove_socket(get_socket_id());
+	if (AuthServer->get_shutdown_stage() == SHUTDOWN_NOT_STARTED)
+		ClientSocktMgr->set_socket_for_removal(shared_from_this());
 }
 
 void AuthSocket::on_error()
@@ -76,6 +84,9 @@ void AuthSocket::on_error()
  */
 bool AuthSocket::update()
 {
+	if (AuthServer->get_shutdown_stage() >= SHUTDOWN_INITIATED)
+		ClientSocktMgr->set_socket_for_removal(shared_from_this());
+	
 	return BaseSocket::update();
 }
 

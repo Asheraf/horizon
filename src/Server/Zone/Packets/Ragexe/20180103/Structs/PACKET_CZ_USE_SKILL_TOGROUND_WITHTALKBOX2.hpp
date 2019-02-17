@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20180103_PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2_HPP
 
 #include "Server/Zone/Packets/Ragexe/20180103/PacketsRagexe20180103.hpp"
-#include "Server/Zone/Packets/Ragexe/20170621/Structs/PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,11 +30,33 @@ namespace Zone
 {
 namespace Ragexe20180103
 {
-struct PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2 : public Horizon::Zone::Ragexe20170621::PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2
+struct PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2 : public Horizon::Zone::Ragexe::PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2
 {
-	PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2(uint16_t packet_id = CZ_USE_SKILL_TOGROUND_WITHTALKBOX2) : Horizon::Zone::Ragexe20170621::PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2(packet_id) { }
+	PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2(uint16_t packet_id = CZ_USE_SKILL_TOGROUND_WITHTALKBOX2) : Horizon::Zone::Ragexe::PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2(packet_id) { }
+
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX2 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
 
 	/* Size: 2 bytes */
+	/* Changed from 90 in version 0 to 2 */
 };
 }
 }

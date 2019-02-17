@@ -34,7 +34,29 @@ struct PACKET_ZC_PROPERTY_HOMUN_2 : public Horizon::Zone::Ragexe::PACKET_ZC_PROP
 {
 	PACKET_ZC_PROPERTY_HOMUN_2(uint16_t packet_id = ZC_PROPERTY_HOMUN_2) : Horizon::Zone::Ragexe::PACKET_ZC_PROPERTY_HOMUN_2(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_PROPERTY_HOMUN_2::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_PROPERTY_HOMUN_2::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_PROPERTY_HOMUN_2 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 75 bytes */
+	/* Changed from 77 in version 0 to 75 */
 };
 }
 }

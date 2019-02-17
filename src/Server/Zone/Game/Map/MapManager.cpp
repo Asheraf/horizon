@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. <sagunxp@gmail.com>
  *
@@ -81,18 +81,17 @@ bool MapManager::LoadMapCache()
 
 	ZoneLog->info("Initializing {} map containers with {} maps per container for a total of {} maps...", map_container_count, container_max, mcache_size);
 
-	for (int i = 0; i < map_container_count; i++) {
+	for (int i = 0; i < map_container_count; i++)
 		_map_containers.push_back(std::make_shared<MapThreadContainer>());
-	}
 
 	for (auto &i : m.getMCache()->maps) {
-		std::shared_ptr<Map> map = std::make_shared<Map>(i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
+		std::shared_ptr<Map> map = std::make_shared<Map>(_map_containers[container_idx], i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
 		_map_containers[container_idx]->add_map(std::move(map));
 		map_counter++;
 		total_maps++;
 
 		if (container_max == map_counter || total_maps == mcache_size) {
-			_map_containers[container_idx]->initialize_maps();
+			_map_containers[container_idx]->initialize();
 			_map_containers[container_idx++]->start();
 			map_counter = 0;
 		}
@@ -119,7 +118,7 @@ std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::sh
 bool MapManager::remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p)
 {
 	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
-		if ((*i)->find_map(map_name)) {
+		if ((*i)->get_map(map_name) != nullptr) {
 			(*i)->remove_player(p);
 			return true;
 		}

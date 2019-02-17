@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. (sagunxp@gmail.com)
  *
@@ -31,6 +31,14 @@ namespace Horizon
 {
 namespace Zone
 {
+	namespace Game
+	{
+		namespace Entities
+		{
+			class Player;
+		}
+	}
+
 enum zone_server_reject_types : uint8_t
 {
 	ZONE_SERV_ERROR_REJECT = 3,
@@ -58,13 +66,22 @@ enum cz_req_guild_menu_types
 	CZ_REQ_GUILD_NOTICE         = 6
 };
 class ZoneSocket;
+class ZoneSession;
 class PacketHandler : public Horizon::Base::PacketHandler<ZoneSocket>
 {
+	std::weak_ptr<ZoneSession> _session;
+	std::weak_ptr<Game::Entities::Player> _player;
+
 public:
 	explicit PacketHandler(std::shared_ptr<ZoneSocket> socket);
 	virtual ~PacketHandler();
 
 	virtual void initialize_handlers();
+
+	std::shared_ptr<ZoneSession> get_session() const { return _session.lock(); }
+	void set_player(std::weak_ptr<Game::Entities::Player> plr) { _player = plr; }
+	std::shared_ptr<Game::Entities::Player> get_player() const { return _player.lock(); }
+	
 	/**
 	 * Handlers
 	 */
@@ -78,12 +95,13 @@ public:
 	virtual bool Handle_CZ_REQ_DISCONNECT(PacketBuffer &buf);
 	virtual bool Handle_CZ_CHOOSE_MENU(PacketBuffer &buf);
 	virtual bool Handle_CZ_REQ_NEXT_SCRIPT(PacketBuffer &buf);
+	virtual bool Handle_CZ_CLOSE_DIALOG(PacketBuffer &buf);
 	virtual bool Handle_CZ_INPUT_EDITDLG(PacketBuffer &buf);
 	virtual bool Handle_CZ_INPUT_EDITDLGSTR(PacketBuffer &buf);
-	virtual bool Handle_CZ_CLOSE_DIALOG(PacketBuffer &buf);
 	virtual bool Handle_CZ_CHANGE_DIRECTION(PacketBuffer &buf);
 	virtual bool Handle_CZ_CHANGE_DIRECTION2(PacketBuffer &buf);
 	virtual bool Handle_CZ_REQUEST_CHAT(PacketBuffer &buf);
+	virtual bool Handle_CZ_CONTACTNPC(PacketBuffer &buf);
 
 	virtual bool verify_new_connection(uint32_t auth_code, uint32_t account_id, uint32_t char_id);
 	virtual void process_player_entry();
@@ -101,11 +119,12 @@ public:
 	virtual void Send_ZC_NOTIFY_PLAYERMOVE(uint16_t x, uint16_t y);
 	virtual void Send_ZC_STOPMOVE(uint32_t guid, uint16_t x, uint16_t y);
 	virtual void Send_ZC_PAR_CHANGE(uint16_t type, uint16_t value);
-	virtual void Send_ZC_SAY_DIALOG(uint16_t npc_id, std::string &message);
-	virtual void Send_ZC_WAIT_DIALOG(uint16_t npc_id);
-	virtual void Send_ZC_MENU_LIST(uint16_t npc_id, std::string &menu_list);
-	virtual void Send_ZC_OPEN_EDITDLG(uint16_t npc_id);
-	virtual void Send_ZC_OPEN_EDITDLGSTR(uint16_t npc_id);
+	virtual void Send_ZC_SAY_DIALOG(uint32_t npc_id, std::string &message);
+	virtual void Send_ZC_WAIT_DIALOG(uint32_t npc_id);
+	virtual void Send_ZC_CLOSE_DIALOG(uint32_t npc_id);
+	virtual void Send_ZC_MENU_LIST(uint32_t npc_id, std::string const &menu_list);
+	virtual void Send_ZC_OPEN_EDITDLG(uint32_t npc_id);
+	virtual void Send_ZC_OPEN_EDITDLGSTR(uint32_t npc_id);
 	virtual void Send_ZC_STATUS();
 	virtual void Send_ZC_NOTIFY_NEWENTRY5();
 	virtual void Send_ZC_UPDATE_MAPINFO(uint16_t x, uint16_t y, const char *map_name, uint16_t type);
@@ -115,6 +134,7 @@ public:
 	virtual void Send_ZC_NOTIFY_CHAT(uint32_t guid, std::string message, player_notifier_types type);
 	virtual void Send_ZC_NOTIFY_PLAYERCHAT(std::string message);
 	virtual void Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_notifier_types type);
+	virtual void Send_ZC_ACK_REQNAME(uint32_t guid, std::string name);
 };
 }
 }

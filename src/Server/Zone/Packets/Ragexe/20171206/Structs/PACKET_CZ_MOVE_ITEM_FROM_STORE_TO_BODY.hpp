@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY : public Horizon::Zone::Ragexe20171129::PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY
+struct PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY : public Horizon::Zone::Ragexe::PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY
 {
-	PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY(uint16_t packet_id = CZ_MOVE_ITEM_FROM_STORE_TO_BODY) : Horizon::Zone::Ragexe20171129::PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY(packet_id) { }
+	PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY(uint16_t packet_id = CZ_MOVE_ITEM_FROM_STORE_TO_BODY) : Horizon::Zone::Ragexe::PACKET_CZ_MOVE_ITEM_FROM_STORE_TO_BODY(packet_id) { }
 
 	/* Size: 8 bytes */
 };

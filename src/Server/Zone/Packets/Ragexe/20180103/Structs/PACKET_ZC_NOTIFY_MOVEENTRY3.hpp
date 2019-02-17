@@ -34,7 +34,29 @@ struct PACKET_ZC_NOTIFY_MOVEENTRY3 : public Horizon::Zone::Ragexe::PACKET_ZC_NOT
 {
 	PACKET_ZC_NOTIFY_MOVEENTRY3(uint16_t packet_id = ZC_NOTIFY_MOVEENTRY3) : Horizon::Zone::Ragexe::PACKET_ZC_NOTIFY_MOVEENTRY3(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_NOTIFY_MOVEENTRY3::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_NOTIFY_MOVEENTRY3::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_NOTIFY_MOVEENTRY3 & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 65 bytes */
+	/* Changed from 69 in version 0 to 65 */
 };
 }
 }

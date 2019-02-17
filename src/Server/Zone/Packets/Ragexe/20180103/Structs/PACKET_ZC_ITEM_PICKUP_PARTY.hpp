@@ -34,7 +34,29 @@ struct PACKET_ZC_ITEM_PICKUP_PARTY : public Horizon::Zone::Ragexe::PACKET_ZC_ITE
 {
 	PACKET_ZC_ITEM_PICKUP_PARTY(uint16_t packet_id = ZC_ITEM_PICKUP_PARTY) : Horizon::Zone::Ragexe::PACKET_ZC_ITEM_PICKUP_PARTY(packet_id) { }
 
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ITEM_PICKUP_PARTY::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ITEM_PICKUP_PARTY::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ITEM_PICKUP_PARTY & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
+
 	/* Size: 22 bytes */
+	/* Changed from 32 in version 0 to 22 */
 };
 }
 }

@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20180103_PACKET_ZC_ITEM_FALL_ENTRY_HPP
 
 #include "Server/Zone/Packets/Ragexe/20180103/PacketsRagexe20180103.hpp"
-#include "Server/Zone/Packets/Ragexe/20170913/Structs/PACKET_ZC_ITEM_FALL_ENTRY.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ITEM_FALL_ENTRY.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,11 +30,33 @@ namespace Zone
 {
 namespace Ragexe20180103
 {
-struct PACKET_ZC_ITEM_FALL_ENTRY : public Horizon::Zone::Ragexe20170913::PACKET_ZC_ITEM_FALL_ENTRY
+struct PACKET_ZC_ITEM_FALL_ENTRY : public Horizon::Zone::Ragexe::PACKET_ZC_ITEM_FALL_ENTRY
 {
-	PACKET_ZC_ITEM_FALL_ENTRY(uint16_t packet_id = ZC_ITEM_FALL_ENTRY) : Horizon::Zone::Ragexe20170913::PACKET_ZC_ITEM_FALL_ENTRY(packet_id) { }
+	PACKET_ZC_ITEM_FALL_ENTRY(uint16_t packet_id = ZC_ITEM_FALL_ENTRY) : Horizon::Zone::Ragexe::PACKET_ZC_ITEM_FALL_ENTRY(packet_id) { }
+
+	virtual PacketBuffer serialize() override
+	{
+		return Ragexe::PACKET_ZC_ITEM_FALL_ENTRY::serialize();
+	}
+
+	virtual void deserialize(PacketBuffer &buf) override
+	{
+		Ragexe::PACKET_ZC_ITEM_FALL_ENTRY::deserialize(buf);
+	}
+
+	virtual Ragexe::PACKET_ZC_ITEM_FALL_ENTRY & operator << (PacketBuffer &right) override
+	{
+		deserialize(right);
+		return *this;
+	}
+
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
+	{
+		return right = serialize();
+	}
 
 	/* Size: 22 bytes */
+	/* Changed from 24 in version 0 to 22 */
 };
 }
 }

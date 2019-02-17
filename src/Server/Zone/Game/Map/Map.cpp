@@ -7,7 +7,7 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Horizon Dev Team.
  *
  * Base Author - Sagun Khosla. <sagunxp@gmail.com>
  *
@@ -30,8 +30,9 @@
 
 using namespace Horizon::Zone::Game;
 
-Map::Map(std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
-: _name(name), _width(width), _height(height), _max_grids((width / MAX_CELLS_PER_GRID), (height / MAX_CELLS_PER_GRID)),
+Map::Map(std::weak_ptr<MapThreadContainer> container, std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
+: _container(container), _name(name), _width(width), _height(height),
+  _max_grids((width / MAX_CELLS_PER_GRID), (height / MAX_CELLS_PER_GRID)),
   _gridholder(GridCoords(width, height)),
   _pathfinder(AStar::Generator({width, height}, std::bind(&Map::is_obstruction, this, std::placeholders::_1, std::placeholders::_2)))
 {
@@ -55,7 +56,7 @@ bool Map::is_obstruction(uint16_t x, uint16_t y)
 
 Map::~Map()
 {
-	CoreLog->info("Performing cleanup on map '{}'...", _name);
+	ZoneLog->info("Performing cleanup on map '{}'...", _name);
 }
 
 bool Map::ensure_grid(GridCoords coords)
@@ -75,12 +76,4 @@ void Map::ensure_all_grids()
 	}
 
 	ZoneLog->info("Initialized {} grids for map '{}'", grid_count, _name);
-}
-
-void Map::update(uint32_t diff)
-{
-	GridUpdater updater(diff);
-	GridReferenceContainerVisitor<GridUpdater, MapEntityContainer> map_updater(updater);
-
-	_gridholder.visit_all(map_updater);
 }

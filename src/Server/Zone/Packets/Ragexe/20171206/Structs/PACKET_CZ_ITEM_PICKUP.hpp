@@ -19,7 +19,7 @@
 #define HORIZON_ZONE_RAGEXE_20171206_PACKET_CZ_ITEM_PICKUP_HPP
 
 #include "Server/Zone/Packets/Ragexe/20171206/PacketsRagexe20171206.hpp"
-#include "Server/Zone/Packets/Ragexe/20171129/Structs/PACKET_CZ_ITEM_PICKUP.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_CZ_ITEM_PICKUP.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
@@ -30,9 +30,9 @@ namespace Zone
 {
 namespace Ragexe20171206
 {
-struct PACKET_CZ_ITEM_PICKUP : public Horizon::Zone::Ragexe20171129::PACKET_CZ_ITEM_PICKUP
+struct PACKET_CZ_ITEM_PICKUP : public Horizon::Zone::Ragexe::PACKET_CZ_ITEM_PICKUP
 {
-	PACKET_CZ_ITEM_PICKUP(uint16_t packet_id = CZ_ITEM_PICKUP) : Horizon::Zone::Ragexe20171129::PACKET_CZ_ITEM_PICKUP(packet_id) { }
+	PACKET_CZ_ITEM_PICKUP(uint16_t packet_id = CZ_ITEM_PICKUP) : Horizon::Zone::Ragexe::PACKET_CZ_ITEM_PICKUP(packet_id) { }
 
 	/* Size: 6 bytes */
 };
