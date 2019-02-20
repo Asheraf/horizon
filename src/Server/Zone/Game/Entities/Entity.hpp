@@ -50,6 +50,8 @@ public:
 
 	virtual void initialize();
 
+	bool is_initialized() { return _is_initialized; }
+	
 	uint32_t get_guid() const { return _guid; }
 	void set_guid(uint32_t guid) { _guid = guid; }
 
@@ -73,11 +75,14 @@ public:
 	/* Scheduler */
 	TaskScheduler &getScheduler() { return _scheduler; }
 
-	bool is_in_range_of(std::shared_ptr<Entity> entity, uint8_t range);
+	bool is_in_range_of(std::shared_ptr<Entity> entity, uint8_t range = MAX_VIEW_RANGE);
 
 	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
+
+	virtual void notify_nearby_players_of_self(entity_viewport_notification_type notif_type);
 	
 private:
+	bool _is_initialized{false};
 	uint32_t _guid{0};
 	entity_types _type{ENTITY_UNKNOWN};
 	MapCoords _map_coords{0, 0};

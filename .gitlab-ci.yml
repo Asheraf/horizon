@@ -27,7 +27,7 @@ variables: &base_vars
   MYSQL_PASSWORD: 'ragnarok'
   MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
   GIT_DEPTH: '3'
-  DEBIAN_COMMON_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libconfig++-dev libreadline-dev
+  DEBIAN_COMMON_PACKAGES: cmake default-mysql-server default-mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libreadline-dev
 
 .prerequisites: &prerequisites
   before_script:
@@ -62,10 +62,10 @@ debian:buster-gcc:
     - cd spdlog; mkdir build; cd build; cmake ../
     - make install -j 4; cd ..; cd ..;
     - ./horizon build
-    - cp bin/config/inter-server.conf.dist bin/config/inter-server.conf
-    - cp bin/config/auth-server.conf.dist bin/config/auth-server.conf
-    - cp bin/config/char-server.conf.dist bin/config/char-server.conf
-    - cp bin/config/zone-server.conf.dist bin/config/zone-server.conf
+    - cp bin/config/inter-server.lua.dist bin/config/inter-server.lua
+    - cp bin/config/auth-server.lua.dist bin/config/auth-server.lua
+    - cp bin/config/char-server.lua.dist bin/config/char-server.lua
+    - cp bin/config/zone-server.lua.dist bin/config/zone-server.lua
     - mkdir bin/logs
     - ./horizon inter bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
     - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
@@ -88,10 +88,10 @@ debian:buster-clang:
     - cd spdlog; mkdir build; cd build; cmake ../
     - make install -j 4; cd ..; cd ..;
     - ./horizon build
-    - cp bin/config/inter-server.conf.dist bin/config/inter-server.conf
-    - cp bin/config/auth-server.conf.dist bin/config/auth-server.conf
-    - cp bin/config/char-server.conf.dist bin/config/char-server.conf
-    - cp bin/config/zone-server.conf.dist bin/config/zone-server.conf
+    - cp bin/config/inter-server.lua.dist bin/config/inter-server.lua
+    - cp bin/config/auth-server.lua.dist bin/config/auth-server.lua
+    - cp bin/config/char-server.lua.dist bin/config/char-server.lua
+    - cp bin/config/zone-server.lua.dist bin/config/zone-server.lua
     - mkdir bin/logs
     - ./horizon inter bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
     - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
@@ -114,10 +114,10 @@ debian:stretch-gcc:
     - cd spdlog; mkdir build; cd build; cmake ../
     - make install -j 4; cd ..; cd ..;
     - ./horizon build
-    - cp bin/config/inter-server.conf.dist bin/config/inter-server.conf
-    - cp bin/config/auth-server.conf.dist bin/config/auth-server.conf
-    - cp bin/config/char-server.conf.dist bin/config/char-server.conf
-    - cp bin/config/zone-server.conf.dist bin/config/zone-server.conf
+    - cp bin/config/inter-server.lua.dist bin/config/inter-server.lua
+    - cp bin/config/auth-server.lua.dist bin/config/auth-server.lua
+    - cp bin/config/char-server.lua.dist bin/config/char-server.lua
+    - cp bin/config/zone-server.lua.dist bin/config/zone-server.lua
     - mkdir bin/logs
     - ./horizon inter bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
     - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
@@ -140,10 +140,10 @@ debian:stretch-clang:
     - cd spdlog; mkdir build; cd build; cmake ../
     - make install -j 4; cd ..; cd ..;
     - ./horizon build
-    - cp bin/config/inter-server.conf.dist bin/config/inter-server.conf
-    - cp bin/config/auth-server.conf.dist bin/config/auth-server.conf
-    - cp bin/config/char-server.conf.dist bin/config/char-server.conf
-    - cp bin/config/zone-server.conf.dist bin/config/zone-server.conf
+    - cp bin/config/inter-server.lua.dist bin/config/inter-server.lua
+    - cp bin/config/auth-server.lua.dist bin/config/auth-server.lua
+    - cp bin/config/char-server.lua.dist bin/config/char-server.lua
+    - cp bin/config/zone-server.lua.dist bin/config/zone-server.lua
     - mkdir bin/logs
     - ./horizon inter bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10
     - ./horizon auth bin --test-run --dbuser=${MYSQL_USER} --dbhost=mysql --dbdatabase=${MYSQL_DATABASE} --dbpassword=${MYSQL_PASSWORD} --dbthreads=10

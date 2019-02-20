@@ -61,7 +61,7 @@ struct PACKET_CZ_CHOOSE_MENU : public Packet
 	uint32_t guid{0};
 	// If there were more than 254 items in the list,
 	// choice overflows to choice%256.
-	uint8_t choice{0};
+	int8_t choice{0};
 };
 }
 }

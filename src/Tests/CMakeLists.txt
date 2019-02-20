@@ -6,6 +6,8 @@ CollectSourceFiles(
 	TEST_SOURCES
 )
 
+list(REMOVE_ITEM TEST_SOURCES REGEX "${CMAKE_CURRENT_SOURCE_DIR}/prontera.cpp")
+
 ###############
 # LuaJit
 ###############

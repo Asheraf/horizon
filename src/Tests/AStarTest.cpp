@@ -28,16 +28,16 @@
 using namespace Horizon::Zone;
 using namespace Horizon::Zone::Game;
 
-#define MAP_WIDTH 312
-#define MAP_HEIGHT 392
+#define MAP_WIDTH 268
+#define MAP_HEIGHT 300
 
 #include "prontera.cpp"
 
-Cell ***cell = (Cell ***) std::malloc(sizeof(Cell *) * MAP_WIDTH);
+Cell cell[MAP_WIDTH][MAP_HEIGHT];
 
 bool check_collision(uint16_t x, uint16_t y)
 {
-	if (cell[x][y]->isWalkable())
+	if (cell[x][y].isWalkable())
 		return false;
 
 	return true;
@@ -45,19 +45,15 @@ bool check_collision(uint16_t x, uint16_t y)
 
 BOOST_AUTO_TEST_CASE(AStarTest)
 {
+
 	Horizon::Zone::AStar::Generator astar({MAP_WIDTH, MAP_HEIGHT}, &check_collision, true, &Horizon::Zone::AStar::Heuristic::manhattan);
-	Horizon::Zone::AStar::Vec2i start = { 50, 40 };
-	Horizon::Zone::AStar::Vec2i end = { 250, 350 };
+	Horizon::Zone::AStar::Vec2i start = { 204, 158 };
+	Horizon::Zone::AStar::Vec2i end = { 200, 159 };
 	int idx = 0;
-
-	cell[0] = (Cell **) std::malloc(sizeof(Cell *) * MAP_WIDTH * MAP_HEIGHT);
-
-	for (int i = 0; i < MAP_WIDTH; i++)
-		cell[i] = *cell + MAP_HEIGHT * i;
 
 	for (int y = MAP_HEIGHT - 1; y >= 0; --y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
-			cell[x][y] = new Cell(prontera[idx++]);
+			cell[x][y] = Cell(izlude[idx++]);
 		}
 	}
 
@@ -84,7 +80,7 @@ BOOST_AUTO_TEST_CASE(AStarTest)
 	//BOOST_ASSERT(path->size() > 1);
 
 	std::ofstream mapfile;
-	mapfile.open("prontera.txt");
+	mapfile.open("izlude.txt");
 	for (int y = MAP_HEIGHT - 1; y >= 0; --y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
 			Horizon::Zone::AStar::Vec2i coords{x, y};
@@ -103,7 +99,7 @@ BOOST_AUTO_TEST_CASE(AStarTest)
 			}
 
 			if (!found) {
-				if (cell[x][y]->isWalkable())
+				if (cell[x][y].isWalkable())
 					mapfile << " ";
 				else
 					mapfile << "|";
@@ -114,10 +110,4 @@ BOOST_AUTO_TEST_CASE(AStarTest)
 	}
 
 	mapfile.close();
-
-	for (int x = 0; x < MAP_WIDTH; ++x)
-		for (int y = 0; y < MAP_HEIGHT; ++y)
-			std::free(cell[x][y]);
-
-	std::free(cell);
 }

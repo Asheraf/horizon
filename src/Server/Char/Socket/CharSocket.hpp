@@ -55,7 +55,7 @@ public:
 	
 protected:
 	void read_handler() override;
-	void on_close() override;
+	void on_close(bool error = false) override;
 	void on_error() override;
 	/* */
 private:

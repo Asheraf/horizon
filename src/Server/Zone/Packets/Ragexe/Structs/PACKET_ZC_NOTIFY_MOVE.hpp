@@ -42,7 +42,7 @@ struct PACKET_ZC_NOTIFY_MOVE : public Packet
 		buf << guid;
 		PackPosition((int8_t *) packed_pos, from_x, from_y, to_x, to_y, 8, 8);
 		buf.append(packed_pos, sizeof(packed_pos));
-		timestamp = get_sys_time();
+		timestamp = (uint32_t) get_sys_time();
 		buf << timestamp;
 		return buf;
 	}

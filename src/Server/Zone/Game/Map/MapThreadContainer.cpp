@@ -29,6 +29,7 @@ MapThreadContainer::MapThreadContainer()
 {
 
 }
+
 MapThreadContainer::~MapThreadContainer()
 {
 	if (_thread.joinable())
@@ -107,19 +108,19 @@ void MapThreadContainer::update(uint32_t diff)
 
 	// Add any new players / remove anyone else.
 	while ((pbuf = _player_buffer.try_pop())) {
-		std::shared_ptr<ZoneSession> session = pbuf->second->get_session();
+		std::shared_ptr<Entities::Player> player = pbuf->second;
 
-		if (session == nullptr)
+		if (player->get_session() == nullptr)
 			continue;
 
-		int guid = pbuf->second->get_guid();
-
 		if (pbuf->first) {
-			_managed_players.emplace(guid, pbuf->second);
-			get_script_manager()->add_player(pbuf->second);
+			if (!player->is_initialized())
+				player->initialize();
+			_managed_players.emplace(player->get_guid(), player);
+			get_script_manager()->add_player(player);
 		} else {
-			_managed_players.erase(guid);
-			get_script_manager()->remove_player(pbuf->second);
+			_managed_players.erase(player->get_guid());
+			get_script_manager()->remove_player(player);
 		}
 	}
 

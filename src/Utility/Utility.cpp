@@ -46,13 +46,30 @@ uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
 	return getMSTimeDiff(oldMSTime, getMSTime());
 }
 
-uint32_t get_sys_time()
+int64_t get_sys_time()
 {
+#ifdef CLOCK_MONOTONIC
+	// Monotonic clock: Implementation-defined.
+	//   Clock that cannot be set and represents monotonic time since some
+	//   unspecified starting point.  This clock is not affected by
+	//   discontinuous jumps in the system time (e.g., if the system
+	//   administrator manually changes the  clock),  but  is  affected by
+	//   the  incremental adjustments performed by adjtime(3) and NTP.
+	struct timespec tval;
+	clock_gettime(CLOCK_MONOTONIC, &tval);
+	// int64 cast to avoid overflows on platforms where time_t is 32 bit
+	return (int64_t) (tval.tv_sec * 1000 + tval.tv_nsec / 1000000);
+#else
+	// Fall back, regular clock: Number of milliseconds since epoch.
+	//   The time returned by gettimeofday() is affected by discontinuous
+	//   jumps in the system time (e.g., if the system  administrator
+	//   manually  changes  the system time).  If you need a monotonically
+	//   increasing clock, see clock_gettime(2).
 	struct timeval tval;
-
 	gettimeofday(&tval, NULL);
-
-	return (uint32_t) (tval.tv_sec * 1000 + tval.tv_usec / 1000);
+	// int64 cast to avoid overflows on platforms where time_t is 32 bit
+	return (int64_t)tval.tv_sec * 1000 + tval.tv_usec / 1000;
+#endif
 }
 
 const char *TimeStamp2String(char *str, size_t size, time_t timestamp, const char *format)

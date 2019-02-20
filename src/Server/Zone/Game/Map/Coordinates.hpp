@@ -74,7 +74,7 @@ public:
 	}
 
 	template <uint16_t BOUNDS>
-	bool within_range(Coordinates<BOUNDS> const &bounds, int range) const
+	bool is_within_range(Coordinates<BOUNDS> const &bounds, int range) const
 	{
 		int x_diff = _x - bounds.x();
 		int y_diff = _y - bounds.y();

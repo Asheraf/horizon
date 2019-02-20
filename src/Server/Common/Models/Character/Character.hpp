@@ -35,8 +35,8 @@
 
 enum character_gender_types
 {
-	CHARACTER_GENDER_MALE,
-	CHARACTER_GENDER_FEMALE
+	CHARACTER_GENDER_FEMALE = 0,
+	CHARACTER_GENDER_MALE   = 1,
 };
 
 enum character_save_mask

@@ -37,7 +37,7 @@ struct PACKET_CZ_REQUEST_CHAT : public Packet
 	~PACKET_CZ_REQUEST_CHAT()
 	{
 		if (message != nullptr)
-			delete message;
+			delete[] message;
 	}
 
 	virtual PacketBuffer serialize()
@@ -49,8 +49,11 @@ struct PACKET_CZ_REQUEST_CHAT : public Packet
 	{
 		buf >> packet_id;
 		buf >> packet_length;
-		message = new char[packet_length - 4];
-		buf.read(message, packet_length - 4);
+
+		int str_len = packet_length - 4;
+		message = new char[str_len + 1];
+		message[str_len] = '\0';
+		buf.read(message, str_len);
 	}
 
 	virtual PACKET_CZ_REQUEST_CHAT & operator << (PacketBuffer &right)

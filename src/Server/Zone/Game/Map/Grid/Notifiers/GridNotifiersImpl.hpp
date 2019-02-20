@@ -34,22 +34,35 @@ void GridViewPortUpdater::update(GridRefManager<T> &m)
 
 
 template <class T>
-void GridMovementNotifier::notify(GridRefManager<T> &m)
+void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 {
 	using namespace Horizon::Zone::Game::Entities;
-	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
-		std::shared_ptr<Player> pl = std::dynamic_pointer_cast<Player>(iter->source()->shared_from_this());
-		std::shared_ptr<Player> tpl = std::dynamic_pointer_cast<Player>(_entity.lock());
 
-		if (tpl->get_guid() == pl->get_guid())
+	std::shared_ptr<Horizon::Zone::Game::Entity> src_entity = _entity.lock();
+
+	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
+		std::shared_ptr<Player> tpl = std::dynamic_pointer_cast<Player>(iter->source()->shared_from_this());
+
+		if (src_entity == nullptr || src_entity->get_guid() == tpl->get_guid())
 			continue;
 
-		if (tpl->is_walking()) {
-			pl->realize_entity_movement(_entity);
-		} else {
-			pl->add_entity_to_viewport(_entity);
-		}
+		bool is_in_range = tpl->is_in_range_of(src_entity);
 
+		if (_notif_type <= EVP_NOTIFY_IN_SIGHT && is_in_range) {
+			std::shared_ptr<Unit> unit = std::dynamic_pointer_cast<Unit>(src_entity);
+			if (unit->is_walking()) {
+				tpl->realize_entity_movement(src_entity);
+			} else {
+				tpl->add_entity_to_viewport(src_entity);
+			}
+		} else if (_notif_type > EVP_NOTIFY_OUT_OF_SIGHT || (_notif_type == EVP_NOTIFY_OUT_OF_SIGHT && !is_in_range)) {
+			if (src_entity->get_type() == ENTITY_PLAYER) {
+				std::shared_ptr<Player> pl = std::dynamic_pointer_cast<Player>(src_entity);
+				pl->remove_entity_from_viewport(tpl, _notif_type);
+			}
+
+			tpl->remove_entity_from_viewport(src_entity, _notif_type);
+		}
 	}
 }
 

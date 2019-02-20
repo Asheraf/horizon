@@ -104,7 +104,7 @@ public:
 	virtual bool Handle_CZ_CONTACTNPC(PacketBuffer &buf);
 
 	virtual bool verify_new_connection(uint32_t auth_code, uint32_t account_id, uint32_t char_id);
-	virtual void process_player_entry();
+	virtual bool process_player_entry();
 	/**
 	 * Senders
 	 */
@@ -113,7 +113,8 @@ public:
 	virtual void Send_ZC_ACK_REQ_DISCONNECT(bool allowed);
 	virtual void Send_ZC_AID();
 	virtual void Send_ZC_ACCEPT_ENTER3();
-	virtual void Send_ZC_NPCACK_MAPMOVE(std::string const &map_name, uint16_t x, uint16_t y);
+	virtual void Send_ZC_ACCEPT_ENTER2();
+	virtual void Send_ZC_NPCACK_MAPMOVE(std::string &map_name, uint16_t x, uint16_t y);
 	virtual void Send_ZC_NOTIFY_TIME();
 	virtual void Send_ZC_NOTIFY_MOVE(uint32_t guid, MapCoords from, MapCoords to);
 	virtual void Send_ZC_NOTIFY_PLAYERMOVE(uint16_t x, uint16_t y);
@@ -135,6 +136,7 @@ public:
 	virtual void Send_ZC_NOTIFY_PLAYERCHAT(std::string message);
 	virtual void Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_notifier_types type);
 	virtual void Send_ZC_ACK_REQNAME(uint32_t guid, std::string name);
+	virtual void Send_ZC_NOTIFY_VANISH(uint32_t guid, uint8_t type = 0);
 };
 }
 }

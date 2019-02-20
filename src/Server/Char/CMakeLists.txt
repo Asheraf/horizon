@@ -35,7 +35,7 @@ target_link_libraries(char
         ${YAMLCPP_LIBRARY}
         ${CONCPP_LIBS}
         ${Readline_LIBRARY}
-		${CONFIG++_LIBRARY}
+		${LUA_LIBRARIES}
 )
 
 set(INCLUDE_DIRS
@@ -47,13 +47,21 @@ CollectIncludeDirectories(
 	PUBLIC_INCLUDES
 )
 
+# LuaJit linker flags for macOS to avoid crashes.
+if (APPLE)
+set_target_properties(char
+	PROPERTIES
+	LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
+	)
+endif()
+
 target_include_directories(char
 	PUBLIC
 		${PUBLIC_INCLUDES}
         ${YAMLCPP_INCLUDE_DIR}
         ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
-		${CONFIG++_INCLUDE_DIR}
+		${LUA_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -62,4 +70,4 @@ install(TARGETS char
     DESTINATION ${CMAKE_INSTALL_PREFIX}
     CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
-install(FILES ${PROJECT_SOURCE_DIR}/config/char-server.conf.dist DESTINATION ${CONF_DIR})
+install(FILES ${PROJECT_SOURCE_DIR}/config/char-server.lua.dist DESTINATION ${CONF_DIR})

@@ -1,3 +1,20 @@
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
+
 #include "Unit.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
@@ -11,17 +28,17 @@ using namespace Horizon::Zone::Game;
 using namespace Horizon::Zone::Game::Entities;
 
 Unit::Unit(uint32_t guid, entity_types type)
-: Entity::Entity(guid, type)
+: Entity::Entity(guid, type), _str(1, 0, 0), _agi(1, 0, 0), _vit(1, 0, 0), _int(1, 0, 0), _dex(1, 0, 0), _luk(1, 0, 0)
 {
 }
 
 Unit::Unit(uint32_t guid, entity_types type, MapCoords mcoords)
-: Entity::Entity(guid, type, mcoords)
+: Entity::Entity(guid, type, mcoords), _str(1, 0, 0), _agi(1, 0, 0), _vit(1, 0, 0), _int(1, 0, 0), _dex(1, 0, 0), _luk(1, 0, 0)
 {
 }
 
 Unit::Unit(uint32_t guid, entity_types type, MapCoords mcoords, GridCoords gcoords)
-: Entity::Entity(guid, type, mcoords, gcoords)
+: Entity::Entity(guid, type, mcoords, gcoords), _str(1, 0, 0), _agi(1, 0, 0), _vit(1, 0, 0), _int(1, 0, 0), _dex(1, 0, 0), _luk(1, 0, 0)
 {
 }
 
@@ -30,11 +47,14 @@ Unit::~Unit()
 	//
 }
 
-// Called from a network thread.
+/**
+ * @thread MapThreadContainer::_thread
+ */
 void Unit::initialize()
 {
 	Entity::initialize();
 	update_status();
+	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 }
 
 bool Unit::schedule_movement(MapCoords coords)
@@ -67,10 +87,8 @@ bool Unit::schedule_movement(MapCoords coords)
 	if (_walk_path.size() > 14) {
 		if (this->get_type() == ENTITY_PLAYER)
 			static_cast<Player *>(this)->stop_movement();
-		printf("path exceeds 14 cells.\n");
 	} else if (_walk_path.size() > 0) {
 		on_movement_begin();
-		notify_nearby_players_of_movement(coords);
 		move();
 	}
 
@@ -79,44 +97,35 @@ bool Unit::schedule_movement(MapCoords coords)
 
 void Unit::move()
 {
-	MapCoords my_coords = get_map_coords();
-	AStar::Vec2i c = _walk_path.at(0); // get current step.
-	// character speed = 150
-	// move cost 14 if diagonal 10 otherwise
-	//
-
-	int step_time = 0;
-
-	if (c.move_cost == 14) {
-		step_time = 150 * 14 / 10;
-	} else {
-		step_time = 150;
+	if (_changed_dest_pos != MapCoords(0, 0)) {
+		_dest_pos = _changed_dest_pos;
+		schedule_movement(_dest_pos);
+		return;
 	}
 
-	getScheduler().Schedule(Milliseconds(step_time), ENTITY_SCHEDULE_WALK,
-		[this, c, step_time, my_coords] (TaskContext /*movement*/)
+	MapCoords my_coords = get_map_coords();
+	AStar::Vec2i c = _walk_path.at(0);
+
+	getScheduler().Schedule(Milliseconds(get_movement_speed(c.move_cost)), ENTITY_SCHEDULE_WALK,
+		[this, c, my_coords] (TaskContext /*movement*/)
 		{
 			MapCoords step_coords(c.x, c.y);
 
 			set_direction((directions) my_coords.direction_to(step_coords));
 
+			notify_nearby_players_of_self(EVP_NOTIFY_OUT_OF_SIGHT);
 			set_map_coords(step_coords);
+			notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 
 			_walk_path.erase(_walk_path.begin());
 
 			on_movement_step();
 			
-			printf("%d %d %d %d\n", c.x, c.y, c.move_cost, step_time);
+			//printf("%d %d %d %d\n", c.x, c.y, c.move_cost, step_time);
 			
 			if (_dest_pos == MapCoords(c.x, c.y)) {
 				_dest_pos = { 0, 0 };
 				on_movement_end();
-			}
-
-			if (_changed_dest_pos != MapCoords(0, 0)) {
-				_dest_pos = _changed_dest_pos;
-				schedule_movement(_dest_pos);
-				return;
 			}
 
 			if (_walk_path.size() > 0)
@@ -136,14 +145,6 @@ bool Unit::move_to_pos(uint16_t x, uint16_t y)
 	schedule_movement(_dest_pos);
 
 	return true;
-}
-
-void Unit::notify_nearby_players_of_movement(MapCoords const &/*to*/)
-{
-	GridMovementNotifier movement_notifier(static_cast<Entity *>(this)->weak_from_this());
-	GridReferenceContainerVisitor<GridMovementNotifier, GridReferenceContainer<AllEntityTypes>> entity_visitor(movement_notifier);
-
-	get_map()->visit_in_range(get_map_coords(), entity_visitor);
 }
 
 void Unit::update(uint32_t diff)

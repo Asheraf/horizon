@@ -134,11 +134,18 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 	
 	// Create models and save to sql.
 	character->create(CharServer);
+	character->set_slot(pkt.slot);
+	character->set_gender((character_gender_types) pkt.gender);
 
 	// Status
 	std::shared_ptr<Status> status = character->get_status_data();
+	status->set_max_hp(40); // (40 * (100 + vit)/100) where vit is 1.
+	status->set_hp(40);
+	status->set_max_sp(11); // (11 * (100 + int_)/100) where int is 1.
+	status->set_sp(11);
 	status->set_zeny(CharServer->get_char_config().get_start_zeny());
-	status->set_job_class(pkt.job_id);
+	status->set_job_id(pkt.job_id);
+	status->save(CharServer);
 
 	// View
 	std::shared_ptr<View> view = character->get_view_data();
@@ -462,15 +469,7 @@ void PacketHandler::Send_HC_ACCEPT_MAKECHAR(std::shared_ptr<Character> character
 	Ragexe::PACKET_HC_ACCEPT_MAKECHAR pkt;
 
 	pkt.character.create_from_model(character);
-
-	if (get_socket()->get_session()->get_game_account()->get_gender() == ACCOUNT_GENDER_MALE)
-		pkt.character.gender = CHARACTER_GENDER_MALE;
-	else
-		pkt.character.gender = CHARACTER_GENDER_FEMALE;
-
 	PacketBuffer buf = pkt.serialize();
-	pkt.character.serialize(buf);
-
 	send_packet(buf);
 }
 

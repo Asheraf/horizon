@@ -23,7 +23,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
-#include <libconfig.h++>
+#include <sol.hpp>
 
 using boost::asio::ip::udp;
 using namespace std::chrono_literals;
@@ -33,7 +33,7 @@ using namespace Horizon::Auth;
  * AuthMain Constructor.
  */
 AuthMain::AuthMain()
-: Server("Auth", "config/", "auth-server.conf")
+: Server("Auth", "config/", "auth-server.lua")
 {
 	initialize_cli_commands();
 }
@@ -54,57 +54,52 @@ AuthMain::~AuthMain()
  */
 bool AuthMain::ReadConfig()
 {
-	libconfig::Config cfg;
+	sol::state lua;
+	
 	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 	std::string tmp_string;
 	int tmp_value;
+	sol::table tbl;
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		cfg.readFile(file_path.c_str());
-	} catch(const libconfig::FileIOException &fioex) {
-		CharLog->error("I/O error while reading file '{}'.", file_path);
-		return false;
-	} catch(const libconfig::ParseException &pex) {
-		AuthLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
+		lua.script_file(file_path);
+		tbl = lua["server_config"];
+	} catch (const std::exception &error) {
+		CharLog->error("AuthMain::ReadConfig: '{}'.", error.what());
 		return false;
 	}
 
-	if (cfg.lookupValue("pass_hash_method", tmp_value)) {
-		login_hash_method hashingMethod = static_cast<login_hash_method>(tmp_value);
-		if (hashingMethod < PASS_HASH_NONE || hashingMethod > PASS_HASH_BCRYPT) {
-			auth_config_error("pass_hash_method", PASS_HASH_NONE);
-			get_auth_config().set_pass_hash_method(PASS_HASH_NONE);
-		} else {
-			get_auth_config().set_pass_hash_method(hashingMethod);
-		}
-	} else {
+	tmp_value = tbl.get_or("pass_hash_method", (int) PASS_HASH_NONE);
+	if (tmp_value < PASS_HASH_NONE || tmp_value > PASS_HASH_BCRYPT) {
 		auth_config_error("pass_hash_method", PASS_HASH_NONE);
 		get_auth_config().set_pass_hash_method(PASS_HASH_NONE);
+	} else {
+		get_auth_config().set_pass_hash_method((login_hash_method) tmp_value);
 	}
 
 	if (get_auth_config().get_pass_hash_method() == PASS_HASH_NONE)
 		AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
 
-	if (cfg.lookupValue("client_date_format", tmp_string))
-		get_auth_config().set_client_date_format(tmp_string);
+	tmp_string = tbl.get_or("client_date_format", std::string("%Y-%m-%d %H:%M:%S"));
+	get_auth_config().set_client_date_format(tmp_string);
 
 	/**
 	 * Logging Configuration
 	 */
-	const libconfig::Setting &log = cfg.getRoot()["log"];
+	try {
+		sol::table log_tbl = tbl.get<sol::table>("log");
 
-	if (log.isGroup()) {
-		if (log.lookupValue("enable_logging", tmp_value))
+		bool enable = log_tbl.get_or("enable_logging", false);
+
+		if (enable) {
 			get_auth_config().get_log_conf().enable();
-		if (log.lookupValue("login_max_tries", tmp_value))
-			get_auth_config().get_log_conf().set_login_max_tries(tmp_value);
-		if (log.lookupValue("login_fail_ban_time", tmp_value))
-			get_auth_config().get_log_conf().set_login_fail_ban_time(tmp_value);
-		if (log.lookupValue("login_fail_check_time", tmp_value))
-			get_auth_config().get_log_conf().set_login_fail_check_time(tmp_value);
-	} else {
-		AuthLog->warn("Invalid config type for 'log' provided, expected group. Skipping all entries...");
+			get_auth_config().get_log_conf().set_login_max_tries(log_tbl.get_or("login_max_tries", 0));
+			get_auth_config().get_log_conf().set_login_fail_ban_time(log_tbl.get_or("login_fail_ban_time", 0));
+			get_auth_config().get_log_conf().set_login_fail_check_time(log_tbl.get_or("login_fail_check_time", 0));
+		}
+	} catch (std::exception &error) {
+		AuthLog->info("Log configuration was not found! Using default values...");
 	}
 
 	AuthLog->info("Logging is {}.", get_auth_config().get_log_conf().isEnabled() ? "enabled" : "disabled");
@@ -115,70 +110,46 @@ bool AuthMain::ReadConfig()
 	 * Character Servers.
 	 * @brief configuration for the connection to character servers.
 	 */
-	const libconfig::Setting &character_servers = cfg.getRoot()["character_servers"];
+	sol::table cs_tbl = tbl.get<sol::table>("character_servers");
+	cs_tbl.for_each([this](sol::object const &key, sol::object const &value) {
+		std::string t_str;
+		character_server_data char_serv;
+		sol::table serv = value.as<sol::table>();
 
-	if (character_servers.isList()) {
-		for (int i = 0; i < character_servers.getLength(); i++) {
-			const libconfig::Setting &serv = character_servers[i];
-			character_server_data char_serv;
-
-			if (!serv.lookupValue("Id", tmp_value)) {
-				AuthLog->error("Invalid or non-existent 'id' parameter for character server #{}, skipping...", i + 1);
-				continue;
-			}
-			char_serv.id = tmp_value;
-
-			if (!serv.lookupValue("Name", tmp_string)) {
-				AuthLog->error("Invalid or non-existent 'name' parameter for character server #{}, skipping...", i + 1);
-				continue;
-			}
-			char_serv.name = tmp_string;
-
-			if (!serv.lookupValue("Host", tmp_string)) {
-				AuthLog->error("Invalid or non-existent 'host' parameter for character server '{}', skipping...", char_serv.name);
-				continue;
-			}
-			char_serv.ip_address = tmp_string;
-
-			if (!serv.lookupValue("Port", tmp_value)) {
-				AuthLog->error("Invalid or non-existent 'port' parameter for character server '{}', skipping...", char_serv.name);
-				continue;
-			}
-			char_serv.port = tmp_value;
-
-			if (!serv.lookupValue("Type", tmp_value)) {
-				AuthLog->error("Invalid or non-existent 'type' parameter for character server '{}', skipping...", char_serv.name);
-				continue;
-			}
-
-			if (tmp_value < CHAR_SERVER_TYPE_NORMAL || tmp_value >= CHAR_SERVER_TYPE_MAX) {
-				AuthLog->error("Invalid or non-existent 'type' parameter for character server '{}', skipping...", char_serv.name);
-				continue;
-			}
-
-			char_serv.server_type = static_cast<character_server_types>(tmp_value);
-
-			if (!serv.lookupValue("IsNew", tmp_value)) {
-				AuthLog->error("Invalid or non-existent 'is_new' parameter for character server '{}', skipping...", char_serv.name);
-				continue;
-			}
-
-			char_serv.is_new = tmp_value ? true : false;
-
-			add_character_server(char_serv);
-			AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.is_new ? "(new)" : "");
+		char_serv.id = key.as<int>();
+		char_serv.name = serv.get_or("Name", std::string(""));
+		if (char_serv.name.empty()) {
+			AuthLog->error("Invalid or non-existent 'name' parameter for character server #{}, skipping...", char_serv.id);
+			return;
 		}
-	} else {
-		AuthLog->warn("Invalid config type for 'log' provided, expected group. Skipping all entries...");
-	}
+
+		char_serv.ip_address = serv.get_or("Host", std::string(""));
+		if (char_serv.ip_address.empty()) {
+			AuthLog->error("Invalid or non-existent 'host' parameter for character server '{}', skipping...", char_serv.name);
+			return;
+		}
+
+		char_serv.port = serv.get_or("Port", 0);
+		if (!char_serv.port) {
+			AuthLog->error("Invalid or non-existent 'port' parameter for character server '{}', skipping...", char_serv.name);
+			return;
+		}
+
+		char_serv.server_type = serv.get_or("Type", CHAR_SERVER_TYPE_NORMAL);
+
+		char_serv.is_new = serv.get_or("IsNew", false);
+
+		add_character_server(char_serv);
+		AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.is_new ? "(new)" : "");
+	});
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!parse_common_configs(cfg))
+	if (!parse_common_configs(tbl))
 		return false;
 
-	AuthLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
+	AuthLog->info("Done reading server configuration from '{}'.", file_path);
 
 	return true;
 }
@@ -218,7 +189,7 @@ void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
 		AuthServer->set_shutdown_stage(SHUTDOWN_INITIATED);
-		AuthServer->set_shutdown_signal(SIGINT);
+		AuthServer->set_shutdown_signal(SIGTERM);
 	}
 }
 

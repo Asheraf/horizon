@@ -27,6 +27,8 @@
 #include "Server/Zone/Zone.hpp"
 
 using namespace Horizon::Zone;
+using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Models::Character;
 
 ZoneSocket::ZoneSocket(std::shared_ptr<tcp::socket> socket)
 : Socket(socket)
@@ -62,17 +64,16 @@ void ZoneSocket::start()
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void ZoneSocket::on_close()
+void ZoneSocket::on_close(bool error)
 {
 	ZoneLog->info("Closed connection from {}.", remote_ip_address());
+
+	get_session()->perform_cleanup();
 }
 
 void ZoneSocket::on_error()
 {
-	// Session cleanup if client has not exited properly.
-	if (get_session()) {
-		get_session()->cleanup_on_error();
-	}
+
 }
 
 /**

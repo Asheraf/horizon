@@ -61,7 +61,7 @@ public:
 	~Player();
 
 	/* Session Accessors */
-	std::shared_ptr<ZoneSession> get_session() { return _session.lock(); }
+	std::shared_ptr<ZoneSession> get_session() { return _session; }
 	std::shared_ptr<GameAccount> get_game_account() { return _game_account.lock(); }
 	std::shared_ptr<Models::Character::Character> get_character() { return _character_model.lock(); }
 	std::shared_ptr<PacketHandler> get_packet_handler() { return _packet_handler.lock(); }
@@ -80,11 +80,13 @@ public:
 	void on_movement_step() override;
 	void on_movement_end() override;
 
+	void move_to_map(std::shared_ptr<Map> map, MapCoords coords = { 0, 0 });
 	void update_viewport();
 
 	void add_entity_to_viewport(std::weak_ptr<Entity> entity);
 	void realize_entity_movement(std::weak_ptr<Entity> entity);
-
+	void remove_entity_from_viewport(std::shared_ptr<Entity> entity, entity_viewport_notification_type type);
+	
 	entity_viewport_entry create_viewport_entry(std::weak_ptr<Entity> entity);
 
 	template<typename ZC_PACKET_T>
@@ -101,7 +103,7 @@ public:
 	sol::state &get_lua_state() { return _lua_state; }
 
 private:
-	std::weak_ptr<ZoneSession> _session;
+	std::shared_ptr<ZoneSession> _session;
 	std::weak_ptr<GameAccount> _game_account;
 	std::weak_ptr<Models::Character::Character> _character_model;
 	std::weak_ptr<PacketHandler> _packet_handler;

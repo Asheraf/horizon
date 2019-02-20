@@ -20,6 +20,7 @@
 
 #include "Server/Zone/Game/Entities/Entity.hpp"
 #include "Server/Zone/Game/Map/Path/AStar.hpp"
+#include "Server/Zone/Game/Status/Attributes.hpp"
 
 namespace Horizon
 {
@@ -57,7 +58,27 @@ public:
 	virtual void on_movement_step() = 0;
 	virtual void on_movement_end() = 0;
 
-	virtual void notify_nearby_players_of_movement(MapCoords const &to);
+	/**
+	 * Attributes
+	 */
+	Status::Strength const &get_strength() { return _str; }
+	void set_strength(Status::Strength str) { _str = str; }
+
+	Status::Agility const &get_agility() { return _agi; }
+	void set_agility(Status::Agility const &agi) { _agi = agi; }
+
+	Status::Vitality const &get_vitality() { return _vit; }
+	void set_vitality(Status::Vitality const &vit) { _vit = vit; }
+
+	Status::Dexterity const &get_dexterity() { return _dex; }
+	void set_dexterity(Status::Dexterity const &dex) { _dex = dex; }
+
+	Status::Intelligence const &get_intelligence() { return _int; }
+	void set_intelligence(Status::Intelligence const &__int) { _int = __int; }
+
+	Status::Luck const &get_luck() { return _luk; }
+	void set_luck(Status::Luck const &luk) { _luk = luk; }
+
 	/**
 	 * Unit Data
 	 */
@@ -126,12 +147,20 @@ public:
 
 	MapCoords const &get_dest_pos() const { return _dest_pos; }
 
-	uint16_t get_movement_speed() const { return _movement_speed; }
+	uint16_t get_movement_speed(int cost = 10) const { return _movement_speed * cost / 10; }
 	void set_movement_speed(uint16_t speed) { _movement_speed = speed; }
 	
 private:
 	MapCoords _changed_dest_pos{0, 0}, _dest_pos{0, 0};
 	AStar::CoordinateList _walk_path;
+
+	// Attributes
+	Status::Strength _str;
+	Status::Agility _agi;
+	Status::Vitality _vit;
+	Status::Dexterity _dex;
+	Status::Intelligence _int;
+	Status::Luck _luk;
 
 	// Unit Data
 	std::string _name{""};
@@ -142,7 +171,7 @@ private:
 	uint32_t _hair_style_id{0}, _body_style_id{0};
 	uint8_t _gender{0};
 	entity_posture_types _posture{0};
-	directions _facing_dir{DIR_NORTH};
+	directions _facing_dir{DIR_SOUTH};
 	uint16_t _movement_speed{DEFAULT_MOVEMENT_SPEED};
 };
 }

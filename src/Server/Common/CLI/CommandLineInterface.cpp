@@ -23,6 +23,7 @@
 #include <readline/history.h>
 #endif
 #include <Server/Common/Server.hpp>
+#include <signal.h>
 
 #define TERMINAL_STR "Horizon $> "
 
@@ -37,7 +38,6 @@ void cli_thread_start(Server *serv)
 
 	while (serv->get_shutdown_stage() == SHUTDOWN_NOT_STARTED)
 	{
-
 		char *command_str;
 
 		command_str = readline(TERMINAL_STR);

@@ -62,7 +62,7 @@ void AuthSocket::start()
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void AuthSocket::on_close()
+void AuthSocket::on_close(bool error)
 {
 	AuthLog->info("Closed connection from {}.", remote_ip_address());
 

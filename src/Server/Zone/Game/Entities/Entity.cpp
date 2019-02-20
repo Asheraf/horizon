@@ -47,6 +47,7 @@ Entity::~Entity()
 
 void Entity::initialize()
 {
+	_is_initialized = true;
 }
 
 void Entity::update(uint32_t /*diff*/)
@@ -59,7 +60,7 @@ bool Entity::is_in_range_of(std::shared_ptr<Entity> e, uint8_t range)
 	if (e->get_map()->get_name().compare(get_map()->get_name()))
 		return false;
 
-	return get_map_coords().within_range(e->get_map_coords(), range);
+	return get_map_coords().is_within_range(e->get_map_coords(), range);
 }
 
 std::shared_ptr<Entity> Entity::get_nearby_entity(uint32_t guid)
@@ -70,4 +71,12 @@ std::shared_ptr<Entity> Entity::get_nearby_entity(uint32_t guid)
 	get_map()->visit_in_range(get_map_coords(), search_visitor);
 
 	return searcher.get_result().lock();
+}
+
+void Entity::notify_nearby_players_of_self(entity_viewport_notification_type notif_type)
+{
+	GridEntityExistenceNotifier existence_notify(weak_from_this(), notif_type);
+	GridReferenceContainerVisitor<GridEntityExistenceNotifier, GridReferenceContainer<AllEntityTypes>> entity_visitor(existence_notify);
+
+	get_map()->visit_in_range(get_map_coords(), entity_visitor);
 }

@@ -25,6 +25,11 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/bind.hpp>
+#include <mysql/mysql_version.h>
+#include <jdbc/cppconn/version_info.h>
+#include <luajit-2.0/luajit.h>
+#include <readline/readline.h>
+#include <zlib.h>
 
 /* Public */
 Server::Server(std::string /*name*/, std::string config_file_path, std::string config_file_name)
@@ -37,11 +42,18 @@ Server::Server(std::string /*name*/, std::string config_file_path, std::string c
 	std::cout << "  \\_| |_/\\___/|_|  |_/___\\___/|_| |_|  " << std::endl;
 	std::cout << std::endl;
 
-	CoreLog->info("Version: {}", VER_FILEVERSION_STR);
+	CoreLog->info("Compile CXX Flags: {}", _CMAKE_CXX_FLAGS);
+	CoreLog->info("Version: {}", VER_PRODUCTVERSION_STR);
+	CoreLog->info("Last Update: {}", _DATE);
 	CoreLog->info("Branch: {}", _BRANCH);
 	CoreLog->info("Copyright: {}", VER_LEGALCOPYRIGHT_STR);
+	CoreLog->info("SPDLog Version: v{}.{}.{}", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 	CoreLog->info("Boost Version: v{}.{}.{}", (BOOST_VERSION / 100000), (BOOST_VERSION / 100 % 1000),(BOOST_VERSION % 100));
-	CoreLog->info("Compiled On: ", _DATE);
+	CoreLog->info("MySQL Version: v{}", MYSQL_SERVER_VERSION);
+	CoreLog->info("MySQL Connector++ Version: v{}", MYCPPCONN_STATIC_MYSQL_VERSION);
+	CoreLog->info("LuaJit Version: v{} with {}", LUAJIT_VERSION, LUA_RELEASE);
+	CoreLog->info("Readline Version: v{}", RL_READLINE_VERSION);
+	CoreLog->info("ZLib Version: v{}", ZLIB_VERSION);
 
 	this->general_config.config_file_path = config_file_path;
 	this->general_config.config_file_name = config_file_name;
@@ -93,31 +105,23 @@ void Server::parse_exec_args(const char *argv[], int argc)
 #define core_config_error(setting_name, default) \
 CoreLog->error("No setting for '{}' in configuration file, defaulting to {}", setting_name, default);
 
-bool Server::parse_common_configs(libconfig::Config &cfg)
+bool Server::parse_common_configs(sol::table &tbl)
 {
 	std::string tmp_string{""};
 	uint32_t tmp_value{0};
 
-	if (cfg.lookupValue("bind_ip", tmp_string)) {
-		network_conf().set_listen_ip(tmp_string);
-	} else {
-		core_config_error("bind_ip", "127.0.0.1");
-		network_conf().set_listen_ip("127.0.0.1");
-	}
+	network_conf().set_listen_ip(tbl.get_or("bind_ip", std::string("127.0.0.1")));
 
-	if (cfg.lookupValue("bind_port", tmp_value)) {
-		network_conf().set_listen_port(tmp_value);
-	} else {
+	network_conf().set_listen_port(tbl.get_or("bind_port", 0));
+	if (network_conf().get_listen_port() == 0){
 		AuthLog->error("Invalid or non-existent configuration for 'bind_port', Halting...");
 		return false;
 	}
 
-	if (cfg.lookupValue("network_threads", tmp_value)) {
-		network_conf().set_network_thread_count(tmp_value);
-	} else {
+	network_conf().set_network_thread_count(tbl.get_or("network_threads", 1));
+
+	if (std::thread::hardware_concurrency() > network_conf().get_network_thread_count())
 		core_config_error("network_threads", 1);
-		network_conf().set_network_thread_count(1);
-	}
 
 	CoreLog->info("Network configured to bind on tcp://{}:{} with a pool of {} threads.",
 				  network_conf().get_listen_ip(), network_conf().get_listen_port(), network_conf().get_network_thread_count());
@@ -127,116 +131,65 @@ bool Server::parse_common_configs(libconfig::Config &cfg)
 	 * @brief
 	 */
 	if (!general_conf().is_test_run()) {
-		const libconfig::Setting &dbconf = cfg.getRoot()["database"];
+		sol::table dbtbl = tbl.get<sol::table>("database");
 
-		if (dbconf.lookupValue("hostname", tmp_string)) {
-			database_conf().set_host(tmp_string);
-		} else {
-			core_config_error("hostname", "127.0.0.1");
-			database_conf().set_host("127.0.0.1");
-		}
-
-		if (dbconf.lookupValue("port", tmp_value)) {
-			database_conf().set_port(tmp_value);
-		} else {
-			core_config_error("hostname", 3306);
-			database_conf().set_port(3306);
-		}
-
-		if (dbconf.lookupValue("database", tmp_string)) {
-			database_conf().set_database(tmp_string);
-		} else {
-			core_config_error("database", "horizon");
-			database_conf().set_database("horizon");
-		}
-
-		if (dbconf.lookupValue("username", tmp_string)) {
-			database_conf().set_username(tmp_string);
-		} else {
-			core_config_error("username", "horizon");
-			database_conf().set_username("horizon");
-		}
-
-		if (dbconf.lookupValue("password", tmp_string)) {
-			database_conf().set_password(tmp_string);
-		} else {
-			core_config_error("password", "horizon");
-			database_conf().set_password("horizon");
-		}
-
-		if (dbconf.lookupValue("connection_threads", tmp_value)) {
-			database_conf().set_db_thread_count(tmp_value);
-		} else {
-			core_config_error("connection_threads", 1);
-			database_conf().set_db_thread_count(1);
-		}
+		database_conf().set_host(dbtbl.get_or("hostname", std::string("127.0.0.1")));
+		database_conf().set_port(dbtbl.get_or("port", 3306));
+		database_conf().set_database(dbtbl.get_or("database", std::string("horizon")));
+		database_conf().set_username(dbtbl.get_or("username", std::string("horizon")));
+		database_conf().set_password(dbtbl.get_or("password", std::string("horizon")));
+		database_conf().set_db_thread_count(dbtbl.get_or("connection_threads", 1));
 	}
 
 	/**
 	 * Core I/O Thread Count
 	 */
-	if (cfg.lookupValue("global_io_threads", tmp_value)) {
-		general_conf().set_io_thread_count(tmp_value);
-		CoreLog->info("Using {} threads for working on Global I/O Events.", general_conf().get_io_thread_count());
-	} else {
-		CoreLog->info("I/O Thread configuration not found, defaulting to 2.");
-		general_conf().set_io_thread_count(2);
-	}
+	general_conf().set_io_thread_count(tbl.get_or("global_io_threads", 1));
+
+	CoreLog->info("Using {} threads for working on Global I/O Events.", general_conf().get_io_thread_count());
 
 	/**
 	 * Core Update Interval.
 	 */
-	if (cfg.lookupValue("core_update_interval", tmp_value)) {
-		general_conf().set_core_update_interval(tmp_value);
-		CoreLog->info("Core update interval set to {}µs.", general_conf().get_core_update_interval());
-	} else {
-		CoreLog->info("Core update interval was not defined, defaulting to 500µs.");
-		general_conf().set_core_update_interval(500);
-	}
-
+	general_conf().set_core_update_interval(tbl.get_or("core_update_interval", 500));
+	CoreLog->info("Core update interval set to {}µs.", general_conf().get_core_update_interval());
 
 	/**
 	 * Client Type
 	 */
-	if (!cfg.lookupValue("client_type", tmp_value)) {
-		CoreLog->info("No client type set, defaulting to 0 (Ragexe)");
-		general_conf().get_client_type();
-	} else {
-		switch (tmp_value)
-		{
-		case CLIENT_TYPE_RAGEXE:
-			general_conf().set_client_type(CLIENT_TYPE_RAGEXE);
-			CoreLog->warn("Server has been configured to use the 'Ragexe' client for packet information.");
-			break;
-		case CLIENT_TYPE_RAGEXE_RE:
-			general_conf().set_client_type(CLIENT_TYPE_RAGEXE_RE);
-			CoreLog->warn("Server has been configured to use the 'RagexeRE' client for packet information.");
-			break;
-		case CLIENT_TYPE_ZERO:
-			general_conf().set_client_type(CLIENT_TYPE_ZERO);
-			CoreLog->warn("Server has been configured to use the 'ZERO' client for packet information.");
-			break;
-		case CLIENT_TYPE_SAKRAY:
-			general_conf().set_client_type(CLIENT_TYPE_SAKRAY);
-			CoreLog->warn("Server has been configured to use the 'Sakray' client for packet information.");
-			break;
-		case CLIENT_TYPE_AD:
-			general_conf().set_client_type(CLIENT_TYPE_AD);
-			CoreLog->warn("Server has been configured to use the 'AD' client for packet information.");
-			break;
-		default:
-			CoreLog->warn("Invalid client type {} set, defaulting to 0 (Ragexe)", tmp_value);
-			general_conf().set_client_type(CLIENT_TYPE_RAGEXE);
-			break;
-		}
+	general_conf().set_client_type(tbl.get_or("client_type", CLIENT_TYPE_RAGEXE));
+	switch (general_conf().get_client_type())
+	{
+	case CLIENT_TYPE_RAGEXE:
+		general_conf().set_client_type(CLIENT_TYPE_RAGEXE);
+		CoreLog->warn("Server has been configured to use the 'Ragexe' client for packet information.");
+		break;
+	case CLIENT_TYPE_RAGEXE_RE:
+		general_conf().set_client_type(CLIENT_TYPE_RAGEXE_RE);
+		CoreLog->warn("Server has been configured to use the 'RagexeRE' client for packet information.");
+		break;
+	case CLIENT_TYPE_ZERO:
+		general_conf().set_client_type(CLIENT_TYPE_ZERO);
+		CoreLog->warn("Server has been configured to use the 'ZERO' client for packet information.");
+		break;
+	case CLIENT_TYPE_SAKRAY:
+		general_conf().set_client_type(CLIENT_TYPE_SAKRAY);
+		CoreLog->warn("Server has been configured to use the 'Sakray' client for packet information.");
+		break;
+	case CLIENT_TYPE_AD:
+		general_conf().set_client_type(CLIENT_TYPE_AD);
+		CoreLog->warn("Server has been configured to use the 'AD' client for packet information.");
+		break;
+	default:
+		CoreLog->warn("Invalid client type {} set, defaulting to 0 (Ragexe)", tmp_value);
+		general_conf().set_client_type(CLIENT_TYPE_RAGEXE);
+		break;
 	}
 
-	if (!cfg.lookupValue("packet_version", tmp_value)) {
-		CoreLog->warn("No packet version defined for packet handling, defaulting to {}", 20141022);
-		general_conf().set_packet_version(20141022);
-	} else {
-		CoreLog->info("Server has been configured to use PacketVersion '{}' for packet handling.", tmp_value);
-		general_conf().set_packet_version(tmp_value);
+	general_conf().set_packet_version(tbl.get_or("packet_version", 0));
+	if (general_conf().get_packet_version() == 0) {
+		CoreLog->warn("No packet version defined for packet handling!");
+		return false;
 	}
 
 	return true;

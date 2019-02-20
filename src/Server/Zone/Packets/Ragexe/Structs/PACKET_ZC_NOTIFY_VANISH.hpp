@@ -36,7 +36,10 @@ struct PACKET_ZC_NOTIFY_VANISH : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << guid;
+		buf << type;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -53,6 +56,14 @@ struct PACKET_ZC_NOTIFY_VANISH : public Packet
 	}
 
 	/* Size: 7 bytes */
+	uint32_t guid{0};
+	/// type:
+	///     0 = out of sight
+	///     1 = died
+	///     2 = logged out
+	///     3 = teleport
+	///     4 = trickdead
+	uint8_t type{0};
 };
 }
 }

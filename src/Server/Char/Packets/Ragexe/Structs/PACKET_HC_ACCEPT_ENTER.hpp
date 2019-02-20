@@ -88,23 +88,23 @@ struct PACKET_HC_ACCEPT_ENTER : public Packet
 		uint64_t base_experience{0};         ///< 4
 		uint32_t zeny{0};                    ///< 8
 		uint64_t job_experience{0};          ///< 12
-		uint32_t job_level{0};               ///< 16
+		uint32_t job_level{1};               ///< 16
 		uint32_t sc_opt1{0};                 ///< 20 Probably OPT1 / 2
 		uint32_t sc_opt2{0};                 ///< 24
 		uint32_t body_state{0};              ///< 28
 		uint32_t virtue{0};                  ///< 32
 		uint32_t honor{0};                   ///< 36
 		uint16_t status_points{0};           ///< 40
-		uint32_t hp{0};                      ///< 42
-		uint32_t maximum_hp{0};              ///< 46
-		uint16_t sp{0};                      ///< 50
-		uint16_t maximum_sp{0};              ///< 52
-		uint16_t walk_speed{0};              ///< 54
-		uint16_t job_class{0};               ///< 56
+		uint32_t hp{1};                      ///< 42
+		uint32_t maximum_hp{1};              ///< 46
+		uint16_t sp{1};                      ///< 50
+		uint16_t maximum_sp{1};              ///< 52
+		uint16_t walk_speed{DEFAULT_WALK_SPEED};              ///< 54
+		uint16_t job_id{0};                  ///< 56
 		uint16_t hair_view_id{0};            ///< 58
 		uint16_t body_view_id{0};            ///< 60 p->body in hercules.
 		uint16_t weapon_view_id{0};          ///< 62 OPTION_* in hercules.
-		uint16_t base_level{0};              ///< 64
+		uint16_t base_level{1};              ///< 64
 		uint16_t skill_point{0};             ///< 66
 		uint16_t head_bottom_view_id{0};     ///< 68
 		uint16_t shield_id{0};               ///< 70
@@ -113,12 +113,12 @@ struct PACKET_HC_ACCEPT_ENTER : public Packet
 		uint16_t hair_color_id{0};           ///< 76
 		uint16_t clothes_color_id{0};        ///< 78
 		char name[MAX_UNIT_NAME_LENGTH]{0};  ///< 80
-		uint8_t strength{0};                 ///< 104
-		uint8_t agility{0};
-		uint8_t vitality{0};
-		uint8_t intelligence{0};
-		uint8_t dexterity{0};
-		uint8_t luck{0};
+		uint8_t strength{1};                 ///< 104
+		uint8_t agility{1};
+		uint8_t vitality{1};
+		uint8_t intelligence{1};
+		uint8_t dexterity{1};
+		uint8_t luck{1};
 		uint16_t char_slot{0};               ///< 110
 		uint16_t rename_count{0};            ///< 112
 		char map_name[MAP_NAME_LENGTH_EXT]{0};///< 114

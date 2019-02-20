@@ -57,7 +57,7 @@ struct PACKET_HC_ACCEPT_ENTER : public Ragexe::PACKET_HC_ACCEPT_ENTER
 			buf << sp;
 			buf << maximum_sp;
 			buf << walk_speed;
-			buf << job_class;
+			buf << job_id;
 			buf << hair_view_id;
 			buf << body_view_id;
 			buf << weapon_view_id;

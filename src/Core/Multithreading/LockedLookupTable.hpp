@@ -26,7 +26,7 @@
 #include <list>
 #include <vector>
 
-template <typename Key, typename Value, typename Hash=std::hash<Key>>
+template <typename Key, typename Value, typename Hash = std::hash<Key>>
 class LockedLookupTable
 {
 class bucket_type;

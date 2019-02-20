@@ -63,7 +63,7 @@ void CharSocket::start()
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void CharSocket::on_close()
+void CharSocket::on_close(bool error)
 {
 	CharLog->info("Closed connection from {}.", remote_ip_address());
 

@@ -42,7 +42,7 @@ bool MapManager::LoadMapCache()
 	Horizon::Libraries::MapCache m;
 	std::string db_path = ZoneServer->get_zone_config().get_database_path();
 
-	m.setMapListPath(db_path + "map_list.conf");
+	m.setMapListPath(db_path + "map_list.lua");
 	m.setMapCachePath(db_path + ZoneServer->get_zone_config().get_mapcache_file_name());
 
 	if (m.ReadMapListConfig() != MCACHE_CONFIG_OK) {

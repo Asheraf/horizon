@@ -48,15 +48,33 @@ public:
 	~Map();
 
 	std::shared_ptr<MapThreadContainer> get_map_container() { return _container.lock(); }
-	std::string get_name() { return _name; }
-	int getArea() { return _width * _height; }
-	uint16_t getWidth() { return _width; }
-	uint16_t getHeight() { return _height; }
+
+	std::string const &get_name() { return _name; }
+
+	int get_area() { return _width * _height; }
+
+	uint16_t get_width() { return _width; }
+	uint16_t get_height() { return _height; }
+
 	GridHolderType &getGridHolder() { return _gridholder; }
+
 	bool ensure_grid(GridCoords coords);
 	void ensure_all_grids();
 
 	bool is_obstruction(uint16_t x, uint16_t y);
+
+	MapCoords get_random_coords()
+	{
+		uint16_t x = 0;
+		uint16_t y = 0;
+
+		do {
+			x = rand() % _width;
+			y = rand() % _height;
+		} while (is_obstruction(x, y));
+
+		return { x, y };
+	}
 
 	template <class T>
 	bool ensure_grid_for_entity(T *entity, MapCoords coords);
@@ -88,14 +106,18 @@ private:
 template <class T>
 bool Horizon::Zone::Game::Map::ensure_grid_for_entity(T *entity, MapCoords mcoords)
 {
+	std::string const &new_map_name = entity->get_map()->get_name();
 	GridCoords new_gcoords = mcoords.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>();
 
-	if (entity->get_grid_coords() != new_gcoords) {
-		if (entity->has_valid_grid_reference())
-			entity->remove_grid_reference();
-		entity->set_grid_coords(new_gcoords);
-		_gridholder.get_grid(new_gcoords).template add_object(entity);
-	}
+	if (new_map_name.compare(get_name()) == 0 && entity->get_grid_coords() == new_gcoords)
+		return false;
+
+	if (entity->has_valid_grid_reference())
+		entity->remove_grid_reference();
+
+	entity->set_grid_coords(new_gcoords);
+
+	_gridholder.get_grid(new_gcoords).template add_object(entity);
 	
 	return true;
 }

@@ -22,6 +22,7 @@
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Client.hpp"
+#include "Server/Zone/Game/Atcommand/AtcommandExecutor.hpp"
 #include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
 #include "Server/Zone/Game/Entities/Unit/Unit.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
@@ -146,7 +147,6 @@ bool PacketHandler::verify_new_connection(uint32_t auth_code, uint32_t account_i
 
 	session->set_session_data(session_data);
 	session->set_game_account(game_account);
-
 	session->set_character(std::make_shared<Character>(char_id));
 
 	if (!session->get_character()->load_all(ZoneServer, char_id)) {
@@ -158,7 +158,7 @@ bool PacketHandler::verify_new_connection(uint32_t auth_code, uint32_t account_i
 	return true;
 }
 
-void PacketHandler::process_player_entry()
+bool PacketHandler::process_player_entry()
 {
 	std::shared_ptr<ZoneSession> session = get_socket()->get_session();
 	std::shared_ptr<Position> position = session->get_character()->get_position_data();
@@ -166,13 +166,20 @@ void PacketHandler::process_player_entry()
 	// Initilaize The Player
 	MapCoords mcoords(position->get_current_x(), position->get_current_y());
 
-	std::shared_ptr<Player> player = std::make_shared<Player>(session->get_game_account()->get_id(), mcoords, session);
+	std::shared_ptr<Player> player = std::make_shared<Player>(session->get_game_account()->get_id(),
+															  mcoords,
+															  session);
 	session->set_player(player);
 	set_player(player);
 
-	player->set_map(MapMgr->add_player_to_map(position->get_current_map(), player));
+	std::shared_ptr<Map> map = MapMgr->get_map(position->get_current_map());
 
-	player->initialize();
+	if (!map) {
+		ZoneLog->error("Map {} was not found or managed by any container! Login to player {} is denied.", position->get_current_map(), player->get_name());
+		return false;
+	}
+	player->set_map(map);
+	map->get_map_container()->add_player(map->get_name(), player);
 
 	// Remove socket from updates on zone server after initial connection
 	// it will be managed by the map container thread.
@@ -180,6 +187,8 @@ void PacketHandler::process_player_entry()
 
 	ZoneLog->info("New connection established for account '{}' using version '{}' from '{}'.",
 				  session->get_game_account()->get_id(), session->get_session_data()->get_client_version(), get_socket()->remote_ip_address());
+
+	return true;
 }
 
 bool PacketHandler::Handle_CZ_ENTER(PacketBuffer &buf)
@@ -191,11 +200,12 @@ bool PacketHandler::Handle_CZ_ENTER(PacketBuffer &buf)
 	if (!verify_new_connection(pkt.auth_code, pkt.account_id, pkt.char_id))
 		return false;
 
+	if (!process_player_entry())
+		return false;
+
 	// Send initial packets.
 	Send_ZC_AID();
 	Send_ZC_ACCEPT_ENTER3();
-
-	process_player_entry();
 
 	return true;
 }
@@ -226,7 +236,10 @@ bool PacketHandler::Handle_CZ_RESTART(PacketBuffer &buf)
 	switch (pkt.type)
 	{
 	case 0: std::cout << "Respawn" << std::endl; break;
-	case 1: Send_ZC_RESTART_ACK(1); break;
+	case 1:
+			Send_ZC_RESTART_ACK(1);
+			get_player()->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
+			break;
 	}
 
 	return true;
@@ -237,17 +250,10 @@ bool PacketHandler::Handle_CZ_REQ_DISCONNECT(PacketBuffer &buf)
 	Ragexe::PACKET_CZ_REQ_DISCONNECT pkt;
 
 	pkt << buf;
-
-	get_session()->get_session_data()->remove(ZoneServer);
-
-	get_session()->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
-
-	if (get_player()->get_map())
-		MapMgr->remove_player_from_map(get_player()->get_map()->get_name(), get_player());
-
 	ZoneLog->info("Character '{}' has logged out. {}", get_session()->get_character()->get_name(), pkt.type);
-
 	Send_ZC_ACK_REQ_DISCONNECT(true);
+	get_session()->get_session_data()->remove(ZoneServer);
+	get_player()->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
 	return true;
 }
 
@@ -257,8 +263,10 @@ bool PacketHandler::Handle_CZ_CHOOSE_MENU(PacketBuffer &buf)
 
 	pkt << buf;
 
-	auto scr_mgr = get_player()->get_map()->get_map_container()->get_script_manager();
-	scr_mgr->continue_npc_script_for_player(get_player(), pkt.guid, pkt.choice);
+	if (pkt.choice != -1) {
+		auto scr_mgr = get_player()->get_map()->get_map_container()->get_script_manager();
+		scr_mgr->continue_npc_script_for_player(get_player(), pkt.guid, pkt.choice);
+	}
 
 	return true;
 }
@@ -276,7 +284,6 @@ bool PacketHandler::Handle_CZ_CONTACTNPC(PacketBuffer &buf)
 	}
 
 	auto scr_mgr = get_player()->get_map()->get_map_container()->get_script_manager();
-
 	scr_mgr->contact_npc_for_player(get_player(), pkt.guid);
 
 	return true;
@@ -352,8 +359,17 @@ bool PacketHandler::Handle_CZ_REQUEST_CHAT(PacketBuffer &buf)
 {
 	uint32_t guid = get_player()->get_guid();
 	Ragexe::PACKET_CZ_REQUEST_CHAT pkt;
+	int msg_first_char = get_player()->get_name().size() + 3;
 
 	pkt << buf;
+
+	std::string message;
+
+	if (pkt.message[msg_first_char] == '@') {
+		AtcommandExecutor atcmd(get_player(), &pkt.message[msg_first_char + 1]);
+		atcmd.execute();
+		return true;
+	}
 
 	Send_ZC_NOTIFY_CHAT(guid, pkt.message, GRID_NOTIFY_AREA_WOS);
 	Send_ZC_NOTIFY_PLAYERCHAT(pkt.message);
@@ -374,17 +390,10 @@ void PacketHandler::Send_ZC_REFUSE_ENTER(zone_server_reject_types error)
 void PacketHandler::Send_ZC_RESTART_ACK(uint8_t type)
 {
 	Ragexe::PACKET_ZC_RESTART_ACK pkt;
-
 	pkt.type = type;
-
-	if (get_player()->get_map())
-		MapMgr->remove_player_from_map(get_player()->get_map()->get_name(), get_player());
-
-	get_session()->get_character()->save(ZoneServer, CHAR_SAVE_ALL);
+	send_packet(pkt.serialize());
 
 	ZoneLog->info("Character '{}' has moved to the character server.", get_session()->get_character()->get_name());
-
-	send_packet(pkt.serialize());
 }
 
 void PacketHandler::Send_ZC_ACK_REQ_DISCONNECT(bool allowed)
@@ -418,26 +427,59 @@ void PacketHandler::Send_ZC_ACCEPT_ENTER3()
 			y = 0;
 	}
 
-	pkt.start_time = time(nullptr);
+	pkt.start_time = (uint32_t) get_sys_time();
 	pkt.x_size = pkt.y_size = 5;
 	pkt.font = ui_settings->get_font();
 	pkt.gender = character->get_gender();
 	send_packet(pkt.serialize(x, y, DIR_SOUTH));
 }
 
-void PacketHandler::Send_ZC_NPCACK_MAPMOVE(std::string const &map_name, uint16_t x, uint16_t y)
+void PacketHandler::Send_ZC_ACCEPT_ENTER2()
+{
+	std::shared_ptr<Models::Character::Character> character = get_socket()->get_session()->get_character();
+	std::shared_ptr<Models::Character::Position> position = character->get_position_data();
+	std::shared_ptr<Models::Character::UISettings> ui_settings = character->get_ui_settings();
+
+	Ragexe::PACKET_ZC_ACCEPT_ENTER2 pkt;
+	int x = position->get_current_x();
+	int y = position->get_current_y();
+
+	if (x == 0 && y == 0) {
+		if ((x = position->get_saved_x()) == 0)
+			x = 0;
+		if ((y = position->get_saved_y()) == 0)
+			y = 0;
+	}
+
+	pkt.start_time = (uint32_t) get_sys_time();
+	pkt.x_size = pkt.y_size = 5;
+	pkt.font = ui_settings->get_font();
+	send_packet(pkt.serialize(x, y, DIR_SOUTH));
+}
+
+void PacketHandler::Send_ZC_NPCACK_MAPMOVE(std::string &map_name, uint16_t x, uint16_t y)
 {
 	Ragexe::PACKET_ZC_NPCACK_MAPMOVE pkt;
+
+	if (map_name.size() + 4 > MAP_NAME_LENGTH_EXT) {
+		ZoneLog->error("Copying '.gat' to map name {} would exceed length.", map_name);
+		return;
+	}
+
+	map_name.append(".gat");
+
 	strncpy(pkt.map_name, map_name.c_str(), MAP_NAME_LENGTH_EXT);
+
 	pkt.x = x;
 	pkt.y = y;
+
 	send_packet(pkt.serialize());
 }
 
 void PacketHandler::Send_ZC_NOTIFY_TIME()
 {
 	Ragexe::PACKET_ZC_NOTIFY_TIME pkt;
-	pkt.timestamp = time(nullptr);
+	pkt.timestamp = (uint32_t) get_sys_time();
 	send_packet(pkt.serialize());
 }
 
@@ -607,5 +649,13 @@ void PacketHandler::Send_ZC_ACK_REQNAME(uint32_t guid, std::string name)
 	Ragexe::PACKET_ZC_ACK_REQNAME pkt;
 	pkt.guid = guid;
 	std::strncpy(pkt.name, name.c_str(), sizeof(pkt.name));
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_NOTIFY_VANISH(uint32_t guid, uint8_t type)
+{
+	Ragexe::PACKET_ZC_NOTIFY_VANISH pkt;
+	pkt.guid = guid;
+	pkt.type = type;
 	send_packet(pkt.serialize());
 }

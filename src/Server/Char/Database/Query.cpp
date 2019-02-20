@@ -46,7 +46,7 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 {
 	addQueryString(SELECT_ALL_CHARS_BY_AID,
 		"SELECT c.id, c.account_id, c.slot, c.name, c.online, c.gender, c.deleted_at, "
-		"csd.job_class, csd.base_level, csd.job_level, csd.base_experience, csd.job_experience, "
+		"csd.job_id, csd.base_level, csd.job_level, csd.base_experience, csd.job_experience, "
 		"csd.zeny, csd.strength, csd.agility, csd.vitality, csd.intelligence, csd.dexterity, csd.luck, "
 		"csd.maximum_hp, csd.hp, csd.maximum_sp, csd.sp, csd.status_points, csd.skill_points, csd.body_state, "
 		"csd.virtue, csd.honor, csd.manner, "
@@ -102,7 +102,7 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 		c.set_gender(CHARACTER_GENDER_FEMALE);
 	// Status
 	csd.set_character_id(char_id);
-	csd.set_job_class(record[7].get<int>());
+	csd.set_job_id(record[7].get<int>());
 	csd.set_base_level(record[8].get<int>());
 	csd.set_job_level(record[9].get<int>());
 	csd.set_base_exp(record[10]);

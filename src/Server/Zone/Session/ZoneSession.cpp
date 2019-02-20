@@ -41,8 +41,8 @@ void ZoneSession::set_game_account(std::shared_ptr<GameAccount> game_acc) { _gam
 std::shared_ptr<SessionData> ZoneSession::get_session_data() { return _session_data; }
 void ZoneSession::set_session_data(std::shared_ptr<SessionData> session_data) { _session_data.swap(session_data); }
 /* Player */
-std::shared_ptr<Player> ZoneSession::get_player() { return _player; }
-void ZoneSession::set_player(std::shared_ptr<Player> p) { _player.swap(p); }
+std::shared_ptr<Player> ZoneSession::get_player() { return _player.lock(); }
+void ZoneSession::set_player(std::weak_ptr<Player> p) { _player = p; }
 
 void ZoneSession::initialize()
 {
@@ -51,7 +51,7 @@ void ZoneSession::initialize()
 
 /**
  * Update loop for each Zone Session.
- * @thread called from main thread via the client manager.
+ * @thread called from map thread container.
  */
 void ZoneSession::update(uint32_t /*diff*/)
 {
@@ -62,14 +62,11 @@ void ZoneSession::update(uint32_t /*diff*/)
 	}
 }
 
-void ZoneSession::cleanup_on_error()
+void ZoneSession::perform_cleanup()
 {
 	std::shared_ptr<Player> player = get_player();
-	get_session_data()->remove(ZoneServer);
+	std::shared_ptr<Character> character = get_character();
 
-	if (get_character())
-		get_character()->save(ZoneServer, CHAR_SAVE_ALL);
-
-	if (player && player->get_map())
-		MapMgr->remove_player_from_map(player->get_map()->get_name(), player);
+	character->save(ZoneServer, CHAR_SAVE_ALL);
+	player->get_map()->get_map_container()->remove_player(player);
 }

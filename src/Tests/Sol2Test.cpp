@@ -24,11 +24,9 @@
 #include <cstring>
 #include <fstream>
 
-
 BOOST_AUTO_TEST_CASE(Sol2Test)
 {
 	sol::state lua;
-	lua.open_libraries(sol::lib::base, sol::lib::coroutine);
 	lua.script(R"(
 			   abc = 123;
 			   function loop()
@@ -55,7 +53,5 @@ BOOST_AUTO_TEST_CASE(Sol2Test)
 		int value = cr();
 		std::cout << value << std::endl;
 	}
-
-	while(true);
 }
 

@@ -38,6 +38,14 @@ CollectIncludeDirectories(
 	PUBLIC_INCLUDES
 )
 
+# LuaJit linker flags for macOS to avoid crashes.
+if (APPLE)
+set_target_properties(mapcache
+	PROPERTIES
+	LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
+	)
+endif()
+
 target_include_directories(mapcache
 	PUBLIC
 		${PUBLIC_INCLUDES}

@@ -73,8 +73,8 @@ struct PACKET_ZC_NOTIFY_STANDENTRY10 : public Packet
 
 			buf << packet_length;
 			buf << (uint8_t) unit_type;
-			buf << account_id;
 			buf << guid;
+			buf << character_id;
 			buf << speed;
 			buf << body_state;
 			buf << health_state;

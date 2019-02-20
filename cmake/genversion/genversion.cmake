@@ -52,6 +52,8 @@ else()
   endif()
 endif()
 
+string(TIMESTAMP COMPILE_DATE "%Y-%m-%d %H:%M:%S")
+
 # Create the actual version.h file from the above params
 if(NOT "${rev_hash_cached}" MATCHES "${rev_hash}" OR NOT "${rev_branch_cached}" MATCHES "${rev_branch}" OR NOT EXISTS "${PROJECT_SOURCE_DIR}/src/version.hpp")
   configure_file(

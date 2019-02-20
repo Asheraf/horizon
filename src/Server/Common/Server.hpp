@@ -28,7 +28,7 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include <libconfig.h++>
+#include <sol.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -71,7 +71,7 @@ public:
 	 * Processing Functions
 	 */
 	/* Common Configuration */
-	bool parse_common_configs(libconfig::Config &cfg);
+	bool parse_common_configs(sol::table &cfg);
 	/* Initialize Core */
 	virtual void initialize_core();
 	virtual void finalize_core();

@@ -115,10 +115,8 @@ enum mcache_error_types
 enum mcache_config_error_types
 {
 	MCACHE_CONFIG_OK                  = 0,
-	MCACHE_CONFIG_INVALID_FILE        = 1,
-	MCACHE_CONFIG_PARSE_ERROR         = 2,
-	MCACHE_CONFIG_INVALID_ROOT_TYPE   = 3,
-	MCACHE_CONFIG_INVALID_VALUE_TYPE  = 4
+	MCACHE_CONFIG_PARSE_ERROR         = 1,
+	MCACHE_CONFIG_INVALID_VALUE_TYPE  = 2,
 };
 
 enum mcache_grf_config_error_types
@@ -126,9 +124,7 @@ enum mcache_grf_config_error_types
 	MCACHE_GRF_CONF_OK                 = 0,
 	MCACHE_GRF_CONF_INVALID_FILE       = 1,
 	MCACHE_GRF_CONF_PARSE_ERROR        = 2,
-	MCACHE_GRF_CONF_INVALID_ROOT_TYPE  = 3,
-	MCACHE_GRF_CONF_INVALID_KEY_TYPE   = 4,
-	MCACHE_GRF_CONF_INVALID_VALUE_TYPE = 5
+	MCACHE_GRF_CONF_INVALID_VALUE_TYPE = 3
 };
 
 enum mcache_import_error_types

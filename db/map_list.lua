@@ -1,4 +1,4 @@
-map_list: [
+map_list = {
 	"alb_ship",
 	"alb2trea",
 	"alberta",
@@ -643,4 +643,4 @@ map_list: [
 	"abbey03",
 	"poring_w01",
 	"poring_w02"
-]
+}

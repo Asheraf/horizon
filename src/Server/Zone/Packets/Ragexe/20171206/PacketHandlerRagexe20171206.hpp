@@ -52,7 +52,6 @@
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_CZ_USE_SKILL.hpp"
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_CZ_USE_SKILL_TOGROUND.hpp"
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX.hpp"
-#include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_ZC_ACCEPT_ENTER3.hpp"
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_ZC_ADD_MEMBER_TO_GROUP.hpp"
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_ZC_GROUP_LIST.hpp"
 #include "Server/Zone/Packets/PacketHandler.hpp"
@@ -74,7 +73,6 @@ public:
 
 	virtual bool Handle_CZ_ENTER(PacketBuffer &buf) override;
 
-	virtual void Send_ZC_ACCEPT_ENTER3() override;
 	virtual void Send_ZC_NOTIFY_STANDENTRY(entity_viewport_entry const &entry) override;
 	virtual void Send_ZC_NOTIFY_MOVEENTRY(entity_viewport_entry const &entry) override;
 

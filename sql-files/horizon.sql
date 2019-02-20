@@ -107,7 +107,7 @@ CREATE TABLE `character_companion_data` (
 
 CREATE TABLE `character_status_data` (
   `id` int(11) unsigned NOT NULL,
-  `job_class` smallint(6) unsigned NOT NULL DEFAULT 0,
+  `job_id` smallint(6) unsigned NOT NULL DEFAULT 0,
   `base_level` smallint(6) unsigned NOT NULL DEFAULT 1,
   `job_level` smallint(6) unsigned NOT NULL DEFAULT 1,
   `base_experience` bigint(20) unsigned NOT NULL DEFAULT 0,

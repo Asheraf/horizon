@@ -20,15 +20,22 @@
 
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Char/Packets/Ragexe/20171220/Structs/PACKET_HC_ACCEPT_ENTER.hpp"
+#include "Server/Char/Packets/Ragexe/20171220/Structs/PACKET_HC_ACCEPT_MAKECHAR.hpp"
 #include "Server/Char/Packets/Ragexe/20171220/Structs/PACKET_HC_SECOND_PASSWD_LOGIN.hpp"
 #include "Server/Char/Packets/Ragexe/20171220/Structs/PACKET_HC_UPDATE_CHARINFO.hpp"
 #include "Server/Char/Packets/PacketHandler.hpp"
 
 namespace Horizon
 {
+namespace Models
+{
+	namespace Character
+	{
+		class Character;
+	}
+}
 namespace Char
 {
-
 class CharSocket;
 
 class PacketHandlerRagexe20171220 : public PacketHandler
@@ -40,6 +47,7 @@ public:
 	virtual void initialize_handlers() override;
 
 	virtual void Send_HC_ACCEPT_ENTER() override;
+	virtual void Send_HC_ACCEPT_MAKECHAR(std::shared_ptr<Models::Character::Character> character) override;
 
 };
 }

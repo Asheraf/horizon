@@ -1,8 +1,22 @@
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #include "JobDB.hpp"
 #include "Server/Zone/Zone.hpp"
-
-#include <libconfig.h++>
 
 Horizon::Zone::Game::JobDB::JobDB()
 {
@@ -123,7 +137,7 @@ Horizon::Zone::Game::JobDB::JobDB()
 	_name2id_list.emplace("Summoner", JOB_SUMMONER);
 }
 
-job_classes Horizon::Zone::Game::JobDB::get_job_class_by_name(std::string name)
+job_classes Horizon::Zone::Game::JobDB::get_job_class_by_name(std::string name) const
 {
 	auto id = _name2id_list.find(name);
 
@@ -135,49 +149,47 @@ job_classes Horizon::Zone::Game::JobDB::get_job_class_by_name(std::string name)
 
 bool Horizon::Zone::Game::JobDB::load()
 {
-	libconfig::Config cfg;
+	sol::state lua;
+
 	int total_entries = 0;
 	std::string tmp_string;
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "job_db.conf";
+	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "job_db.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		cfg.readFile(file_path.c_str());
-	} catch(const libconfig::FileIOException &fioex) {
-		ZoneLog->error("I/O error while reading file '{}'.", file_path);
-		return false;
-	} catch(const libconfig::ParseException &pex) {
-		ZoneLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
+		lua.script_file(file_path);
+		sol::table job_tbl = lua.get<sol::table>("job_db");
+		total_entries = load_job(job_tbl);
+		ZoneLog->info("Loaded {} entries from '{}'", total_entries, file_path);
+	} catch(const std::exception &e) {
+		ZoneLog->error("JobDB::load: {}.", e.what());
 		return false;
 	}
-
-	total_entries = load_job(cfg.getRoot());
-
-	ZoneLog->info("Loaded {} entries from '{}'", total_entries, file_path);
 
 	return true;
 }
 
-int Horizon::Zone::Game::JobDB::load_job(libconfig::Setting &cfg, std::string name)
+int Horizon::Zone::Game::JobDB::load_job(sol::table &job_tbls, std::string name)
 {
 	int count = 0;
 
-
 	if (name.empty()) {
-		for (auto job_c = cfg.begin(); job_c != cfg.end(); job_c++) {
+		job_tbls.for_each([this, &count](sol::object const &/*key*/, sol::object const &value) {
 			job_db_data data;
-			std::string name = job_c->getName();
+			sol::table job_tbl = value.as<sol::table>();
+			std::string name = job_tbl.get_or("Name", std::string(""));
 			job_classes jc = get_job_class_by_name(name);
-			if (load_job_internal(*job_c, data, name) == true) {
+			if (load_job_internal(job_tbl, data, name) == true) {
 				_job_db.emplace(jc, data);
 				count++;
 			}
-		}
+		});
 	} else {
-		if (cfg.exists(name)) {
+		sol::optional<sol::table> maybe_job = job_tbls.get<sol::optional<sol::table>>(name);
+		if (maybe_job) {
 			job_db_data data;
 			job_classes jc = get_job_class_by_name(name);
-			if (load_job_internal(cfg, data, name) == true)
+			if (load_job_internal(maybe_job.value(), data, name) == true)
 				_job_db.emplace(jc, data);
 		} else {
 			ZoneLog->warn("JobDB::load_job: Job named '{}' was not found.", name);
@@ -187,149 +199,138 @@ int Horizon::Zone::Game::JobDB::load_job(libconfig::Setting &cfg, std::string na
 	return count;
 }
 
-bool Horizon::Zone::Game::JobDB::load_job_internal(libconfig::Setting &job_c, job_db_data &data, std::string job_name)
+bool Horizon::Zone::Game::JobDB::load_job_internal(sol::table &job_tbl, job_db_data &data, std::string job_name)
 {
-	std::string inherit;
+	std::string t_str;
 
-	if (job_c.getType() != libconfig::Setting::TypeGroup) {
-		ZoneLog->warn("JobDB::load_job_internal: Invalid type for setting named '{}', skipping...", job_name);
-		return false;
-	}
-
-	if (!job_c.lookupValue("BaseExpGroup", data._base_exp_group)) {
+	t_str = job_tbl.get_or("BaseExpGroup", std::string(""));
+	if (t_str.empty()) {
 		ZoneLog->warn("JobDB::load_job_internal: Invalid or non-existant BaseExpGroup for job '{}', skipping...", job_name);
 		return false;
 	}
+	data._base_exp_group = t_str;
 
-	if (!job_c.lookupValue("JobExpGroup", data._job_exp_group)) {
+	t_str = job_tbl.get_or("JobExpGroup", std::string(""));
+	if (t_str.empty()) {
 		ZoneLog->warn("JobDB::load_job_internal: Invalid or non-existant JobExpGroup for job '{}', skipping...", job_name);
 		return false;
 	}
+	data._job_exp_group = t_str;
 
-	// Inherit if specified.
-	if (job_c.exists("Inherit") == false) {
+	t_str = job_tbl.get_or("Inherit", std::string(""));
+	if (t_str.empty()) {
 		// Max Weight
-		if (job_c.lookupValue("Weight", data._max_weight) ==  false)
-			data._max_weight = 20000;
+		data._max_weight = job_tbl.get_or("Weight", 20000);
 
-		try {
-			libconfig::Setting &aspd_c = job_c.lookup("BaseASPD");
+		sol::optional<sol::table> aspd_tbl = job_tbl.get<sol::optional<sol::table>>("BaseASPD");
+		if (aspd_tbl) {
+			aspd_tbl.value().for_each([&data, &job_name] (sol::object const &key, sol::object const &value) {
+				std::string w_name = key.as<std::string>();
 
-			if (aspd_c.getType() != libconfig::Setting::TypeGroup) {
-				ZoneLog->warn("JobDB::load_job_internal: Invalid type BaseASPD setting for job '{}'.", job_name);
-			} else {
-				for (auto aspd_it = aspd_c.begin(); aspd_it != aspd_c.end(); aspd_it++) {
-					std::string w_name = aspd_it->getName();
-					if (!aspd_it->isNumber()) {
-						ZoneLog->warn("JobDB::load_job_internal: Invalid entry in BaseASPD setting weapon {} for job '{}'.", w_name, job_name);
-						continue;
-					}
-
-					int val = *aspd_it;
-					if (!w_name.compare("Fist")) {
-						data._weapon_base_aspd[WT_FIST] = val;
-					} else if (!w_name.compare("Dagger")) {
-						data._weapon_base_aspd[WT_DAGGER] = val;
-					} else if (!w_name.compare("Sword")) {
-						data._weapon_base_aspd[WT_1HSWORD] = val;
-					} else if (!w_name.compare("TwoHandSword")) {
-						data._weapon_base_aspd[WT_2HSWORD] = val;
-					} else if (!w_name.compare("Spear")) {
-						data._weapon_base_aspd[WT_1HSPEAR] = val;
-					} else if (!w_name.compare("TwoHandSpear")) {
-						data._weapon_base_aspd[WT_2HSPEAR] = val;
-					} else if (!w_name.compare("Axe")) {
-						data._weapon_base_aspd[WT_1HAXE] = val;
-					} else if (!w_name.compare("TwoHandAxe")) {
-						data._weapon_base_aspd[WT_2HAXE] = val;
-					} else if (!w_name.compare("Mace")) {
-						data._weapon_base_aspd[WT_1HMACE] = val;
-					} else if (!w_name.compare("TwoHandMace")) {
-						data._weapon_base_aspd[WT_2HMACE] = val;
-					} else if (!w_name.compare("Rod")) {
-						data._weapon_base_aspd[WT_STAFF] = val;
-					} else if (!w_name.compare("Bow")) {
-						data._weapon_base_aspd[WT_BOW] = val;
-					} else if (!w_name.compare("Knuckle")) {
-						data._weapon_base_aspd[WT_KNUCKLE] = val;
-					} else if (!w_name.compare("Instrument")) {
-						data._weapon_base_aspd[WT_MUSICAL] = val;
-					} else if (!w_name.compare("Whip")) {
-						data._weapon_base_aspd[WT_WHIP] = val;
-					} else if (!w_name.compare("Book")) {
-						data._weapon_base_aspd[WT_BOOK] = val;
-					} else if (!w_name.compare("Katar")) {
-						data._weapon_base_aspd[WT_KATAR] = val;
-					} else if (!w_name.compare("Revolver")) {
-						data._weapon_base_aspd[WT_REVOLVER] = val;
-					} else if (!w_name.compare("Rifle")) {
-						data._weapon_base_aspd[WT_RIFLE] = val;
-					} else if (!w_name.compare("GatlingGun")) {
-						data._weapon_base_aspd[WT_GATLING] = val;
-					} else if (!w_name.compare("Shotgun")) {
-						data._weapon_base_aspd[WT_SHOTGUN] = val;
-					} else if (!w_name.compare("GrenadeLauncher")) {
-						data._weapon_base_aspd[WT_GRENADE] = val;
-					} else if (!w_name.compare("FuumaShuriken")) {
-						data._weapon_base_aspd[WT_HUUMA] = val;
-					} else if (!w_name.compare("TwoHandRod")) {
-						data._weapon_base_aspd[WT_2HSTAFF] = val;
-					} else if (!w_name.compare("Shield")) {
-						data._weapon_base_aspd[WT_SHIELD] = val;
-					}
+				if (value.get_type() != sol::type::number) {
+					ZoneLog->warn("JobDB::load_job_internal: Invalid entry in BaseASPD setting weapon {} for job '{}'.", w_name, job_name);
+					return;
 				}
-			}
-		} catch (libconfig::SettingNotFoundException &err) {
-			ZoneLog->warn("JobDB::load_job_internal: Invalid or non-existent 'BaseASPD' setting for job '{}', skipping...", job_name);
-			return false;
+
+				int val = value.as<int>();
+				if (!w_name.compare("Fist")) {
+					data._weapon_base_aspd[WT_FIST] = val;
+				} else if (!w_name.compare("Dagger")) {
+					data._weapon_base_aspd[WT_DAGGER] = val;
+				} else if (!w_name.compare("Sword")) {
+					data._weapon_base_aspd[WT_1HSWORD] = val;
+				} else if (!w_name.compare("TwoHandSword")) {
+					data._weapon_base_aspd[WT_2HSWORD] = val;
+				} else if (!w_name.compare("Spear")) {
+					data._weapon_base_aspd[WT_1HSPEAR] = val;
+				} else if (!w_name.compare("TwoHandSpear")) {
+					data._weapon_base_aspd[WT_2HSPEAR] = val;
+				} else if (!w_name.compare("Axe")) {
+					data._weapon_base_aspd[WT_1HAXE] = val;
+				} else if (!w_name.compare("TwoHandAxe")) {
+					data._weapon_base_aspd[WT_2HAXE] = val;
+				} else if (!w_name.compare("Mace")) {
+					data._weapon_base_aspd[WT_1HMACE] = val;
+				} else if (!w_name.compare("TwoHandMace")) {
+					data._weapon_base_aspd[WT_2HMACE] = val;
+				} else if (!w_name.compare("Rod")) {
+					data._weapon_base_aspd[WT_STAFF] = val;
+				} else if (!w_name.compare("Bow")) {
+					data._weapon_base_aspd[WT_BOW] = val;
+				} else if (!w_name.compare("Knuckle")) {
+					data._weapon_base_aspd[WT_KNUCKLE] = val;
+				} else if (!w_name.compare("Instrument")) {
+					data._weapon_base_aspd[WT_MUSICAL] = val;
+				} else if (!w_name.compare("Whip")) {
+					data._weapon_base_aspd[WT_WHIP] = val;
+				} else if (!w_name.compare("Book")) {
+					data._weapon_base_aspd[WT_BOOK] = val;
+				} else if (!w_name.compare("Katar")) {
+					data._weapon_base_aspd[WT_KATAR] = val;
+				} else if (!w_name.compare("Revolver")) {
+					data._weapon_base_aspd[WT_REVOLVER] = val;
+				} else if (!w_name.compare("Rifle")) {
+					data._weapon_base_aspd[WT_RIFLE] = val;
+				} else if (!w_name.compare("GatlingGun")) {
+					data._weapon_base_aspd[WT_GATLING] = val;
+				} else if (!w_name.compare("Shotgun")) {
+					data._weapon_base_aspd[WT_SHOTGUN] = val;
+				} else if (!w_name.compare("GrenadeLauncher")) {
+					data._weapon_base_aspd[WT_GRENADE] = val;
+				} else if (!w_name.compare("FuumaShuriken")) {
+					data._weapon_base_aspd[WT_HUUMA] = val;
+				} else if (!w_name.compare("TwoHandRod")) {
+					data._weapon_base_aspd[WT_2HSTAFF] = val;
+				} else if (!w_name.compare("Shield")) {
+					data._weapon_base_aspd[WT_SHIELD] = val;
+				}
+			});
+
 		}
 	} else {
-		if (job_c.lookupValue("Inherit", inherit) == false) {
-			ZoneLog->warn("JobDB::load_job_internal: Invalid 'Inherit' value provided for entry '{}', Skipping...", job_name);
-			return false;
-		}
+		job_classes jc = get_job_class_by_name(t_str);
 
-		job_classes jc = get_job_class_by_name(inherit);
 		if (jc == JOB_INVALID) {
-			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", inherit, job_name);
+			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
 			return false;
 		}
 
 		auto jobi = _job_db.find(jc);
-
-		if (jc == JOB_INVALID) {
-			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", inherit, job_name);
+		if (jobi == _job_db.end()) {
+			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
 			return false;
 		}
 
-		job_db_data inherited_data = jobi->second;
-		data._weapon_base_aspd = inherited_data._weapon_base_aspd;
-		data._max_weight = inherited_data._max_weight;
+		data._weapon_base_aspd = jobi->second._weapon_base_aspd;
+		data._max_weight = jobi->second._max_weight;
 	}
 
-	if (load_hp_sp_table(job_c, data, job_name, "HPTable") == false)
+	if (load_hp_sp_table(job_tbl, data, job_name, "HPTable") == false)
 		return false;
-	if (load_hp_sp_table(job_c, data, job_name, "SPTable") == false)
+
+	if (load_hp_sp_table(job_tbl, data, job_name, "SPTable") == false)
 		return false;
 
 	return true;
 }
 
-bool Horizon::Zone::Game::JobDB::load_hp_sp_table(libconfig::Setting &cfg, job_db_data &data, std::string &job_name, std::string table_name)
+bool Horizon::Zone::Game::JobDB::load_hp_sp_table(sol::table &job_tbl, job_db_data &data, std::string &job_name, std::string table_name)
 {
-	std::string inherit;
+	std::string t_str;
 
-	if (cfg.lookupValue("Inherit", inherit) == true
-		|| cfg.lookupValue("InheritHP", inherit) == true
-		|| cfg.lookupValue("InheritSP", inherit) == true) {
-		job_classes jc = get_job_class_by_name(inherit);
+	t_str = job_tbl.get_or("Inherit", t_str);
+	t_str = job_tbl.get_or("InheritHP", t_str);
+	t_str = job_tbl.get_or("InheritSP", t_str);
+
+	if (!t_str.empty()) {
+		job_classes jc = get_job_class_by_name(t_str);
 		if (jc == JOB_INVALID) {
-			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", inherit, job_name);
+			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
 			return false;
 		}
 		auto jobi = _job_db.find(jc);
 		if (jobi == _job_db.end()) {
-			ZoneLog->warn("JobDB::load_hp_sp_table: Unable to inherit {} from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", table_name, inherit, job_name);
+			ZoneLog->warn("JobDB::load_hp_sp_table: Unable to inherit {} from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", table_name, t_str, job_name);
 			return false;
 		}
 		job_db_data inherited_data = jobi->second;
@@ -339,28 +340,165 @@ bool Horizon::Zone::Game::JobDB::load_hp_sp_table(libconfig::Setting &cfg, job_d
 		return true;
 	}
 
-	try {
-		libconfig::Setting &table_c = cfg.lookup(table_name);
+	sol::optional<sol::table> tbl = job_tbl.get<sol::optional<sol::table>>(table_name);
 
-		if (!cfg.exists(table_name) || !table_c.isArray()) {
-			ZoneLog->warn("JobDB::load_hp_sp_table: Invalid type or non-existant {} setting for job '{}'.", table_name, job_name);
-		} else {
-			for (int i = 0; i < table_c.getLength(); i++) {
-				if (!table_c[i].isNumber()) {
-					ZoneLog->warn("JobDB::load_hp_sp_table: Invalid index {} for entry {} in job '{}', skipping...", i + 1, job_name, job_name);
-					continue;
-				}
-
-				if (!table_name.compare("HPTable"))
-					data._hp_table.push_back(table_c[i]);
-				else if (!table_name.compare("SPTable"))
-					data._sp_table.push_back(table_c[i]);
-			}
-		}
-	} catch (libconfig::SettingNotFoundException &err) {
-		ZoneLog->warn("JobDB::load_hp_sp_table: {} for job '{}' does not exist, skipping...", table_name, job_name);
+	if (!tbl) {
+		ZoneLog->warn("JobDB::load_hp_sp_table: Job '{}' does not have a {}, skipping...", job_name, table_name);
 		return false;
 	}
 
+	tbl.value().for_each([&data, &job_name, &table_name](sol::object const &key, sol::object const &val) {
+		if (key.get_type() != sol::type::number) {
+			ZoneLog->warn("JobDB::load_hp_sp_table: Invalid index {} for entry {} in job '{}', skipping...", key.as<int>(), job_name, table_name);
+			return;
+		}
+
+		if (!table_name.compare("HPTable"))
+			data._hp_table.push_back(val.as<int>());
+		else if (!table_name.compare("SPTable"))
+			data._sp_table.push_back(val.as<int>());
+	});
+
 	return true;
+}
+
+job_class_mask Horizon::Zone::Game::JobDB::job_id_to_mask(job_classes job_id) const
+{
+	switch (job_id)
+	{
+	//Novice And 1-1 Jobs
+	case JOB_NOVICE:                return JMASK_NOVICE;
+	case JOB_SWORDMAN:              return JMASK_SWORDMAN;
+	case JOB_MAGE:                  return JMASK_MAGE;
+	case JOB_ARCHER:                return JMASK_ARCHER;
+	case JOB_ACOLYTE:               return JMASK_ACOLYTE;
+	case JOB_MERCHANT:              return JMASK_MERCHANT;
+	case JOB_THIEF:                 return JMASK_THIEF;
+	case JOB_TAEKWON:               return JMASK_TAEKWON;
+	case JOB_WEDDING:               return JMASK_WEDDING;
+	case JOB_GUNSLINGER:            return JMASK_GUNSLINGER;
+	case JOB_NINJA:                 return JMASK_NINJA;
+	case JOB_XMAS:                  return JMASK_XMAS;
+	case JOB_SUMMER:                return JMASK_SUMMER;
+	case JOB_GANGSI:                return JMASK_GANGSI;
+	case JOB_SUMMONER:              return JMASK_SUMMONER;
+	//2-1 Jobs
+	case JOB_SUPER_NOVICE:          return JMASK_SUPER_NOVICE;
+	case JOB_KNIGHT:                return JMASK_KNIGHT;
+	case JOB_WIZARD:                return JMASK_WIZARD;
+	case JOB_HUNTER:                return JMASK_HUNTER;
+	case JOB_PRIEST:                return JMASK_PRIEST;
+	case JOB_BLACKSMITH:            return JMASK_BLACKSMITH;
+	case JOB_ASSASSIN:              return JMASK_ASSASSIN;
+	case JOB_STAR_GLADIATOR:        return JMASK_STAR_GLADIATOR;
+	case JOB_KAGEROU:
+	case JOB_OBORO:                 return JMASK_KAGEROUOBORO;
+	case JOB_REBELLION:             return JMASK_REBELLION;
+	case JOB_DEATH_KNIGHT:          return JMASK_DEATH_KNIGHT;
+	//2-2 Jobs
+	case JOB_CRUSADER:              return JMASK_CRUSADER;
+	case JOB_SAGE:                  return JMASK_SAGE;
+	case JOB_BARD:
+	case JOB_DANCER:                return JMASK_BARDDANCER;
+	case JOB_MONK:                  return JMASK_MONK;
+	case JOB_ALCHEMIST:             return JMASK_ALCHEMIST;
+	case JOB_ROGUE:                 return JMASK_ROGUE;
+	case JOB_SOUL_LINKER:           return JMASK_SOUL_LINKER;
+	case JOB_DARK_COLLECTOR:        return JMASK_DARK_COLLECTOR;
+	//Trans Novice And Trans 1-1 Jobs
+	case JOB_NOVICE_HIGH:           return JMASK_NOVICE_HIGH;
+	case JOB_SWORDMAN_HIGH:         return JMASK_SWORDMAN_HIGH;
+	case JOB_MAGE_HIGH:             return JMASK_MAGE_HIGH;
+	case JOB_ARCHER_HIGH:           return JMASK_ARCHER_HIGH;
+	case JOB_ACOLYTE_HIGH:          return JMASK_ACOLYTE_HIGH;
+	case JOB_MERCHANT_HIGH:         return JMASK_MERCHANT_HIGH;
+	case JOB_THIEF_HIGH:            return JMASK_THIEF_HIGH;
+	//Trans 2-1 Jobs
+	case JOB_LORD_KNIGHT:           return JMASK_LORD_KNIGHT;
+	case JOB_HIGH_WIZARD:           return JMASK_HIGH_WIZARD;
+	case JOB_SNIPER:                return JMASK_SNIPER;
+	case JOB_HIGH_PRIEST:           return JMASK_HIGH_PRIEST;
+	case JOB_WHITESMITH:            return JMASK_WHITESMITH;
+	case JOB_ASSASSIN_CROSS:        return JMASK_ASSASSIN_CROSS;
+	//Trans 2-2 Jobs
+	case JOB_PALADIN:               return JMASK_PALADIN;
+	case JOB_PROFESSOR:             return JMASK_PROFESSOR;
+	case JOB_CLOWN:
+	case JOB_GYPSY:                 return JMASK_CLOWNGYPSY;
+	case JOB_CHAMPION:              return JMASK_CHAMPION;
+	case JOB_CREATOR:               return JMASK_CREATOR;
+	case JOB_STALKER:               return JMASK_STALKER;
+	//Baby Novice And Baby 1-1 Jobs
+	case JOB_BABY:                  return JMASK_BABY;
+	case JOB_BABY_SWORDMAN:         return JMASK_BABY_SWORDMAN;
+	case JOB_BABY_MAGE:             return JMASK_BABY_MAGE;
+	case JOB_BABY_ARCHER:           return JMASK_BABY_ARCHER;
+	case JOB_BABY_ACOLYTE:          return JMASK_BABY_ACOLYTE;
+	case JOB_BABY_MERCHANT:         return JMASK_BABY_MERCHANT;
+	case JOB_BABY_THIEF:            return JMASK_BABY_THIEF;
+	//Baby 2-1 Jobs
+	case JOB_SUPER_BABY:            return JMASK_SUPER_BABY;
+	case JOB_BABY_KNIGHT:           return JMASK_BABY_KNIGHT;
+	case JOB_BABY_WIZARD:           return JMASK_BABY_WIZARD;
+	case JOB_BABY_HUNTER:           return JMASK_BABY_HUNTER;
+	case JOB_BABY_PRIEST:           return JMASK_BABY_PRIEST;
+	case JOB_BABY_BLACKSMITH:       return JMASK_BABY_BLACKSMITH;
+	case JOB_BABY_ASSASSIN:         return JMASK_BABY_ASSASSIN;
+	//Baby 2-2 Jobs
+	case JOB_BABY_CRUSADER:         return JMASK_BABY_CRUSADER;
+	case JOB_BABY_SAGE:             return JMASK_BABY_SAGE;
+	case JOB_BABY_BARD:
+	case JOB_BABY_DANCER:           return JMASK_BABY_BARDDANCER;
+	case JOB_BABY_MONK:             return JMASK_BABY_MONK;
+	case JOB_BABY_ALCHEMIST:        return JMASK_BABY_ALCHEMIST;
+	case JOB_BABY_ROGUE:            return JMASK_BABY_ROGUE;
+	//3-1 Jobs
+	case JOB_SUPER_NOVICE_E:        return JMASK_SUPER_NOVICE_E;
+	case JOB_RUNE_KNIGHT:           return JMASK_RUNE_KNIGHT;
+	case JOB_WARLOCK:               return JMASK_WARLOCK;
+	case JOB_RANGER:                return JMASK_RANGER;
+	case JOB_ARCH_BISHOP:           return JMASK_ARCH_BISHOP;
+	case JOB_MECHANIC:              return JMASK_MECHANIC;
+	case JOB_GUILLOTINE_CROSS:      return JMASK_GUILLOTINE_CROSS;
+	//3-2 Jobs
+	case JOB_ROYAL_GUARD:           return JMASK_ROYAL_GUARD;
+	case JOB_SORCERER:              return JMASK_SORCERER;
+	case JOB_MINSTREL:
+	case JOB_WANDERER:              return JMASK_MINSTRELWANDERER;
+	case JOB_SURA:                  return JMASK_SURA;
+	case JOB_GENETIC:               return JMASK_GENETIC;
+	case JOB_SHADOW_CHASER:         return JMASK_SHADOW_CHASER;
+	//Trans 3-1 Jobs
+	case JOB_RUNE_KNIGHT_T:         return JMASK_RUNE_KNIGHT_T;
+	case JOB_WARLOCK_T:             return JMASK_WARLOCK_T;
+	case JOB_RANGER_T:              return JMASK_RANGER_T;
+	case JOB_ARCH_BISHOP_T:         return JMASK_ARCH_BISHOP_T;
+	case JOB_MECHANIC_T:            return JMASK_MECHANIC_T;
+	case JOB_GUILLOTINE_CROSS_T:    return JMASK_GUILLOTINE_CROSS_T;
+	//Trans 3-2 Jobs
+	case JOB_ROYAL_GUARD_T:         return JMASK_ROYAL_GUARD_T;
+	case JOB_SORCERER_T:            return JMASK_SORCERER_T;
+	case JOB_MINSTREL_T:
+	case JOB_WANDERER_T:            return JMASK_MINSTRELWANDERER_T;
+	case JOB_SURA_T:                return JMASK_SURA_T;
+	case JOB_GENETIC_T:             return JMASK_GENETIC_T;
+	case JOB_SHADOW_CHASER_T:       return JMASK_SHADOW_CHASER_T;
+	//Baby 3-1 Jobs
+	case JOB_SUPER_BABY_E:          return JMASK_SUPER_BABY_E;
+	case JOB_BABY_RUNE:             return JMASK_BABY_RUNE;
+	case JOB_BABY_WARLOCK:          return JMASK_BABY_WARLOCK;
+	case JOB_BABY_RANGER:           return JMASK_BABY_RANGER;
+	case JOB_BABY_BISHOP:           return JMASK_BABY_BISHOP;
+	case JOB_BABY_MECHANIC:         return JMASK_BABY_MECHANIC;
+	case JOB_BABY_CROSS:            return JMASK_BABY_CROSS;
+	//Baby 3-2 Jobs
+	case JOB_BABY_GUARD:            return JMASK_BABY_GUARD;
+	case JOB_BABY_SORCERER:         return JMASK_BABY_SORCERER;
+	case JOB_BABY_MINSTREL:
+	case JOB_BABY_WANDERER:         return JMASK_BABY_MINSTRELWANDERER;
+	case JOB_BABY_SURA:             return JMASK_BABY_SURA;
+	case JOB_BABY_GENETIC:          return JMASK_BABY_GENETIC;
+	case JOB_BABY_CHASER:           return JMASK_BABY_CHASER;
+	default:                        return JMASK_INVALID;
+	}
 }

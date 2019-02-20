@@ -18,7 +18,6 @@
 #include "MapCache.hpp"
 
 #include <boost/algorithm/string.hpp>
-#include <libconfig.h++>
 
 Horizon::Tools::MapCache::MapCache()
 {

@@ -149,28 +149,27 @@ public:
 
 	bool is_open() { return !_closed && !_closing; }
 
-	void close_socket()
+	void close_socket(bool error = false)
 	{
-		boost::system::error_code error;
+		boost::system::error_code socket_error;
 
 		if (_closed.exchange(true))
 			return;
 
 		// Finalise the child-class socket first.
-		on_close();
+		on_close(error);
 
 		/**
 		 * Socket finalisation.
 		 */
 		// Shutdown the socket.
-		_socket->shutdown(boost::asio::socket_base::shutdown_send, error);
+		_socket->shutdown(boost::asio::socket_base::shutdown_send, socket_error);
 		// Close the socket.
 		_socket->close();
 
-		if (error) {
-			on_error();
+		if (socket_error) {
 			CoreLog->error("Error when shutting down socket from IP {} (error code: {} - {})",
-						   remote_ip_address(), error.value(), error.message().c_str());
+						   remote_ip_address(), socket_error.value(), socket_error.message().c_str());
 		}
 	}
 
@@ -179,7 +178,7 @@ public:
 	MessageBuffer &get_read_buffer() { return _read_buffer; }
 
 protected:
-	virtual void on_close() = 0;
+	virtual void on_close(bool error = false) = 0;
 	virtual void read_handler() = 0;
 	virtual void on_error() = 0;
 
@@ -236,7 +235,7 @@ private:
 				close_socket();
 			} else if (error.value() == boost::system::errc::connection_reset
 					   || error.value() == boost::system::errc::timed_out) {
-				close_socket();
+				close_socket(true);
 				on_error();
 			} else {
 				CoreLog->debug("Socket::internal_read_handler: {} - {}.", error.value(), error.message());

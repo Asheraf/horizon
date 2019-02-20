@@ -27,7 +27,7 @@ uint32_t getMSTime();
 uint32_t getMSTimeDiff(uint32_t oldMSTime, uint32_t newMSTime);
 uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime);
 
-uint32_t get_sys_time();
+int64_t get_sys_time();
 
 uint32_t rgb2bgr(uint32_t rgb);
 

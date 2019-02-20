@@ -51,8 +51,8 @@ void PACKET_HC_ACCEPT_ENTER::character_list_data::create_from_model(std::shared_
 	maximum_hp = status->get_max_hp();
 	sp = status->get_sp();
 	maximum_sp = status->get_max_sp();
-	job_class = status->get_job_class();
 	walk_speed = DEFAULT_WALK_SPEED;
+	job_id = status->get_job_id();
 	hair_view_id = view->get_hair_style_id();
 	body_view_id = view->get_body_id();
 	weapon_view_id = view->get_weapon_id();
@@ -74,17 +74,19 @@ void PACKET_HC_ACCEPT_ENTER::character_list_data::create_from_model(std::shared_
 	char_slot = c->get_slot();
 	rename_count = misc->get_rename_count();
 	strncpy(map_name, position->get_current_map().c_str(), MAP_NAME_LENGTH_EXT);
+	strcat(map_name, ".gat");
 	delete_date = access->get_delete_date();
 	robe_view_id = view->get_robe_view_id();
 	change_slot_count = misc->get_change_slot_count();
+	gender = c->get_gender();
 }
 
 PacketBuffer PACKET_HC_ACCEPT_ENTER::character_list_data::serialize(PacketBuffer &buf)
 {
 	buf << character_id;
-	buf << (uint32_t) base_experience; // 32bit until 2017 clients, overridden in 20170906::PACKET_HC_ACCEPT_ENTER.
+	buf << base_experience;
 	buf << zeny;
-	buf << (uint32_t) job_experience;
+	buf << job_experience;
 	buf << job_level;
 	buf << sc_opt1;
 	buf << sc_opt2;
@@ -97,7 +99,7 @@ PacketBuffer PACKET_HC_ACCEPT_ENTER::character_list_data::serialize(PacketBuffer
 	buf << sp;
 	buf << maximum_sp;
 	buf << walk_speed;
-	buf << job_class;
+	buf << job_id;
 	buf << hair_view_id;
 	buf << body_view_id;
 	buf << weapon_view_id;

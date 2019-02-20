@@ -19,6 +19,8 @@
 #define HORIZON_ZONE_GAME_GRIDDEFINITIONS_HPP
 
 #include "Core/Structures/TypeList.hpp"
+#include "Server/Zone/Game/Map/Coordinates.hpp"
+#include <cstdint>
 
 namespace Horizon
 {

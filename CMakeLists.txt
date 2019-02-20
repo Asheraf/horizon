@@ -39,7 +39,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 if(NOT WITHOUT_GIT)
   find_package(Git)
 endif()
-include(cmake/genversion/genversion.cmake)
 
 #################################
 # Binary Installation Directory
@@ -143,25 +142,36 @@ include(FindReadline)
 set(mysqlcppconn_FIND_REQUIRED true)
 include(FindMySQLConnector)
 
-#################
-# Find Libconfig++
-#################
-set(Config++_FIND_REQUIRED true)
-include(FindConfig++)
+###############
+# LuaJit
+###############
+set(LUAJIT_FIND_REQUIRED true)
+include(FindLuaJit)
+
+###############
+# Sol2
+###############
+set(SOL2_FIND_REQUIRED true)
+include(FindSol2)
 
 #################
 # Find ZLIB
 #################
 find_package(ZLIB REQUIRED)
-if (NOT ZLIB_FOUND)
-	message(FATAL_ERROR "zlib was not found and is required.")
-else()
-	message("-- zlib version ${ZLIB_VERSION_STRING} found.")
-endif()
 
 #################
 # Horizon Project Source
 #################
 add_subdirectory(src)
+
+
+#################
+# Generate version.hpp File
+#################
+set(CMAKE_DISABLE_SOURCE_CHANGES OFF)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD OFF)
+include(cmake/genversion/genversion.cmake)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/logs)

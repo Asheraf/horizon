@@ -23,7 +23,7 @@
 #include <iostream>
 #include <cstring>
 #include <boost/algorithm/string.hpp>
-#include <libconfig.h++>
+#include <sol.hpp>
 #include <fstream>
 #include <boost/crc.hpp>
 #include <zlib.h>
@@ -158,78 +158,59 @@ bool Horizon::Libraries::MapCache::Exists()
 
 mcache_config_error_types Horizon::Libraries::MapCache::ReadMapListConfig()
 {
-	libconfig::Config cfg;
-	std::string tmp_string;
+	sol::state lua;
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		cfg.readFile(getMapListPath().c_str());
-	} catch(const libconfig::FileIOException &fioex) {
-		return MCACHE_CONFIG_INVALID_FILE;
-	} catch(const libconfig::ParseException &pex) {
-		printf("Error: Parse error at %s:%d - %s.\n", pex.getFile(), pex.getLine(), pex.getError());
+		lua.script_file(getMapListPath().c_str());
+	} catch(const std::exception &e) {
+		printf("Error: Parse error at %s.\n", e.what());
 		return MCACHE_CONFIG_PARSE_ERROR;
 	}
 
-	const libconfig::Setting &map_list = cfg.getRoot()["map_list"];
+	sol::table map_tbl = lua["map_list"];
 
-	if (map_list.isArray() == false)
-		return MCACHE_CONFIG_INVALID_ROOT_TYPE;
-
-	for (int i = 0; i < map_list.getLength(); ++i) {
-		if (map_list[i].getType() != libconfig::Setting::TypeString)
-			return MCACHE_CONFIG_INVALID_VALUE_TYPE;
-		addToMapList(map_list[i]);
-	}
+	map_tbl.for_each([this](sol::object const &key, sol::object const &value) {
+		if (key.get_type() != sol::type::number)
+			return;
+		addToMapList(value.as<std::string>());
+	});
 
 	return MCACHE_CONFIG_OK;
 }
 
-
 mcache_grf_config_error_types Horizon::Libraries::MapCache::ReadGRFListConfig()
 {
-	libconfig::Config cfg;
-	std::string tmp_string;
+	sol::state lua;
 
 	if (getGRFListPath().empty())
 		return MCACHE_GRF_CONF_INVALID_FILE;
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		cfg.readFile(getGRFListPath().c_str());
-	} catch(const libconfig::FileIOException &fioex) {
-		return MCACHE_GRF_CONF_INVALID_FILE;
-	} catch(const libconfig::ParseException &pex) {
-		printf("Error: Parse error at %s:%d - %s.\n", pex.getFile(), pex.getLine(), pex.getError());
+		lua.script_file(getGRFListPath().c_str());
+	} catch(const std::exception &e) {
+		printf("Error: Parse error at %s.\n", e.what());
 		return MCACHE_GRF_CONF_PARSE_ERROR;
 	}
 
-	if (!(cfg.lookupValue("grf_resource_path", tmp_string))) {
-		printf("Error: Resource path setting not found for grf.\n");
-		return MCACHE_GRF_CONF_PARSE_ERROR;
-	}
+	sol::table tbl = lua["grf_config"];
+	setResourcePath(tbl.get_or("grf_resource_path", std::string("./")));
 
-	setResourcePath(tmp_string);
+	sol::table grf_list = tbl.get<sol::table>("grf_list");
 
-	const libconfig::Setting &grf_list = cfg.getRoot()["grf_list"];
+	grf_list.for_each([this](sol::object const &key, sol::object const &value) {
+		int id = key.as<int>();
+		std::string path = value.as<std::string>();
 
-	if (grf_list.isGroup() == false)
-		return MCACHE_GRF_CONF_INVALID_ROOT_TYPE;
-
-	for (int i = 0; i < grf_list.getLength(); ++i) {
-		std::string name = grf_list[i].getName();
-		std::string path = grf_list[i];
-		int id = atoi(name.substr(2).c_str());
-		
-		if (grf_list[i].getType() != libconfig::Setting::TypeString
-			|| path.empty())
-			return MCACHE_GRF_CONF_INVALID_VALUE_TYPE;
+		if (path.empty())
+			return;
 
 		GRF grf;
 		grf.set_id(id);
-		grf.setGRFPath(tmp_string + path);
+		grf.setGRFPath(getGRFListPath().parent_path().string() + "/" + path);
 		addGRF(id, grf);
-	}
+	});
 
 	return MCACHE_GRF_CONF_OK;
 }
@@ -281,9 +262,11 @@ void Horizon::Libraries::MapCache::PrintCacheForMap(std::string const &map_name)
 	for (int i = 0; i < data->width(); i++)
 		cells[i] = (*cells) + data->height() * i;
 
-	for (int y = 0, idx = 0; y < data->height(); y++)
-		for (int x = 0; x < data->width(); x++)
+	for (int y = 0, idx = 0; y < data->height(); y++) {
+		for (int x = 0; x < data->width(); x++) {
 			cells[x][y] = data->getCells().at(idx++);
+		}
+	}
 
 	for (int y = data->height() - 1; y >= 0; --y) {
 		for (int x = 0; x < data->width(); x++) {
@@ -299,7 +282,7 @@ void Horizon::Libraries::MapCache::PrintCacheForMap(std::string const &map_name)
 			//			case 5: s = 'O'; break; // gap (snipable)
 			//			case 1: s = '#'; break; // non-walkable ground
 			//			}
-			ofs.write(std::to_string(type).c_str(), 1);
+			ofs.write(std::string("%d,", type).c_str(), 1);
 		}
 		ofs.write("\n", 1);
 	}
@@ -310,7 +293,7 @@ void Horizon::Libraries::MapCache::PrintCacheForMap(std::string const &map_name)
 
 bool Horizon::Libraries::MapCache::BuildExternalCache()
 {
-	std::ofstream ofs(getMapCachePath().c_str(), std::ios::out | std::ios::binary);
+	std::ofstream ofs(getMapCachePath().c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 	unsigned long file_size = 0, compressed_size = 0;
 	uint8_t *uncompressed_buf, *compressed_buf;
 	int version = m_cache->getHeader().getVersion();

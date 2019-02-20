@@ -36,7 +36,7 @@ Map::Map(std::weak_ptr<MapThreadContainer> container, std::string const &name, u
   _gridholder(GridCoords(width, height)),
   _pathfinder(AStar::Generator({width, height}, std::bind(&Map::is_obstruction, this, std::placeholders::_1, std::placeholders::_2)))
 {
-	for (int y = 0; y < height; ++y) {
+	for (int y = height - 1; y >= 0; --y) {
 		for (int x = 0; x < width; ++x) {
 			_cells[x][y] = Cell(cells.at(y * width + x));
 		}
@@ -45,12 +45,14 @@ Map::Map(std::weak_ptr<MapThreadContainer> container, std::string const &name, u
 
 bool Map::is_obstruction(uint16_t x, uint16_t y)
 {
+	Cell c = _cells[x][y];
+
 	if (x < 0 || y < 0 || x > _width || y > _height)
 		return true;
 
-	if (!_cells[x][y].isWalkable())
+	if (!c.isWalkable())
 		return true;
-
+	
 	return false;
 }
 

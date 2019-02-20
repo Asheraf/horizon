@@ -22,5 +22,5 @@
 #include <Server/Common/Server.hpp>
 
 void cli_thread_start(Server *srv);
-
+void handle_signals(int sig);
 #endif // HORIZON_COMMANDLINEINTERFACE_H

@@ -37,7 +37,7 @@ struct PACKET_CZ_INPUT_EDITDLGSTR : public Packet
 	~PACKET_CZ_INPUT_EDITDLGSTR()
 	{
 		if (message != nullptr)
-			delete message;
+			delete[] message;
 	}
 
 	virtual PacketBuffer serialize()
@@ -50,8 +50,11 @@ struct PACKET_CZ_INPUT_EDITDLGSTR : public Packet
 		buf >> packet_id;
 		buf >> packet_length;
 		buf >> guid;
-		message = new char[packet_length - 8];
-		buf.read(message, packet_length - 8);
+
+		int str_len = packet_length - 8;
+		message = new char[str_len + 1];
+		message[str_len] = '\0';
+		buf.read(message, str_len);
 	}
 
 	virtual PACKET_CZ_INPUT_EDITDLGSTR & operator << (PacketBuffer &right)

@@ -26,7 +26,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <boost/make_shared.hpp>
-#include <libconfig.h++>
+#include <sol.hpp>
 
 using namespace std;
 using boost::asio::ip::udp;
@@ -35,7 +35,7 @@ using namespace Horizon::Zone::Game;
 /**
  * Zone Main server constructor.
  */
-Horizon::Zone::ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.conf")
+Horizon::Zone::ZoneMain::ZoneMain() : Server("Zone", "config/", "zone-server.lua")
 {
 }
 
@@ -55,44 +55,36 @@ Horizon::Zone::ZoneMain::~ZoneMain()
  */
 bool Horizon::Zone::ZoneMain::ReadConfig()
 {
-	libconfig::Config cfg;
-	std::string tmp_string;
+	sol::state lua;
 	int tmp_value;
 	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		cfg.readFile(file_path.c_str());
-	} catch(const libconfig::FileIOException &fioex) {
-		ZoneLog->error("I/O error while reading file '{}'.", file_path);
-		return false;
-	} catch(const libconfig::ParseException &pex) {
-		ZoneLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
+		lua.script_file(file_path);
+	} catch(const std::exception &e) {
+		ZoneLog->error("ZoneMain::ReadConfig: {}.", e.what());
 		return false;
 	}
 
-	if (cfg.lookupValue("static_db_path", tmp_string))
-		get_zone_config().set_database_path(tmp_string);
-
+	sol::table tbl = lua["server_config"];
+	
+	get_zone_config().set_database_path(tbl.get_or("static_db_path", std::string("db/")));
 	ZoneLog->info("Static database path set to '{}'", get_zone_config().get_database_path());
 
-	if (cfg.lookupValue("map_cache_file_name", tmp_string))
-		get_zone_config().set_mapcache_file_name(tmp_string);
+	get_zone_config().set_mapcache_file_name(tbl.get_or("map_cache_file_name", std::string("maps.dat")));
+	ZoneLog->info("Mapcache file name is set to '{}', it will be read while initializing maps.");
 
-	if (cfg.lookupValue("map_containers", tmp_value) || tmp_value < 1) {
-		get_zone_config().set_map_container_count(tmp_value);
-	} else {
-		ZoneLog->warn("Invalid value or no configuration found for 'map_containers', defaulting to 1.");
-		get_zone_config().set_map_container_count(1);
-	}
+	get_zone_config().set_map_container_count(tbl.get_or("map_containers", 1));
+	ZoneLog->warn("Maps will be divided into '{}' thread containers.", get_zone_config().get_map_container_count());
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!parse_common_configs(cfg))
+	if (!parse_common_configs(tbl))
 		return false;
 
-	ZoneLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
+	ZoneLog->info("Done reading server configurations from '{}'.", file_path);
 
 	return true;
 }

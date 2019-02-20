@@ -15,8 +15,8 @@
  * or viewing without permission.
  **************************************************/
 
-#ifndef MapThreadContainer_hpp
-#define MapThreadContainer_hpp
+#ifndef HORIZON_ZONE_GAME_MAPTHREADCONTAINER_HPP
+#define HORIZON_ZONE_GAME_MAPTHREADCONTAINER_HPP
 
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
 #include "Server/Zone/Game/Map/Script/ScriptMgr.hpp"
@@ -70,4 +70,4 @@ private:
 }
 }
 }
-#endif /* MapThreadContainer_hpp */
+#endif /* HORIZON_ZONE_GAME_MAPTHREADCONTAINER_HPP */

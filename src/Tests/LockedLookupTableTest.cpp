@@ -25,7 +25,7 @@
 #include <cstdio>
 
 #define MAX_THREADS 2
-#define MAX_TABLE_SIZE 500000
+#define MAX_TABLE_SIZE 10000000
 #define STRING_SIZE 32
 #define MAX_BUCKETS MAX_TABLE_SIZE / 10
 

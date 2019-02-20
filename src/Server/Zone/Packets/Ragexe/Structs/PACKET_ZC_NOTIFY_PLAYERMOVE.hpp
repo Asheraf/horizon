@@ -36,14 +36,12 @@ struct PACKET_ZC_NOTIFY_PLAYERMOVE : public Packet
 
 	virtual PacketBuffer serialize(int16_t from_x, int16_t from_y, int16_t to_x, int16_t to_y)
 	{
-		int8_t packed_pos[6]{0};
-
 		PackPosition(packed_pos, from_x, from_y, to_x, to_y, 8, 8);
 
 		PacketBuffer buf(packet_id);
 		timestamp = get_sys_time();
 		buf << timestamp;
-		buf.append((void *) packed_pos, sizeof(packed_pos));
+		buf.append((char *) packed_pos, sizeof(packed_pos));
 		return buf;
 	}
 
@@ -56,7 +54,8 @@ struct PACKET_ZC_NOTIFY_PLAYERMOVE : public Packet
 	}
 
 	/* Size: 12 bytes */
-	uint32_t timestamp{0};
+	unsigned int timestamp{0};
+	int8_t packed_pos[6]{0};
 };
 }
 }

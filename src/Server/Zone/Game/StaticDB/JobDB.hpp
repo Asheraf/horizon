@@ -1,4 +1,19 @@
-
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_ZONE_GAME_JOBDB
 #define HORIZON_ZONE_GAME_JOBDB
@@ -11,11 +26,7 @@
 #include <vector>
 #include <array>
 #include <string>
-
-namespace libconfig
-{
-	class Setting;
-}
+#include <sol.hpp>
 
 namespace Horizon
 {
@@ -37,11 +48,12 @@ public:
 	JobDB();
 	~JobDB() { }
 
-	job_classes get_job_class_by_name(std::string name);
+	job_classes get_job_class_by_name(std::string name) const;
+	job_class_mask job_id_to_mask(job_classes job_id) const;
 	bool load();
-	int load_job(libconfig::Setting &cfg, std::string name = "");
-	bool load_job_internal(libconfig::Setting &job_c, job_db_data &data, std::string job_name = "");
-	bool load_hp_sp_table(libconfig::Setting &cfg, job_db_data &data, std::string &job_name, std::string table_name);
+	int load_job(sol::table &job_tbl, std::string name = "");
+	bool load_job_internal(sol::table &job_tbl, job_db_data &data, std::string job_name = "");
+	bool load_hp_sp_table(sol::table &job_tbl, job_db_data &data, std::string &job_name, std::string table_name);
 
 private:
 	std::unordered_map<job_classes, job_db_data> _job_db;

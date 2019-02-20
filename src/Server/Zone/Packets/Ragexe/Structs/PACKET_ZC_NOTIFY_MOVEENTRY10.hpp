@@ -70,12 +70,12 @@ struct PACKET_ZC_NOTIFY_MOVEENTRY10 : public Packet
 		{
 			char packed_pos[6]{0};
 
-			move_start_time = get_sys_time();
+			move_start_time = (uint32_t) get_sys_time();
 
 			buf << packet_length;
 			buf << (uint8_t) unit_type;
-			buf << account_id;
 			buf << guid;
+			buf << character_id;
 			buf << speed;
 			buf << body_state;
 			buf << health_state;

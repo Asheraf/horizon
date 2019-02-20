@@ -25,14 +25,17 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(mcache
 	STATIC
 	${UTILITY_SOURCES}
-	${PRIVATE_SOURCES})
+	${PRIVATE_SOURCES}
+)
 
 target_link_libraries(mcache
 	PUBLIC
 		grf
 		${ZLIB_LIBRARIES}
 		${Boost_LIBRARIES}
-		${CONFIG++_LIBRARY})
+		${CONFIG++_LIBRARY}
+		${LUA_LIBRARIES}
+)
 
 set(INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/src
@@ -49,6 +52,8 @@ target_include_directories(mcache
 		${ZLIB_INCLUDE_DIRS}
 		${Boost_INCLUDE_DIRS}
 		${CONFIG++_INCLUDE_DIR}
+		${LUA_INCLUDE_DIR}
+		${SOL2_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

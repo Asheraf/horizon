@@ -54,7 +54,7 @@ public:
 	 */
 	bool load(Server *server, uint32_t char_id)
 	{
-		std::string query = "SELECT `job_class`, `base_level`, `job_level`, `base_experience`, `job_experience`, `zeny`, `strength`, `agility`, `vitality`, `intelligence`, `dexterity`, `luck`, `maximum_hp`, `maximum_sp`, `hp`, `sp`, `status_points`, `skill_points`, `body_state`, `virtue`, `honor`, `manner` FROM `character_status_data` WHERE `id` = ?";
+		std::string query = "SELECT `job_id`, `base_level`, `job_level`, `base_experience`, `job_experience`, `zeny`, `strength`, `agility`, `vitality`, `intelligence`, `dexterity`, `luck`, `maximum_hp`, `maximum_sp`, `hp`, `sp`, `status_points`, `skill_points`, `body_state`, `virtue`, `honor`, `manner` FROM `character_status_data` WHERE `id` = ?";
 
 		try {
 			auto s = server->get_mysql_client()->getSession();
@@ -62,7 +62,7 @@ public:
 
 			if (record) {
 				set_character_id(char_id);
-				set_job_class((uint16_t) record[0].get<int>());
+				set_job_id((uint16_t) record[0].get<int>());
 				set_base_level((uint16_t) record[1].get<int>());
 				set_job_level((uint16_t) record[2].get<int>());
 				set_base_exp(record[3]);
@@ -102,7 +102,7 @@ public:
 	void save(Server *server)
 	{
 		std::string query = "REPLACE INTO `character_status_data` "
-			"(`id`, `job_class`, `base_level`, `job_level`, "
+			"(`id`, `job_id`, `base_level`, `job_level`, "
 			"`base_experience`, `job_experience`, `zeny`, "
 			"`strength`, `agility`, `vitality`, `intelligence`, `dexterity`, `luck`, "
 			"`maximum_hp`, `maximum_sp`, `hp`, `sp`, `status_points`, `skill_points`, "
@@ -113,7 +113,7 @@ public:
 			auto s = server->get_mysql_client()->getSession();
 			s.sql(query)
 					.bind(get_character_id(),
-						  get_job_class(),
+						  get_job_id(),
 						  get_base_level(),
 						  get_job_level(),
 						  get_base_exp(),
@@ -146,8 +146,8 @@ public:
 	uint32_t get_character_id() const { return _character_id; }
 	void set_character_id(uint32_t character_id) { _character_id = character_id; }
 	/* Job Class */
-	uint16_t get_job_class() const { return _job_class; }
-	void set_job_class(uint16_t job_class) { _job_class = job_class; }
+	uint16_t get_job_id() const { return _job_id; }
+	void set_job_id(uint16_t id) { _job_id = id; }
 	/* Base Level */
 	uint16_t get_base_level() const { return _base_level; }
 	void set_base_level(uint16_t base_level) { _base_level = base_level; }
@@ -213,7 +213,7 @@ public:
 	void set_manner(int16_t manner) { _manner = manner; }
 private:
 	uint32_t _character_id{0};
-	uint16_t _job_class{0};
+	uint16_t _job_id{0};
 	uint16_t _base_level{0};
 	uint16_t _job_level{0};
 	uint64_t _base_experience{0};

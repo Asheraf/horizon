@@ -36,7 +36,7 @@ struct PACKET_HC_ACCEPT_MAKECHAR : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		PacketBuffer buf(HC_ACCEPT_MAKECHAR);
+		PacketBuffer buf(packet_id);
 		character.serialize(buf);
 		return buf;
 	}

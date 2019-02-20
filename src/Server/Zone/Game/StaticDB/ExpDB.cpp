@@ -1,91 +1,90 @@
-//
-//  ExpDB.cpp
-//  zone
-//
-//  Created by SagunKho on 22/01/2019.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #include "ExpDB.hpp"
 
 #include "Core/Logging/Logger.hpp"
 #include "Server/Zone/Zone.hpp"
 
-#include <libconfig.h++>
 
 bool Horizon::Zone::Game::ExpDB::load()
 {
-	libconfig::Config cfg;
+	sol::state lua;
 	int total_entries[2] = { 0, 0 };
 	std::string tmp_string;
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "exp_group_db.conf";
+	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "exp_group_db.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		cfg.readFile(file_path.c_str());
-	} catch(const libconfig::FileIOException &fioex) {
-		ZoneLog->error("I/O error while reading file '{}'.", file_path);
-		return false;
-	} catch(const libconfig::ParseException &pex) {
-		ZoneLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
+		lua.script_file(file_path);
+		sol::table base_exp_tbl = lua["base_exp_group_db"];
+		sol::table job_exp_tbl = lua["job_exp_group_db"];
+		total_entries[0] = load_group(base_exp_tbl, EXP_GROUP_TYPE_BASE);
+		total_entries[1] = load_group(job_exp_tbl, EXP_GROUP_TYPE_JOB);
+	} catch(const std::exception &e) {
+		ZoneLog->error("ExpDB::error: {}.", e.what());
 		return false;
 	}
-
-	total_entries[0] = load_group(cfg, EXP_GROUP_TYPE_BASE);
-	total_entries[1] = load_group(cfg, EXP_GROUP_TYPE_JOB);
 
 	ZoneLog->info("Read {} Base and {} Job EXP groups from '{}'", total_entries[0], total_entries[1], file_path);
 
 	return true;
 }
 
-int Horizon::Zone::Game::ExpDB::load_group(libconfig::Config &cfg, exp_group_type type)
+int Horizon::Zone::Game::ExpDB::load_group(sol::table &group_tbl, exp_group_type type)
 {
 	int total_entries = 0;
-	const libconfig::Setting &group_db_c = type == EXP_GROUP_TYPE_BASE ? cfg.getRoot()["base_exp_group_db"] : cfg.getRoot()["job_exp_group_db"];
 	std::unordered_map<std::string, exp_group_data> *group_db = type == EXP_GROUP_TYPE_BASE ? &_base_exp_group_db : &_job_exp_group_db;
 
-	for (auto it = group_db_c.begin(); it != group_db_c.end(); it++) {
-		std::string class_name = it->getName();
+	group_tbl.for_each([group_db, &total_entries, type](sol::object const &key, sol::object const &value) {
+		std::string group_name = key.as<std::string>();
+		sol::table tbl = value.as<sol::table>();
 		exp_group_data expd;
 
 		std::unordered_map<std::string, exp_group_data>::iterator dup_it;
-		if ((dup_it = group_db->find(class_name)) != group_db->end()) {
-			ZoneLog->warn("ExpDB::load: Found duplicate {} Exp group for '{}', overwriting...", type == EXP_GROUP_TYPE_BASE ? "base" : "job", class_name);
+		if ((dup_it = group_db->find(group_name)) != group_db->end()) {
+			ZoneLog->warn("ExpDB::load: Found duplicate {} Exp group for '{}', overwriting...", type == EXP_GROUP_TYPE_BASE ? "base" : "job", group_name);
 			group_db->erase(dup_it);
 		}
 
-		if (!it->lookupValue("MaxLevel", expd.max_level)) {
-			ZoneLog->error("ExpDB::load: Max Level not given for group '{}', skipping...", class_name);
-			continue;
+		expd.max_level = tbl.get_or("MaxLevel", 0);
+		if (expd.max_level == 0) {
+			ZoneLog->error("ExpDB::load: Max Level not given for group '{}', skipping...", group_name);
+			return;
 		}
 
-		if (!it->exists("Exp")) {
-			ZoneLog->error("ExpDB::load: Missing Exp data for group '()', skipping...", class_name);
-			continue;
+		sol::optional<sol::table> maybe_exp_tbl = tbl.get<sol::optional<sol::table>>("Exp");
+		if (!maybe_exp_tbl) {
+			ZoneLog->error("ExpDB::load: Missing Exp data for group '()', skipping...", group_name);
+			return;
 		}
 
-		libconfig::Setting &exp_c = it->lookup("Exp");
-
-		if (exp_c.getType() != libconfig::Setting::TypeArray) {
-			ZoneLog->error("ExpDB::load: Exp data has invalid data type in group '{}', skipping...", class_name);
-			continue;
-		}
-
-		int exp_entry_count = 0;
-		for (int i = 0; i < exp_c.getLength(); i++) {
-			if (!exp_c[i].isNumber()) {
-				ZoneLog->error("ExpDB::load: Invalid Exp data found in array of group '{}', aborting with '{}' entries...", class_name, exp_entry_count);
-				break;
+		sol::table &exp_tbl = maybe_exp_tbl.value();
+		exp_tbl.for_each([&expd, &group_name](sol::object const &key, sol::object const &value) {
+			if (key.get_type() != sol::type::number) {
+				ZoneLog->error("ExpDB::load: Invalid Exp data found in array of group '{}', aborting with '{}' entries...", group_name, key.as<int>());
+				return;
 			}
+			expd.exp.push_back(value.as<int>());
+		});
 
-			expd.exp.push_back((int) exp_c[i]);
-
-			exp_entry_count++;
-		}
-
-		group_db->emplace(class_name, expd);
+		group_db->emplace(group_name, expd);
 		total_entries++;
-	}
+	});
 
 	return total_entries;
 }

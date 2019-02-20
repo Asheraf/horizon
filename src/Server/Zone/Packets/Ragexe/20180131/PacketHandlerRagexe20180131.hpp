@@ -65,6 +65,8 @@ public:
 
 	virtual void initialize_handlers() override;
 
+	virtual bool Handle_CZ_ENTER(PacketBuffer &buf) override;
+
 };
 }
 }

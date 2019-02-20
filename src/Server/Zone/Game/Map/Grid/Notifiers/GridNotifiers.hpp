@@ -53,11 +53,14 @@ struct GridViewPortUpdater
 	void Visit(GridRefManager<NOT_INTERESTED> &) { }
 };
 
-struct GridMovementNotifier
+struct GridEntityExistenceNotifier
 {
 	std::weak_ptr<Horizon::Zone::Game::Entity> _entity;
+	entity_viewport_notification_type _notif_type;
 
-	GridMovementNotifier(std::weak_ptr<Horizon::Zone::Game::Entity> entity) : _entity(entity) { }
+	GridEntityExistenceNotifier(std::weak_ptr<Horizon::Zone::Game::Entity> entity, entity_viewport_notification_type notif_type)
+	: _entity(entity), _notif_type(notif_type)
+	{ }
 
 	template <class T>
 	void notify(GridRefManager<T> &m);

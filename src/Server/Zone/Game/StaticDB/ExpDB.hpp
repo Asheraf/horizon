@@ -1,9 +1,19 @@
-//
-//  ExpDB.hpp
-//  zone
-//
-//  Created by SagunKho on 22/01/2019.
-//
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ *
+ * Under a proprietary license this file is not for use
+ * or viewing without permission.
+ **************************************************/
 
 #ifndef HORIZON_ZONE_GAME_CONFIGURATION_EXPDB
 #define HORIZON_ZONE_GAME_CONFIGURATION_EXPDB
@@ -11,11 +21,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-
-namespace libconfig
-{
-	class Config;
-}
+#include <sol.hpp>
 
 namespace Horizon
 {
@@ -44,7 +50,7 @@ public:
 
 	bool load();
 
-	int load_group(libconfig::Config &cfg, exp_group_type type);
+	int load_group(sol::table &tbl, exp_group_type type);
 
 protected:
 	std::unordered_map<std::string, exp_group_data> _base_exp_group_db;

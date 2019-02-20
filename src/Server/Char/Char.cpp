@@ -25,6 +25,7 @@
 #include <boost/asio.hpp>
 #include <boost/make_shared.hpp>
 #include <iostream>
+#include <sol.hpp>
 
 using namespace std;
 
@@ -33,7 +34,7 @@ using boost::asio::ip::udp;
 /**
  * CharMain Constructor
  */
-Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.conf")
+Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.lua")
 {
 	//
 }
@@ -55,100 +56,52 @@ Horizon::Char::CharMain::~CharMain()
  */
 bool Horizon::Char::CharMain::ReadConfig()
 {
-	libconfig::Config cfg;
-	std::string tmp_string;
-	int tmp_value;
+	sol::state lua;
+	int t_val;
 	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		cfg.readFile(file_path.c_str());
-	} catch(const libconfig::FileIOException &fioex) {
-		CharLog->error("I/O error while reading file '{}'.", file_path);
-		return false;
-	} catch(const libconfig::ParseException &pex) {
-		CharLog->error("Parse error at {}:{} - {}", pex.getFile(), pex.getLine(), pex.getError());
+		lua.script_file(file_path);
+	} catch(const std::exception &e) {
+		CharLog->error("CharMain::ReadConfig: {}.", e.what());
 		return false;
 	}
 
-	const libconfig::Setting &new_character = cfg.getRoot()["new_character"];
+	sol::table tbl = lua["server_config"];
 
-	if (new_character.isGroup()) {
-		if (new_character.lookupValue("start_map", tmp_string))
-			get_char_config().set_start_map(tmp_string);
-		else
-			char_config_error("start_map", "new_1-1");
+	sol::table chtbl = tbl.get<sol::table>("new_character");
+	get_char_config().set_start_map(chtbl.get_or("start_map", std::string("new_1-1")));
+	get_char_config().set_start_x(chtbl.get_or("start_x", 53));
+	get_char_config().set_start_y(chtbl.get_or("start_y", 111));
+	get_char_config().set_start_zeny(chtbl.get_or("start_zeny", 0));
 
-		if (new_character.lookupValue("start_x", tmp_value))
-			get_char_config().set_start_x(tmp_value);
-		else
-			char_config_error("start_x", 53);
+	sol::optional<sol::table> maybe_chitbl = chtbl.get<sol::optional<sol::table>>("start_items");
 
-		if (new_character.lookupValue("start_y", tmp_value))
-			get_char_config().set_start_y(tmp_value);
-		else
-			char_config_error("start_y", 111);
-
-		if (new_character.lookupValue("start_zeny", tmp_value))
-			get_char_config().set_start_zeny(tmp_value);
-
-		try {
-			bool items_not_found = true;
-			if ((items_not_found = new_character.exists("start_items"))) {
-				const libconfig::Setting &items = new_character["start_items"];
-				if (items.isGroup()) {
-					for (int i = 0; i < items.getLength(); ++i) {
-						const libconfig::Setting &item = items[i];
-						std::string name = item.getName();
-						int item_id = atoi(name.substr(2).c_str());
-						int amount = item;
-						get_char_config().add_start_item(std::make_pair(item_id, amount));
-					}
-				}
-			}
-
-			if (items_not_found) {
-				get_char_config().add_start_item(std::make_pair(1201, 1));
-				get_char_config().add_start_item(std::make_pair(2301, 1));
-			}
-		} catch (libconfig::SettingTypeException &e) {
-			CharLog->error("{}", e.what());
+	if (maybe_chitbl) {
+		sol::table chitbl = maybe_chitbl.value();
+		chitbl.for_each([this](sol::object const &key, sol::object const &value) {
+			get_char_config().add_start_item(std::make_pair(key.as<int>(), value.as<int>()));
+		});
+		if (chitbl.size() < 1) {
+			get_char_config().add_start_item(std::make_pair(1201, 1));
+			get_char_config().add_start_item(std::make_pair(2301, 1));
 		}
-
-	} else {
-		CharLog->error("Unsupported setting type for 'new_character' configuration, expected group... using hard-coded defaults.");
 	}
 
-	if (cfg.lookupValue("character_deletion_time", tmp_value)) {
-		get_char_config().set_character_deletion_time(tmp_value);
-	} else {
-		char_config_error("character_deletion_time", 86400);
-		get_char_config().set_character_deletion_time(86400);
-	}
+	get_char_config().set_character_deletion_time(tbl.get_or("character_deletion_time", 86400));
 
-	const libconfig::Setting &zone_server = cfg.getRoot()["zone_server"];
-
-	if (zone_server.lookupValue("ip_address", tmp_string)) {
-		get_char_config().set_zone_server_ip(tmp_string);
-	} else {
-		char_config_error("zone_server.ip_address", "127.0.0.1");
-		get_char_config().set_zone_server_ip("127.0.0.1");
-	}
-
-	if (zone_server.lookupValue("port", tmp_value)) {
-		get_char_config().set_zone_server_port(tmp_value);
-	} else {
-		char_config_error("zone_server.port", 5121);
-		get_char_config().set_zone_server_port(5121);
-	}
+	sol::table zone_tbl = tbl.get<sol::table>("zone_server");
+	get_char_config().set_zone_server_ip(zone_tbl.get_or("ip_address", std::string("127.0.0.1")));
+	get_char_config().set_zone_server_port(zone_tbl.get_or("port", 5121));
 
 	/**
 	 * Process Configuration that is common between servers.
 	 */
-	if (!parse_common_configs(cfg))
+	if (!parse_common_configs(tbl))
 		return false;
 
-	CharLog->info("Done reading {} configurations in '{}'.", cfg.getRoot().getLength(), file_path);
+	CharLog->info("Done reading server configurations from '{}'.", file_path);
 
 	return true;
 }

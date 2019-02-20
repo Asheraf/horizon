@@ -64,34 +64,11 @@ bool PacketHandlerRagexe20171206::Handle_CZ_ENTER(PacketBuffer &buf)
 
 	// Send initial packets.
 	Send_ZC_AID();
-	Send_ZC_ACCEPT_ENTER3();
+	Send_ZC_ACCEPT_ENTER2();
 
 	process_player_entry();
 
 	return true;
-}
-
-void PacketHandlerRagexe20171206::Send_ZC_ACCEPT_ENTER3()
-{
-	std::shared_ptr<Models::Character::Character> character = get_socket()->get_session()->get_character();
-	std::shared_ptr<Models::Character::Position> position = character->get_position_data();
-	std::shared_ptr<Models::Character::UISettings> ui_settings = character->get_ui_settings();
-
-	Ragexe20171206::PACKET_ZC_ACCEPT_ENTER3 pkt;
-	int x = position->get_current_x();
-	int y = position->get_current_y();
-
-	if (x == 0 && y == 0) {
-		if ((x = position->get_saved_x()) == 0)
-			x = 0;
-		if ((y = position->get_saved_y()) == 0)
-			y = 0;
-	}
-
-	pkt.start_time = time(nullptr);
-	pkt.x_size = pkt.y_size = 5;
-	pkt.font = ui_settings->get_font();
-	send_packet(pkt.serialize(x, y, DIR_NORTH));
 }
 
 void PacketHandlerRagexe20171206::Send_ZC_NOTIFY_STANDENTRY(entity_viewport_entry const &entry)
