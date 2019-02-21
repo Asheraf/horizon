@@ -1,3 +1,5 @@
 scripts = {
-	["npcs_prontera"] = "scripts/cities/prontera.lua"
+	"scripts/cities/prontera/npcs.lua"
 }
+
+NPC = {}
