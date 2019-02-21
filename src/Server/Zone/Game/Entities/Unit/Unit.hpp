@@ -168,8 +168,8 @@ private:
 	Status::Strength _str;
 	Status::Agility _agi;
 	Status::Vitality _vit;
-	Status::Dexterity _dex;
 	Status::Intelligence _int;
+	Status::Dexterity _dex;
 	Status::Luck _luk;
 
 	// Unit Data
