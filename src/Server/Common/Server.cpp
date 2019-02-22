@@ -35,9 +35,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/bind.hpp>
-#include <mysql/mysql_version.h>
 #include <jdbc/cppconn/version_info.h>
-#include <luajit-2.0/luajit.h>
 #include <readline/readline.h>
 #include <zlib.h>
 
@@ -59,9 +57,7 @@ Server::Server(std::string /*name*/, std::string config_file_path, std::string c
 	CoreLog->info("Copyright: {}", VER_LEGALCOPYRIGHT_STR);
 	CoreLog->info("SPDLog Version: v{}.{}.{}", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 	CoreLog->info("Boost Version: v{}.{}.{}", (BOOST_VERSION / 100000), (BOOST_VERSION / 100 % 1000),(BOOST_VERSION % 100));
-	CoreLog->info("MySQL Version: v{}", MYSQL_SERVER_VERSION);
 	CoreLog->info("MySQL Connector++ Version: v{}", MYCPPCONN_STATIC_MYSQL_VERSION);
-	CoreLog->info("LuaJit Version: v{} with {}", LUAJIT_VERSION, LUA_RELEASE);
 	CoreLog->info("Readline Version: v{}", RL_READLINE_VERSION);
 	CoreLog->info("ZLib Version: v{}", ZLIB_VERSION);
 
@@ -167,7 +163,7 @@ bool Server::parse_common_configs(sol::table &tbl)
 	/**
 	 * Client Type
 	 */
-	general_conf().set_client_type(tbl.get_or("client_type", CLIENT_TYPE_RAGEXE));
+	general_conf().set_client_type((client_types) tbl.get_or("client_type", (int) CLIENT_TYPE_RAGEXE));
 	switch (general_conf().get_client_type())
 	{
 	case CLIENT_TYPE_RAGEXE:

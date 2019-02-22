@@ -30,6 +30,10 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 
 	if (TEST_NAME STREQUAL "BCryptTest")
 		set (ADD_LIBS bcryptcpp)
+		CollectSourceFiles(
+		    ${PROJECT_SOURCE_DIR}/src/Libraries/BCrypt
+			ADD_SOURCES
+		)
 	elseif (TEST_NAME STREQUAL "TaskSchedulingTest")
 		set (ADD_SOURCES
 			${CORE_DIR}/Multithreading/TaskScheduler/TaskScheduler.cpp
@@ -45,7 +49,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 	# link to Boost libraries AND your targets and dependencies
 	target_link_libraries(${TEST_NAME}
 		PUBLIC
-		${Boost_LIBRARIES}
+		${BOOST_LIBRARIES}
 		${ADD_LIBS})
 
 	target_include_directories(${TEST_NAME}

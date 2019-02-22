@@ -71,7 +71,7 @@ if(CONCPP_LIB)
   endif()
 endif()
 
-message(STATUS "Found MySQL Connector C++ 8.0 libraries: ${CONCPP_LIBS}")
+message("Using Connector/C++ 8.0 libraries: ${CONCPP_LIBS}")
 
 #
 # Connector/C++ requires pthread library on Unix. Legacy connector needs

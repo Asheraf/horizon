@@ -25,9 +25,6 @@ set(AUTH_TARGET_NAME auth)
 set(CMAKE_BUILD_TYPE Debug)
 project (${PROJECT_NAME})
 
-# Compiler Options.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
-
 #################################
 # CMAKE Module Path
 #################################
@@ -90,18 +87,20 @@ if (WITH_TESTS)
     set(BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
 endif()
 
+message(STATUS "Boost Components: ${BOOST_COMPONENTS}")
+
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED ${BOOST_COMPONENTS})
 
 add_library(boost INTERFACE)
 
 target_link_libraries(boost
         INTERFACE
-        ${Boost_LIBRARIES}
+        ${BOOST_LIBRARIES}
 )
 
 target_include_directories(boost
         INTERFACE
-        ${Boost_INCLUDE_DIRS})
+        ${BOOST_INCLUDE_DIRS})
 
 target_compile_definitions(boost
         INTERFACE
@@ -121,7 +120,7 @@ endif()
 #################
 # SPDLog Library
 #################
-set(spdlog_FIND_REQUIRED true)
+set(SPDLOG_FIND_REQUIRED true)
 include(FindSPDLog)
 
 #################

@@ -145,7 +145,7 @@ bool AuthMain::ReadConfig()
 			return;
 		}
 
-		char_serv.server_type = serv.get_or("Type", CHAR_SERVER_TYPE_NORMAL);
+		char_serv.server_type = (character_server_types) serv.get_or("Type", (int) CHAR_SERVER_TYPE_NORMAL);
 
 		char_serv.is_new = serv.get_or("IsNew", false);
 

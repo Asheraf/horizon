@@ -17,27 +17,31 @@
 
 # Find the spdlog include directory
 # The following variables are set if spdlog is found.
-#  spdlog_FOUND        - True when the spdlog include directory is found.
-#  spdlog_INCLUDE_DIR  - The path to where the spdlog include files are.
-# If spdlog is not found, spdlog_FOUND is set to false.
+#  SPDLOG_FOUND        - True when the spdlog include directory is found.
+#  SPDLOG_INCLUDE_DIR  - The path to where the spdlog include files are.
+# If spdlog is not found, SPDLOG_FOUND is set to false.
 
-if(NOT EXISTS "${spdlog_INCLUDE_DIR}")
-    find_path(spdlog_INCLUDE_DIR
-            NAMES spdlog/spdlog.h
+if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}")
+    find_path(SPDLOG_INCLUDE_DIR
+            NAMES spdlog/spdlog.h 
+            HINTS 
+            	"C:\\vcpkg\\installed\\x86-windows\\include"
+            	/usr/local/opt/include
+            	/usr/local/include
             DOC "spdlog library header files")
 endif()
 
-if(EXISTS "${spdlog_INCLUDE_DIR}")
+if(EXISTS "${SPDLOG_INCLUDE_DIR}")
     include(FindPackageHandleStandardArgs)
-    mark_as_advanced(spdlog_INCLUDE_DIR)
+    mark_as_advanced(SPDLOG_INCLUDE_DIR)
 endif()
 
-if(EXISTS "${spdlog_INCLUDE_DIR}")
-    set(spdlog_FOUND 1)
+if(EXISTS "${SPDLOG_INCLUDE_DIR}")
+    set(SPDLOG_FOUND 1)
 else()
-    set(spdlog_FOUND 0)
+    set(SPDLOG_FOUND 0)
 endif()
 
-if (spdlog_FIND_REQUIRED AND NOT spdlog_FOUND)
+if (SPDLOG_FIND_REQUIRED AND NOT SPDLOG_FOUND)
     message (FATAL_ERROR "SPDLOG was not found! Please install from https://github.com/gabime/spdlog.git")
-endif (spdlog_FIND_REQUIRED AND NOT spdlog_FOUND)
+endif (SPDLOG_FIND_REQUIRED AND NOT SPDLOG_FOUND)

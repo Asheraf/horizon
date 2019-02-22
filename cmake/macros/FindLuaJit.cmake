@@ -18,10 +18,11 @@ find_path(LUA_INCLUDE_DIR luajit.h
   /opt/local # DarwinPorts
   /opt/csw # Blastwave
   /opt
+  C:/vcpkg/installed/x86-windows/include
 )
 
 find_library(LUA_LIBRARY
-  NAMES luajit-5.1
+  NAMES luajit-5.1 lua51
   HINTS
     ENV LUA_DIR
   PATH_SUFFIXES lib
@@ -32,6 +33,7 @@ find_library(LUA_LIBRARY
   /opt/local
   /opt/csw
   /opt
+  C:/vcpkg/installed/x86-windows/lib
 )
 
 if(LUA_LIBRARY)

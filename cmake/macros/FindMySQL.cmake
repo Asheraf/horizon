@@ -62,6 +62,7 @@ if (WIN32)
         "$ENV{ProgramFiles}/MySQL/MySQL Server 5.6/bin/opt"
         "$ENV{SystemDrive}/MySQL/MySQL Server 5.7/bin/opt"
         "$ENV{SystemDrive}/MySQL/MySQL Server 5.6/bin/opt"
+        "$ENV{ProgramFiles}/MySQL/MySQL Server 8.0/bin"
         "c:/msys/local/include"
         "$ENV{MYSQL_ROOT}/bin"
      DOC
@@ -69,23 +70,32 @@ if (WIN32)
     )
 endif(WIN32)
 
-find_path(MYSQL_INCLUDE_DIR mysql.h
+find_path(MYSQL_INCLUDE_DIR 
+    NAMES mysql.h
+    HINTS
         /usr/include/mysql
         /usr/local/include/mysql
-        /opt/mysql/include/mysql)
+        /opt/mysql/include/mysql
+        /usr/local/opt/include/mysql
+        "$ENV{ProgramFiles}/MySQL/MySQL Server 8.0/include/"
+)
 
 find_library(MYSQL_LIBRARIES NAMES mysqlclient
         PATHS
         /usr/lib/mysql
         /usr/local/lib/mysql
-        /opt/mysql/lib/mysql)
+        /opt/mysql/lib/mysql
+        "$ENV{ProgramFiles}/MySQL/MySQL Server 8.0/lib"
+)
 
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(mysqlclient DEFAULT_MSG MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
 
 if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
     set(MYSQL_FOUND TRUE)
-    message(STATUS "Found MySQL: ${MYSQL_EXECUTABLE} ${MYSQL_INCLUDE_DIR}, ${MYSQL_LIBRARIES}")
+    message(STATUS "Found MySQL: ${MYSQL_EXECUTABLE}")
+    message(STATUS "Found MySQL Headers:  ${MYSQL_INCLUDE_DIR}")
+    message(STATUS "Found MySQL Libraries:  ${MYSQL_LIBRARIES}")
 else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
     set(MYSQL_FOUND FALSE)
     message(STATUS "MySQL not found.")

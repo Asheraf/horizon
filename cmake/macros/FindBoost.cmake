@@ -643,6 +643,7 @@ if(NOT Boost_INCLUDE_DIR)
     list(APPEND _boost_INCLUDE_SEARCH_DIRS PATHS
       C:/boost/include
       C:/boost
+      C:/vcpkg/installed/x86-windows/include
       /sw/local/include
       /usr/local/include/boost
       /usr/include/boost
@@ -909,6 +910,7 @@ else()
       C:/boost/lib
       C:/boost
       /sw/local/lib
+      C:/vcpkg/installed/x86-windows/lib
       )
   endif()
 endif()

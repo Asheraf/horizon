@@ -26,6 +26,7 @@
  **************************************************/
 
 #include "MapCache.hpp"
+#include <signal.h>
 
 #include <boost/algorithm/string.hpp>
 

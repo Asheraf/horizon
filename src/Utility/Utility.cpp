@@ -26,7 +26,10 @@
  **************************************************/
 
 #include "Utility.hpp"
+
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 
 uint32_t getMSTime()
 {
@@ -58,7 +61,19 @@ uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
 
 int64_t get_sys_time()
 {
-#ifdef CLOCK_MONOTONIC
+#ifdef WIN32
+//	static bool first = true;
+//	static ULONGLONG(WINAPI *pGetTickCount64)(void) = NULL;
+
+//	if (first) {
+//		HMODULE hlib = GetModuleHandle(TEXT("KERNEL32.DLL"));
+	//	if (hlib != NULL)
+	//		pGetTickCount64 = (ULONGLONG(WINAPI *)(void)) GetProcAddress(hlib, "GetTickCount64");
+	//	first = false;
+	//}
+	//if (pGetTickCount64)
+		return (int64_t) 0();
+#elif defined(CLOCK_MONOTONIC)
 	// Monotonic clock: Implementation-defined.
 	//   Clock that cannot be set and represents monotonic time since some
 	//   unspecified starting point.  This clock is not affected by

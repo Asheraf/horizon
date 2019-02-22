@@ -17,11 +17,16 @@
 
 find_path(SOL2_INCLUDE_DIR
 	NAMES sol.hpp
-	HINTS /usr/local/include
+	HINTS 
+		/usr/local/include
+		/usr/local/opt/include
+		C:/sol2
 	)
 
 if (SOL2_INCLUDE_DIR STREQUAL "SOL2_INCLUDE_DIR-NOTFOUND")
-	message(FATAL "Sol2 Wrapper library is required but not found.")
+	message(FATAL_ERROR "Sol2 Wrapper library is required but not found.")
+else()
+	message(STATUS "Found Sol2 Lua C API Wrapper Library: ${SOL2_INCLUDE_DIR}")
 endif()
 
 mark_as_advanced(SOL2_INCLUDE_DIR)

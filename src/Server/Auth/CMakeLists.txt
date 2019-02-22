@@ -26,7 +26,8 @@ add_executable(auth
 	${PRIVATE_SOURCES}
 	${COMMON_SOURCES}
     ${CORE_SOURCES}
-    ${UTILITY_SOURCES})
+    ${UTILITY_SOURCES}
+)
 
 target_link_libraries(auth
 	PUBLIC

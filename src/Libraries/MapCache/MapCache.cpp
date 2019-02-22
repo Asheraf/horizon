@@ -172,7 +172,7 @@ mcache_config_error_types Horizon::Libraries::MapCache::ReadMapListConfig()
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		lua.script_file(getMapListPath().c_str());
+		lua.script_file(getMapListPath().string());
 	} catch(const std::exception &e) {
 		printf("Error: Parse error at %s.\n", e.what());
 		return MCACHE_CONFIG_PARSE_ERROR;
@@ -198,7 +198,7 @@ mcache_grf_config_error_types Horizon::Libraries::MapCache::ReadGRFListConfig()
 
 	// Read the file. If there is an error, report it and exit.
 	try {
-		lua.script_file(getGRFListPath().c_str());
+		lua.script_file(getGRFListPath().string());
 	} catch(const std::exception &e) {
 		printf("Error: Parse error at %s.\n", e.what());
 		return MCACHE_GRF_CONF_PARSE_ERROR;
@@ -349,7 +349,7 @@ bool Horizon::Libraries::MapCache::BuildExternalCache()
 
 bool Horizon::Libraries::MapCache::ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_types error)
 {
-	const char *grf_name =  grf.getGRFPath().filename().c_str();
+	std::string grf_name =  grf.getGRFPath().filename().string();
 
 	switch (error)
 	{
@@ -357,13 +357,13 @@ bool Horizon::Libraries::MapCache::ParseGRFReadResult(GRF &grf, std::string cons
 	default:
 		break;
 	case GRE_NOT_FOUND:
-		printf("Warning: File '%s' could not be located in GRF '%s'.\n", filename.c_str(), grf_name);
+		printf("Warning: File '%s' could not be located in GRF '%s'.\n", filename.c_str(), grf_name.c_str());
 		return false;
 	case GRE_DECOMPRESS_SIZE_MISMATCH:
-		printf("Warning: File '%s' decompressed size mismatch in GRF '%s'.\n", filename.c_str(), grf_name);
+		printf("Warning: File '%s' decompressed size mismatch in GRF '%s'.\n", filename.c_str(), grf_name.c_str());
 		return false;
 	case GRE_READ_ERROR:
-		printf("Warning: File '%s' could not be read in GRF '%s'.\n", filename.c_str(), grf_name);
+		printf("Warning: File '%s' could not be read in GRF '%s'.\n", filename.c_str(), grf_name.c_str());
 		return false;
 	}
 

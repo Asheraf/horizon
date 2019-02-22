@@ -27,6 +27,9 @@
 #ifndef HORIZON_BCRYPT_HPP
 #define HORIZON_BCRYPT_HPP
 
+#ifdef WIN32
+#include "WinBCrypt.hpp"
+#else
 #include "bcrypt.h"
 #include <string>
 
@@ -38,5 +41,5 @@ public:
 	static std::string generateHash(const std::string & password, int workload = 12);
 	static bool validate_password(const std::string & password, const std::string & hash);
 };
-
+#endif
 #endif //HORIZON_BCRYPT_HPP

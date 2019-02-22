@@ -49,7 +49,7 @@ endif()
 target_include_directories(mapcache
 	PUBLIC
 		${PUBLIC_INCLUDES}
-		${Boost_INCLUDE_DIRS}
+		${BOOST_INCLUDE_DIRS}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR})
 

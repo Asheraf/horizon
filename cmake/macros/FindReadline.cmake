@@ -36,6 +36,10 @@
 
 find_path(Readline_ROOT_DIR
         NAMES include/readline/readline.h
+        HINTS 
+        "C:/vcpkg/installed/x86-windows"
+        /usr/local/opt
+        /usr/local
         )
 
 find_path(Readline_INCLUDE_DIR

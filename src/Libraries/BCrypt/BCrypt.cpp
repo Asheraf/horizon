@@ -27,6 +27,7 @@
 #ifndef HORIZON_BCRYPT_CPP
 #define HORIZON_BCRYPT_CPP
 
+#ifndef WIN32
 #include "BCrypt.hpp"
 #include <exception>
 #include <stdexcept>
@@ -54,5 +55,5 @@ bool BCrypt::validate_password(const std::string & password, const std::string &
 {
 	return (bcrypt_checkpw(password.c_str(), hash.c_str()) == 0);
 }
-
+#endif // ifndef WIN3
 #endif //HORIZON_BCRYPT_CPP

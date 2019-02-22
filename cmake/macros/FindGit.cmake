@@ -21,9 +21,10 @@ set(_REQUIRED_GIT_VERSION "1.7")
 
 find_program(GIT_EXECUTABLE
   NAMES
-    git git.cmd
+    git git.cmd git-cmd.exe
   HINTS
     ENV PATH
+	"C:\\Program Files\\Git"
   DOC "Full path to git commandline client"
 )
 MARK_AS_ADVANCED(GIT_EXECUTABLE)
@@ -34,6 +35,11 @@ if(NOT GIT_EXECUTABLE)
     Observe that for revision hash/date to work you need at least version ${_REQUIRED_GIT_VERSION}")
 else()
   message(STATUS "Found git binary : ${GIT_EXECUTABLE}")
+
+  if (WIN32)
+	set(GIT_EXECUTABLE "git")
+  endif()
+
   execute_process(
     COMMAND "${GIT_EXECUTABLE}" --version
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
