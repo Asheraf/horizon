@@ -15,32 +15,34 @@
 # or viewing without permission.
 ###################################################
 
-# BCrypt CPP
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3)
+# BCrypt CPP Interface
 
-set(BCRYPT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/BCrypt.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/BCrypt.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/WinBCrypt.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/bcrypt.c
-	${CMAKE_CURRENT_SOURCE_DIR}/bcrypt.h
-	${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3/crypt_blowfish.c
-	${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3/crypt_blowfish.h
-	${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3/crypt_gensalt.c
-	${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3/crypt_gensalt.h
-	${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3/wrapper.c
-	${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3/x86.S
+find_path (BCRYPT_STATIC_DIR
+	NAMES bcrypt.a
+	HINTS ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+if (BCRYPT_STATIC_DIR-NOT_FOUND)
+	if (BCRYPT_STATIC_DIR STREQUAL "BCRYPT_STATIC_DIR-NOTFOUND")
+		execute_process(COMMAND make clean WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+		execute_process(COMMAND make clean WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/crypt_blowfish-1.3)
+		execute_process(COMMAND make bcrypt.a WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+	endif()
+	message(STATUS "Compiled Crypt Blowfish 1.3 library. ")
+endif()
+
+message(STATUS "Found Crypt Blowfish 1.3 library. ")
 
 add_library(bcryptcpp
 	STATIC
-		${BCRYPT_SOURCES})
+	${CMAKE_CURRENT_SOURCE_DIR}/BCrypt.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/BCrypt.hpp)
+
+target_link_libraries(bcryptcpp
+	${CMAKE_CURRENT_SOURCE_DIR}/bcrypt.a)
 
 set_target_properties(bcryptcpp
 	PROPERTIES
-		VERSION "${PROJECT_VERSION}"
-		PUBLIC_HEADER BCrypt.hpp
-		LINKER_LANGUAGE CXX
-        FOLDER "BCrypt"
-)
+	LINKER_LANGUAGE CXX
+        FOLDER
+        "BCrypt")

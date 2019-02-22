@@ -8,18 +8,6 @@ CollectSourceFiles(
 
 list(REMOVE_ITEM TEST_SOURCES REGEX "${CMAKE_CURRENT_SOURCE_DIR}/prontera.cpp")
 
-###############
-# LuaJit
-###############
-set(LUAJIT_FIND_REQUIRED true)
-include(FindLuaJit)
-
-###############
-# Sol2
-###############
-set(SOL2_FIND_REQUIRED true)
-include(FindSol2)
-
 set(CORE_DIR ${PROJECT_SOURCE_DIR}/src/Core)
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
@@ -30,10 +18,6 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 
 	if (TEST_NAME STREQUAL "BCryptTest")
 		set (ADD_LIBS bcryptcpp)
-		CollectSourceFiles(
-		    ${PROJECT_SOURCE_DIR}/src/Libraries/BCrypt
-			ADD_SOURCES
-		)
 	elseif (TEST_NAME STREQUAL "TaskSchedulingTest")
 		set (ADD_SOURCES
 			${CORE_DIR}/Multithreading/TaskScheduler/TaskScheduler.cpp
@@ -49,7 +33,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 	# link to Boost libraries AND your targets and dependencies
 	target_link_libraries(${TEST_NAME}
 		PUBLIC
-		${BOOST_LIBRARIES}
+		${Boost_LIBRARIES}
 		${ADD_LIBS})
 
 	target_include_directories(${TEST_NAME}
