@@ -32,6 +32,7 @@ target_link_libraries(char
         boost
         networking
 	    -lpthread
+	    ${CRYPTOPP_LIBRARIES}
         ${YAMLCPP_LIBRARY}
         ${CONCPP_LIBS}
         ${Readline_LIBRARY}
@@ -58,6 +59,7 @@ endif()
 target_include_directories(char
 	PUBLIC
 		${PUBLIC_INCLUDES}
+		${CRYPTOPP_INCLUDE_DIR}
         ${YAMLCPP_INCLUDE_DIR}
         ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}

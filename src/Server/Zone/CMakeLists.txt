@@ -34,6 +34,7 @@ target_link_libraries(zone
         networking
 	    -lpthread
 		mcache
+	    ${CRYPTOPP_LIBRARIES}
         ${CONCPP_LIBS}
         ${Readline_LIBRARY}
 		${LUA_LIBRARIES}
@@ -51,6 +52,7 @@ CollectIncludeDirectories(
 target_include_directories(zone
 	PUBLIC
 		${PUBLIC_INCLUDES}
+		${CRYPTOPP_INCLUDE_DIR}
         ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
