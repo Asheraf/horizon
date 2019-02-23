@@ -13,14 +13,18 @@ else()
     /opt/local/include/crypto++
     /opt/local/include/cryptopp
     $ENV{SystemDrive}/Crypto++/include
+    C:/vcpkg/installed/x64-windows/include/cryptopp
+    C:/vcpkg/installed/x86-windows/include/cryptopp
   )
 
-  find_library(CRYPTOPP_LIBRARIES NAMES cryptopp
+  find_library(CRYPTOPP_LIBRARIES NAMES cryptopp cryptopp-static
     PATHS
       /usr/lib
       /usr/local/lib
       /opt/local/lib
       $ENV{SystemDrive}/Crypto++/lib
+      C:/vcpkg/installed/x64-windows/lib
+      C:/vcpkg/installed/x86-windows/lib
   )
 
   if(CRYPTOPP_INCLUDE_DIR AND CRYPTOPP_LIBRARIES)
