@@ -26,20 +26,44 @@
  **************************************************/
 
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "BCryptTest"
+#define BOOST_TEST_MODULE "SCryptTest"
 
-#include "Libraries/BCrypt/BCrypt.hpp"
+#include <cryptlib.h>
+#include <secblock.h>
+#include <scrypt.h>
+#include <osrng.h>
+#include <files.h>
+#include <hex.h>
 #include <boost/test/unit_test.hpp>
 #include <cstring>
 
-
-BOOST_AUTO_TEST_CASE(BCryptTest)
+BOOST_AUTO_TEST_CASE(SCryptTest)
 {
-	BCrypt bcrypt;
-	std::string pass = "hi,mom";
-	std::string hash;
+	using namespace CryptoPP;
 
-	BOOST_CHECK(bcrypt.validate_password(pass, "$2a$10$VEVmGHy4F4XQMJ3eOZJAUeb.MedU0W10pTPCuf53eHdKJPiSE8sMK"));
-	hash = bcrypt.generateHash(pass);
-	BOOST_CHECK(bcrypt.validate_password(pass, hash));
+	SecByteBlock derived(64);
+	const byte pass[] = "password";
+	const byte salt[] = "abcdef";
+	const byte salt2[] = "abcdefg";
+	std::string hash1, hash2;
+	word64 cost=2048, blockSize=8, parallelization=16;
+
+	Scrypt scrypt;
+
+	AlgorithmParameters params = MakeParameters("Cost", cost)
+	("BlockSize", blockSize)("Parallelization", parallelization)
+	("Salt", ConstByteArrayParameter(salt, 6));
+
+	scrypt.DeriveKey(derived, derived.size(), pass, 8, params);
+	StringSource(derived, derived.size(), true, new HexEncoder(new StringSink(hash1)));
+	std::cout << "Hash1: " << hash1 << std::endl;
+	std::cout << "Salt1: " << salt << std::endl;
+
+	params("Salt", ConstByteArrayParameter(salt2, 7));
+	scrypt.DeriveKey(derived, derived.size(), pass, 8, params);
+	StringSource(derived, derived.size(), true, new HexEncoder(new StringSink(hash2)));
+	std::cout << "Hash2: " << hash2 << std::endl;
+	std::cout << "Salt2: " << salt2 << std::endl;
+
+	BOOST_ASSERT_MSG(hash1.compare(hash2) != 0, "Bytes are same!");
 }

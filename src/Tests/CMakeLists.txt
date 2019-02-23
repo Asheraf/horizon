@@ -16,8 +16,12 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 	# Extract the filename without an extension (NAME_WE)
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 
-	if (TEST_NAME STREQUAL "BCryptTest")
-		set (ADD_LIBS bcryptcpp)
+	if (TEST_NAME STREQUAL "SCryptTest")
+		if (NOT CRYPTOPP_INCLUDE_DIR OR NOT CRYPTOPP_LIBRARIES)
+			include(FindCryptopp)
+		endif()
+		set (ADD_LIBS ${CRYPTOPP_LIBRARIES})
+		set (ADD_INCLUDE_DIRS ${CRYPTOPP_INCLUDE_DIR})
 	elseif (TEST_NAME STREQUAL "TaskSchedulingTest")
 		set (ADD_SOURCES
 			${CORE_DIR}/Multithreading/TaskScheduler/TaskScheduler.cpp

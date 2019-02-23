@@ -81,7 +81,7 @@ bool AuthMain::ReadConfig()
 	}
 
 	tmp_value = tbl.get_or("pass_hash_method", (int) PASS_HASH_NONE);
-	if (tmp_value < PASS_HASH_NONE || tmp_value > PASS_HASH_BCRYPT) {
+	if (tmp_value < PASS_HASH_NONE || tmp_value > PASS_HASH_SCRYPT) {
 		auth_config_error("pass_hash_method", PASS_HASH_NONE);
 		get_auth_config().set_pass_hash_method(PASS_HASH_NONE);
 	} else {

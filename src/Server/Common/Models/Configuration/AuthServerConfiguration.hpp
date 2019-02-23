@@ -27,7 +27,7 @@ enum login_hash_method
 {
 	PASS_HASH_NONE   = 0,
 	PASS_HASH_MD5    = 1,
-	PASS_HASH_BCRYPT = 2
+	PASS_HASH_SCRYPT = 2
 };
 
 struct auth_server_logging_config : public logging

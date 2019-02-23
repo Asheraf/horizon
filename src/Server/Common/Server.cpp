@@ -37,7 +37,6 @@
 #include <boost/bind.hpp>
 #include <jdbc/cppconn/version_info.h>
 #include <readline/readline.h>
-#include <zlib.h>
 
 /* Public */
 Server::Server(std::string /*name*/, std::string config_file_path, std::string config_file_name)
@@ -59,7 +58,6 @@ Server::Server(std::string /*name*/, std::string config_file_path, std::string c
 	CoreLog->info("Boost Version: v{}.{}.{}", (BOOST_VERSION / 100000), (BOOST_VERSION / 100 % 1000),(BOOST_VERSION % 100));
 	CoreLog->info("MySQL Connector++ Version: v{}", MYCPPCONN_STATIC_MYSQL_VERSION);
 	CoreLog->info("Readline Version: v{}", RL_READLINE_VERSION);
-	CoreLog->info("ZLib Version: v{}", ZLIB_VERSION);
 
 	this->general_config.config_file_path = config_file_path;
 	this->general_config.config_file_name = config_file_name;

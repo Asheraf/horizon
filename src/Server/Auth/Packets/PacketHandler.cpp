@@ -27,7 +27,6 @@
 
 #include "PacketHandler.hpp"
 
-#include "Libraries/BCrypt/BCrypt.hpp"
 #include "Server/Auth/Auth.hpp"
 #include "Server/Auth/Packets/Ragexe/PacketStructs.hpp"
 #include "Server/Auth/Packets/Ragexe/Packets.hpp"
@@ -106,8 +105,8 @@ bool Horizon::Auth::PacketHandler::process_login(std::string username, std::stri
 		case PASS_HASH_MD5:
 			authenticated = game_account->verify_credentials(AuthServer, username, password);
 			break;
-		case PASS_HASH_BCRYPT:
-			authenticated = game_account->verify_credentials_bcrypt(AuthServer, username, password);
+		case PASS_HASH_SCRYPT:
+			authenticated = game_account->verify_credentials_scrypt(AuthServer, username, password);
 			break;
 	}
 

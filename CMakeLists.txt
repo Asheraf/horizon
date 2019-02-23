@@ -95,12 +95,12 @@ add_library(boost INTERFACE)
 
 target_link_libraries(boost
         INTERFACE
-        ${BOOST_LIBRARIES}
+        ${Boost_LIBRARIES}
 )
 
 target_include_directories(boost
         INTERFACE
-        ${BOOST_INCLUDE_DIRS})
+        ${Boost_INCLUDE_DIRS})
 
 target_compile_definitions(boost
         INTERFACE

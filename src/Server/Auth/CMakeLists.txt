@@ -15,6 +15,8 @@
 # or viewing without permission.
 ###################################################
 
+include(FindCryptopp)
+
 CollectSourceFiles(
     ${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE_SOURCES
@@ -34,7 +36,7 @@ target_link_libraries(auth
         boost
         networking
 	    -lpthread
-	    bcryptcpp
+	    ${CRYPTOPP_LIBRARIES}
         ${CONCPP_LIBS}
         ${Readline_LIBRARY}
 		${LUA_LIBRARIES}
@@ -64,6 +66,7 @@ target_include_directories(auth
         ${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
 		${SOL2_INCLUDE_DIR}
+		${CRYPTOPP_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )
