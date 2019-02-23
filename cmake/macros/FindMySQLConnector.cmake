@@ -19,8 +19,8 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
   if (NOT CONCPP_INCLUDE_DIR)
     find_path(CONCPP_INCLUDE_DIR
             NAMES mysqlx/xdevapi.h
-            HINTS 
-              /usr/local/mysql-connector-c++
+            HINTS
+              /usr/local/mysql-connector-c++/include
               "$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\include"
     )
 
@@ -37,7 +37,7 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
   endif()
 
   if (NOT CONCPP_LIB)
-    find_library(CONCPP_LIB 
+    find_library(CONCPP_LIB
       NAMES "mysqlcppconn8-static" mysqlcppconn8
       PATHS
         "$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\lib64\\${VS}"
