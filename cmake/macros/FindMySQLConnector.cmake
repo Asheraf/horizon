@@ -34,11 +34,14 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
 
   if(WIN32)
     set(VS "vs14")
+    set(LIBNAME "mysqlcppconn8-static")
+  else()
+    set(LIBNAME "mysqlcppconn8")
   endif()
 
   if (NOT CONCPP_LIB)
     find_library(CONCPP_LIB
-      NAMES "mysqlcppconn8-static" mysqlcppconn8
+      NAMES ${LIBNAME}
       PATHS
         "$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\lib64\\${VS}"
         /usr/local/mysql-connector-c++/lib64/
