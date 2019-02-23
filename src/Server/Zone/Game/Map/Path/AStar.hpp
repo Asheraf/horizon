@@ -23,18 +23,17 @@ namespace AStar
 {
 struct Vec2i
 {
+	Vec2i() { }
+	Vec2i(int x, int y) : x(x), y(y) { }
 	int x{0}, y{0}, move_cost{0};
 
 	bool operator == (const Vec2i& coordinates_) { return (x == coordinates_.x && y == coordinates_.y); }
-	Vec2i operator + (const Vec2i& right_) { return{ x + right_.x, y + right_.y }; }
+	Vec2i operator + (const Vec2i& right_) { return Vec2i(x + right_.x, y + right_.y); }
 };
 
 class Heuristic
 {
-	static Vec2i getDelta(Vec2i source_, Vec2i target_)
-	{
-		return { abs(target_.x - source_.x),  abs(target_.y - source_.y) };
-	}
+	static Vec2i getDelta(Vec2i source_, Vec2i target_) { return Vec2i(abs(target_.x - source_.x), abs(target_.y - source_.y)); }
 
 public:
 	static uint32_t manhattan(Vec2i source_, Vec2i target_)

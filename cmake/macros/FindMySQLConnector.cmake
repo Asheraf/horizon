@@ -15,6 +15,8 @@
 # or viewing without permission.
 ###################################################
 
+set(LIBNAME "mysqlcppconn8")
+
 if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
   if (NOT CONCPP_INCLUDE_DIR)
     find_path(CONCPP_INCLUDE_DIR
@@ -31,20 +33,26 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
     endif()
   endif()
 
-
-  if(WIN32)
-    set(VS "vs14")
-    set(LIBNAME "mysqlcppconn8-static")
-  else()
-    set(LIBNAME "mysqlcppconn8")
+  if (PLATFORM EQUAL 64)
+    set(PLATFORMDIR "lib64")
+  elseif()
+    set(PLATFORMDIR "lib")
   endif()
 
   if (NOT CONCPP_LIB)
-    find_library(CONCPP_LIB
-      NAMES ${LIBNAME}
+    find_path(CONCPP_LIB_DIR
+      NAMES "${PLATFORMDIR}\\${VS}"
       PATHS
-        "$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\lib64\\${VS}"
-        /usr/local/mysql-connector-c++/lib64/
+        "$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0"
+        /usr/local/mysql-connector-c++
+    )
+    set(CONCPP_LIB_DIR "${CONCPP_LIB_DIR}/${PLATFORMDIR}" CACHE STRING "" FORCE)
+
+    find_library(CONCPP_LIB
+      NAMES "${LIBNAME}"
+      PATHS
+        "$ENV{ProgramFiles}/MySQL/Connector C++ 8.0/${PLATFORMDIR}/${VS}"
+        /usr/local/mysql-connector-c++/${PLATFORMDIR}
     )
 
     if(NOT CONCPP_LIB)
@@ -96,6 +104,24 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
+link_directories(${CONCPP_LIB_DIR})
 include_directories(${CONCPP_INCLUDE_DIR})
 
-mark_as_advanced(CONCPP_INCLUDE_DIR CONCPP_LIB)
+if (WIN32)
+  file(GLOB libs "${CONCPP_LIB_DIR}/${LIBNAME}*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
+  file(INSTALL ${libs} DESTINATION ${CMAKE_INSTALL_PREFIX})
+  file(INSTALL ${libs} DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}")
+endif()
+
+if(EXISTS "${CONCPP_LIB_DIR}/debug")
+  set(debug_prefix "debug/")
+else()
+  set(debug_prefix)
+endif()
+
+set(CONCPP_LIBS
+  optimized ${LIBNAME}
+  debug     ${debug_prefix}${LIBNAME}
+)
+
+mark_as_advanced(CONCPP_INCLUDE_DIR CONCPP_LIB CONCPP_LIBS)

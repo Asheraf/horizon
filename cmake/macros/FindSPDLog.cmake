@@ -25,23 +25,31 @@ if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}")
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h 
             HINTS 
-            	"C:\\vcpkg\\installed\\x86-windows\\include"
+            	"C:\\vcpkg\\installed\\x${PLATFORM}-windows\\include"
             	/usr/local/opt/include
             	/usr/local/include
             DOC "spdlog library header files")
-endif()
-
-if(EXISTS "${SPDLOG_INCLUDE_DIR}")
-    include(FindPackageHandleStandardArgs)
+    if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}")
+        message(FATAL_ERROR "SPDLog Headers were not found!")
+    endif()
     mark_as_advanced(SPDLOG_INCLUDE_DIR)
 endif()
 
-if(EXISTS "${SPDLOG_INCLUDE_DIR}")
-    set(SPDLOG_FOUND 1)
-else()
-    set(SPDLOG_FOUND 0)
+if (NOT EXISTS "${SPDLOG_LIBRARIES}" AND WIN32)
+    find_library(SPDLOG_LIBRARIES
+        NAMES fmt
+        HINTS
+            "C:\\vcpkg\\installed\\x${PLATFORM}-windows\\lib"
+    )
+
+    if(NOT EXISTS "${SPDLOG_LIBRARIES}")
+        message(FATAL_ERROR "SPDLog Libraries were not found!")
+    endif()
+    mark_as_advanced(SPDLOG_LIBRARIES)
 endif()
 
-if (SPDLOG_FIND_REQUIRED AND NOT SPDLOG_FOUND)
-    message (FATAL_ERROR "SPDLOG was not found! Please install from https://github.com/gabime/spdlog.git")
-endif (SPDLOG_FIND_REQUIRED AND NOT SPDLOG_FOUND)
+if(EXISTS "${SPDLOG_INCLUDE_DIR}" AND EXISTS "${SPDLOG_LIBRARIES}")
+    include(FindPackageHandleStandardArgs)
+    message(STATUS "Found SPDLog Headers: ${SPDLOG_INCLUDE_DIR}")
+    message(STATUS "Found SPDLog Libraries: ${SPDLOG_LIBRARIES}")
+endif()

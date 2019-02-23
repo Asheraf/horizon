@@ -22,9 +22,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PROJECT_NAME "Horizon" CXX)
 set(AUTH_TARGET_NAME auth)
-set(CMAKE_BUILD_TYPE Debug)
+message(STATUS ${CMAKE_BUILD_TYPE})
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
 project (${PROJECT_NAME})
-
 #################################
 # CMAKE Module Path
 #################################
@@ -106,10 +108,7 @@ target_compile_definitions(boost
         INTERFACE
         -DBOOST_DATE_TIME_NO_LIB
         -DBOOST_REGEX_NO_LIB
-        -DBOOST_CHRONO_NO_LIB
-        # Due to MSVC linking error boost::none" already defined in scripts_...
-        # May be removed when the requirement is raised to boost 1.61 on windows.
-        -DBOOST_OPTIONAL_USE_OLD_DEFINITION_OF_NONE)
+        -DBOOST_CHRONO_NO_LIB)
 
 if (NOT STD_HAS_WORKING_WREGEX)
     target_compile_definitions(boost

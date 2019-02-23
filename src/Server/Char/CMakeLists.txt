@@ -64,6 +64,8 @@ target_include_directories(char
         ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
+		${SOL2_INCLUDE_DIR}
+		${SPDLOG_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

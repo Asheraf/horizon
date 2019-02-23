@@ -32,6 +32,7 @@
 
 #include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
 #include <stdint.h>
+#include <memory>
 
 namespace Horizon
 {
