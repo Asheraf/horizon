@@ -29,7 +29,6 @@
 #define HORIZON_ZONE_GAME_MAPMANAGER_HPP
 
 #include "Core/Multithreading/LockedLookupTable.hpp"
-#include "Tools/MapCache/MapCache.hpp"
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "MapThreadContainer.hpp"
 

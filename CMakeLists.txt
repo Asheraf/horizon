@@ -1,9 +1,9 @@
-#           _   _            _
-#          | | | |          (_)
-#          | |_| | ___  _ __ _ _______  _ __
-#          |  _  |/ _ \| '__| |_  / _ \| '_ \
-#          | | | | (_) | |  | |/ / (_) | | | |
-#          \_| |_/\___/|_|  |_/___\___/|_| |_|
+#					 _	 _						_
+#					| | | |					(_)
+#					| |_| | ___	_ __ _ _______	_ __
+#					|	_	|/ _ \| '__| |_	/ _ \| '_ \
+#					| | | | (_) | |	| |/ / (_) | | | |
+#					\_| |_/\___/|_|	|_/___\___/|_| |_|
 #
 # This file is part of Horizon (c).
 # Copyright (c) 2019 Horizon Dev Team.
@@ -17,25 +17,25 @@
 #
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this library.  If not, see <http://www.gnu.org/licenses/>.
+# along with this library.	If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################
 
 #################################
 # Project Setup
 #################################
-cmake_minimum_required (VERSION 3.10 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 17)
+cmake_minimum_required (VERSION 3.7 FATAL_ERROR)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PROJECT_NAME "Horizon" CXX)
 set(AUTH_TARGET_NAME auth)
 message(STATUS ${CMAKE_BUILD_TYPE})
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+		set(CMAKE_BUILD_TYPE Debug)
 endif()
 project (${PROJECT_NAME})
 #################################
@@ -47,7 +47,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 # Find revision ID and hash of the sourcetree
 #################################
 if(NOT WITHOUT_GIT)
-  find_package(Git)
+	find_package(Git)
 endif()
 
 #################################
@@ -80,9 +80,9 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 include (CheckCXXSourceCompiles)
 
 check_cxx_source_compiles("
-  #include <regex>
-  int main() { std::wregex r(L\".*\"); }"
-        STD_HAS_WORKING_WREGEX)
+	#include <regex>
+	int main() { std::wregex r(L\".*\"); }"
+				STD_HAS_WORKING_WREGEX)
 
 
 #################################
@@ -93,11 +93,11 @@ set(BOOST_REQUIRED_VERSION 1.60)
 set(BOOST_COMPONENTS system filesystem thread locale program_options iostreams)
 
 if (STD_HAS_WORKING_WREGEX)
-    set(BOOST_COMPONENTS ${BOOST_COMPONENTS} regex)
+		set(BOOST_COMPONENTS ${BOOST_COMPONENTS} regex)
 endif()
 
 if (WITH_TESTS)
-    set(BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
+		set(BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
 endif()
 
 message(STATUS "Boost Components: ${BOOST_COMPONENTS}")
@@ -107,24 +107,24 @@ find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED ${BOOST_COMPONENTS})
 add_library(boost INTERFACE)
 
 target_link_libraries(boost
-        INTERFACE
-        ${Boost_LIBRARIES}
+				INTERFACE
+				${Boost_LIBRARIES}
 )
 
 target_include_directories(boost
-        INTERFACE
-        ${Boost_INCLUDE_DIRS})
+				INTERFACE
+				${Boost_INCLUDE_DIRS})
 
 target_compile_definitions(boost
-        INTERFACE
-        -DBOOST_DATE_TIME_NO_LIB
-        -DBOOST_REGEX_NO_LIB
-        -DBOOST_CHRONO_NO_LIB)
+				INTERFACE
+				-DBOOST_DATE_TIME_NO_LIB
+				-DBOOST_REGEX_NO_LIB
+				-DBOOST_CHRONO_NO_LIB)
 
 if (NOT STD_HAS_WORKING_WREGEX)
-    target_compile_definitions(boost
-            INTERFACE
-            -DTC_HAS_BROKEN_WSTRING_REGEX)
+		target_compile_definitions(boost
+						INTERFACE
+						-DTC_HAS_BROKEN_WSTRING_REGEX)
 endif()
 
 #################
@@ -172,7 +172,6 @@ find_package(ZLIB REQUIRED)
 # Horizon Project Source
 #################
 add_subdirectory(src)
-
 
 #################
 # Generate version.hpp File

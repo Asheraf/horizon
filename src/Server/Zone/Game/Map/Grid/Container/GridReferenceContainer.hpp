@@ -122,7 +122,7 @@ public:
 	template <class SPECIFIC_TYPE>
 	size_t count() const
 	{
-		return GridTypeListIterator::count(_elements, (SPECIFIC_TYPE *) NULL);
+		return GridTypeListIterator::count(_elements, (SPECIFIC_TYPE *) nullptr);
 	}
 
 	/// inserts a specific object into the container
@@ -131,7 +131,7 @@ public:
 	{
 		assert(obj && !obj->has_valid_grid_reference());
 		SPECIFIC_TYPE* t = GridTypeListIterator::Insert(_elements, obj);
-		return (t != NULL);
+		return (t != nullptr);
 	}
 
 	GridTypeListContainer<OBJECT_TYPES> &getElements(void) { return _elements; }

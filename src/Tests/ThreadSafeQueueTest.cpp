@@ -32,6 +32,7 @@
 #include <boost/test/unit_test.hpp>
 #include <cstring>
 #include <thread>
+#include <atomic>
 
 #define MAX_PUSHES 1000000
 

@@ -28,58 +28,64 @@
 set(LIBNAME "mysqlcppconn8")
 
 if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
-  if (NOT CONCPP_INCLUDE_DIR)
-    find_path(CONCPP_INCLUDE_DIR
-            NAMES mysqlx/xdevapi.h
-            HINTS
-              /usr/local/mysql-connector-c++/include
-              "$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\include"
-    )
+	if (NOT CONCPP_INCLUDE_DIR)
+		find_path(CONCPP_INCLUDE_DIR
+						NAMES mysqlx/xdevapi.h
+						HINTS
+							/usr/local/mysql-connector-c++/include
+							/usr/include/mysql-cppconn-8/
+							"$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\include"
+		)
 
-    if((NOT CONCPP_INCLUDE_DIR) OR CONCPP_INCLUDE_DIR STREQUAL "CONCPP_INCLUDE_DIR-NOTFOUND")
-      message(FATAL_ERROR
-        "Could not find MySQL Connector/C++ 8.0 headers."
-      )
-    endif()
-  endif()
+		if((NOT CONCPP_INCLUDE_DIR) OR CONCPP_INCLUDE_DIR STREQUAL "CONCPP_INCLUDE_DIR-NOTFOUND")
+			message(FATAL_ERROR
+				"Could not find MySQL Connector/C++ 8.0 headers."
+			)
+		endif()
+	endif()
 
-  if (PLATFORM EQUAL 64)
-    set(PLATFORMDIR "lib64")
-  elseif()
-    set(PLATFORMDIR "lib")
-  endif()
+	if (WIN32 OR APPLE)
+		if (PLATFORM EQUAL 64)
+			set(PLATFORMDIR "lib64")
+		elseif()
+			set(PLATFORMDIR "lib")
+		endif()
+	elseif(UNIX)
+		set(PLATFORMDIR "x86_64-linux-gnu")
+	endif()
 
-  if (NOT CONCPP_LIB)
-    find_path(CONCPP_LIB_DIR
-      NAMES "${PLATFORMDIR}\\${VS}"
-      PATHS
-        "$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0"
-        /usr/local/mysql-connector-c++
-    )
-    set(CONCPP_LIB_DIR "${CONCPP_LIB_DIR}/${PLATFORMDIR}" CACHE STRING "" FORCE)
+	if (NOT CONCPP_LIB)
+		find_path(CONCPP_LIB_DIR
+			NAMES "${PLATFORMDIR}\\${VS}"
+			PATHS
+				"$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0"
+				/usr/local/mysql-connector-c++
+				/usr/lib
+		)
+		set(CONCPP_LIB_DIR "${CONCPP_LIB_DIR}/${PLATFORMDIR}" CACHE STRING "" FORCE)
 
-    find_library(CONCPP_LIB
-      NAMES "${LIBNAME}"
-      PATHS
-        "$ENV{ProgramFiles}/MySQL/Connector C++ 8.0/${PLATFORMDIR}/${VS}"
-        /usr/local/mysql-connector-c++/${PLATFORMDIR}
-    )
+		find_library(CONCPP_LIB
+			NAMES "${LIBNAME}"
+			PATHS
+				"$ENV{ProgramFiles}/MySQL/Connector C++ 8.0/${PLATFORMDIR}/${VS}"
+				/usr/local/mysql-connector-c++/${PLATFORMDIR}
+		)
 
-    if(NOT CONCPP_LIB)
-      message(FATAL_ERROR
-        "Could not find MySQL Connector/C++ 8.0 library."
-      )
-    endif()
-  endif()
+		if(NOT CONCPP_LIB)
+			message(FATAL_ERROR
+				"Could not find MySQL Connector/C++ 8.0 library."
+			)
+		endif()
+	endif()
 endif()
 
 # Set CONCPP_LIBS
 if(CONCPP_LIB)
-  if(NOT WIN32)
-    list(APPEND CONCPP_LIBS general "${CONCPP_LIB}")
-  else()
-    list(APPEND CONCPP_LIBS optimized "${CONCPP_LIB}")
-  endif()
+	if(NOT WIN32)
+		list(APPEND CONCPP_LIBS general "${CONCPP_LIB}")
+	else()
+		list(APPEND CONCPP_LIBS optimized "${CONCPP_LIB}")
+	endif()
 endif()
 
 #
@@ -89,7 +95,7 @@ endif()
 
 # pthread is already apended by default.
 if(CMAKE_HOST_UNIX)
-  list(APPEND CONCPP_LIBS pthread)
+	list(APPEND CONCPP_LIBS pthread)
 endif()
 
 message(STATUS "Found MySQL Connector C++ 8.0 Headers: ${CONCPP_INCLUDE_DIR}")
@@ -100,9 +106,9 @@ message(STATUS "Found MySQL Connector C++ 8.0 Library: ${CONCPP_LIB}")
 #
 
 if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
-  list(APPEND CONCPP_LIBS socket nsl)
-  # TODO: Could be couple more libs required..
-  # MYSQL_LIBRARIES: stdc++;gcc_s;CrunG3;c;..;socket;nsl;m;rt
+	list(APPEND CONCPP_LIBS socket nsl)
+	# TODO: Could be couple more libs required..
+	# MYSQL_LIBRARIES: stdc++;gcc_s;CrunG3;c;..;socket;nsl;m;rt
 endif()
 
 #
@@ -111,27 +117,27 @@ endif()
 #
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
 link_directories(${CONCPP_LIB_DIR})
 include_directories(${CONCPP_INCLUDE_DIR})
 
 if (WIN32)
-  file(GLOB libs "${CONCPP_LIB_DIR}/${LIBNAME}*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
-  file(INSTALL ${libs} DESTINATION ${CMAKE_INSTALL_PREFIX})
-  file(INSTALL ${libs} DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}")
+	file(GLOB libs "${CONCPP_LIB_DIR}/${LIBNAME}*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
+	file(INSTALL ${libs} DESTINATION ${CMAKE_INSTALL_PREFIX})
+	file(INSTALL ${libs} DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}")
 endif()
 
 if(EXISTS "${CONCPP_LIB_DIR}/debug")
-  set(debug_prefix "debug/")
+	set(debug_prefix "debug/")
 else()
-  set(debug_prefix)
+	set(debug_prefix)
 endif()
 
 set(CONCPP_LIBS
-  optimized ${LIBNAME}
-  debug     ${debug_prefix}${LIBNAME}
+	optimized ${LIBNAME}
+	debug		 ${debug_prefix}${LIBNAME}
 )
 
 mark_as_advanced(CONCPP_INCLUDE_DIR CONCPP_LIB CONCPP_LIBS)

@@ -3,8 +3,6 @@
 #ifndef HORIZON_CORE_STRUCTURES_LINKEDLIST_ELEMENT_HPP
 #define HORIZON_CORE_STRUCTURES_LINKEDLIST_ELEMENT_HPP
 
-#include <boost/thread.hpp>
-
 namespace Horizon
 {
 namespace Structures

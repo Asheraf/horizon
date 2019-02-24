@@ -33,6 +33,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <atomic>
 
 #define MAX_THREADS 2
 #define MAX_TABLE_SIZE 10000000

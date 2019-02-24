@@ -78,11 +78,11 @@ int64_t get_sys_time()
 	//   check is required in order not to crash.
 	// http://msdn.microsoft.com/en-us/library/windows/desktop/ms724411%28v=vs.85%29.aspx
 	static bool first = true;
-	static ULONGLONG(WINAPI *pGetTickCount64)(void) = NULL;
+	static ULONGLONG(WINAPI *pGetTickCount64)(void) = nullptr;
 
 	if (first) {
 		HMODULE hlib = GetModuleHandle(TEXT("KERNEL32.DLL"));
-		if (hlib != NULL)
+		if (hlib != nullptr)
 			pGetTickCount64 = (ULONGLONG(WINAPI *)(void))GetProcAddress(hlib, "GetTickCount64");
 		first = false;
 	}
@@ -108,7 +108,7 @@ int64_t get_sys_time()
 	//   manually  changes  the system time).  If you need a monotonically
 	//   increasing clock, see clock_gettime(2).
 	struct timeval tval;
-	gettimeofday(&tval, NULL);
+	gettimeofday(&tval, nullptr);
 	// int64 cast to avoid overflows on platforms where time_t is 32 bit
 	return (int64_t)tval.tv_sec * 1000 + tval.tv_usec / 1000;
 #endif

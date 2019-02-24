@@ -45,9 +45,6 @@ typedef std::chrono::minutes Minutes;
 /// Hours shorthand typedef.
 typedef std::chrono::hours Hours;
 
-/// Makes std::chrono_literals globally available.
-using namespace std::chrono_literals;
-
 //! Optional helper class to wrap optional values within.
 template <typename T>
 using Optional = boost::optional<T>;

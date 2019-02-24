@@ -26,7 +26,7 @@
 ###################################################
 
 CollectSourceFiles(
-    ${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE_SOURCES
 )
 
@@ -40,19 +40,19 @@ add_executable(zone
 
 target_link_libraries(zone
 	PUBLIC
-        boost
-        networking
-	    -lpthread
+		boost
+		networking
+		-lpthread
 		mcache
-	    ${CRYPTOPP_LIBRARIES}
-        ${CONCPP_LIB}
-        ${Readline_LIBRARY}
+		${CRYPTOPP_LIBRARIES}
+		${CONCPP_LIB}
+		${Readline_LIBRARY}
 		${LUA_LIBRARIES}
 		${SPDLOG_LIBRARIES}
 )
 
 set(INCLUDE_DIRS
-        ${PROJECT_SOURCE_DIR}/src
+		${PROJECT_SOURCE_DIR}/src
 )
 
 CollectIncludeDirectories(
@@ -64,8 +64,8 @@ target_include_directories(zone
 	PUBLIC
 		${PUBLIC_INCLUDES}
 		${CRYPTOPP_INCLUDE_DIR}
-        ${CONCPP_INCLUDE_DIR}
-        ${Readline_INCLUDE_DIR}
+		${CONCPP_INCLUDE_DIR}
+		${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
 		${SOL2_INCLUDE_DIR}
 	PRIVATE
@@ -74,14 +74,14 @@ target_include_directories(zone
 
 # LuaJit linker flags for macOS to avoid crashes.
 if (APPLE)
-set_target_properties(zone
-	PROPERTIES
-	LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
+	set_target_properties(zone
+			PROPERTIES
+			LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
 	)
 endif()
 
 install(TARGETS zone
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-    CONFIGURATIONS ${CMAKE_BUILD_TYPE})
+	DESTINATION ${CMAKE_INSTALL_PREFIX}
+	CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
 install(FILES ${PROJECT_SOURCE_DIR}/config/zone-server.lua.dist DESTINATION ${CONF_DIR})

@@ -236,7 +236,7 @@ public:
 	template <class SPECIFIC_TYPE>
 	size_t count() const
 	{
-		return TypeListIterator::count(_elements, (SPECIFIC_TYPE *) NULL);
+		return TypeListIterator::count(_elements, (SPECIFIC_TYPE *) nullptr);
 	}
 
 	/// inserts a specific object into the container
@@ -245,7 +245,7 @@ public:
 	{
 		assert(!obj->is_valid());
 		SPECIFIC_TYPE* t = TypeListIterator::Insert(_elements, obj);
-		return (t != NULL);
+		return (t != nullptr);
 	}
 
 	ContainerMapList<OBJECT_TYPES> &get_elements(void) { return _elements; }

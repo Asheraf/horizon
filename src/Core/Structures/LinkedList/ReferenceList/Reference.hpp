@@ -29,7 +29,7 @@ protected:
 	// Tell our refFrom (source) object, that the link is cut (Target destroyed)
 	virtual void source_object_destroy_link() = 0;
 public:
-	Reference() { _ref_to = NULL; _ref_from = NULL; }
+	Reference() { _ref_to = nullptr; _ref_from = nullptr; }
 	virtual ~Reference() { }
 
 	// Create new link
@@ -42,7 +42,7 @@ public:
 			remove();
 
 		// Build the link.
-		if (toObj != NULL) {
+		if (toObj != nullptr) {
 			_ref_to = toObj;
 			_ref_from = fromObj;
 			target_object_build_link();
@@ -55,8 +55,8 @@ public:
 	{
 		target_object_destroy_link();
 		delink();
-		_ref_to = NULL;
-		_ref_from = NULL;
+		_ref_to = nullptr;
+		_ref_from = nullptr;
 	}
 
 	// Link is invalid due to destruction of referenced target object. Call comes from the refTo object
@@ -65,12 +65,12 @@ public:
 	{
 		source_object_destroy_link();
 		delink();
-		_ref_to = NULL;
+		_ref_to = nullptr;
 	}
 
 	bool is_valid() const                                // Only check the _ref_to
 	{
-		return _ref_to != NULL;
+		return _ref_to != nullptr;
 	}
 
 	Reference<TO, FROM> *next()       { return((Reference<TO, FROM> *) Element::next()); }

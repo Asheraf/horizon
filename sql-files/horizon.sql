@@ -47,7 +47,7 @@ CREATE TABLE `game_accounts` (
   KEY `id` (`id`),
   KEY `email` (`email`),
   KEY `last_ip` (`last_ip`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `characters` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -60,7 +60,7 @@ CREATE TABLE `characters` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_key` (`name`),
   CONSTRAINT FOREIGN KEY (account_id) REFERENCES game_accounts(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_access_data` (
   `id` int(11) unsigned NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE `character_access_data` (
   `delete_date` int(11) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_misc_data` (
   `id` int(11) unsigned NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE `character_misc_data` (
   `change_slot_count` tinyint(2) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_ui_settings` (
   `id` int(11) unsigned NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE `character_ui_settings` (
   `allow_party` tinyint(1) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_family_data` (
   `id` int(11) unsigned NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE `character_family_data` (
   `child_aid` int(11) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_group_data` (
   `id` int(11) unsigned NOT NULL,
@@ -105,7 +105,7 @@ CREATE TABLE `character_group_data` (
   `guild_id` int(11) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_companion_data` (
   `id` int(11) unsigned NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE `character_companion_data` (
   `elemental_id` int(11) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_status_data` (
   `id` int(11) unsigned NOT NULL,
@@ -142,7 +142,7 @@ CREATE TABLE `character_status_data` (
   `manner` smallint(6) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_view_data` (
   `id` int(11) unsigned NOT NULL,
@@ -158,7 +158,7 @@ CREATE TABLE `character_view_data` (
   `robe_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_position_data` (
   `id` int(11) unsigned NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE `character_position_data` (
   `saved_y` smallint(4) unsigned NOT NULL DEFAULT 111,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `session_data` (
   `auth_code` int(11) unsigned NOT NULL,
@@ -184,4 +184,4 @@ CREATE TABLE `session_data` (
   PRIMARY KEY (`auth_code`),
   KEY `game_account_id` (`game_account_id`),
   CONSTRAINT FOREIGN KEY (game_account_id) REFERENCES game_accounts(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;

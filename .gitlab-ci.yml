@@ -37,7 +37,7 @@ variables: &base_vars
   MYSQL_PASSWORD: 'ragnarok'
   MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
   GIT_DEPTH: '3'
-  DEBIAN_COMMON_PACKAGES: cmake mysql-server mysql-client libmysqlcppconn-dev libboost-all-dev libssl-dev libreadline-dev libcrypto++-dev
+  DEBIAN_COMMON_PACKAGES: cmake mysql-server libmysqlclient-dev libmysqlcppconn-dev libboost-all-dev libssl-dev libreadline-dev libcrypto++-dev libluajit-5.1-dev zlib1g-dev
 
 
 .prerequisites: &prerequisites
@@ -49,8 +49,8 @@ variables: &base_vars
     - wget https://dev.mysql.com/get/mysql-apt-config_0.8.12-1_all.deb
     - dpkg -i mysql-apt-config_0.8.12-1_all.deb
     - ${PKG_CMD} update
-    - ${PKG_CMD} install ${INSTALL_PACKAGES}
-    - ${PKG_CMD} install ${INSTALL_COMPILER}
+    - ${PKG_CMD} -y install ${INSTALL_PACKAGES}
+    - ${PKG_CMD} -y install ${INSTALL_COMPILER}
     - mysql --version
     - service mysql start
     - echo "CREATE USER '${MYSQL_USER}'@'mysql' IDENTIFIED WITH mysql_native_password BY '${MYSQL_PASSWORD}';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
@@ -58,6 +58,14 @@ variables: &base_vars
     - echo "GRANT ALL ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'mysql';"
     - echo "USE ${MYSQL_DATABASE}; SELECT 'OK'" | mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --host=mysql
     - mysql --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" --host="mysql" ${MYSQL_DATABASE} < sql-files/horizon.sql
+    - git clone https://github.com/gabime/spdlog.git
+    - cd spdlog; mkdir build; cd build; cmake ../
+    - git clone https://github.com/ThePhD/sol2.git
+    - cd sol2; mkdir build; cd build; cmake ../
+    - make install -j 4; cd ..; cd ..;
+    - cd /tmp; mkdir cryptopp; cd cryptopp; wget https://www.cryptopp.com/cryptopp810.zip;
+    - make -j 4; make install;
+    - cd ../../
   artifacts:
     paths:
     - mysql-apt-config_0.8.12-1_all.deb
@@ -82,9 +90,6 @@ debian:stretch-gcc:
   script:
     - ${INSTALL_COMPILER} --version
     - export CXX=/usr/bin/${INSTALL_COMPILER}
-    - git clone https://github.com/gabime/spdlog.git
-    - cd spdlog; mkdir build; cd build; cmake ../
-    - make install -j 4; cd ..; cd ..;
     - ./horizon build
     - cp bin/config/inter-server.lua.dist bin/config/inter-server.lua
     - cp bin/config/auth-server.lua.dist bin/config/auth-server.lua

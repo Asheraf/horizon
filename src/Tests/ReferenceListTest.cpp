@@ -36,7 +36,6 @@
 #include <iostream>
 #include <cassert>
 
-
 template <class OBJECT>
 class TestReference;
 
@@ -140,19 +139,19 @@ BOOST_AUTO_TEST_CASE(ReferenceListTest)
 
 	int ofs = MAX_LIMIT - 1;
 	for (auto it = playerRefMgr.begin(); it != TestRefManager<Player>::iterator(nullptr); it++)
-		BOOST_TEST(it->source()->get_id() == var[ofs--]);
+		BOOST_CHECK_EQUAL(it->source()->get_id(), var[ofs--]);
 
 	ofs = MAX_LIMIT - 1;
 	for (auto it = playerRefMgr.begin(); it != TestRefManager<Player>::iterator(nullptr); ++it)
-		BOOST_TEST(it->source()->get_id() == var[ofs--]);
+		BOOST_CHECK_EQUAL(it->source()->get_id(), var[ofs--]);
 
-	BOOST_TEST(playerRefMgr.get_size() == MAX_LIMIT);
+	BOOST_CHECK_EQUAL(playerRefMgr.get_size(), MAX_LIMIT);
 
-	BOOST_TEST(playerRefMgr.first()->prev() == nullptr);
-	BOOST_TEST(playerRefMgr.last()->next() == nullptr);
+	BOOST_CHECK_EQUAL(playerRefMgr.first()->prev(), nullptr);
+	BOOST_CHECK_EQUAL(playerRefMgr.last()->next(), nullptr);
 
 	for (int i = 0; i < MAX_LIMIT; i++)
 		player[i]->remove_reference();
 
-	BOOST_TEST(playerRefMgr.get_size() == 0);
+	BOOST_CHECK_EQUAL(playerRefMgr.get_size(), 0);
 }
