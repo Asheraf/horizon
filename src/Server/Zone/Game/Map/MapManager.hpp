@@ -33,7 +33,6 @@
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "MapThreadContainer.hpp"
 
-#include <boost/smart_ptr.hpp>
 #include <vector>
 
 enum mapmgr_task_schedule_group
@@ -70,8 +69,8 @@ public:
 	bool initialize();
 	bool LoadMapCache();
 
-	std::shared_ptr<Map> add_player_to_map(std::string map_name, boost::shared_ptr<Entities::Player> p);
-	bool remove_player_from_map(std::string map_name, boost::shared_ptr<Entities::Player> p);
+	std::shared_ptr<Map> add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p);
+	bool remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p);
 
 	std::shared_ptr<Map> get_map(std::string map_name) const
 	{

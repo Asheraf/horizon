@@ -43,9 +43,9 @@
 #define entity_ns(class) Horizon::Zone::Game::Entities::class
 struct GridViewPortUpdater
 {
-	boost::weak_ptr<Horizon::Zone::Game::Entity> _entity;
+	std::weak_ptr<Horizon::Zone::Game::Entity> _entity;
 
-	GridViewPortUpdater(boost::weak_ptr<Horizon::Zone::Game::Entity> entity) : _entity(entity) { }
+	GridViewPortUpdater(std::weak_ptr<Horizon::Zone::Game::Entity> entity) : _entity(entity) { }
 
 	template <class T>
 	void update(GridRefManager<T> &m);
@@ -65,10 +65,10 @@ struct GridViewPortUpdater
 
 struct GridEntityExistenceNotifier
 {
-	boost::weak_ptr<Horizon::Zone::Game::Entity> _entity;
+	std::weak_ptr<Horizon::Zone::Game::Entity> _entity;
 	entity_viewport_notification_type _notif_type;
 
-	GridEntityExistenceNotifier(boost::weak_ptr<Horizon::Zone::Game::Entity> entity, entity_viewport_notification_type notif_type)
+	GridEntityExistenceNotifier(std::weak_ptr<Horizon::Zone::Game::Entity> entity, entity_viewport_notification_type notif_type)
 	: _entity(entity), _notif_type(notif_type)
 	{ }
 
@@ -83,14 +83,14 @@ struct GridEntityExistenceNotifier
 
 struct GridEntitySearcher
 {
-	boost::weak_ptr<Horizon::Zone::Game::Entity> _result;
+	std::weak_ptr<Horizon::Zone::Game::Entity> _result;
 	GUIDCheckPredicate _predicate;
 
 	GridEntitySearcher(uint32_t guid)
 	: _predicate(guid)
 	{ }
 
-	boost::weak_ptr<Horizon::Zone::Game::Entity> get_result() { return _result; }
+	std::weak_ptr<Horizon::Zone::Game::Entity> get_result() { return _result; }
 
 	template <class T>
 	void search(GridRefManager<T> &m);
@@ -112,11 +112,11 @@ struct GridEntitySearcher
 template <typename ZC_PACKET_T>
 struct GridPlayerNotifier
 {
-	boost::weak_ptr<Horizon::Zone::Game::Entity> _player;
+	std::weak_ptr<Horizon::Zone::Game::Entity> _player;
 	ZC_PACKET_T _pkt;
 	player_notifier_types _type;
 
-	GridPlayerNotifier(ZC_PACKET_T &pkt, boost::weak_ptr<Horizon::Zone::Game::Entity> player, player_notifier_types type = GRID_NOTIFY_AREA)
+	GridPlayerNotifier(ZC_PACKET_T &pkt, std::weak_ptr<Horizon::Zone::Game::Entity> player, player_notifier_types type = GRID_NOTIFY_AREA)
 	: _player(player), _pkt(pkt), _type(type)
 	{ }
 
@@ -128,7 +128,7 @@ struct GridPlayerNotifier
 	template<class NOT_INTERESTED>
 	void Visit(GridRefManager<NOT_INTERESTED> &) { }
 };
-#undef e
+#undef entity_ns
 
 #include "GridNotifiersImpl.hpp"
 

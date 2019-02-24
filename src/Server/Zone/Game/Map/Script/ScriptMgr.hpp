@@ -30,8 +30,6 @@
 
 #include "Server/Zone/Game/Definitions/NPCDefinitions.hpp"
 
-#include <boost/smart_ptr.hpp>
-
 #ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
 #define SOL_EXCEPTIONS_SAFE_PROPAGATION
 #endif
@@ -56,23 +54,23 @@ class ScriptManager
 {
 friend class MapThreadContainer;
 public:
-	ScriptManager(boost::weak_ptr<MapThreadContainer> container);
+	ScriptManager(std::weak_ptr<MapThreadContainer> container);
 	~ScriptManager();
 
-	boost::shared_ptr<MapThreadContainer> get_map_container() { return _container.lock(); }
+	std::shared_ptr<MapThreadContainer> get_map_container() { return _container.lock(); }
 
-	void contact_npc_for_player(boost::shared_ptr<Entities::Player> player, uint32_t npc_guid);
-	void continue_npc_script_for_player(boost::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx = 0);
+	void contact_npc_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void continue_npc_script_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx = 0);
 
-	void send_dialog_to_player(boost::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string dialog);
-	void send_next_dialog_to_player(boost::shared_ptr<Entities::Player> player, uint32_t npc_guid);
-	void send_close_dialog_to_player(boost::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string dialog);
+	void send_next_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_close_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 protected:
 	void initialize();
 	void finalize();
 	void prepare_lua_state(sol::state &lua);
-	void add_player(boost::shared_ptr<Entities::Player> player);
-	void remove_player(boost::shared_ptr<Entities::Player> player);
+	void add_player(std::shared_ptr<Entities::Player> player);
+	void remove_player(std::shared_ptr<Entities::Player> player);
 	void initialize_state(sol::state &st);
 
 private:
@@ -84,7 +82,7 @@ private:
 	std::vector<std::string> _script_files;
 	std::unordered_map<uint32_t, npc_db_data> _npc_db;
 	sol::state _lua_state;
-	boost::weak_ptr<MapThreadContainer> _container;
+	std::weak_ptr<MapThreadContainer> _container;
 };
 }
 }

@@ -66,19 +66,19 @@ void MapThreadContainer::remove_map(std::shared_ptr<Map> &&m)
 	_managed_maps.erase(m->get_name());
 }
 
-void MapThreadContainer::add_player(std::string /*map_name*/, boost::shared_ptr<Entities::Player> p)
+void MapThreadContainer::add_player(std::string /*map_name*/, std::shared_ptr<Entities::Player> p)
 {
 	_player_buffer.push(std::make_pair(true, p));
 }
 
-void MapThreadContainer::remove_player(boost::shared_ptr<Entities::Player> p)
+void MapThreadContainer::remove_player(std::shared_ptr<Entities::Player> p)
 {
 	_player_buffer.push(std::make_pair(false, p));
 }
 
 void MapThreadContainer::initialize()
 {
-	_script_mgr = boost::make_shared<ScriptManager>(weak_from_this());
+	_script_mgr = std::make_shared<ScriptManager>(shared_from_this());
 
 	for (auto mi = _managed_maps.begin(); mi != _managed_maps.end(); mi++) {
 		mi->second->ensure_all_grids();
@@ -114,11 +114,11 @@ void MapThreadContainer::start_internal()
 
 void MapThreadContainer::update(uint32_t diff)
 {
-	std::shared_ptr<std::pair<bool, boost::shared_ptr<Entities::Player>>> pbuf = nullptr;
+	std::shared_ptr<std::pair<bool, std::shared_ptr<Entities::Player>>> pbuf = nullptr;
 
 	// Add any new players / remove anyone else.
 	while ((pbuf = _player_buffer.try_pop())) {
-		boost::shared_ptr<Entities::Player> player = pbuf->second;
+		std::shared_ptr<Entities::Player> player = pbuf->second;
 
 		if (player->get_session() == nullptr)
 			continue;

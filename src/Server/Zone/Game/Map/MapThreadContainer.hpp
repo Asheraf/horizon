@@ -36,7 +36,6 @@
 #include <unordered_map>
 #include <atomic>
 #include <sol.hpp>
-#include <boost/smart_ptr.hpp>
 
 namespace Horizon
 {
@@ -49,7 +48,7 @@ namespace Entities
 {
 	class Player;
 }
-class MapThreadContainer : public boost::enable_shared_from_this<MapThreadContainer>
+class MapThreadContainer : public std::enable_shared_from_this<MapThreadContainer>
 {
 public:
 	MapThreadContainer();
@@ -60,13 +59,13 @@ public:
 	void add_map(std::shared_ptr<Map> &&map);
 	void remove_map(std::shared_ptr<Map> &&map);
 
-	void add_player(std::string map_name, boost::shared_ptr<Entities::Player> p);
-	void remove_player(boost::shared_ptr<Entities::Player> p);
+	void add_player(std::string map_name, std::shared_ptr<Entities::Player> p);
+	void remove_player(std::shared_ptr<Entities::Player> p);
 
 	void initialize();
 	void start();
 
-	boost::shared_ptr<ScriptManager> get_script_manager() { return _script_mgr; }
+	std::shared_ptr<ScriptManager> get_script_manager() { return _script_mgr; }
 
 private:
 	void start_internal();
@@ -74,9 +73,9 @@ private:
 	
 	std::thread _thread;
 	std::unordered_map<std::string, std::shared_ptr<Map>> _managed_maps;
-	std::unordered_map<uint32_t, boost::shared_ptr<Entities::Player>> _managed_players;
-	ThreadSafeQueue<std::pair<bool, boost::shared_ptr<Entities::Player>>> _player_buffer;
-	boost::shared_ptr<ScriptManager> _script_mgr;
+	std::unordered_map<uint32_t, std::shared_ptr<Entities::Player>> _managed_players;
+	ThreadSafeQueue<std::pair<bool, std::shared_ptr<Entities::Player>>> _player_buffer;
+	std::shared_ptr<ScriptManager> _script_mgr;
 };
 }
 }

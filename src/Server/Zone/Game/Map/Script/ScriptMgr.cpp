@@ -36,7 +36,7 @@
 using namespace Horizon::Zone::Game;
 using namespace Horizon::Zone::Game::Entities;
 
-ScriptManager::ScriptManager(boost::weak_ptr<MapThreadContainer> container)
+ScriptManager::ScriptManager(std::weak_ptr<MapThreadContainer> container)
 : _container(container)
 {
 
@@ -67,9 +67,9 @@ void ScriptManager::initialize_state(sol::state &st)
 
 
 	st.set_function("cast_entity_to_player",
-					[] (boost::shared_ptr<Entity> e)
+					[] (std::shared_ptr<Entity> e)
 					{
-						return boost::dynamic_pointer_cast<Player>(e);
+						return std::dynamic_pointer_cast<Player>(e);
 					});
 
 	st.new_usertype<MapCoords>("MapCoords",
@@ -251,7 +251,7 @@ void ScriptManager::load_constants()
 	}
 }
 
-void ScriptManager::contact_npc_for_player(boost::shared_ptr<Player> player, uint32_t npc_guid)
+void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint32_t npc_guid)
 {
 	npc_db_data const &nd = _npc_db.at(npc_guid);
 
@@ -269,7 +269,7 @@ void ScriptManager::contact_npc_for_player(boost::shared_ptr<Player> player, uin
 	}
 }
 
-void ScriptManager::continue_npc_script_for_player(boost::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx)
+void ScriptManager::continue_npc_script_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx)
 {
 	npc_db_data const &nd = _npc_db.at(npc_guid);
 
@@ -287,7 +287,7 @@ void ScriptManager::continue_npc_script_for_player(boost::shared_ptr<Entities::P
  * @param[in] lua Lua State
  * @param[in] player Shared pointer to a player entity.
  */
-void ScriptManager::add_player(boost::shared_ptr<Player> player)
+void ScriptManager::add_player(std::shared_ptr<Player> player)
 {
 	sol::table player_table = _lua_state.get<sol::table>(player_tbl_name);
 
@@ -300,7 +300,7 @@ void ScriptManager::add_player(boost::shared_ptr<Player> player)
  * @param[in] lua Lua State
  * @param[in] player Shared pointer to a player entity.
  */
-void ScriptManager::remove_player(boost::shared_ptr<Player> player)
+void ScriptManager::remove_player(std::shared_ptr<Player> player)
 {
 	sol::table player_table = _lua_state.get<sol::table>(player_tbl_name);
 	player_table.set(player->get_guid(), "nil");

@@ -36,7 +36,6 @@
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/Game/Definitions/NPCDefinitions.hpp"
 
-#include <boost/smart_ptr.hpp>
 #include <memory>
 
 #ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
@@ -63,6 +62,7 @@ namespace Zone
 class ZoneSession;
 namespace Game
 {
+class Entity;
 namespace Entities
 {
 class Player : public Unit, public GridObject<Player>
@@ -96,11 +96,11 @@ public:
 	void move_to_map(std::shared_ptr<Map> map, MapCoords coords = { 0, 0 });
 	void update_viewport();
 
-	void add_entity_to_viewport(boost::weak_ptr<Entity> entity);
-	void realize_entity_movement(boost::weak_ptr<Entity> entity);
-	void remove_entity_from_viewport(boost::shared_ptr<Entity> entity, entity_viewport_notification_type type);
+	void add_entity_to_viewport(std::weak_ptr<Horizon::Zone::Game::Entity> entity);
+	void realize_entity_movement(std::weak_ptr<Horizon::Zone::Game::Entity> entity);
+	void remove_entity_from_viewport(std::shared_ptr<Horizon::Zone::Game::Entity> entity, entity_viewport_notification_type type);
 	
-	entity_viewport_entry create_viewport_entry(boost::weak_ptr<Entity> entity);
+	entity_viewport_entry create_viewport_entry(std::weak_ptr<Horizon::Zone::Game::Entity> entity);
 
 	template<typename ZC_PACKET_T>
 	void notify_in_area(ZC_PACKET_T &pkt, player_notifier_types type, uint16_t range = MAX_VIEW_RANGE);

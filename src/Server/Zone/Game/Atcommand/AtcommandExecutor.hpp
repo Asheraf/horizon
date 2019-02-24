@@ -31,7 +31,6 @@
 #include "AtcommandImpl.hpp"
 
 #include <stdio.h>
-#include <boost/smart_ptr.hpp>
 #include <cstring>
 #include <vector>
 
@@ -49,12 +48,12 @@ class Atcommand;
 class AtcommandExecutor
 {
 public:
-	AtcommandExecutor(boost::weak_ptr<Entities::Player> player, std::string const &cmd)
+	AtcommandExecutor(std::weak_ptr<Entities::Player> player, std::string const &cmd)
 	: _player(player), _command(cmd)
 	{ }
 	~AtcommandExecutor() { }
 
-	boost::shared_ptr<Entities::Player> get_player() { return _player.lock(); }
+	std::shared_ptr<Entities::Player> get_player() { return _player.lock(); }
 	std::string const &get_cmd() { return _command; }
 
 	bool execute();
@@ -67,7 +66,7 @@ public:
 private:
 	int execute_internal(std::vector<std::string> const &cmd);
 	
-	boost::weak_ptr<Entities::Player> _player;
+	std::weak_ptr<Entities::Player> _player;
 	std::string const &_command;
 	std::shared_ptr<Atcommand> _atcmd;
 };

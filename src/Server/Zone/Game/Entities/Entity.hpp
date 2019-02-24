@@ -36,7 +36,6 @@
 
 #include <stdlib.h>
 #include <memory>
-#include <boost/enable_shared_from_this.hpp>
 #include <iostream>
 
 enum entity_task_schedule_group
@@ -51,7 +50,7 @@ namespace Zone
 namespace Game
 {
 class Map;
-class Entity : public boost::enable_shared_from_this<Entity>
+class Entity : public std::enable_shared_from_this<Entity>
 {
 public:
 	Entity(uint32_t guid, entity_types type);
@@ -86,9 +85,9 @@ public:
 	/* Scheduler */
 	TaskScheduler &getScheduler() { return _scheduler; }
 
-	bool is_in_range_of(boost::shared_ptr<Entity> entity, uint8_t range = MAX_VIEW_RANGE);
+	bool is_in_range_of(std::shared_ptr<Entity> entity, uint8_t range = MAX_VIEW_RANGE);
 
-	boost::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
+	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
 
 	virtual void notify_nearby_players_of_self(entity_viewport_notification_type notif_type);
 	

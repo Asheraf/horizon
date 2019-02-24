@@ -31,6 +31,7 @@
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
+#include "Server/Zone/Game/Entities/Entity.hpp"
 #include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 
@@ -156,26 +157,26 @@ void Player::update_viewport()
 	get_map()->visit(lower_bounds.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>(), upper_bounds.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>(), update_caller);
 }
 
-void Player::add_entity_to_viewport(boost::weak_ptr<Entity> entity)
+void Player::add_entity_to_viewport(std::weak_ptr<Entity> entity)
 {
 	get_packet_handler()->Send_ZC_NOTIFY_STANDENTRY(create_viewport_entry(entity));
 }
 
-void Player::remove_entity_from_viewport(boost::shared_ptr<Entity> entity, entity_viewport_notification_type type)
+void Player::remove_entity_from_viewport(std::shared_ptr<Entity> entity, entity_viewport_notification_type type)
 {
 	get_packet_handler()->Send_ZC_NOTIFY_VANISH(entity->get_guid(), type);
 }
 
-void Player::realize_entity_movement(boost::weak_ptr<Entity> entity)
+void Player::realize_entity_movement(std::weak_ptr<Entity> entity)
 {
-	boost::shared_ptr<Unit> unit = boost::dynamic_pointer_cast<Unit>(entity.lock());
+	std::shared_ptr<Unit> unit = std::dynamic_pointer_cast<Unit>(entity.lock());
 	get_packet_handler()->Send_ZC_NOTIFY_MOVEENTRY(create_viewport_entry(entity));
 }
 
-entity_viewport_entry Player::create_viewport_entry(boost::weak_ptr<Entity> entity)
+entity_viewport_entry Player::create_viewport_entry(std::weak_ptr<Entity> entity)
 {
 	entity_viewport_entry entry;
-	boost::shared_ptr<Unit> unit = boost::dynamic_pointer_cast<Unit>(entity.lock());
+	std::shared_ptr<Unit> unit = std::dynamic_pointer_cast<Unit>(entity.lock());
 
 	entry.guid = unit->get_guid();
 	entry.unit_type = unit->get_type();
@@ -219,7 +220,7 @@ entity_viewport_entry Player::create_viewport_entry(boost::weak_ptr<Entity> enti
 	switch (entry.unit_type)
 	{
 		case ENTITY_PLAYER:
-			entry.character_id = boost::dynamic_pointer_cast<Player>(unit)->get_character()->get_character_id();
+			entry.character_id = std::dynamic_pointer_cast<Player>(unit)->get_character()->get_character_id();
 			entry.x_size = entry.y_size = 0;
 			break;
 		case ENTITY_NPC:
@@ -254,7 +255,7 @@ void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)
 
 void Player::move_to_map(std::shared_ptr<Map> map, MapCoords coords)
 {
-	boost::shared_ptr<Player> myself = boost::dynamic_pointer_cast<Player>(shared_from_this());
+	std::shared_ptr<Player> myself = std::dynamic_pointer_cast<Player>(shared_from_this());
 	std::string map_name = map->get_name();
 
 	notify_nearby_players_of_self(EVP_NOTIFY_TELEPORT);

@@ -17,7 +17,7 @@ struct GridPlayerNotifier;
 template<typename ZC_PACKET_T>
 void Horizon::Zone::Game::Entities::Player::notify_in_area(ZC_PACKET_T &pkt, player_notifier_types type, uint16_t range)
 {
-	GridPlayerNotifier<ZC_PACKET_T> notifier(pkt, static_cast<Entity *>(this)->weak_from_this(), type);
+	GridPlayerNotifier<ZC_PACKET_T> notifier(pkt, static_cast<Entity *>(this)->shared_from_this(), type);
 	GridReferenceContainerVisitor<GridPlayerNotifier<ZC_PACKET_T>, GridReferenceContainer<AllEntityTypes>> container(notifier);
 
 	get_map()->visit_in_range(get_map_coords(), container, range);

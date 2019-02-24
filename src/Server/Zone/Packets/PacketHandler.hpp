@@ -33,7 +33,6 @@
 #include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 #include <memory>
-#include <boost/smart_ptr.hpp>
 
 class PacketBuffer;
 class SessionData;
@@ -81,7 +80,7 @@ class ZoneSession;
 class PacketHandler : public Horizon::Base::PacketHandler<ZoneSocket>
 {
 	std::weak_ptr<ZoneSession> _session;
-	boost::weak_ptr<Game::Entities::Player> _player;
+	std::weak_ptr<Game::Entities::Player> _player;
 
 public:
 	explicit PacketHandler(std::shared_ptr<ZoneSocket> socket);
@@ -90,8 +89,8 @@ public:
 	virtual void initialize_handlers();
 
 	std::shared_ptr<ZoneSession> get_session() const { return _session.lock(); }
-	void set_player(boost::weak_ptr<Game::Entities::Player> plr) { _player = plr; }
-	boost::shared_ptr<Game::Entities::Player> get_player() const { return _player.lock(); }
+	void set_player(std::weak_ptr<Game::Entities::Player> plr) { _player = plr; }
+	std::shared_ptr<Game::Entities::Player> get_player() const { return _player.lock(); }
 	
 	/**
 	 * Handlers

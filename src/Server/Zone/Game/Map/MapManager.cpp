@@ -112,7 +112,7 @@ bool MapManager::LoadMapCache()
 	return true;
 }
 
-std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, boost::shared_ptr<Entities::Player> p)
+std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p)
 {
 	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
 		std::shared_ptr<Map> map = (*i)->get_map(map_name);
@@ -125,7 +125,7 @@ std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, boost::
 	return nullptr;
 }
 
-bool MapManager::remove_player_from_map(std::string map_name, boost::shared_ptr<Entities::Player> p)
+bool MapManager::remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p)
 {
 	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
 		if ((*i)->get_map(map_name) != nullptr) {

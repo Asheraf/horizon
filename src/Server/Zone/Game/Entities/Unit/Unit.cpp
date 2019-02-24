@@ -131,8 +131,6 @@ void Unit::move()
 
 			on_movement_step();
 			
-			//printf("%d %d %d %d\n", c.x, c.y, c.move_cost, step_time);
-			
 			if (_dest_pos == MapCoords(c.x, c.y)) {
 				_dest_pos = { 0, 0 };
 				on_movement_end();
