@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ struct PACKET_ZC_FRIENDS_STATE : public Horizon::Zone::Ragexe20180103::PACKET_ZC
 		return *this;
 	}
 
-	virtual PacketBuffer operator >> (PacketBuffer &right) override 
+	virtual PacketBuffer operator >> (PacketBuffer &right) override
 	{
 		return right = serialize();
 	}

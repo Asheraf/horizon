@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ public:
 	/* Remote IP and Port */
 	std::string &remote_ip_address() { return _remote_ip_address; }
 	uint16_t remote_port() const { return _remote_port; }
-	
+
 	void async_read()
 	{
 		if (!is_open())

@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ class MessageBuffer
 
 public:
 	uint32_t MAX_BUFFER_LENGTH{1536};
-	
+
 	MessageBuffer() : _wpos(0), _rpos(0), _storage()
 	{
 		_storage.resize(MAX_BUFFER_LENGTH);

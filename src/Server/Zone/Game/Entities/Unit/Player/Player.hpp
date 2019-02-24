@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ public:
 	void add_entity_to_viewport(std::weak_ptr<Horizon::Zone::Game::Entity> entity);
 	void realize_entity_movement(std::weak_ptr<Horizon::Zone::Game::Entity> entity);
 	void remove_entity_from_viewport(std::shared_ptr<Horizon::Zone::Game::Entity> entity, entity_viewport_notification_type type);
-	
+
 	entity_viewport_entry create_viewport_entry(std::weak_ptr<Horizon::Zone::Game::Entity> entity);
 
 	template<typename ZC_PACKET_T>

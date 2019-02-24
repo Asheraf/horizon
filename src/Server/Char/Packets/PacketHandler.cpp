@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 	}
 
 	std::shared_ptr<Character> character = std::make_shared<Character>(game_account->get_id(), pkt.name, pkt.slot, gender);
-	
+
 	// Create models and save to sql.
 	character->create(CharServer);
 	character->set_slot(pkt.slot);
@@ -432,7 +432,7 @@ void PacketHandler::Send_HC_ACCEPT_ENTER()
 	Ragexe::PACKET_HC_ACCEPT_ENTER pkt;
 
 	CharQuery->load_all_characters_for_account(session->get_game_account());
-	
+
 	auto char_list = game_account->get_characters();
 
 	pkt.packet_length = pkt.get_length(char_list.size());

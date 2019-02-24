@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ mcache_import_error_types Horizon::Libraries::MapCache::ImportFromCacheFile()
 
 	if (!ifs.good())
 		return MCACHE_IMPORT_NONEXISTENT_FILE;
-	
+
 	// Determine the File Size.
 	ifs.seekg(0, ifs.end);
 	compressed_size = ifs.tellg();
@@ -228,7 +228,7 @@ mcache_grf_config_error_types Horizon::Libraries::MapCache::ReadGRFListConfig()
 std::pair<uint8_t, grf_load_result_types> Horizon::Libraries::MapCache::LoadGRFs()
 {
 	grf_load_result_types res;
-	
+
 	for (auto &grf : _grfs)
 		if ((res = grf.second.load()) != GRF_LOAD_OK)
 			return std::make_pair(grf.second.get_id(), res);

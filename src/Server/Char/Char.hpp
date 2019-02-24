@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,10 +48,10 @@ public:
 		static CharMain instance;
 		return &instance;
 	}
-	
+
 	bool ReadConfig();
 	void initialize_cli_commands();
-	
+
 	void initialize_core();
 
 	character_server_configuration &get_char_config() { return _char_server_config; }

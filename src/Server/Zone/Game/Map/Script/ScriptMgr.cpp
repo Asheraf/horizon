@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,7 +109,7 @@ void ScriptManager::load_scripts()
 		scripts.for_each([this](sol::object const &/*key*/, sol::object const& value) {
 			_script_files.push_back(value.as<std::string>());
 		});
-		
+
 		ZoneLog->info("Found {} loadable script(s) from file '{}'.", (int) _script_files.size(), file_path);
 
 		load_scripts_internal();

@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ struct PACKET_ZC_ACK_REQNAMEALL : public Packet
 	virtual PacketBuffer serialize()
 	{
 		PacketBuffer buf(packet_id);
-		
+
 		buf << guid;
 		buf.append(name, sizeof(name));
 		buf.append(party_name, sizeof(party_name));

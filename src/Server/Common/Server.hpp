@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ public:
 	void process_cli_commands();
 	void queue_cli_command(CLICommand &&cmdMgr) { _cli_cmd_queue.push(std::move(cmdMgr)); }
 	void add_cli_command_func(std::string cmd, std::function<bool(void)> func) { _cli_function_map.insert(std::make_pair(cmd, func)); };
-	
+
 	/* CLI Function getter */
 	std::function<bool(void)> get_cli_command_func(std::string &cmd)
 	{
@@ -113,7 +113,7 @@ public:
 	}
 
 	std::shared_ptr<mysqlx::Client> get_mysql_client() { return _mysql_client; }
-	
+
 protected:
 	/* General Configuration */
 	struct general_server_configuration general_config;

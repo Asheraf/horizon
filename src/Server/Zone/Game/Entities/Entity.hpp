@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ public:
 	virtual void initialize();
 
 	bool is_initialized() { return _is_initialized; }
-	
+
 	uint32_t get_guid() const { return _guid; }
 	void set_guid(uint32_t guid) { _guid = guid; }
 
@@ -90,7 +90,7 @@ public:
 	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
 
 	virtual void notify_nearby_players_of_self(entity_viewport_notification_type notif_type);
-	
+
 private:
 	bool _is_initialized{false};
 	uint32_t _guid{0};

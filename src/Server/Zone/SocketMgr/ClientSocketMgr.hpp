@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ public:
 	{
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
-			
+
 		client_types type = ZoneServer->general_conf().get_client_type();
 		uint32_t packet_version = ZoneServer->general_conf().get_packet_version();
 
@@ -279,7 +279,7 @@ public:
 				initialize_packet_length_db_Ragexe_20171206();
 			}
 		}
-		
+
 		return true;
 	}
 

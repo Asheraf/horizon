@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ public:
 	void visit_in_range(MapCoords const &map_coords, GridReferenceContainerVisitor<T, CONTAINER> &visitor, uint16_t range = MAX_VIEW_RANGE);
 
 	AStar::Generator &get_pathfinder() { return _pathfinder; }
-	
+
 private:
 	std::weak_ptr<MapThreadContainer> _container;
 	std::string _name{""};
@@ -128,7 +128,7 @@ bool Horizon::Zone::Game::Map::ensure_grid_for_entity(T *entity, MapCoords mcoor
 	entity->set_grid_coords(new_gcoords);
 
 	_gridholder.get_grid(new_gcoords).add_object(entity);
-	
+
 	return true;
 }
 

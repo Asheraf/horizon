@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	}
 
 	sol::table tbl = lua["server_config"];
-	
+
 	get_zone_config().set_database_path(tbl.get_or("static_db_path", std::string("db/")));
 	ZoneLog->info("Static database path set to '{}'", get_zone_config().get_database_path());
 
@@ -137,7 +137,7 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	 * Static Databases
 	 */
 	StaticDB->load_all();
-	
+
 	/**
 	 * Core Signal Handler
 	 */
@@ -146,7 +146,7 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	// Set signal handlers (this must be done before starting io_service threads,
 	// because otherwise they would unblock and exit)
 	signals.async_wait(SignalHandler);
-	
+
 	// Start Network
 	ClientSocktMgr->start(get_io_service(),
 						  network_conf().get_listen_ip(),

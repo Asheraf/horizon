@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -228,6 +228,6 @@ int main(int argc, const char * argv[])
 	printf("Info: Building external cache...\n");
 	if (m.getLibrary().BuildExternalCache())
 		printf("Info: Map cache has been built with %lu maps and saved to '%s'\n", m.getLibrary().getMCache()->maps.size(), m.getLibrary().getMapCachePath().c_str());
-	
+
 	return 0;
 }

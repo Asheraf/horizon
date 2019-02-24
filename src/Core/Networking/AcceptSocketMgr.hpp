@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ public:
 			_acceptor->close();
 
 		BaseSocketMgr::stop_network();
-		
+
 		_socket_map.clear();
 	}
 
@@ -170,7 +170,7 @@ public:
 		std::lock_guard<std::mutex> lock(_packet_len_db_mtx);
 
 		auto it = _packet_length_db.find(packet_id);
-		
+
 		if (it != _packet_length_db.end())
 			_packet_length_db.erase(it);
 

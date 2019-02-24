@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -383,7 +383,7 @@ bool PacketHandler::Handle_CZ_REQUEST_CHAT(PacketBuffer &buf)
 
 	Send_ZC_NOTIFY_CHAT(guid, pkt.message, GRID_NOTIFY_AREA_WOS);
 	Send_ZC_NOTIFY_PLAYERCHAT(pkt.message);
-	
+
 	return true;
 }
 

@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ AuthMain::~AuthMain()
 bool AuthMain::ReadConfig()
 {
 	sol::state lua;
-	
+
 	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 	std::string tmp_string;
 	int tmp_value;

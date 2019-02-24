@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ public:
 	/* Position ID */
 	uint8_t getPositionID() { return _position_id; }
 	void setPositionID(uint8_t pos) { _position_id = pos; }
-	
+
 private:
 	uint32_t _guild_id;
 	uint32_t _character_id;

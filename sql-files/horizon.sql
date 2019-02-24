@@ -8,7 +8,7 @@
 # This file is part of Horizon (c).
 # Copyright (c) 2018 Horizon Dev Team.
 #
-# Base Author - Sagun Khosla. (sagunxp@gmail.com)
+# Base Author - Sxyz (sagunxp@gmail.com)
 #
 # This library is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ CREATE TABLE `characters` (
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_key` (`name`),
-  CONSTRAINT FOREIGN KEY (account_id) REFERENCES game_account(id)
+  CONSTRAINT FOREIGN KEY (account_id) REFERENCES game_accounts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `character_access_data` (
@@ -183,5 +183,5 @@ CREATE TABLE `session_data` (
   `current_server` enum('AUTH','CHAR','ZONE') NOT NULL,
   PRIMARY KEY (`auth_code`),
   KEY `game_account_id` (`game_account_id`),
-  CONSTRAINT FOREIGN KEY (`game_account_id`) REFERENCES `game_accounts` (`id`)
+  CONSTRAINT FOREIGN KEY (game_account_id) REFERENCES game_accounts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

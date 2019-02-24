@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ public:
 	{
 		int8_t diff_x = (to.x() - _x);
 		int8_t diff_y = (to.y()- _y);
-		
+
 		for (int i = 0; i < 8; i++) {
 			if (diff_x == _directions[i][0] && diff_y  == _directions[i][1])
 				return i;

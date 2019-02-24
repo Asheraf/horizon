@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ public:
 		_hp = _maximum_hp = (40 * (100 + vit)/100);
 		_sp = _maximum_sp = (11 * (100 + int_)/100);
 	}
-	
+
 	~Status() {}
 
 	/**

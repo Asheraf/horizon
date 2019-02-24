@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ struct map_data
 	uint16_t width() { return info.total_x; }
 	uint16_t height() { return info.total_y; }
 	uint32_t size() { return info.length; }
-	
+
 	map_info info{};
 	std::vector<uint8_t> cells;
 };
@@ -92,7 +92,7 @@ struct map_cache
 		if (it != maps.end())
 			maps.erase(it);
 	}
-	
+
 	boost::optional<map_data> getMap(std::string name)
 	{
 		auto it = maps.find(name);
@@ -177,7 +177,7 @@ public:
 	bool AppendToCache(std::string const &name);
 
 	bool GetMapFromGRF(GRF &grf, std::string const &name);
-	
+
 	bool ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_types error);
 
 	/* */
@@ -188,7 +188,7 @@ public:
 	std::pair<uint8_t, grf_load_result_types> LoadGRFs();
 
 	void PrintCacheForMap(std::string const &map_name);
-	
+
 	/* GRF Library */
 	GRF &getGRF(uint8_t id) { return _grfs.at(id); }
 	void addGRF(uint8_t id, GRF &grf) { _grfs[id] = grf; }
@@ -200,7 +200,7 @@ public:
 	/* Compression Level */
 	int getCompressionLevel() { return _compression_level; }
 	void setCompressionLevel(int level) { _compression_level = level; }
-	
+
 	/* Map List Config Path */
 	const boost::filesystem::path &getMapListPath() const { return _map_list_path; }
 	void setMapListPath(std::string const &path) { _map_list_path = path; }

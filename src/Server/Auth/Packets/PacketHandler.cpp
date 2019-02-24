@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ bool Horizon::Auth::PacketHandler::validate_session_data(std::shared_ptr<GameAcc
 	game_account->set_last_ip(get_socket()->remote_ip_address());
 	game_account->set_last_login((int) time(nullptr));
 	game_account->update(AuthServer);
-	
+
 	// Session Data.
 	session_data->set_auth_code(game_account->get_id()); // @TODO Change to something unique to prevent session hijaking.
 	session_data->set_game_account_id(game_account->get_id());

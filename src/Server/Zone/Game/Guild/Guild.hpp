@@ -9,7 +9,7 @@
  * This file is part of Horizon (c).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sagun Khosla. (sagunxp@gmail.com)
+ * Base Author - Sxyz (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ private:
 	std::string _notice_content;
 	uint32_t _emblem_data_size;
 	uint32_t _emblem_version;
-	
+
 	/* Relations */
 	std::unordered_map<uint32_t, Affiliation> _affiliations;
 	std::unordered_map<std::string, ExpulsionLog> _expulsion_log;
