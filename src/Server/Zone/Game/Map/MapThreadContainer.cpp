@@ -135,17 +135,18 @@ void MapThreadContainer::update(uint32_t diff)
 	}
 
 	// Update sessions
-	for (auto pi = _managed_players.begin(); pi != _managed_players.end(); pi++) {
+	for (auto pi = _managed_players.begin(); pi != _managed_players.end();) {
 		std::shared_ptr<ZoneSession> session = pi->second->get_session();
 
-		if (session == nullptr) {
-			_managed_players.erase(pi);
+		if (session == nullptr || session->get_socket() == nullptr) {
+			pi = _managed_players.erase(pi);
 			continue;
 		}
 
 		// process packets
-		pi->second->get_session()->update(diff);
+		session->update(diff);
 		// update entity.
 		pi->second->update(diff);
+		pi++;
 	}
 }
