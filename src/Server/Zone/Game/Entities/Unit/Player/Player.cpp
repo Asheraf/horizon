@@ -60,7 +60,8 @@ Player::Player(uint32_t guid, MapCoords mcoords, GridCoords gcoords, std::shared
 
 Player::~Player()
 {
-	remove_grid_reference();
+	if (has_valid_grid_reference())
+		remove_grid_reference();
 }
 
 void Player::initialize()
@@ -232,26 +233,6 @@ entity_viewport_entry Player::create_viewport_entry(std::weak_ptr<Entity> entity
 	return entry;
 }
 
-void Player::send_npc_dialog(uint32_t npc_guid, std::string dialog)
-{
-	get_packet_handler()->Send_ZC_SAY_DIALOG(npc_guid, dialog);
-}
-
-void Player::send_npc_next_dialog(uint32_t npc_guid)
-{
-	get_packet_handler()->Send_ZC_WAIT_DIALOG(npc_guid);
-}
-
-void Player::send_npc_close_dialog(uint32_t npc_guid)
-{
-	get_packet_handler()->Send_ZC_CLOSE_DIALOG(npc_guid);
-}
-
-void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)
-{
-	get_packet_handler()->Send_ZC_MENU_LIST(npc_guid, menu);
-}
-
 
 void Player::move_to_map(std::shared_ptr<Map> map, MapCoords coords)
 {
@@ -279,4 +260,24 @@ void Player::move_to_map(std::shared_ptr<Map> map, MapCoords coords)
 	get_packet_handler()->Send_ZC_NPCACK_MAPMOVE(map_name, coords.x(), coords.y());
 	update_viewport();
 	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
+}
+
+void Player::send_npc_dialog(uint32_t npc_guid, std::string dialog)
+{
+	get_packet_handler()->Send_ZC_SAY_DIALOG(npc_guid, dialog);
+}
+
+void Player::send_npc_next_dialog(uint32_t npc_guid)
+{
+	get_packet_handler()->Send_ZC_WAIT_DIALOG(npc_guid);
+}
+
+void Player::send_npc_close_dialog(uint32_t npc_guid)
+{
+	get_packet_handler()->Send_ZC_CLOSE_DIALOG(npc_guid);
+}
+
+void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)
+{
+	get_packet_handler()->Send_ZC_MENU_LIST(npc_guid, menu);
 }

@@ -64,9 +64,5 @@ void ZoneSession::update(uint32_t /*diff*/)
 
 void ZoneSession::perform_cleanup()
 {
-	std::shared_ptr<Player> player = get_player();
-	std::shared_ptr<Character> character = get_character();
-
-	character->save(ZoneServer, CHAR_SAVE_ALL);
-	player->get_map()->get_map_container()->remove_player(player);
+	//
 }
