@@ -29,6 +29,9 @@
 
 #ifndef WIN32
 #include <sys/time.h>
+#else
+#include <Windows.h>
+#include <MMSystem.h>
 #endif
 
 uint32_t getMSTime()
@@ -62,17 +65,31 @@ uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
 int64_t get_sys_time()
 {
 #ifdef WIN32
-//	static bool first = true;
-//	static ULONGLONG(WINAPI *pGetTickCount64)(void) = NULL;
+	// Windows: GetTickCount/GetTickCount64: Return the number of
+	//   milliseconds that have elapsed since the system was started.
 
-//	if (first) {
-//		HMODULE hlib = GetModuleHandle(TEXT("KERNEL32.DLL"));
-	//	if (hlib != NULL)
-	//		pGetTickCount64 = (ULONGLONG(WINAPI *)(void)) GetProcAddress(hlib, "GetTickCount64");
-	//	first = false;
-	//}
-	//if (pGetTickCount64)
-		return (int64_t) 0();
+	// TODO: GetTickCount/GetTickCount64 has a resolution of only 10~15ms.
+	//       Ai4rei recommends that we replace it with either performance
+	//       counters or multimedia timers if we want it to be more accurate.
+	//       I'm leaving this for a future follow-up patch.
+
+	// GetTickCount64 is only available in Windows Vista / Windows Server
+	//   2008 or newer. Since we still support older versions, this runtime
+	//   check is required in order not to crash.
+	// http://msdn.microsoft.com/en-us/library/windows/desktop/ms724411%28v=vs.85%29.aspx
+	static bool first = true;
+	static ULONGLONG(WINAPI *pGetTickCount64)(void) = NULL;
+
+	if (first) {
+		HMODULE hlib = GetModuleHandle(TEXT("KERNEL32.DLL"));
+		if (hlib != NULL)
+			pGetTickCount64 = (ULONGLONG(WINAPI *)(void))GetProcAddress(hlib, "GetTickCount64");
+		first = false;
+	}
+	if (pGetTickCount64)
+		return (int64_t)pGetTickCount64();
+	// 32-bit fall back. Note: This will wrap around every ~49 days since system startup!!!
+	return (int64_t)GetTickCount();
 #elif defined(CLOCK_MONOTONIC)
 	// Monotonic clock: Implementation-defined.
 	//   Clock that cannot be set and represents monotonic time since some

@@ -89,3 +89,4 @@ void Map::ensure_all_grids()
 
 	ZoneLog->info("Initialized {} grids for map '{}'", grid_count, _name);
 }
+
