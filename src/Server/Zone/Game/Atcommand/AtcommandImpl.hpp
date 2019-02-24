@@ -31,6 +31,7 @@
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 #include <stdio.h>
 #include <string>
+#include <memory>
 
 namespace Horizon
 {

@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <vector>
+#include <memory>
 
 namespace Horizon
 {
