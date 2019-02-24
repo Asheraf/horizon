@@ -180,7 +180,7 @@ private:
 	uint32_t _weapon_id{0}, _shield_id{0}, _robe_id{0}, _head_top_id{0}, _head_mid_id{0}, _head_bottom_id{0};
 	uint32_t _hair_style_id{0}, _body_style_id{0};
 	uint8_t _gender{0};
-	entity_posture_types _posture{0};
+	entity_posture_types _posture{ POSTURE_STANDING };
 	directions _facing_dir{DIR_SOUTH};
 	uint16_t _movement_speed{DEFAULT_MOVEMENT_SPEED};
 };

@@ -41,8 +41,8 @@ void ZoneSession::set_game_account(std::shared_ptr<GameAccount> game_acc) { _gam
 std::shared_ptr<SessionData> ZoneSession::get_session_data() { return _session_data; }
 void ZoneSession::set_session_data(std::shared_ptr<SessionData> session_data) { _session_data.swap(session_data); }
 /* Player */
-std::shared_ptr<Player> ZoneSession::get_player() { return _player.lock(); }
-void ZoneSession::set_player(std::weak_ptr<Player> p) { _player = p; }
+boost::shared_ptr<Player> ZoneSession::get_player() { return _player.lock(); }
+void ZoneSession::set_player(boost::weak_ptr<Player> p) { _player = p; }
 
 void ZoneSession::initialize()
 {
@@ -64,7 +64,7 @@ void ZoneSession::update(uint32_t /*diff*/)
 
 void ZoneSession::perform_cleanup()
 {
-	std::shared_ptr<Player> player = get_player();
+	boost::shared_ptr<Player> player = get_player();
 	std::shared_ptr<Character> character = get_character();
 
 	character->save(ZoneServer, CHAR_SAVE_ALL);

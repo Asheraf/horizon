@@ -28,12 +28,14 @@
 #ifndef HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERSIMPL_HPP
 #define HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERSIMPL_HPP
 
+#include <boost/smart_ptr.hpp>
+
 template <class T>
 void GridViewPortUpdater::update(GridRefManager<T> &m)
 {
 	using namespace Horizon::Zone::Game::Entities;
 	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
-		std::shared_ptr<Player> pl = std::dynamic_pointer_cast<Player>(_entity.lock());
+		boost::shared_ptr<Player> pl = boost::dynamic_pointer_cast<Player>(_entity.lock());
 
 		if (iter->source()->get_guid() == pl->get_guid())
 			continue;
@@ -48,10 +50,10 @@ void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 {
 	using namespace Horizon::Zone::Game::Entities;
 
-	std::shared_ptr<Horizon::Zone::Game::Entity> src_entity = _entity.lock();
+	boost::shared_ptr<Horizon::Zone::Game::Entity> src_entity = _entity.lock();
 
 	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
-		std::shared_ptr<Player> tpl = std::dynamic_pointer_cast<Player>(iter->source()->shared_from_this());
+		boost::shared_ptr<Player> tpl = boost::dynamic_pointer_cast<Player>(iter->source()->shared_from_this());
 
 		if (src_entity == nullptr || src_entity->get_guid() == tpl->get_guid())
 			continue;
@@ -59,7 +61,7 @@ void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 		bool is_in_range = tpl->is_in_range_of(src_entity);
 
 		if (_notif_type <= EVP_NOTIFY_IN_SIGHT && is_in_range) {
-			std::shared_ptr<Unit> unit = std::dynamic_pointer_cast<Unit>(src_entity);
+			boost::shared_ptr<Unit> unit = boost::dynamic_pointer_cast<Unit>(src_entity);
 			if (unit->is_walking()) {
 				tpl->realize_entity_movement(src_entity);
 			} else {
@@ -67,7 +69,7 @@ void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 			}
 		} else if (_notif_type > EVP_NOTIFY_OUT_OF_SIGHT || (_notif_type == EVP_NOTIFY_OUT_OF_SIGHT && !is_in_range)) {
 			if (src_entity->get_type() == ENTITY_PLAYER) {
-				std::shared_ptr<Player> pl = std::dynamic_pointer_cast<Player>(src_entity);
+				boost::shared_ptr<Player> pl = boost::dynamic_pointer_cast<Player>(src_entity);
 				pl->remove_entity_from_viewport(tpl, _notif_type);
 			}
 
@@ -84,7 +86,7 @@ void GridEntitySearcher::search(GridRefManager<T> &m)
 
 	using namespace Horizon::Zone::Game;
 	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
-		std::weak_ptr<Entity> entity = iter->source()->weak_from_this();
+		boost::weak_ptr<Entity> entity = iter->source()->weak_from_this();
 		if (!entity.expired() && _predicate(entity)) {
 			_result = entity;
 			return;
@@ -97,7 +99,7 @@ void GridPlayerNotifier<ZC_PACKET_T>::notify(GridRefManager<T> &m)
 {
 	using namespace Horizon::Zone::Game::Entities;
 
-	std::shared_ptr<Player> pl = std::dynamic_pointer_cast<Player>(_player.lock());
+	boost::shared_ptr<Player> pl = boost::dynamic_pointer_cast<Player>(_player.lock());
 
 	if (pl == nullptr)
 		return;

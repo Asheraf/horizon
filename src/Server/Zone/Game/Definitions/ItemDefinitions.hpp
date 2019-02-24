@@ -191,7 +191,7 @@ struct item_data
 		int32_t min_lv{0};
 		int32_t job_mask{0};
 		item_gender_types gender{IT_GENDER_ANY};
-	} requirements{0};
+	} requirements;
 
 	int drop_effect_mode{0};
 
@@ -216,11 +216,11 @@ struct item_data
 			unsigned int cart         : 1;
 			unsigned int storage      : 1;
 			unsigned int guildstorage : 1;
-		} stack{0};
+		} stack;
 		struct {
 			unsigned int mask{0};                  ///< Item nouse restriction mask (@see enum ItemNouseRestrictions)
-		} usage_restriction{0};
-	} config{0};
+		} usage_restriction;
+	} config;
 };
 
 #define ITEM_NAME_LENGTH 50

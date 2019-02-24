@@ -31,8 +31,9 @@
 #include "AtcommandImpl.hpp"
 
 #include <stdio.h>
-#include <memory>
+#include <boost/smart_ptr.hpp>
 #include <cstring>
+#include <vector>
 
 namespace Horizon
 {
@@ -48,12 +49,12 @@ class Atcommand;
 class AtcommandExecutor
 {
 public:
-	AtcommandExecutor(std::weak_ptr<Entities::Player> player, std::string const &cmd)
+	AtcommandExecutor(boost::weak_ptr<Entities::Player> player, std::string const &cmd)
 	: _player(player), _command(cmd)
 	{ }
 	~AtcommandExecutor() { }
 
-	std::shared_ptr<Entities::Player> get_player() { return _player.lock(); }
+	boost::shared_ptr<Entities::Player> get_player() { return _player.lock(); }
 	std::string const &get_cmd() { return _command; }
 
 	bool execute();
@@ -66,7 +67,7 @@ public:
 private:
 	int execute_internal(std::vector<std::string> const &cmd);
 	
-	std::weak_ptr<Entities::Player> _player;
+	boost::weak_ptr<Entities::Player> _player;
 	std::string const &_command;
 	std::shared_ptr<Atcommand> _atcmd;
 };

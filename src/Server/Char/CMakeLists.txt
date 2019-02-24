@@ -34,9 +34,10 @@ target_link_libraries(char
 	    -lpthread
 	    ${CRYPTOPP_LIBRARIES}
         ${YAMLCPP_LIBRARY}
-        ${CONCPP_LIBS}
+        ${CONCPP_LIB}
         ${Readline_LIBRARY}
 		${LUA_LIBRARIES}
+		${SPDLOG_LIBRARIES}
 )
 
 set(INCLUDE_DIRS

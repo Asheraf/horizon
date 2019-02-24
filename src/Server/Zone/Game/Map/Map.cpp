@@ -86,6 +86,4 @@ void Map::ensure_all_grids()
 			ensure_grid(GridCoords(x, y));
 		}
 	}
-
-	ZoneLog->info("Initialized {} grids for map '{}'", grid_count, _name);
 }

@@ -68,7 +68,7 @@ struct PACKET_HC_DELETE_CHAR3_RESERVED : public Packet
 
 	/* Size: 14 bytes */
 	uint32_t character_id{0};
-	character_delete_result result{0};
+	character_delete_result result{ CHAR_DEL_RESULT_UNKNOWN };
 	uint32_t deletion_date{0};
 };
 }

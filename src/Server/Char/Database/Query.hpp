@@ -32,6 +32,7 @@
 
 #include <map>
 #include <stdio.h>
+#include <memory>
 
 class GameAccount;
 

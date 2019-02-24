@@ -56,7 +56,7 @@ bool MapManager::LoadMapCache()
 	m.setMapCachePath(db_path + ZoneServer->get_zone_config().get_mapcache_file_name());
 
 	if (m.ReadMapListConfig() != MCACHE_CONFIG_OK) {
-		ZoneLog->error("Could not read map config file '{}'.", m.getMapListPath().c_str());
+		ZoneLog->error("Could not read map config file '{}'.", m.getMapListPath().string());
 		return false;
 	}
 
@@ -65,22 +65,22 @@ bool MapManager::LoadMapCache()
 		default:
 			break;
 		case MCACHE_IMPORT_NONEXISTENT_FILE:
-			ZoneLog->error("Could not open file '{}'.", m.getMapCachePath().c_str());
+			ZoneLog->error("Could not open file '{}'.", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_READ_ERROR:
-			ZoneLog->error("Could not read file '{}', rebuilding...", m.getMapCachePath().c_str());
+			ZoneLog->error("Could not read file '{}', rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_INVALID_CHECKSUM:
-			ZoneLog->error("File cache file '{}' is corrupted (invalid checksum), rebuilding...", m.getMapCachePath().c_str());
+			ZoneLog->error("File cache file '{}' is corrupted (invalid checksum), rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_DECOMPRESS_ERROR:
-			ZoneLog->error("File cache file '{}' could not be decompressed, rebuilding...", m.getMapCachePath().c_str());
+			ZoneLog->error("File cache file '{}' could not be decompressed, rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_MAPINFO_ERROR:
-			ZoneLog->error("Could not read map information for a map while importing file '{}', rebuilding...", m.getMapCachePath().c_str());
+			ZoneLog->error("Could not read map information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_CELLINFO_ERROR:
-			ZoneLog->error("Could not read cell information for a map while importing file '{}', rebuilding...", m.getMapCachePath().c_str());
+			ZoneLog->error("Could not read cell information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
 			return false;
 	}
 
@@ -112,7 +112,7 @@ bool MapManager::LoadMapCache()
 	return true;
 }
 
-std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p)
+std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, boost::shared_ptr<Entities::Player> p)
 {
 	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
 		std::shared_ptr<Map> map = (*i)->get_map(map_name);
@@ -125,7 +125,7 @@ std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::sh
 	return nullptr;
 }
 
-bool MapManager::remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p)
+bool MapManager::remove_player_from_map(std::string map_name, boost::shared_ptr<Entities::Player> p)
 {
 	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
 		if ((*i)->get_map(map_name) != nullptr) {

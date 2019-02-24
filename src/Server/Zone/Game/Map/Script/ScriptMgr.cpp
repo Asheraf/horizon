@@ -36,7 +36,7 @@
 using namespace Horizon::Zone::Game;
 using namespace Horizon::Zone::Game::Entities;
 
-ScriptManager::ScriptManager(std::weak_ptr<MapThreadContainer> container)
+ScriptManager::ScriptManager(boost::weak_ptr<MapThreadContainer> container)
 : _container(container)
 {
 
@@ -67,9 +67,9 @@ void ScriptManager::initialize_state(sol::state &st)
 
 
 	st.set_function("cast_entity_to_player",
-					[] (std::shared_ptr<Entity> e)
+					[] (boost::shared_ptr<Entity> e)
 					{
-						return std::dynamic_pointer_cast<Player>(e);
+						return boost::dynamic_pointer_cast<Player>(e);
 					});
 
 	st.new_usertype<MapCoords>("MapCoords",
@@ -110,7 +110,7 @@ void ScriptManager::load_scripts()
 			_script_files.push_back(value.as<std::string>());
 		});
 		
-		ZoneLog->info("Found {} loadable script(s) from file '{}'.", _script_files.size(), file_path);
+		ZoneLog->info("Found {} loadable script(s) from file '{}'.", (int) _script_files.size(), file_path);
 
 		load_scripts_internal();
 	} catch (sol::error &e) {
@@ -251,7 +251,7 @@ void ScriptManager::load_constants()
 	}
 }
 
-void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint32_t npc_guid)
+void ScriptManager::contact_npc_for_player(boost::shared_ptr<Player> player, uint32_t npc_guid)
 {
 	npc_db_data const &nd = _npc_db.at(npc_guid);
 
@@ -269,7 +269,7 @@ void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint3
 	}
 }
 
-void ScriptManager::continue_npc_script_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx)
+void ScriptManager::continue_npc_script_for_player(boost::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx)
 {
 	npc_db_data const &nd = _npc_db.at(npc_guid);
 
@@ -287,7 +287,7 @@ void ScriptManager::continue_npc_script_for_player(std::shared_ptr<Entities::Pla
  * @param[in] lua Lua State
  * @param[in] player Shared pointer to a player entity.
  */
-void ScriptManager::add_player(std::shared_ptr<Player> player)
+void ScriptManager::add_player(boost::shared_ptr<Player> player)
 {
 	sol::table player_table = _lua_state.get<sol::table>(player_tbl_name);
 
@@ -300,7 +300,7 @@ void ScriptManager::add_player(std::shared_ptr<Player> player)
  * @param[in] lua Lua State
  * @param[in] player Shared pointer to a player entity.
  */
-void ScriptManager::remove_player(std::shared_ptr<Player> player)
+void ScriptManager::remove_player(boost::shared_ptr<Player> player)
 {
 	sol::table player_table = _lua_state.get<sol::table>(player_tbl_name);
 	player_table.set(player->get_guid(), "nil");

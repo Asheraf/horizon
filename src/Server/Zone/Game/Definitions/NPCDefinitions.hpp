@@ -10,6 +10,7 @@
 
 #include <string>
 #include "EntityDefinitions.hpp"
+#include <memory>
 
 #define NPC_START_GUID 500000000
 

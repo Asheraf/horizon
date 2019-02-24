@@ -121,16 +121,16 @@ bool PacketHandler::Handle_CZ_REQUEST_TIME(PacketBuffer &buf)
 
 bool PacketHandler::Handle_CZ_REQNAME(PacketBuffer &buf)
 {
-	std::shared_ptr<Player> player = get_socket()->get_session()->get_player();
+	boost::shared_ptr<Player> player = get_socket()->get_session()->get_player();
 	Ragexe::PACKET_CZ_REQNAME pkt(buf.getOpCode());
 	pkt << buf;
 
-	std::shared_ptr<Game::Entity> entity = player->get_nearby_entity(pkt.guid);
+	boost::shared_ptr<Game::Entity> entity = player->get_nearby_entity(pkt.guid);
 
 	if (entity == nullptr)
 		return true;
 
-	std::shared_ptr<Unit> unit = std::dynamic_pointer_cast<Unit>(entity);
+	boost::shared_ptr<Unit> unit = boost::dynamic_pointer_cast<Unit>(entity);
 	Send_ZC_ACK_REQNAME(unit->get_guid(), unit->get_name());
 
 	return true;
@@ -176,7 +176,7 @@ bool PacketHandler::process_player_entry()
 	// Initilaize The Player
 	MapCoords mcoords(position->get_current_x(), position->get_current_y());
 
-	std::shared_ptr<Player> player = std::make_shared<Player>(session->get_game_account()->get_id(),
+	boost::shared_ptr<Player> player = boost::make_shared<Player>(session->get_game_account()->get_id(),
 															  mcoords,
 															  session);
 	session->set_player(player);

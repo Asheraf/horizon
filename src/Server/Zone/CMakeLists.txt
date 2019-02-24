@@ -35,9 +35,10 @@ target_link_libraries(zone
 	    -lpthread
 		mcache
 	    ${CRYPTOPP_LIBRARIES}
-        ${CONCPP_LIBS}
+        ${CONCPP_LIB}
         ${Readline_LIBRARY}
 		${LUA_LIBRARIES}
+		${SPDLOG_LIBRARIES}
 )
 
 set(INCLUDE_DIRS

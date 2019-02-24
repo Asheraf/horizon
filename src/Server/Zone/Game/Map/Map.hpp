@@ -127,7 +127,7 @@ bool Horizon::Zone::Game::Map::ensure_grid_for_entity(T *entity, MapCoords mcoor
 
 	entity->set_grid_coords(new_gcoords);
 
-	_gridholder.get_grid(new_gcoords).template add_object(entity);
+	_gridholder.get_grid(new_gcoords).add_object(entity);
 	
 	return true;
 }

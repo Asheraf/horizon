@@ -65,7 +65,7 @@ void Entity::update(uint32_t /*diff*/)
 	_scheduler.Update();
 }
 
-bool Entity::is_in_range_of(std::shared_ptr<Entity> e, uint8_t range)
+bool Entity::is_in_range_of(boost::shared_ptr<Entity> e, uint8_t range)
 {
 	if (e->get_map()->get_name().compare(get_map()->get_name()))
 		return false;
@@ -73,7 +73,7 @@ bool Entity::is_in_range_of(std::shared_ptr<Entity> e, uint8_t range)
 	return get_map_coords().is_within_range(e->get_map_coords(), range);
 }
 
-std::shared_ptr<Entity> Entity::get_nearby_entity(uint32_t guid)
+boost::shared_ptr<Entity> Entity::get_nearby_entity(uint32_t guid)
 {
 	GridEntitySearcher searcher(guid);
 	GridReferenceContainerVisitor<GridEntitySearcher, GridReferenceContainer<AllEntityTypes>> search_visitor(searcher);

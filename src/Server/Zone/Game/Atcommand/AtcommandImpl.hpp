@@ -31,6 +31,7 @@
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 #include <stdio.h>
 #include <string>
+#include <boost/smart_ptr.hpp>
 
 namespace Horizon
 {
@@ -62,8 +63,8 @@ public:
 
 	void set_map_name(std::string const &map_name) { _map_name = map_name; }
 	void set_map_coords(MapCoords coords) { _coords = coords; }
-	void set_player(std::weak_ptr<Entities::Player> p) { _player = p; };
-	std::shared_ptr<Entities::Player> get_player() { return _player.lock(); }
+	void set_player(boost::weak_ptr<Entities::Player> p) { _player = p; };
+	boost::shared_ptr<Entities::Player> get_player() { return _player.lock(); }
 
 	std::string help(int type = 1)
 	{
@@ -78,7 +79,7 @@ public:
 private:
 	std::string _map_name;
 	MapCoords _coords;
-	std::weak_ptr<Entities::Player> _player;
+	boost::weak_ptr<Entities::Player> _player;
 };
 }
 }

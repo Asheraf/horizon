@@ -34,7 +34,7 @@ class GUIDCheckPredicate
 {
 public:
 	GUIDCheckPredicate(uint32_t guid) : _guid(guid) { }
-	bool operator()(std::weak_ptr<Horizon::Zone::Game::Entity> entity)
+	bool operator()(boost::weak_ptr<Horizon::Zone::Game::Entity> entity)
 	{
 		return !entity.expired() && (entity.lock()->get_guid() == _guid);
 	}
