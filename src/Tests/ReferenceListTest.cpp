@@ -147,8 +147,10 @@ BOOST_AUTO_TEST_CASE(ReferenceListTest)
 
 	BOOST_CHECK_EQUAL(playerRefMgr.get_size(), MAX_LIMIT);
 
-	BOOST_CHECK_EQUAL(playerRefMgr.first()->prev(), nullptr);
-	BOOST_CHECK_EQUAL(playerRefMgr.last()->next(), nullptr);
+	if (playerRefMgr.first()->prev() != nullptr)
+		BOOST_FAIL("Prev of first is not null!");
+	if (playerRefMgr.last()->next() != nullptr)
+		BOOST_FAIL("Next of last is not null!");
 
 	for (int i = 0; i < MAX_LIMIT; i++)
 		player[i]->remove_reference();

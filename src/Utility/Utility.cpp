@@ -62,6 +62,7 @@ uint32_t GetMSTimeDiffToNow(uint32_t oldMSTime)
 	return getMSTimeDiff(oldMSTime, getMSTime());
 }
 
+// Taken from https://github.com/HerculesWS/Hercules/blob/stable/src/common/timer.c
 int64_t get_sys_time()
 {
 #ifdef WIN32

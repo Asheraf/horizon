@@ -141,8 +141,7 @@ bool Horizon::Tools::MapCache::ParseGRFLoadResult(std::pair<uint8_t, grf_load_re
 		float mb_size = kb_size / 1024;
 		float gb_size = mb_size / 1024;
 
-		printf("Info: GRF Loaded '%s' from path '%s'.\n", grf.second.getGRFPath().filename().c_str(),
-			   grf.second.getGRFPath().generic_path().c_str());
+		printf("Info: GRF Loaded from '%s'.\n", grf.second.getGRFPath().string());
 		printf("Info: Total GRF Size - %d B (%0.2f KB or %0.2f MB or %0.2f GB).\n", size, kb_size, mb_size, gb_size);
 		printf("Info: GRF has '%d' Total Compressed Files.\n", grf.second.getTotalFiles());
 		printf("Info: GRF Version %x\n", grf.second.getGRFVersion());
