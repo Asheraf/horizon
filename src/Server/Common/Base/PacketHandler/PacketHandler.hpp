@@ -29,7 +29,7 @@
 #define HORIZON_BASE_PACKETHANDLER_HPP
 
 #include "Core/Logging/Logger.hpp"
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -109,7 +109,7 @@ public:
 	 */
 	void send_packet(PacketBuffer &buf, std::size_t size)
 	{
-		if (!get_socket()->is_open())
+		if (get_socket() == nullptr || !get_socket()->is_open())
 			return;
 
 		if (!buf.empty()) {

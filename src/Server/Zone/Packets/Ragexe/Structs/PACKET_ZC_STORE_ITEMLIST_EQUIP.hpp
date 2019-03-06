@@ -63,6 +63,8 @@ struct PACKET_ZC_STORE_ITEMLIST_EQUIP : public Packet
 	}
 
 	/* Size: -1 bytes */
+	uint16_t packet_length;
+	
 };
 }
 }

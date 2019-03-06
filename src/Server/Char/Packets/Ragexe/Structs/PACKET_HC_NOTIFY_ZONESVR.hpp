@@ -32,7 +32,7 @@
 #include "Server/Char/Packets/Ragexe/Packets.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
-#include "Server/Common/Client.hpp"
+#include "Server/Common/Definitions/Client.hpp"
 
 
 namespace Horizon

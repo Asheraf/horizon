@@ -32,7 +32,7 @@
 #include "Core/Networking/AsyncAcceptor.hpp"
 #include "Core/Networking/NetworkThread.hpp"
 #include "Core/Networking/Connector.hpp"
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 
 #include <boost/asio.hpp>
 #include <assert.h>

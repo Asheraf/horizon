@@ -28,10 +28,11 @@
 #ifndef HORIZON_ZONE_GAME_JOBDB
 #define HORIZON_ZONE_GAME_JOBDB
 
-#include "Server/Zone/Game/Definitions/ItemDefinitions.hpp"
-#include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
+#include "Common/Definitions/ItemDefinitions.hpp"
+#include "Common/Definitions/EntityDefinitions.hpp"
+#include "Core/Multithreading/LockedLookupTable.hpp"
 
-#include <unordered_map>
+#include <memory>
 #include <map>
 #include <vector>
 #include <array>
@@ -46,30 +47,41 @@ namespace Game
 {
 struct job_db_data
 {
-	int _id{0};
-	int _max_weight{20000};
-	std::string _base_exp_group{""}, _job_exp_group{""};
-	std::array<int, WT_MAX> _weapon_base_aspd{0};
-	std::vector<int> _hp_table, _sp_table;
+	int id{0};
+	int max_weight{20000};
+	std::string base_exp_group{""}, job_exp_group{""};
+	std::array<int, WT_MAX> weapon_base_aspd{0};
+	std::vector<int> hp_table, sp_table;
 };
-class JobDB
+class JobDatabase
 {
 public:
-	JobDB();
-	~JobDB() { }
+	JobDatabase();
+	~JobDatabase() { }
 
-	job_classes get_job_class_by_name(std::string name) const;
-	job_class_mask job_id_to_mask(job_classes job_id) const;
+	static JobDatabase *get_instance()
+	{
+		static JobDatabase instance;
+		return &instance;
+	}
+
+	job_class_type get_job_class_by_name(std::string name) const;
+	job_class_mask job_id_to_mask(job_class_type job_id) const;
+
 	bool load();
 	int load_job(sol::table &job_tbl, std::string name = "");
 	bool load_job_internal(sol::table &job_tbl, job_db_data &data, std::string job_name = "");
 	bool load_hp_sp_table(sol::table &job_tbl, job_db_data &data, std::string &job_name, std::string table_name);
 
+	std::shared_ptr<const job_db_data> get(uint16_t job_id) { return _job_db.at((job_class_type) job_id); }
 private:
-	std::unordered_map<job_classes, job_db_data> _job_db;
+	LockedLookupTable<job_class_type, std::shared_ptr<const job_db_data>> _job_db;
 	std::map<std::string, int> _name2id_list;
 };
 }
 }
 }
+
+#define JobDB Horizon::Zone::Game::JobDatabase::get_instance()
+
 #endif /* HORIZON_ZONE_GAME_JOBDB */

@@ -32,9 +32,9 @@
 #include "Server/Common/Server.hpp"
 
 #include <boost/asio.hpp>
-#include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <thread>
+#include <functional>
 
 using namespace boost::asio::ip;
 
@@ -50,7 +50,7 @@ namespace Networking
 class Connector
 {
 public:
-	typedef boost::function<void(std::string &, std::shared_ptr<tcp::socket>, uint32_t)> ConnectorCallback;
+	typedef std::function<void(std::string &, std::shared_ptr<tcp::socket>, uint32_t)> ConnectorCallback;
 
 	/**
 	 * @brief Connector contructor

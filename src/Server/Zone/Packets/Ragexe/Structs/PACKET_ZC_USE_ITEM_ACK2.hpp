@@ -46,7 +46,13 @@ struct PACKET_ZC_USE_ITEM_ACK2 : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << inventory_index;
+		buf << item_id;
+		buf << guid;
+		buf << amount;
+		buf << result;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +69,11 @@ struct PACKET_ZC_USE_ITEM_ACK2 : public Packet
 	}
 
 	/* Size: 13 bytes */
+	uint16_t inventory_index{0};
+	uint16_t item_id{0};
+	uint32_t guid{0};
+	uint16_t amount{0};
+	uint8_t result{0};
 };
 }
 }

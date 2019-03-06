@@ -32,7 +32,7 @@
 #include "Server/Char/Packets/Ragexe/Packets.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
-#include "Server/Common/Client.hpp"
+#include "Server/Common/Definitions/Client.hpp"
 
 namespace Horizon
 {
@@ -47,7 +47,7 @@ struct PACKET_HC_REFUSE_MAKECHAR : public Packet
 	virtual PacketBuffer serialize()
 	{
 		PacketBuffer buf(HC_REFUSE_MAKECHAR);
-		buf << (uint8_t) error_code;
+		buf << ((uint8_t) error_code);
 		return buf;
 	}
 
@@ -65,7 +65,7 @@ struct PACKET_HC_REFUSE_MAKECHAR : public Packet
 	}
 
 	/* Size: 3 bytes */
-	char_create_error_types error_code;
+	char_create_error_type error_code;
 };
 }
 }

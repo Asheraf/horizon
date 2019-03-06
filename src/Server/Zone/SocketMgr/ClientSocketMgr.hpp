@@ -58,7 +58,7 @@ public:
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
 
-		client_types type = ZoneServer->general_conf().get_client_type();
+		client_type type = ZoneServer->general_conf().get_client_type();
 		uint32_t packet_version = ZoneServer->general_conf().get_packet_version();
 
 		/**

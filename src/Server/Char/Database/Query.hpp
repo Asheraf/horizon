@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <memory>
 
-class GameAccount;
 
 namespace mysqlx
 {
@@ -45,6 +44,7 @@ namespace Horizon
 {
 	namespace Models
 	{
+		class GameAccount;
 		namespace Character
 		{
 			class Character;
@@ -58,7 +58,7 @@ namespace Char
 {
 namespace Database
 {
-enum char_query_types
+enum char_query_type
 {
 	SELECT_ALL_CHARS_BY_AID,
 	CHECK_EXISTING_CHAR_BY_NAME,
@@ -77,8 +77,8 @@ public:
 
 	void InitializeQueryStrings();
 
-	int load_all_characters_for_account(std::shared_ptr<GameAccount> account);
-	std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
+	int load_all_characters_for_account(std::shared_ptr<Models::GameAccount> account);
+	std::shared_ptr<Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
 	int CheckExistingCharByName(std::string name);
 };
 }

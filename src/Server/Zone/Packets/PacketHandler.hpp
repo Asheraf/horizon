@@ -30,30 +30,41 @@
 
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Common/Base/PacketHandler/PacketHandler.hpp"
-#include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
+#include "Common/Definitions/EntityDefinitions.hpp"
+#include "Common/Definitions/ItemDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 #include <memory>
+#include <vector>
 
 class PacketBuffer;
-class SessionData;
+
+namespace Horizon
+{
+	namespace Models
+	{
+		class SessionData;
+	}
+	namespace Zone
+	{
+		namespace Game
+		{
+			namespace Entities
+			{
+				class Player;
+			}
+		}
+	}
+}
 
 namespace Horizon
 {
 namespace Zone
 {
-	namespace Game
-	{
-		namespace Entities
-		{
-			class Player;
-		}
-	}
-
-enum zone_server_reject_types : uint8_t
+enum zone_server_reject_type : uint8_t
 {
 	ZONE_SERV_ERROR_REJECT = 3,
 };
-enum zc_ack_guild_menuinterface_mask_types
+enum zc_ack_guild_menuinterface_mask_type
 {
 	GMIF_BASIC_INFO     = 0x00,
 	GMIF_MEMBER_MANAGER = 0x01,
@@ -65,7 +76,7 @@ enum zc_ack_guild_menuinterface_mask_types
 	GMIF_MEMBER         = GMIF_ALLGUILDLIST | GMIF_EXPULSION_LIST | GMIF_SKILLS | GMIF_POSITIONS | GMIF_MEMBER_MANAGER,
 	GMIF_MASTER         = GMIF_NOTICE | GMIF_MEMBER,
 };
-enum cz_req_guild_menu_types
+enum cz_req_guild_menu_type
 {
 	CZ_REQ_GUILD_BASIC_INFO     = 0,
 	CZ_REQ_GUILD_MEMBER_MANAGER = 1,
@@ -112,41 +123,63 @@ public:
 	virtual bool Handle_CZ_CHANGE_DIRECTION2(PacketBuffer &buf);
 	virtual bool Handle_CZ_REQUEST_CHAT(PacketBuffer &buf);
 	virtual bool Handle_CZ_CONTACTNPC(PacketBuffer &buf);
+	virtual bool Handle_CZ_USE_ITEM(PacketBuffer &buf);
+	virtual bool Handle_CZ_USE_ITEM2(PacketBuffer &buf);
+	virtual bool Handle_CZ_REQ_WEAR_EQUIP(PacketBuffer &buf);
+	virtual bool Handle_CZ_REQ_WEAR_EQUIP_V5(PacketBuffer &buf);
+	virtual bool Handle_CZ_REQ_TAKEOFF_EQUIP(PacketBuffer &buf);
+	virtual bool Handle_CZ_STATUS_CHANGE(PacketBuffer &buf);
 
 	virtual bool verify_new_connection(uint32_t auth_code, uint32_t account_id, uint32_t char_id);
 	virtual bool process_player_entry();
 	/**
 	 * Senders
 	 */
-	virtual void Send_ZC_REFUSE_ENTER(zone_server_reject_types error);
+	virtual void Send_ZC_REFUSE_ENTER(zone_server_reject_type error);
 	virtual void Send_ZC_RESTART_ACK(uint8_t type);
 	virtual void Send_ZC_ACK_REQ_DISCONNECT(bool allowed);
 	virtual void Send_ZC_AID();
 	virtual void Send_ZC_ACCEPT_ENTER3();
 	virtual void Send_ZC_ACCEPT_ENTER2();
-	virtual void Send_ZC_NPCACK_MAPMOVE(std::string &map_name, uint16_t x, uint16_t y);
+	virtual void Send_ZC_NPCACK_MAPMOVE(std::string map_name, uint16_t x, uint16_t y);
 	virtual void Send_ZC_NOTIFY_TIME();
 	virtual void Send_ZC_NOTIFY_MOVE(uint32_t guid, MapCoords from, MapCoords to);
 	virtual void Send_ZC_NOTIFY_PLAYERMOVE(uint16_t x, uint16_t y);
 	virtual void Send_ZC_STOPMOVE(uint32_t guid, uint16_t x, uint16_t y);
 	virtual void Send_ZC_PAR_CHANGE(uint16_t type, uint16_t value);
+	virtual void Send_ZC_LONGPAR_CHANGE(uint16_t type, uint16_t value);
+	virtual void Send_ZC_STATUS();
+	virtual void Send_ZC_STATUS_CHANGE(status_point_type type, uint16_t value);
+	virtual void Send_ZC_STATUS_CHANGE_ACK(status_point_type type, bool success, uint16_t amount);
+	virtual void Send_ZC_ATTACK_RANGE(uint32_t value);
+	virtual void Send_ZC_COUPLESTATUS(uint32_t type, uint32_t base, uint32_t bonus);
 	virtual void Send_ZC_SAY_DIALOG(uint32_t npc_id, std::string &message);
 	virtual void Send_ZC_WAIT_DIALOG(uint32_t npc_id);
 	virtual void Send_ZC_CLOSE_DIALOG(uint32_t npc_id);
 	virtual void Send_ZC_MENU_LIST(uint32_t npc_id, std::string const &menu_list);
 	virtual void Send_ZC_OPEN_EDITDLG(uint32_t npc_id);
 	virtual void Send_ZC_OPEN_EDITDLGSTR(uint32_t npc_id);
-	virtual void Send_ZC_STATUS();
 	virtual void Send_ZC_NOTIFY_NEWENTRY5();
 	virtual void Send_ZC_UPDATE_MAPINFO(uint16_t x, uint16_t y, const char *map_name, uint16_t type);
 	virtual void Send_ZC_NOTIFY_GROUNDSKILL(uint16_t skill_id, uint32_t guid, uint16_t level, uint16_t x, uint16_t y, uint32_t duration);
 	virtual void Send_ZC_NOTIFY_STANDENTRY(entity_viewport_entry const &entry);
 	virtual void Send_ZC_NOTIFY_MOVEENTRY(entity_viewport_entry const &entry);
-	virtual void Send_ZC_NOTIFY_CHAT(uint32_t guid, std::string message, player_notifier_types type);
+	virtual void Send_ZC_NOTIFY_CHAT(uint32_t guid, std::string message, player_notifier_type type);
 	virtual void Send_ZC_NOTIFY_PLAYERCHAT(std::string message);
-	virtual void Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_notifier_types type);
+	virtual void Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_notifier_type type);
 	virtual void Send_ZC_ACK_REQNAME(uint32_t guid, std::string name);
 	virtual void Send_ZC_NOTIFY_VANISH(uint32_t guid, uint8_t type = 0);
+	virtual void Send_ZC_NORMAL_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items);
+	virtual void Send_ZC_EQUIPMENT_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items);
+	virtual void Send_ZC_ITEM_PICKUP_ACK(item_entry_data id, uint16_t amount, item_inventory_addition_notif_type result);
+	virtual void Send_ZC_ITEM_THROW_ACK(uint16_t inventory_index, uint16_t amount);
+	virtual void Send_ZC_INVENTORY_MOVE_FAILED(uint16_t inventory_index, bool silent);
+	virtual void Send_ZC_DELETE_ITEM_FROM_BODY(uint16_t inventory_index, uint16_t amount, item_deletion_reason_type reason);
+	virtual void Send_ZC_NOTIFY_BIND_ON_EQUIP(std::shared_ptr<const item_entry_data> item);
+	virtual void Send_ZC_REQ_WEAR_EQUIP_ACK(std::shared_ptr<const item_entry_data> item, item_equip_result_type result);
+	virtual void Send_ZC_REQ_TAKEOFF_EQUIP_ACK(std::shared_ptr<const item_entry_data> item, item_unequip_result_type result);
+	virtual void Send_ZC_EQUIP_ARROW(std::shared_ptr<const item_entry_data> item);
+	virtual void Send_ZC_ACTION_MESSAGE(uint16_t message_type);
 };
 }
 }

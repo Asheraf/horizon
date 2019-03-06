@@ -64,6 +64,7 @@
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_CZ_USE_SKILL_TOGROUND_WITHTALKBOX.hpp"
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_ZC_ADD_MEMBER_TO_GROUP.hpp"
 #include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_ZC_GROUP_LIST.hpp"
+#include "Server/Zone/Packets/Ragexe/20171206/Structs/PACKET_ZC_LONGPAR_CHANGE.hpp"
 #include "Server/Zone/Packets/PacketHandler.hpp"
 
 namespace Horizon

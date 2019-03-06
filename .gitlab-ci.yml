@@ -37,15 +37,14 @@ variables: &base_vars
   MYSQL_PASSWORD: 'ragnarok'
   MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
   GIT_DEPTH: '3'
-  DEBIAN_COMMON_PACKAGES: cmake mysql-server libmysqlclient-dev libmysqlcppconn-dev libboost-all-dev libssl-dev libreadline-dev libcrypto++-dev libluajit-5.1-dev zlib1g-dev
-
+  DEBIAN_COMMON_PACKAGES: cmake mysql-server mysql-client libmysqlcppconn-dev libboost-all-dev libreadline-dev libcrypto++-dev libluajit-5.1-dev zlib1g-dev
 
 .prerequisites: &prerequisites
   before_script:
-    - echo "Building $CI_BUILD_NAME"
+    - pwd
     - uname -a
     - ${PKG_CMD} update
-    - ${PKG_CMD} -y install wget lsb-release gnupg
+    - ${PKG_CMD} -y install wget lsb-release gnupg unzip
     - wget https://dev.mysql.com/get/mysql-apt-config_0.8.12-1_all.deb
     - dpkg -i mysql-apt-config_0.8.12-1_all.deb
     - ${PKG_CMD} update
@@ -58,21 +57,26 @@ variables: &base_vars
     - echo "GRANT ALL ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'mysql';"
     - echo "USE ${MYSQL_DATABASE}; SELECT 'OK'" | mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --host=mysql
     - mysql --user="${MYSQL_USER}" --password="${MYSQL_PASSWORD}" --host="mysql" ${MYSQL_DATABASE} < sql-files/horizon.sql
+    # SPDLOG
+    - mkdir tmp; cd tmp;
     - git clone https://github.com/gabime/spdlog.git
-    - cd spdlog; mkdir build; cd build; cmake ../
+    - cd spdlog; mkdir build; cd build; cmake ../; make install; cd ../../
     - git clone https://github.com/ThePhD/sol2.git
     - cd sol2; mkdir build; cd build; cmake ../
-    - make install -j 4; cd ..; cd ..;
-    - cd /tmp; mkdir cryptopp; cd cryptopp; wget https://www.cryptopp.com/cryptopp810.zip;
-    - make -j 4; make install;
+    - make install; cd ../../
+    # CryptoPP
+    - mkdir cryptopp; cd cryptopp; wget https://www.cryptopp.com/cryptopp810.zip;
+    - unzip cryptopp810.zip;
+    - make && make install;
     - cd ../../
   artifacts:
     paths:
     - mysql-apt-config_0.8.12-1_all.deb
     expire_in: 1 week
   cache:
+    key: "$CI_BUILD_NAME"
     paths:
-      - apt-cache/
+      - tmp
   services:
     - name: mysql:latest
       entrypoint: ['/entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
@@ -88,6 +92,7 @@ debian:stretch-gcc:
     INSTALL_PACKAGES: git ${DEBIAN_COMMON_PACKAGES}
     INSTALL_COMPILER: g++
   script:
+    - pwd
     - ${INSTALL_COMPILER} --version
     - export CXX=/usr/bin/${INSTALL_COMPILER}
     - ./horizon build
@@ -111,7 +116,7 @@ debian:stretch-clang:
     - export CXX=/usr/bin/${INSTALL_COMPILER}++
     - git clone https://github.com/gabime/spdlog.git
     - cd spdlog; mkdir build; cd build; cmake ../
-    - make install -j 4; cd ..; cd ..;
+    - make install; cd ..; cd ..;
     - ./horizon build
     - cp bin/config/inter-server.lua.dist bin/config/inter-server.lua
     - cp bin/config/auth-server.lua.dist bin/config/auth-server.lua

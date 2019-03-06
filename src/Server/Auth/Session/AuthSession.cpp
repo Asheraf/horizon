@@ -36,6 +36,7 @@
 #include "Server/Auth/Auth.hpp"
 
 using namespace Horizon::Auth;
+using namespace Horizon::Models;
 
 AuthSession::AuthSession(std::shared_ptr<AuthSocket> socket)
 : Horizon::Networking::Session<AuthSocket>(socket)

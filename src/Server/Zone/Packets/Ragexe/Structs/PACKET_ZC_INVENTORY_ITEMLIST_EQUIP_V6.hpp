@@ -30,9 +30,11 @@
 
 
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
-
+#include "PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V5.hpp"
 #include "Server/Common/PacketBuffer.hpp"
+#include "Common/Definitions/ItemDefinitions.hpp"
 
+#include <memory>
 
 namespace Horizon
 {
@@ -40,29 +42,36 @@ namespace Zone
 {
 namespace Ragexe
 {
-struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 : public Packet
+struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 : public PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V5
 {
-	PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6(uint16_t packet_id = ZC_INVENTORY_ITEMLIST_EQUIP_V6) : Packet(packet_id) { }
+	PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6(uint16_t packet_id = ZC_INVENTORY_ITEMLIST_EQUIP_V6) : PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V5(packet_id) { }
 
-	virtual PacketBuffer serialize()
+	virtual PacketBuffer serialize(std::vector<std::shared_ptr<item_entry_data>> const &items) const override
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		for (auto it = items.begin(); it != items.end(); it++) {
+			std::shared_ptr<item_entry_data> id = *it;
+			uint8_t config = 0;
+			buf << id->inventory_index;
+			buf << ((uint16_t) id->item_id);
+			buf << ((uint8_t) id->type);
+			buf << id->actual_equip_location_mask;
+			buf << id->current_equip_location_mask;
+			buf << id->refine_level;
+			for (int i = 0; i < sizeof(id->slot_item_id); i++)
+				buf << id->slot_item_id[i];
+			buf << id->hire_expire_date;
+			buf << id->bind_on_equip;
+			buf << id->sprite_id;
+
+			config |= id->info.is_identified;
+			config |= 1 << id->info.is_broken;
+			config |= 2 << id->info.place_in_etc_tab;
+			buf << config;
+		}
+		buf.emplace_size();
+		return buf;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
-
-	virtual PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 & operator << (PacketBuffer &right)
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
-	/* Size: -1 bytes */
 };
 }
 }

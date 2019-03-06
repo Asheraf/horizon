@@ -56,12 +56,19 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
 
 	if (NOT CONCPP_LIB)
 		find_path(CONCPP_LIB_DIR
-			NAMES "${PLATFORMDIR}\\${VS}"
+			NAMES "${PLATFORMDIR}/${VS}"
 			PATHS
 				"$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0"
 				/usr/local/mysql-connector-c++
 				/usr/lib
 		)
+
+    if(CONCPP_LIB_DIR STREQUAL "CONCPP_LIB_DIR-NOTFOUND")
+      message(FATAL_ERROR
+        "Could not find MySQL Connector/C++ 8.0 library directory."
+      )
+    endif()
+
 		set(CONCPP_LIB_DIR "${CONCPP_LIB_DIR}/${PLATFORMDIR}" CACHE STRING "" FORCE)
 
 		find_library(CONCPP_LIB

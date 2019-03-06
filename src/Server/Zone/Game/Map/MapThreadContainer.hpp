@@ -29,7 +29,7 @@
 #define HORIZON_ZONE_GAME_MAPTHREADCONTAINER_HPP
 
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
-#include "Server/Zone/Game/Map/Script/ScriptMgr.hpp"
+#include "Server/Zone/Game/Map/Script/ScriptManager.hpp"
 
 #include <stdio.h>
 #include <thread>
@@ -59,7 +59,7 @@ public:
 	void add_map(std::shared_ptr<Map> &&map);
 	void remove_map(std::shared_ptr<Map> &&map);
 
-	void add_player(std::string map_name, std::shared_ptr<Entities::Player> p);
+	void add_player(std::shared_ptr<Entities::Player> p);
 	void remove_player(std::shared_ptr<Entities::Player> p);
 
 	void initialize();

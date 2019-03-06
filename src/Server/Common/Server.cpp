@@ -161,7 +161,7 @@ bool Server::parse_common_configs(sol::table &tbl)
 	/**
 	 * Client Type
 	 */
-	general_conf().set_client_type((client_types) tbl.get_or("client_type", (int) CLIENT_TYPE_RAGEXE));
+	general_conf().set_client_type((client_type) tbl.get_or("client_type", (int) CLIENT_TYPE_RAGEXE));
 	switch (general_conf().get_client_type())
 	{
 	case CLIENT_TYPE_RAGEXE:

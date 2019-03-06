@@ -30,7 +30,7 @@
 
 
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
-
+#include "Common/Definitions/ItemDefinitions.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 
 
@@ -46,7 +46,11 @@ struct PACKET_ZC_DELETE_ITEM_FROM_BODY : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << ((uint16_t) reason);
+		buf << inventory_index;
+		buf << amount;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +67,9 @@ struct PACKET_ZC_DELETE_ITEM_FROM_BODY : public Packet
 	}
 
 	/* Size: 8 bytes */
+	item_deletion_reason_type reason;
+	uint16_t inventory_index;
+	uint16_t amount;
 };
 }
 }

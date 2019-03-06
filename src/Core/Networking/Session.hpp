@@ -17,7 +17,7 @@ public:
 		//
 	}
 
-	~Session()
+	virtual ~Session()
 	{
 		//
 	}

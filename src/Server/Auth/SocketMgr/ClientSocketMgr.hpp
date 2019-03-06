@@ -57,7 +57,7 @@ public:
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
 
-		client_types type = AuthServer->general_conf().get_client_type();
+		client_type type = AuthServer->general_conf().get_client_type();
 		uint32_t packet_version = AuthServer->general_conf().get_packet_version();
 
 		/**

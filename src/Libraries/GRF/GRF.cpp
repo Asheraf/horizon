@@ -183,7 +183,7 @@ void GRF::decode(unsigned char *buf, size_t len, char entry_type, int entry_len)
 	}
 }
 
-grf_load_result_types GRF::load()
+grf_load_result_type GRF::load()
 {
 	unsigned char grf_header[0x2e];
 	std::ifstream grf_ifs(getGRFPath().c_str(), std::ios::in | std::ios::binary);
@@ -317,7 +317,7 @@ void GRF::extractFile(std::string file_name, std::string /*output_path*/, clock_
 		return;
 	}
 
-	std::pair<grf_read_error_types, uint8_t*> grf_file = read(elem->second->file_name, nullptr);
+	std::pair<grf_read_error_type, uint8_t*> grf_file = read(elem->second->file_name, nullptr);
 
 	if (grf_file.second == nullptr) {
 		std::cerr << "Failed to extract '" << elem->second->file_name << "'" <<std::endl;
@@ -340,7 +340,7 @@ void GRF::extractFile(std::string file_name, std::string /*output_path*/, clock_
 /**
  * @brief
  */
-std::pair<grf_read_error_types, uint8_t *> GRF::read(const char *in_name, int *size)
+std::pair<grf_read_error_type, uint8_t *> GRF::read(const char *in_name, int *size)
 {
 	std::string file_name = in_name;
 	std::shared_ptr<DataFile> entry;

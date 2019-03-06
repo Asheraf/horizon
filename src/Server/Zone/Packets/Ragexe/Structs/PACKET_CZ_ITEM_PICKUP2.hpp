@@ -30,7 +30,7 @@
 
 
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
-
+#include "PACKET_CZ_ITEM_PICKUP.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 
 
@@ -40,29 +40,9 @@ namespace Zone
 {
 namespace Ragexe
 {
-struct PACKET_CZ_ITEM_PICKUP2 : public Packet
+struct PACKET_CZ_ITEM_PICKUP2 : public PACKET_CZ_ITEM_PICKUP
 {
-	PACKET_CZ_ITEM_PICKUP2(uint16_t packet_id = CZ_ITEM_PICKUP2) : Packet(packet_id) { }
-
-	virtual PacketBuffer serialize()
-	{
-		return PacketBuffer(packet_id);
-	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
-
-	virtual PACKET_CZ_ITEM_PICKUP2 & operator << (PacketBuffer &right)
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
-	/* Size: 6 bytes */
+	PACKET_CZ_ITEM_PICKUP2(uint16_t packet_id = CZ_ITEM_PICKUP2) : PACKET_CZ_ITEM_PICKUP(packet_id) { }
 };
 }
 }

@@ -185,3 +185,36 @@ CREATE TABLE `session_data` (
   KEY `game_account_id` (`game_account_id`),
   CONSTRAINT FOREIGN KEY (game_account_id) REFERENCES game_accounts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
+
+CREATE TABLE `character_inventory` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `char_id` int(11) unsigned NOT NULL DEFAULT '0',
+  `item_id` int(11) unsigned NOT NULL DEFAULT '0',
+  `amount` int(11) unsigned NOT NULL DEFAULT '0',
+  `equip_location_mask` int(11) unsigned NOT NULL DEFAULT '0',
+  `is_identified` smallint(6) NOT NULL DEFAULT '0',
+  `refine_level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `element_type` tinyint(4) unsigned NOT NULL DEFAULT '0',
+  `slot_item_id_0` int(11) NOT NULL DEFAULT '0',
+  `slot_item_id_1` int(11) NOT NULL DEFAULT '0',
+  `slot_item_id_2` int(11) NOT NULL DEFAULT '0',
+  `slot_item_id_3` int(11) NOT NULL DEFAULT '0',
+  `opt_idx0` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `opt_val0` smallint(5) NOT NULL DEFAULT '0',
+  `opt_idx1` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `opt_val1` smallint(5) NOT NULL DEFAULT '0',
+  `opt_idx2` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `opt_val2` smallint(5) NOT NULL DEFAULT '0',
+  `opt_idx3` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `opt_val3` smallint(5) NOT NULL DEFAULT '0',
+  `opt_idx4` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `opt_val4` smallint(5) NOT NULL DEFAULT '0',
+  `hire_expire_date` int(11) unsigned NOT NULL DEFAULT '0',
+  `is_favorite` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `bind_type` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `unique_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `char_id` (`char_id`),
+  KEY `item_id` (`item_id`),
+  CONSTRAINT FOREIGN KEY (`char_id`) REFERENCES characters(`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=UTF8MB4;

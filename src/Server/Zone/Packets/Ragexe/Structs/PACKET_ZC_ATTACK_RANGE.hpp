@@ -46,7 +46,9 @@ struct PACKET_ZC_ATTACK_RANGE : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << value;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +65,7 @@ struct PACKET_ZC_ATTACK_RANGE : public Packet
 	}
 
 	/* Size: 4 bytes */
+	uint16_t value{0};
 };
 }
 }

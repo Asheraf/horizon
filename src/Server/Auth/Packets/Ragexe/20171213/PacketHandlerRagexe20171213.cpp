@@ -36,6 +36,8 @@
 #include "Server/Auth/Auth.hpp"
 
 using namespace Horizon::Auth;
+using namespace Horizon::Models;
+
 PacketHandlerRagexe20171213::PacketHandlerRagexe20171213(std::shared_ptr<AuthSocket> socket)
 : PacketHandler(socket)
 {

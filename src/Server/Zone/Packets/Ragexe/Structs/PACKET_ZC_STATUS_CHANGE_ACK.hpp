@@ -46,7 +46,11 @@ struct PACKET_ZC_STATUS_CHANGE_ACK : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << type;
+		buf << success;
+		buf << amount;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +67,9 @@ struct PACKET_ZC_STATUS_CHANGE_ACK : public Packet
 	}
 
 	/* Size: 6 bytes */
+	uint16_t type{0};
+	uint8_t success{0};
+	uint8_t amount{0};
 };
 }
 }

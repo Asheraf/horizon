@@ -49,7 +49,12 @@ struct PACKET_CZ_STATUS_CHANGE : public Packet
 		return PacketBuffer(packet_id);
 	}
 
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
+	virtual void deserialize(PacketBuffer &buf)
+	{
+		buf >> packet_id;
+		buf >> type;
+		buf >> amount;
+	}
 
 	virtual PACKET_CZ_STATUS_CHANGE & operator << (PacketBuffer &right)
 	{
@@ -63,6 +68,8 @@ struct PACKET_CZ_STATUS_CHANGE : public Packet
 	}
 
 	/* Size: 5 bytes */
+	uint16_t type{0};
+	uint8_t amount{0};
 };
 }
 }

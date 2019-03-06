@@ -34,18 +34,7 @@
 #include <cstdint>
 #include <boost/asio/ip/address.hpp>
 
-namespace Horizon
-{
-	namespace Models
-	{
-		namespace Character
-		{
-			class Character;
-		}
-	}
-}
-
-enum game_account_gender_types
+enum game_account_gender_type
 {
 	ACCOUNT_GENDER_MALE,
 	ACCOUNT_GENDER_FEMALE,
@@ -66,6 +55,10 @@ enum game_account_state_type
 
 typedef std::map<uint32_t, std::shared_ptr<Horizon::Models::Character::Character>> AccountCharacterMapType;
 
+namespace Horizon
+{
+namespace Models
+{
 class GameAccount
 {
 public:
@@ -117,8 +110,8 @@ public:
 	const std::string &get_username() const { return _username; }
 	void set_username(const std::string &username) { _username = username; }
 	/* Gender */
-	game_account_gender_types get_gender() const { return _gender; }
-	void set_gender(game_account_gender_types gender) { _gender = gender; }
+	game_account_gender_type get_gender() const { return _gender; }
+	void set_gender(game_account_gender_type gender) { _gender = gender; }
 	/* Email */
 	const std::string &get_email() const { return _email; }
 	void set_email(const std::string &email) { _email = email; }
@@ -201,7 +194,7 @@ public:
 private:
 	uint32_t _id{};                                   ///< Account Id
 	std::string _username{};                          ///< Username
-	game_account_gender_types _gender{ACCOUNT_GENDER_NONE};              ///< Gender
+	game_account_gender_type _gender{ACCOUNT_GENDER_NONE};              ///< Gender
 	std::string _email{};                             ///< e-mail (by default: a@a.com)
 	uint16_t _group_id{};                             ///< player group id
 	game_account_state_type _state{};                ///< packet 0x006a value + 1 (0: complete OK)
@@ -217,5 +210,7 @@ private:
 	/* Account Characters */
 	AccountCharacterMapType _characters;
 };
+}
+}
 
 #endif // HORIZON_GAME_ACOUNT_HPP

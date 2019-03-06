@@ -44,12 +44,12 @@ struct PACKET_CZ_REQ_WEAR_EQUIP : public Packet
 {
 	PACKET_CZ_REQ_WEAR_EQUIP(uint16_t packet_id = CZ_REQ_WEAR_EQUIP) : Packet(packet_id) { }
 
-	virtual PacketBuffer serialize()
+	virtual void deserialize(PacketBuffer &buf)
 	{
-		return PacketBuffer(packet_id);
+		buf >> packet_id;
+		buf >> inventory_index;
+		buf >> equip_location_mask;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
 
 	virtual PACKET_CZ_REQ_WEAR_EQUIP & operator << (PacketBuffer &right)
 	{
@@ -57,12 +57,9 @@ struct PACKET_CZ_REQ_WEAR_EQUIP : public Packet
 		return *this;
 	}
 
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
 	/* Size: 6 bytes */
+	uint16_t inventory_index{0};
+	uint16_t equip_location_mask{0};
 };
 }
 }

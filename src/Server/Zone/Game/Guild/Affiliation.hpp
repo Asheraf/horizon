@@ -34,7 +34,7 @@ namespace Models
 {
 namespace Guild
 {
-enum affiliation_types
+enum affiliation_type
 {
 	AFFTYPE_ANTAGONIST,
 	AFFTYPE_ALLIANCE
@@ -59,7 +59,7 @@ public:
 
 private:
 	uint32_t _guild_id;
-	affiliation_types _type;
+	affiliation_type _type;
 	uint32_t _affiliate_id;
 }
 }

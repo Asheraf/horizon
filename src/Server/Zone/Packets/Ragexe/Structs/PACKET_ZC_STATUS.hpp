@@ -46,7 +46,9 @@ struct PACKET_ZC_STATUS : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		data.serialize(buf);
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -79,14 +81,14 @@ struct PACKET_ZC_STATUS : public Packet
 			buf << dexterity_req_stats;
 			buf << luck;
 			buf << luck_req_stats;
-			buf << left_hand_atk;
-			buf << right_hand_atk;
-			buf << right_hand_matk;
-			buf << left_hand_matk;
-			buf << soft_defense;
-			buf << hard_defense;
-			buf << soft_magic_defense;
-			buf << hard_magic_defense;
+			buf << status_atk;
+			buf << equip_atk;
+			buf << equip_matk;
+			buf << status_matk;
+			buf << soft_def;
+			buf << hard_def;
+			buf << soft_mdef;
+			buf << hard_mdef;
 			buf << hit;
 			buf << flee;
 			buf << perfect_dodge;
@@ -110,21 +112,21 @@ struct PACKET_ZC_STATUS : public Packet
 		uint8_t dexterity_req_stats{1};
 		uint8_t luck{1};
 		uint8_t luck_req_stats{1};
-		uint16_t left_hand_atk{1};
-		uint16_t right_hand_atk{1};
-		uint16_t right_hand_matk{1};
-		uint16_t left_hand_matk{1};
-		uint16_t soft_defense{1};
-		uint16_t hard_defense{1};
-		uint16_t soft_magic_defense{1};
-		uint16_t hard_magic_defense{1};
+		uint16_t status_atk{1};
+		uint16_t equip_atk{1};
+		uint16_t status_matk{1};
+		uint16_t equip_matk{1};
+		uint16_t soft_def{1};
+		uint16_t hard_def{1};
+		uint16_t soft_mdef{1};
+		uint16_t hard_mdef{1};
 		uint16_t hit{1};
 		uint16_t flee{1};
 		uint16_t perfect_dodge{1};
 		uint16_t critical{1};
 		uint16_t attack_speed{0};
 		uint16_t plus_aspd{0}; // always 0 apparently.
-	};
+	} data;
 };
 }
 }

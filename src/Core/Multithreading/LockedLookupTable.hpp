@@ -30,7 +30,6 @@
 
 #include <iostream>
 #include <string>
-#include <thread>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread.hpp>
 #include <memory>

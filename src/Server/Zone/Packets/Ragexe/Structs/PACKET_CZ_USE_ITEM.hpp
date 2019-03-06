@@ -43,13 +43,13 @@ namespace Ragexe
 struct PACKET_CZ_USE_ITEM : public Packet
 {
 	PACKET_CZ_USE_ITEM(uint16_t packet_id = CZ_USE_ITEM) : Packet(packet_id) { }
-
-	virtual PacketBuffer serialize()
+	
+	virtual void deserialize(PacketBuffer &buf)
 	{
-		return PacketBuffer(packet_id);
+		buf >> packet_id;
+		buf >> inventory_index;
+		buf >> guid;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
 
 	virtual PACKET_CZ_USE_ITEM & operator << (PacketBuffer &right)
 	{
@@ -57,12 +57,9 @@ struct PACKET_CZ_USE_ITEM : public Packet
 		return *this;
 	}
 
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
 	/* Size: 8 bytes */
+	uint16_t inventory_index{0};
+	uint32_t guid{0};
 };
 }
 }

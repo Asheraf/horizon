@@ -72,7 +72,7 @@ function build_horizon
     rm -rf ./*
     cmake ../ $@ || aborterror "Horizon Build has failed."
     echo "Initiating Build..."
-    make install -j 4 || aborterror "Horizon Build has failed."
+    make install || aborterror "Horizon Build has failed."
     echo "Build Complete."
     cd ../
 }

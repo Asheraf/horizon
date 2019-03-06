@@ -44,27 +44,6 @@ struct PACKET_CZ_ITEM_PICKUP2 : public Horizon::Zone::Ragexe::PACKET_CZ_ITEM_PIC
 {
 	PACKET_CZ_ITEM_PICKUP2(uint16_t packet_id = CZ_ITEM_PICKUP2) : Horizon::Zone::Ragexe::PACKET_CZ_ITEM_PICKUP2(packet_id) { }
 
-	virtual PacketBuffer serialize() override
-	{
-		return Ragexe::PACKET_CZ_ITEM_PICKUP2::serialize();
-	}
-
-	virtual void deserialize(PacketBuffer &buf) override
-	{
-		Ragexe::PACKET_CZ_ITEM_PICKUP2::deserialize(buf);
-	}
-
-	virtual Ragexe::PACKET_CZ_ITEM_PICKUP2 & operator << (PacketBuffer &right) override
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right) override
-	{
-		return right = serialize();
-	}
-
 	/* Size: 2 bytes */
 	/* Changed from 6 in version 0 to 2 */
 };

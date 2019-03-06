@@ -32,7 +32,7 @@
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
-#include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
+#include "Common/Definitions/EntityDefinitions.hpp"
 #include "Utility/Utility.hpp"
 
 namespace Horizon

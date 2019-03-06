@@ -37,6 +37,8 @@ namespace Horizon
 {
 	namespace Models
 	{
+		class SessionData;
+		
 		namespace Character
 		{
 			class Character;
@@ -45,7 +47,6 @@ namespace Horizon
 }
 
 class PacketBuffer;
-class SessionData;
 
 namespace Horizon
 {
@@ -85,7 +86,7 @@ public:
 	virtual void Send_HC_DELETE_CHAR3_RESERVED(uint32_t character_id, character_delete_result result, time_t deletion_date);
 	virtual void Send_HC_DELETE_CHAR3(uint32_t character_id, character_delete_accept_result result);
 	virtual void Send_HC_DELETE_CHAR3_CANCEL(uint32_t character_id, bool success);
-	virtual void Send_HC_REFUSE_MAKECHAR(char_create_error_types error);
+	virtual void Send_HC_REFUSE_MAKECHAR(char_create_error_type error);
 	virtual void Send_HC_NOTIFY_ZONESVR(std::shared_ptr<Horizon::Models::Character::Character> character);
 
 	bool session_has_expired() { return !_last_ping_time ? false : std::difftime(std::time(0), _last_ping_time) > 20; }

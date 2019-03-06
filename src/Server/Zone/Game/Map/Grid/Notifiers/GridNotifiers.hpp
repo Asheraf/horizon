@@ -28,16 +28,16 @@
 #ifndef HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERS_HPP
 #define HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERS_HPP
 
-#include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
-#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
-#include "Server/Zone/Game/Entities/Unit/Skill/Skill.hpp"
-#include "Server/Zone/Game/Entities/Unit/NPC/NPC.hpp"
-#include "Server/Zone/Game/Entities/Unit/Creature/Companion/Pet.hpp"
-#include "Server/Zone/Game/Entities/Unit/Creature/Companion/Homunculus.hpp"
-#include "Server/Zone/Game/Entities/Unit/Creature/Companion/Mercenary.hpp"
-#include "Server/Zone/Game/Entities/Unit/Creature/Companion/Elemental.hpp"
-#include "Server/Zone/Game/Entities/Unit/Creature/Companion/Pet.hpp"
-#include "Server/Zone/Game/Entities/Unit/Creature/Hostile/Monster.hpp"
+#include "Common/Definitions/EntityDefinitions.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/Skill/Skill.hpp"
+#include "Server/Zone/Game/Entities/NPC/NPC.hpp"
+#include "Server/Zone/Game/Entities/Creature/Companion/Pet.hpp"
+#include "Server/Zone/Game/Entities/Creature/Companion/Homunculus.hpp"
+#include "Server/Zone/Game/Entities/Creature/Companion/Mercenary.hpp"
+#include "Server/Zone/Game/Entities/Creature/Companion/Elemental.hpp"
+#include "Server/Zone/Game/Entities/Creature/Companion/Pet.hpp"
+#include "Server/Zone/Game/Entities/Creature/Hostile/Monster.hpp"
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifierPredicates.hpp"
 
 #define entity_ns(class) Horizon::Zone::Game::Entities::class
@@ -112,12 +112,12 @@ struct GridEntitySearcher
 template <typename ZC_PACKET_T>
 struct GridPlayerNotifier
 {
-	std::weak_ptr<Horizon::Zone::Game::Entity> _player;
+	std::weak_ptr<Horizon::Zone::Game::Entity> _entity;
 	ZC_PACKET_T _pkt;
-	player_notifier_types _type;
+	player_notifier_type _type;
 
-	GridPlayerNotifier(ZC_PACKET_T &pkt, std::weak_ptr<Horizon::Zone::Game::Entity> player, player_notifier_types type = GRID_NOTIFY_AREA)
-	: _player(player), _pkt(pkt), _type(type)
+	GridPlayerNotifier(ZC_PACKET_T &pkt, std::weak_ptr<Horizon::Zone::Game::Entity> entity, player_notifier_type type = GRID_NOTIFY_AREA)
+	: _entity(entity), _pkt(pkt), _type(type)
 	{ }
 
 	template <class T>

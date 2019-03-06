@@ -73,7 +73,7 @@ void Horizon::Tools::MapCache::parse_exec_args(int argc, const char *argv[])
 	}
 }
 
-bool Horizon::Tools::MapCache::ParseInitializeResult(mcache_error_types type)
+bool Horizon::Tools::MapCache::ParseInitializeResult(mcache_error_type type)
 {
 	switch (type)
 	{
@@ -98,7 +98,7 @@ bool Horizon::Tools::MapCache::ParseInitializeResult(mcache_error_types type)
 	return true;
 }
 
-bool Horizon::Tools::MapCache::ParseGRFLoadResult(std::pair<uint8_t, grf_load_result_types> result)
+bool Horizon::Tools::MapCache::ParseGRFLoadResult(std::pair<uint8_t, grf_load_result_type> result)
 {
 	if (result.second != GRF_LOAD_OK) {
 		GRF &problematic_grf = getLibrary().getGRF(result.first);
@@ -151,7 +151,7 @@ bool Horizon::Tools::MapCache::ParseGRFLoadResult(std::pair<uint8_t, grf_load_re
 	return false;
 }
 
-bool Horizon::Tools::MapCache::ParseMapCacheImportResult(mcache_import_error_types type)
+bool Horizon::Tools::MapCache::ParseMapCacheImportResult(mcache_import_error_type type)
 {
 	switch (type)
 	{

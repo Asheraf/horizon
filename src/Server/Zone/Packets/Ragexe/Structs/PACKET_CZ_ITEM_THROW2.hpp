@@ -30,7 +30,7 @@
 
 
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
-
+#include "PACKET_CZ_ITEM_THROW.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 
 
@@ -40,16 +40,16 @@ namespace Zone
 {
 namespace Ragexe
 {
-struct PACKET_CZ_ITEM_THROW2 : public Packet
+struct PACKET_CZ_ITEM_THROW2 : public PACKET_CZ_ITEM_THROW
 {
-	PACKET_CZ_ITEM_THROW2(uint16_t packet_id = CZ_ITEM_THROW2) : Packet(packet_id) { }
+	PACKET_CZ_ITEM_THROW2(uint16_t packet_id = CZ_ITEM_THROW2) : PACKET_CZ_ITEM_THROW(packet_id) { }
 
-	virtual PacketBuffer serialize()
+	virtual void deserialize(PacketBuffer &buf)
 	{
-		return PacketBuffer(packet_id);
+		buf >> packet_id;
+		buf >> inventory_index;
+		buf >> amount;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
 
 	virtual PACKET_CZ_ITEM_THROW2 & operator << (PacketBuffer &right)
 	{
@@ -57,12 +57,9 @@ struct PACKET_CZ_ITEM_THROW2 : public Packet
 		return *this;
 	}
 
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
 	/* Size: 6 bytes */
+	uint16_t inventory_index{0};
+	uint16_t amount{0};
 };
 }
 }

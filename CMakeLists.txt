@@ -33,10 +33,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PROJECT_NAME "Horizon" CXX)
 set(AUTH_TARGET_NAME auth)
-message(STATUS ${CMAKE_BUILD_TYPE})
 if (NOT CMAKE_BUILD_TYPE)
 		set(CMAKE_BUILD_TYPE Debug)
 endif()
+message(STATUS "${PROJECT_NAME} initiated configuring in ${CMAKE_BUILD_TYPE} mode.")
 project (${PROJECT_NAME})
 #################################
 # CMAKE Module Path
@@ -90,11 +90,7 @@ check_cxx_source_compiles("
 #################################
 set(BOOST_REQUIRED_VERSION 1.60)
 
-set(BOOST_COMPONENTS system filesystem thread locale program_options iostreams)
-
-if (STD_HAS_WORKING_WREGEX)
-		set(BOOST_COMPONENTS ${BOOST_COMPONENTS} regex)
-endif()
+set(BOOST_COMPONENTS system filesystem thread locale)
 
 if (WITH_TESTS)
 		set(BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
@@ -114,18 +110,6 @@ target_link_libraries(boost
 target_include_directories(boost
 				INTERFACE
 				${Boost_INCLUDE_DIRS})
-
-target_compile_definitions(boost
-				INTERFACE
-				-DBOOST_DATE_TIME_NO_LIB
-				-DBOOST_REGEX_NO_LIB
-				-DBOOST_CHRONO_NO_LIB)
-
-if (NOT STD_HAS_WORKING_WREGEX)
-		target_compile_definitions(boost
-						INTERFACE
-						-DTC_HAS_BROKEN_WSTRING_REGEX)
-endif()
 
 #################
 # SPDLog Library

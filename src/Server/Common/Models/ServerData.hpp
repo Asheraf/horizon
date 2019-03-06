@@ -31,7 +31,7 @@
 #include <string>
 #include "Horizon.hpp"
 
-enum character_server_types : uint16_t
+enum character_server_type : uint16_t
 {
 	CHAR_SERVER_TYPE_NORMAL,
 	CHAR_SERVER_TYPE_MAINTENANCE,
@@ -48,7 +48,7 @@ struct character_server_data
 	std::string ip_address{"127.0.0.1"};
 	uint16_t port{0};
 	int user_count{0};
-	character_server_types server_type{CHAR_SERVER_TYPE_NORMAL};
+	character_server_type server_type{CHAR_SERVER_TYPE_NORMAL};
 	uint16_t is_new{0};
 };
 

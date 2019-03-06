@@ -44,12 +44,11 @@ struct PACKET_CZ_ITEM_PICKUP : public Packet
 {
 	PACKET_CZ_ITEM_PICKUP(uint16_t packet_id = CZ_ITEM_PICKUP) : Packet(packet_id) { }
 
-	virtual PacketBuffer serialize()
+	virtual void deserialize(PacketBuffer &buf)
 	{
-		return PacketBuffer(packet_id);
+		buf >> packet_id;
+		buf >> map_object_id;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
 
 	virtual PACKET_CZ_ITEM_PICKUP & operator << (PacketBuffer &right)
 	{
@@ -57,12 +56,8 @@ struct PACKET_CZ_ITEM_PICKUP : public Packet
 		return *this;
 	}
 
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
 	/* Size: 6 bytes */
+	uint32_t map_object_id{0};
 };
 }
 }

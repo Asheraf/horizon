@@ -47,7 +47,7 @@ struct PACKET_HC_REFUSE_ENTER : public Packet
 	virtual PacketBuffer serialize()
 	{
 		PacketBuffer buf(HC_REFUSE_ENTER);
-		buf << (uint8_t) error;
+		buf << ((uint8_t) error);
 		return buf;
 	}
 

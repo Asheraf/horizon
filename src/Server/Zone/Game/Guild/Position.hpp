@@ -34,7 +34,7 @@ namespace Models
 {
 namespace Guild
 {
-enum permission_mask_types
+enum permission_mask_type
 {
 	GPERM_INVITE   = 0x01,
 	GPERM_EXPEL    = 0x10,
@@ -66,7 +66,7 @@ private:
 	uint32_t _guild_id;
 	uint8_t _position_id;
 	std::string _name;
-	permission_mask_types _permission_mask;
+	permission_mask_type _permission_mask;
 	uint8_t _tax_percent;
 }
 }

@@ -41,7 +41,7 @@
 #include <string>
 
 using namespace Horizon::Char;
-using namespace Horizon::Models::Character;
+using namespace Horizon::Models;
 
 /**
  * @brief Packet Handler Constructor.
@@ -122,11 +122,11 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 {
 	Ragexe::PACKET_CH_MAKE_CHAR pkt;
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	character_gender_types gender;
+	character_gender_type gender;
 
 	pkt << buf;
 
-	gender = (character_gender_types) pkt.gender;
+	gender = (character_gender_type) pkt.gender;
 
 	// Check if the name already exists.
 	if (CharQuery->CheckExistingCharByName(pkt.name)) {
@@ -140,25 +140,35 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 		return false;
 	}
 
-	std::shared_ptr<Character> character = std::make_shared<Character>(game_account->get_id(), pkt.name, pkt.slot, gender);
+	std::shared_ptr<Character::Character> character = std::make_shared<Character::Character>(game_account->get_id(), pkt.name, pkt.slot, gender);
 
 	// Create models and save to sql.
 	character->create(CharServer);
 	character->set_slot(pkt.slot);
-	character->set_gender((character_gender_types) pkt.gender);
+	character->set_gender((character_gender_type) pkt.gender);
 
 	// Status
-	std::shared_ptr<Status> status = character->get_status_data();
+	std::shared_ptr<Character::Status> status = character->get_status_data();
+	status->set_strength(1);
+	status->set_agility(1);
+	status->set_vitality(1);
+	status->set_intelligence(1);
+	status->set_dexterity(1);
+	status->set_luck(1);
+
 	status->set_max_hp(40); // (40 * (100 + vit)/100) where vit is 1.
 	status->set_hp(40);
-	status->set_max_sp(11); // (11 * (100 + int_)/100) where int is 1.
+	status->set_max_sp(11); // (11 * (100 + int)/100) where int is 1.
 	status->set_sp(11);
+
 	status->set_zeny(CharServer->get_char_config().get_start_zeny());
 	status->set_job_id(pkt.job_id);
+	status->set_status_points(48);
+
 	status->save(CharServer);
 
 	// View
-	std::shared_ptr<View> view = character->get_view_data();
+	std::shared_ptr<Character::View> view = character->get_view_data();
 	view->set_hair_style_id(pkt.hair_style);
 	view->set_hair_style_id(pkt.hair_color);
 	view->save(CharServer);
@@ -168,7 +178,7 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 	uint16_t start_x = CharServer->get_char_config().get_start_x();
 	uint16_t start_y = CharServer->get_char_config().get_start_y();
 
-	std::shared_ptr<Position> p = character->get_position_data();
+	std::shared_ptr<Character::Position> p = character->get_position_data();
 	p->set_saved_map(start_map);
 	p->set_saved_x(start_x);
 	p->set_saved_y(start_y);
@@ -187,7 +197,7 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 character_delete_result PacketHandler::delete_character(uint32_t character_id)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	std::shared_ptr<Character> character = nullptr;
+	std::shared_ptr<Character::Character> character = nullptr;
 	character = game_account->get_character(character_id);
 
 	if (character == nullptr) {
@@ -213,7 +223,7 @@ character_delete_result PacketHandler::delete_character(uint32_t character_id)
 bool PacketHandler::Handle_CH_DELETE_CHAR3_RESERVED(PacketBuffer &buf)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	std::shared_ptr<Character> character = nullptr;
+	std::shared_ptr<Character::Character> character = nullptr;
 	Ragexe::PACKET_CH_DELETE_CHAR3_RESERVED pkt;
 	character_delete_result result;
 
@@ -237,7 +247,7 @@ bool PacketHandler::Handle_CH_DELETE_CHAR3_RESERVED(PacketBuffer &buf)
 bool PacketHandler::Handle_CH_DELETE_CHAR(PacketBuffer &buf)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	std::shared_ptr<Character> character = nullptr;
+	std::shared_ptr<Character::Character> character = nullptr;
 	Ragexe::PACKET_CH_DELETE_CHAR pkt;
 	character_delete_result result;
 
@@ -261,7 +271,7 @@ bool PacketHandler::Handle_CH_DELETE_CHAR(PacketBuffer &buf)
 bool PacketHandler::Handle_CH_DELETE_CHAR3(PacketBuffer &buf)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	std::shared_ptr<Character> character = nullptr;
+	std::shared_ptr<Character::Character> character = nullptr;
 	Ragexe::PACKET_CH_DELETE_CHAR3 pkt;
 
 	pkt << buf;
@@ -301,7 +311,7 @@ bool PacketHandler::Handle_CH_DELETE_CHAR3(PacketBuffer &buf)
 bool PacketHandler::Handle_CH_DELETE_CHAR3_CANCEL(PacketBuffer &buf)
 {
 	std::shared_ptr<GameAccount> game_account = get_socket()->get_session()->get_game_account();
-	std::shared_ptr<Character> character;
+	std::shared_ptr<Character::Character> character;
 	Ragexe::PACKET_CH_DELETE_CHAR3_CANCEL pkt;
 
 	pkt << buf;
@@ -331,7 +341,7 @@ bool PacketHandler::Handle_CH_SELECT_CHAR(PacketBuffer &buf)
 {
 	Ragexe::PACKET_CH_SELECT_CHAR pkt;
 	AccountCharacterMapType characters = get_socket()->get_session()->get_game_account()->get_characters();
-	std::shared_ptr<Character> character;
+	std::shared_ptr<Character::Character> character;
 
 	pkt << buf;
 
@@ -474,7 +484,7 @@ void PacketHandler::Send_HC_SECOND_PASSWD_LOGIN()
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_HC_ACCEPT_MAKECHAR(std::shared_ptr<Character> character)
+void PacketHandler::Send_HC_ACCEPT_MAKECHAR(std::shared_ptr<Character::Character> character)
 {
 	Ragexe::PACKET_HC_ACCEPT_MAKECHAR pkt;
 
@@ -508,14 +518,14 @@ void PacketHandler::Send_HC_DELETE_CHAR3_CANCEL(uint32_t character_id, bool succ
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_HC_REFUSE_MAKECHAR(char_create_error_types error)
+void PacketHandler::Send_HC_REFUSE_MAKECHAR(char_create_error_type error)
 {
 	Ragexe::PACKET_HC_REFUSE_MAKECHAR pkt;
 	pkt.error_code = error;
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_HC_NOTIFY_ZONESVR(std::shared_ptr<Character> character)
+void PacketHandler::Send_HC_NOTIFY_ZONESVR(std::shared_ptr<Character::Character> character)
 {
 	Ragexe::PACKET_HC_NOTIFY_ZONESVR pkt;
 	std::string map_name;

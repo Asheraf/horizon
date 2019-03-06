@@ -30,7 +30,7 @@
 
 #include <string>
 
-enum client_types {
+enum client_type {
 	CLIENT_TYPE_RAGEXE    = 0,
 	CLIENT_TYPE_RAGEXE_RE = 1,
 	CLIENT_TYPE_ZERO      = 2,
@@ -103,8 +103,8 @@ struct general_server_configuration
 	int get_core_update_interval() const { return core_update_interval; };
 	void set_core_update_interval(int core_update_interval) { this->core_update_interval = core_update_interval; };
 	/* Client Type */
-	client_types get_client_type() const { return _client_type; }
-	void set_client_type(client_types type) { _client_type = type; }
+	client_type get_client_type() const { return _client_type; }
+	void set_client_type(client_type type) { _client_type = type; }
 	/* Packet Version */
 	uint32_t get_packet_version() const { return _packet_version; }
 	void set_packet_version(uint32_t version) { _packet_version = version; }
@@ -117,7 +117,7 @@ struct general_server_configuration
 	int shutdown_signal;                              ///< Shutdown signal.
 	int global_io_threads{1};                         ///< Maximum amount of Core Threads spawned to perform i/o run.
 	int core_update_interval{500};                    ///< Core update interval timer.
-	client_types _client_type{CLIENT_TYPE_RAGEXE};    ///< Client Type to use (Ragexe, RagexeRE, Zero, Sakray or AD)
+	client_type _client_type{CLIENT_TYPE_RAGEXE};    ///< Client Type to use (Ragexe, RagexeRE, Zero, Sakray or AD)
 	int _packet_version{0};                           ///< Maximum client version allowed to connect.
 };
 

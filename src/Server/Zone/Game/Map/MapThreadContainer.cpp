@@ -26,10 +26,9 @@
  **************************************************/
 
 #include "MapThreadContainer.hpp"
-#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/Zone.hpp"
-#include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Core/Logging/Logger.hpp"
 
@@ -66,7 +65,7 @@ void MapThreadContainer::remove_map(std::shared_ptr<Map> &&m)
 	_managed_maps.erase(m->get_name());
 }
 
-void MapThreadContainer::add_player(std::string /*map_name*/, std::shared_ptr<Entities::Player> p)
+void MapThreadContainer::add_player(std::shared_ptr<Entities::Player> p)
 {
 	_player_buffer.push(std::make_pair(true, p));
 }
@@ -89,7 +88,7 @@ void MapThreadContainer::start()
 {
 	_thread = std::thread(&MapThreadContainer::start_internal, this);
 
-	ZoneLog->info("A map container thread with {} maps has begun working.", _managed_maps.size());
+	ZoneLog->info("Map container {:p} with {} maps has begun working.", (void *) this, _managed_maps.size());
 }
 
 void MapThreadContainer::start_internal()
@@ -127,10 +126,8 @@ void MapThreadContainer::update(uint32_t diff)
 			if (!player->is_initialized())
 				player->initialize();
 			_managed_players.emplace(player->get_guid(), player);
-			get_script_manager()->add_player(player);
 		} else {
 			_managed_players.erase(player->get_guid());
-			get_script_manager()->remove_player(player);
 		}
 	}
 

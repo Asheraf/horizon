@@ -28,7 +28,7 @@
 #ifndef HORIZON_AUTHSERVERCONFIGURATION_HPP
 #define HORIZON_AUTHSERVERCONFIGURATION_HPP
 
-#include "Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include "Logging.hpp"
 #include <cstring>
 #include <ctime>

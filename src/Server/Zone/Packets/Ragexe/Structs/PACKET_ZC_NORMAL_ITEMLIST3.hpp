@@ -30,9 +30,12 @@
 
 
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
-
+#include "PACKET_ZC_NORMAL_ITEMLIST2.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 
+#include "Common/Definitions/ItemDefinitions.hpp"
+
+#include <memory>
 
 namespace Horizon
 {
@@ -40,29 +43,28 @@ namespace Zone
 {
 namespace Ragexe
 {
-struct PACKET_ZC_NORMAL_ITEMLIST3 : public Packet
+struct PACKET_ZC_NORMAL_ITEMLIST3 : public PACKET_ZC_NORMAL_ITEMLIST2
 {
-	PACKET_ZC_NORMAL_ITEMLIST3(uint16_t packet_id = ZC_NORMAL_ITEMLIST3) : Packet(packet_id) { }
+	PACKET_ZC_NORMAL_ITEMLIST3(uint16_t packet_id = ZC_NORMAL_ITEMLIST3) : PACKET_ZC_NORMAL_ITEMLIST2(packet_id) { }
 
-	virtual PacketBuffer serialize()
+	virtual PacketBuffer serialize(std::vector<std::shared_ptr<item_entry_data>> const &items) const override
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		for (auto it = items.begin(); it != items.end(); it++) {
+			std::shared_ptr<item_entry_data> id = *it;
+			buf << id->inventory_index;
+			buf << (uint16_t) id->item_id;
+			buf << (uint8_t) id->type;
+			buf << ((uint8_t) id->info.is_identified ? 1 : 0);
+			buf << id->amount;
+			buf << (uint16_t) id->actual_equip_location_mask;
+			for (int i = 0; i < sizeof(id->slot_item_id); i++)
+				buf << id->slot_item_id[i];
+			buf << id->hire_expire_date;
+		}
+		buf.emplace_size();
+		return buf;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
-
-	virtual PACKET_ZC_NORMAL_ITEMLIST3 & operator << (PacketBuffer &right)
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
-	/* Size: -1 bytes */
 };
 }
 }

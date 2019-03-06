@@ -30,8 +30,9 @@
 #include "Core/Logging/Logger.hpp"
 #include "Server/Zone/Zone.hpp"
 
+using namespace Horizon::Zone::Game;
 
-bool Horizon::Zone::Game::ExpDB::load()
+bool ExpDatabase::load()
 {
 	sol::state lua;
 	int total_entries[2] = { 0, 0 };
@@ -55,20 +56,20 @@ bool Horizon::Zone::Game::ExpDB::load()
 	return true;
 }
 
-int Horizon::Zone::Game::ExpDB::load_group(sol::table &group_tbl, exp_group_type type)
+int ExpDatabase::load_group(sol::table &group_tbl, exp_group_type type)
 {
+	LockedLookupTable<std::string, std::shared_ptr<const exp_group_data>> *group_db = type == EXP_GROUP_TYPE_BASE ? &_base_exp_group_db : &_job_exp_group_db;
 	int total_entries = 0;
-	std::unordered_map<std::string, exp_group_data> *group_db = type == EXP_GROUP_TYPE_BASE ? &_base_exp_group_db : &_job_exp_group_db;
 
 	group_tbl.for_each([group_db, &total_entries, type](sol::object const &key, sol::object const &value) {
 		std::string group_name = key.as<std::string>();
 		sol::table tbl = value.as<sol::table>();
 		exp_group_data expd;
 
-		std::unordered_map<std::string, exp_group_data>::iterator dup_it;
-		if ((dup_it = group_db->find(group_name)) != group_db->end()) {
+		std::shared_ptr<const exp_group_data> dup;
+		if ((dup = group_db->at(group_name)) != nullptr) {
 			ZoneLog->warn("ExpDB::load: Found duplicate {} Exp group for '{}', overwriting...", type == EXP_GROUP_TYPE_BASE ? "base" : "job", group_name);
-			group_db->erase(dup_it);
+			group_db->erase(group_name);
 		}
 
 		expd.max_level = tbl.get_or("MaxLevel", 0);
@@ -92,9 +93,38 @@ int Horizon::Zone::Game::ExpDB::load_group(sol::table &group_tbl, exp_group_type
 			expd.exp.push_back(value.as<int>());
 		});
 
-		group_db->emplace(group_name, expd);
+		group_db->insert(group_name, std::make_shared<exp_group_data>(expd));
 		total_entries++;
 	});
 
 	return total_entries;
+}
+
+bool ExpDatabase::load_status_point_table()
+{
+	sol::state lua;
+	int total_entries = 0;
+	std::string tmp_string;
+	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "status_points.lua";
+
+	// Read the file. If there is an error, report it and exit.
+	try {
+		lua.script_file(file_path);
+		sol::table status_points_tbl = lua["status_points"];
+		status_points_tbl.for_each([this, &file_path, &total_entries](sol::object const &key, sol::object const &value) {
+			if (key.get_type() != sol::type::number || value.get_type() != sol::type::number) {
+				ZoneLog->error("Non-numeric key/value pair was found in '{}'. Skipping...", file_path);
+				return;
+			}
+			_stat_point_db.insert(key.as<uint32_t>(), value.as<uint32_t>());
+			total_entries++;
+		});
+	} catch(const std::exception &e) {
+		ZoneLog->error("ExpDatabase::load_status_point_table: {}.", e.what());
+		return false;
+	}
+
+	ZoneLog->info("Read status points for {} levels from '{}'", total_entries, file_path);
+
+	return true;
 }

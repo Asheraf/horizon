@@ -28,7 +28,7 @@
 #ifndef HORIZON_MODELS_CHARACTERS_POSITION_HPP
 #define HORIZON_MODELS_CHARACTERS_POSITION_HPP
 
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include "Server/Common/Server.hpp"
 
 namespace Horizon

@@ -46,7 +46,9 @@ struct PACKET_ZC_NOTIFY_BIND_ON_EQUIP : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << index;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +65,7 @@ struct PACKET_ZC_NOTIFY_BIND_ON_EQUIP : public Packet
 	}
 
 	/* Size: 4 bytes */
+	uint16_t index{0};
 };
 }
 }

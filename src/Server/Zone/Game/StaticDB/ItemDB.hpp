@@ -28,8 +28,10 @@
 #ifndef HORIZON_ZONE_GAME_ITEMDB
 #define HORIZON_ZONE_GAME_ITEMDB
 
-#include "Server/Zone/Game/Definitions/ItemDefinitions.hpp"
+#include "Common/Definitions/ItemDefinitions.hpp"
 #include "Core/Multithreading/LockedLookupTable.hpp"
+
+#include <memory>
 #include <cstdio>
 #include <map>
 #include <cstring>
@@ -42,19 +44,31 @@ namespace Zone
 {
 namespace Game
 {
-class ItemDB
+class ItemDatabase
 {
 public:
-	ItemDB() { }
-	~ItemDB() { }
+	ItemDatabase() { }
+	~ItemDatabase() { }
+
+	static ItemDatabase *get_instance()
+	{
+		static ItemDatabase instance;
+		return &instance;
+	}
 
 	bool load();
+
+	std::shared_ptr<const item_config_data> get(uint32_t item_id) const { return _item_db.at(item_id); }
+	
+private:
 	int load_items(sol::table &item_tbl);
 	bool load_table_item(sol::object const &key, sol::object const &value);
-private:
-	LockedLookupTable<uint32_t, item_data> _item_db;
+	LockedLookupTable<uint32_t, std::shared_ptr<const item_config_data>> _item_db;
 };
 }
 }
 }
+
+#define ItemDB Horizon::Zone::Game::ItemDatabase::get_instance()
+
 #endif /* HORIZON_ZONE_GAME_ITEMDB */

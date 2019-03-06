@@ -54,7 +54,7 @@ struct PACKET_CZ_REQ_GUILD_MENU : public Packet
 		uint32_t type;
 		buf >> packet_id;
 		buf >> type;
-		info_type = (cz_req_guild_menu_types) type;
+		info_type = (cz_req_guild_menu_type) type;
 	}
 
 	virtual PACKET_CZ_REQ_GUILD_MENU & operator << (PacketBuffer &right)
@@ -69,7 +69,7 @@ struct PACKET_CZ_REQ_GUILD_MENU : public Packet
 	}
 
 	/* Size: 6 bytes */
-	cz_req_guild_menu_types info_type{CZ_REQ_GUILD_BASIC_INFO};
+	cz_req_guild_menu_type info_type{CZ_REQ_GUILD_BASIC_INFO};
 };
 }
 }

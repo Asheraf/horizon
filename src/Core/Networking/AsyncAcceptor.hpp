@@ -29,7 +29,6 @@
 #define HORIZON_NETWORKING_ASYNCACCEPTOR_HPP
 
 #include <boost/asio.hpp>
-#include <boost/function.hpp>
 #include <functional>
 #include <iostream>
 #include <atomic>
@@ -48,7 +47,7 @@ namespace Networking
 class AsyncAcceptor
 {
 public:
-	typedef boost::function<void(std::shared_ptr<tcp::socket>, uint32_t thread_index)> AcceptCallback;
+	typedef std::function<void(std::shared_ptr<tcp::socket>, uint32_t thread_index)> AcceptCallback;
 
 	/**
 	 * @brief Constructor of the AsyncAcceptor object.

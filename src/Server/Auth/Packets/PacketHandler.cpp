@@ -39,6 +39,8 @@
 
 #include <string>
 
+using namespace Horizon::Models;
+
 Horizon::Auth::PacketHandler::PacketHandler(std::shared_ptr<AuthSocket> socket)
 	: Horizon::Base::PacketHandler<AuthSocket>(socket)
 {

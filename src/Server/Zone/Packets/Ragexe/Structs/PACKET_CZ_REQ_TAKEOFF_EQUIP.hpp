@@ -28,11 +28,8 @@
 #ifndef HORIZON_ZONE_RAGEXE_PACKET_CZ_REQ_TAKEOFF_EQUIP_HPP
 #define HORIZON_ZONE_RAGEXE_PACKET_CZ_REQ_TAKEOFF_EQUIP_HPP
 
-
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
-
 #include "Server/Common/PacketBuffer.hpp"
-
 
 namespace Horizon
 {
@@ -44,12 +41,11 @@ struct PACKET_CZ_REQ_TAKEOFF_EQUIP : public Packet
 {
 	PACKET_CZ_REQ_TAKEOFF_EQUIP(uint16_t packet_id = CZ_REQ_TAKEOFF_EQUIP) : Packet(packet_id) { }
 
-	virtual PacketBuffer serialize()
+	virtual void deserialize(PacketBuffer &buf)
 	{
-		return PacketBuffer(packet_id);
+		buf >> packet_id;
+		buf >> inventory_index;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
 
 	virtual PACKET_CZ_REQ_TAKEOFF_EQUIP & operator << (PacketBuffer &right)
 	{
@@ -57,12 +53,8 @@ struct PACKET_CZ_REQ_TAKEOFF_EQUIP : public Packet
 		return *this;
 	}
 
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
 	/* Size: 4 bytes */
+	uint16_t inventory_index{0};
 };
 }
 }

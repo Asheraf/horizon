@@ -26,12 +26,13 @@
  **************************************************/
 
 #include "ItemDB.hpp"
-#include "Server/Zone/Game/StaticDB/StaticDB.hpp"
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
 #include "Server/Zone/Zone.hpp"
 #include <chrono>
 
-bool Horizon::Zone::Game::ItemDB::load()
+using namespace Horizon::Zone::Game;
+
+bool ItemDatabase::load()
 {
 	sol::state lua;
 	auto start = std::chrono::high_resolution_clock::now();
@@ -56,23 +57,33 @@ bool Horizon::Zone::Game::ItemDB::load()
 	return true;
 }
 
-int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
+int ItemDatabase::load_items(sol::table &item_tbl)
 {
-	item_tbl.for_each([this](sol::object const &key, sol::object const &value) {
-		uint32_t item_id = key.as<uint32_t>(), t_int = 0;
+	int entry = 0;
+	item_tbl.for_each([this, &entry](sol::object const &key, sol::object const &value) {
+		uint32_t t_int = 0;
 		sol::table tbl = value.as<sol::table>();
 		std::string t_str;
-		item_data id;
+		item_config_data id;
+
+		entry++;
+
+		if (key.get_type() != sol::type::number) {
+			ZoneLog->error("ItemDB::load_items: Invalid key type for entry {}.", entry);
+			return;
+		}
+
+		id.item_id = key.as<uint32_t>();
 
 		id.aegis_name = tbl.get_or("AegisName", std::string(""));
 		if (id.aegis_name.empty()) {
-			ZoneLog->error("ItemDB::load_items: Invalid or non-existent mandatory field 'AegisName' for entry {}. Skipping...", item_id);
+			ZoneLog->error("ItemDB::load_items: Invalid or non-existent mandatory field 'AegisName' for entry {}. Skipping...", id.item_id);
 			return;
 		}
 
 		id.name = tbl.get_or("Name", std::string(""));
 		if (id.name.empty()) {
-			ZoneLog->error("ItemDB::load_items: Invalid or non-existent mandatory field 'Name' for entry {}. Skipping...", item_id);
+			ZoneLog->error("ItemDB::load_items: Invalid or non-existent mandatory field 'Name' for entry {}. Skipping...", id.item_id);
 			return;
 		}
 
@@ -105,7 +116,7 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 			} else if (t_str.compare("IT_TYPE_CASH") == 0) {
 				id.type = IT_TYPE_CASH;
 			} else {
-				ZoneLog->error("Invalid value for field 'Type' in item '{}', defaulting to 'IT_TYPE_ETC'.", item_id);
+				ZoneLog->error("Invalid value for field 'Type' in item '{}', defaulting to 'IT_TYPE_ETC'.", id.item_id);
 				id.type = IT_TYPE_ETC;
 			}
 		} else {
@@ -142,7 +153,7 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 					else if (t_str.compare("WT_2HSTAFF") == 0) { id.sub_type.weapon_t = WT_2HSTAFF; }
 					else if (t_str.compare("WT_SHIELD") == 0) { id.sub_type.weapon_t = WT_SHIELD; }
 					else {
-						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'WT_FIST'.", item_id);
+						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'WT_FIST'.", id.item_id);
 						id.sub_type.weapon_t = WT_FIST;
 					}
 					break;
@@ -158,12 +169,12 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 					else if (t_str.compare("AMMO_TYPE_THROWABLE_WEAPON") == 0) { id.sub_type.ammo_t = AMMO_TYPE_THROWABLE_WEAPON; }
 					else if (t_str.compare("AMMO_TYPE_NON") == 0) { id.sub_type.ammo_t = AMMO_TYPE_NONE; }
 					else {
-						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'AMMO_TYPE_NONE'.", item_id);
+						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'AMMO_TYPE_NONE'.", id.item_id);
 						id.sub_type.ammo_t = AMMO_TYPE_NONE;
 					}
 					break;
 				default:
-					ZoneLog->error("Field 'Subtype' is only allowed for IT_TYPE_WEAPON and IT_TYPE_AMMO in entry '{}', ignoring...", item_id);
+					ZoneLog->error("Field 'Subtype' is only allowed for IT_TYPE_WEAPON and IT_TYPE_AMMO in entry '{}', ignoring...", id.item_id);
 					break;
 			}
 		}
@@ -198,14 +209,14 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 					return;
 				}
 
-				job_classes job_id = StaticDB->get_job_db().get_job_class_by_name(job_name);
+				job_class_type job_id = JobDB->get_job_class_by_name(job_name);
 
 				if (job_id == JOB_INVALID) {
 					ZoneLog->error("Invalid Job '{}' specified in entry, skipping...", job_name);
 					return;
 				}
 
-				job_class_mask mask_id = StaticDB->get_job_db().job_id_to_mask(job_id);
+				job_class_mask mask_id = JobDB->job_id_to_mask(job_id);
 
 				if (enable)
 					id.requirements.job_mask |= mask_id;
@@ -214,8 +225,8 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 			});
 		} else if (maybe_job_tbl && maybe_job_tbl.value().get_type() == sol::type::string) {
 			std::string job_name = maybe_job_tbl.value().as<std::string>();
-			job_classes job_id = StaticDB->get_job_db().get_job_class_by_name(job_name);
-			job_class_mask mask_id = StaticDB->get_job_db().job_id_to_mask(job_id);
+			job_class_type job_id = JobDB->get_job_class_by_name(job_name);
+			job_class_mask mask_id = JobDB->job_id_to_mask(job_id);
 			id.requirements.job_mask |= mask_id;
 		} else if (maybe_job_tbl && maybe_job_tbl.value().get_type() == sol::type::number) {
 
@@ -229,7 +240,7 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 			else if (t_str.compare("IT_GENDER_MALE") == 0) { id.requirements.gender = IT_GENDER_MALE; }
 			else if (t_str.compare("IT_GENDER_ANY") == 0) { id.requirements.gender = IT_GENDER_ANY; }
 			else {
-				ZoneLog->error("Invalid Gender '{}' for item '{}' specified in entry {}, skipping...", t_str, id.aegis_name, item_id);
+				ZoneLog->error("Invalid Gender '{}' for item '{}' specified in entry {}, skipping...", t_str, id.aegis_name, id.item_id);
 				id.requirements.gender = IT_GENDER_ANY;
 			}
 		} else {
@@ -238,42 +249,42 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 
 		t_str = tbl.get_or("Loc", std::string(""));
 		if (!t_str.empty()) {
-			if (t_str.compare("EQP_NONE") == 0) { id.equip_location_mask = EQP_NONE; }
-			else if (t_str.compare("EQP_HEAD_LOW") == 0) { id.equip_location_mask = EQP_HEAD_LOW; }
-			else if (t_str.compare("EQP_HEAD_MID") == 0) { id.equip_location_mask = EQP_HEAD_MID; }
-			else if (t_str.compare("EQP_HEAD_TOP") == 0) { id.equip_location_mask = EQP_HEAD_TOP; }
-			else if (t_str.compare("EQP_HAND_R") == 0) { id.equip_location_mask = EQP_HAND_R; }
-			else if (t_str.compare("EQP_HAND_L") == 0) { id.equip_location_mask = EQP_HAND_L; }
-			else if (t_str.compare("EQP_ARMOR") == 0) { id.equip_location_mask = EQP_ARMOR; }
-			else if (t_str.compare("EQP_SHOES") == 0) { id.equip_location_mask = EQP_SHOES; }
-			else if (t_str.compare("EQP_GARMENT") == 0) { id.equip_location_mask = EQP_GARMENT; }
-			else if (t_str.compare("EQP_ACC_L") == 0) { id.equip_location_mask = EQP_ACC_L; }
-			else if (t_str.compare("EQP_ACC_R") == 0) { id.equip_location_mask = EQP_ACC_R; }
-			else if (t_str.compare("EQP_COSTUME_HEAD_TOP") == 0) { id.equip_location_mask = EQP_COSTUME_HEAD_TOP; }
-			else if (t_str.compare("EQP_COSTUME_HEAD_MID") == 0) { id.equip_location_mask = EQP_COSTUME_HEAD_MID; }
-			else if (t_str.compare("EQP_COSTUME_HEAD_LOW") == 0) { id.equip_location_mask = EQP_COSTUME_HEAD_LOW; }
-			else if (t_str.compare("EQP_COSTUME_GARMENT") == 0) { id.equip_location_mask = EQP_COSTUME_GARMENT; }
-			else if (t_str.compare("EQP_AMMO") == 0) { id.equip_location_mask = EQP_AMMO; }
-			else if (t_str.compare("EQP_SHADOW_ARMOR") == 0) { id.equip_location_mask = EQP_SHADOW_ARMOR; }
-			else if (t_str.compare("EQP_SHADOW_WEAPON") == 0) { id.equip_location_mask = EQP_SHADOW_WEAPON; }
-			else if (t_str.compare("EQP_SHADOW_SHIELD") == 0) { id.equip_location_mask = EQP_SHADOW_SHIELD; }
-			else if (t_str.compare("EQP_SHADOW_SHOES") == 0) { id.equip_location_mask = EQP_SHADOW_SHOES; }
-			else if (t_str.compare("EQP_SHADOW_ACC_R") == 0) { id.equip_location_mask = EQP_SHADOW_ACC_R; }
-			else if (t_str.compare("EQP_SHADOW_ACC_L") == 0) { id.equip_location_mask = EQP_SHADOW_ACC_L; }
-			else if (t_str.compare("EQP_WEAPON") == 0) { id.equip_location_mask = EQP_WEAPON; }
-			else if (t_str.compare("EQP_SHIELD") == 0) { id.equip_location_mask = EQP_SHIELD; }
-			else if (t_str.compare("EQP_ARMS") == 0) { id.equip_location_mask = EQP_ARMS; }
-			else if (t_str.compare("EQP_HELM") == 0) { id.equip_location_mask = EQP_HELM; }
-			else if (t_str.compare("EQP_ACC") == 0) { id.equip_location_mask = EQP_ACC; }
-			else if (t_str.compare("EQP_COSTUME") == 0) { id.equip_location_mask = EQP_COSTUME; }
-			else if (t_str.compare("EQP_SHADOW_ACC") == 0) { id.equip_location_mask = EQP_SHADOW_ACC; }
-			else if (t_str.compare("EQP_SHADOW_ARMS") == 0) { id.equip_location_mask = EQP_SHADOW_ARMS; }
+			if (t_str.compare("EQP_NONE") == 0) { id.equip_location_mask = IT_EQPM_NONE; }
+			else if (t_str.compare("EQP_HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_HEAD_LOW; }
+			else if (t_str.compare("EQP_HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_HEAD_MID; }
+			else if (t_str.compare("EQP_HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_HEAD_TOP; }
+			else if (t_str.compare("EQP_HAND_R") == 0) { id.equip_location_mask = IT_EQPM_HAND_R; }
+			else if (t_str.compare("EQP_HAND_L") == 0) { id.equip_location_mask = IT_EQPM_HAND_L; }
+			else if (t_str.compare("EQP_ARMOR") == 0) { id.equip_location_mask = IT_EQPM_ARMOR; }
+			else if (t_str.compare("EQP_SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHOES; }
+			else if (t_str.compare("EQP_GARMENT") == 0) { id.equip_location_mask = IT_EQPM_GARMENT; }
+			else if (t_str.compare("EQP_ACC_L") == 0) { id.equip_location_mask = IT_EQPM_ACC_L; }
+			else if (t_str.compare("EQP_ACC_R") == 0) { id.equip_location_mask = IT_EQPM_ACC_R; }
+			else if (t_str.compare("EQP_COSTUME_HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_TOP; }
+			else if (t_str.compare("EQP_COSTUME_HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_MID; }
+			else if (t_str.compare("EQP_COSTUME_HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_LOW; }
+			else if (t_str.compare("EQP_COSTUME_GARMENT") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_GARMENT; }
+			else if (t_str.compare("EQP_AMMO") == 0) { id.equip_location_mask = IT_EQPM_AMMO; }
+			else if (t_str.compare("EQP_SHADOW_ARMOR") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMOR; }
+			else if (t_str.compare("EQP_SHADOW_WEAPON") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_WEAPON; }
+			else if (t_str.compare("EQP_SHADOW_SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHIELD; }
+			else if (t_str.compare("EQP_SHADOW_SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHOES; }
+			else if (t_str.compare("EQP_SHADOW_ACC_R") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_R; }
+			else if (t_str.compare("EQP_SHADOW_ACC_L") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_L; }
+			else if (t_str.compare("EQP_WEAPON") == 0) { id.equip_location_mask = IT_EQPM_WEAPON; }
+			else if (t_str.compare("EQP_SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHIELD; }
+			else if (t_str.compare("EQP_ARMS") == 0) { id.equip_location_mask = IT_EQPM_ARMS; }
+			else if (t_str.compare("EQP_HELM") == 0) { id.equip_location_mask = IT_EQPM_HELM; }
+			else if (t_str.compare("EQP_ACC") == 0) { id.equip_location_mask = IT_EQPM_ACC; }
+			else if (t_str.compare("EQP_COSTUME") == 0) { id.equip_location_mask = IT_EQPM_COSTUME; }
+			else if (t_str.compare("EQP_SHADOW_ACC") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC; }
+			else if (t_str.compare("EQP_SHADOW_ARMS") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMS; }
 			else {
-				ZoneLog->error("Invalid Loc '{}' for item '{}' specified in entry {}, skipping...", t_str, id.aegis_name, item_id);
-				id.equip_location_mask = EQP_NONE;
+				ZoneLog->error("Invalid Loc '{}' for item '{}' specified in entry {}, skipping...", t_str, id.aegis_name, id.item_id);
+				id.equip_location_mask = IT_EQPM_NONE;
 			}
 		} else {
-			id.equip_location_mask = EQP_NONE;
+			id.equip_location_mask = IT_EQPM_NONE;
 		}
 
 		sol::optional<sol::object> maybe_elv = tbl.get<sol::optional<sol::object>>("EquipLv");
@@ -301,7 +312,7 @@ int Horizon::Zone::Game::ItemDB::load_items(sol::table &item_tbl)
 		id.equip_script = tbl.get_or("OnEquipScript", std::string(""));
 		id.unequip_script = tbl.get_or("OnUnequipScript", std::string(""));
 
-		_item_db.insert(item_id, id);
+		_item_db.insert(id.item_id, std::make_shared<item_config_data>(id));
 	});
 
 	return _item_db.size();

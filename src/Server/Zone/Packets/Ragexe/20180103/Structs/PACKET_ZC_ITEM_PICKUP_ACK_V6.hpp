@@ -43,28 +43,6 @@ namespace Ragexe20180103
 struct PACKET_ZC_ITEM_PICKUP_ACK_V6 : public Horizon::Zone::Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V6
 {
 	PACKET_ZC_ITEM_PICKUP_ACK_V6(uint16_t packet_id = ZC_ITEM_PICKUP_ACK_V6) : Horizon::Zone::Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V6(packet_id) { }
-
-	virtual PacketBuffer serialize() override
-	{
-		return Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V6::serialize();
-	}
-
-	virtual void deserialize(PacketBuffer &buf) override
-	{
-		Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V6::deserialize(buf);
-	}
-
-	virtual Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V6 & operator << (PacketBuffer &right) override
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right) override
-	{
-		return right = serialize();
-	}
-
 	/* Size: 56 bytes */
 	/* Changed from 66 in version 0 to 56 */
 };

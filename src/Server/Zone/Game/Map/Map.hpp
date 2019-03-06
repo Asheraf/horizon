@@ -29,7 +29,8 @@
 #define HORIZON_ZONE_GAME_MAP_HPP
 
 #include "Path/AStar.hpp"
-#include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
+#include "Server/Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/Cell/Cell.hpp"
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
@@ -71,7 +72,7 @@ public:
 	bool ensure_grid(GridCoords coords);
 	void ensure_all_grids();
 
-	bool is_obstruction(uint16_t x, uint16_t y);
+	bool has_obstruction_at(uint16_t x, uint16_t y);
 
 	MapCoords get_random_coords()
 	{
@@ -81,7 +82,7 @@ public:
 		do {
 			x = rand() % _width;
 			y = rand() % _height;
-		} while (is_obstruction(x, y));
+		} while (has_obstruction_at(x, y));
 
 		return { x, y };
 	}

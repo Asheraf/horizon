@@ -67,7 +67,6 @@ Horizon::Char::CharMain::~CharMain()
 bool Horizon::Char::CharMain::ReadConfig()
 {
 	sol::state lua;
-	int t_val;
 	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 
 	// Read the file. If there is an error, report it and exit.

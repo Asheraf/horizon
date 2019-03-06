@@ -1,7 +1,33 @@
+/***************************************************
+ *       _   _            _                        *
+ *      | | | |          (_)                       *
+ *      | |_| | ___  _ __ _ _______  _ __          *
+ *      |  _  |/ _ \| '__| |_  / _ \| '_  \        *
+ *      | | | | (_) | |  | |/ / (_) | | | |        *
+ *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
+ ***************************************************
+ * This file is part of Horizon (c).
+ * Copyright (c) 2019 Horizon Dev Team.
+ *
+ * Base Author - Sxyz (sagunxp@gmail.com)
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ **************************************************/
 #include "ZoneSession.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
-#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/Packets/PacketHandler.hpp"
@@ -12,9 +38,10 @@
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Zone/Zone.hpp"
 
+using namespace Horizon::Models;
 using namespace Horizon::Zone;
-using namespace Horizon::Models::Character;
 using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Models::Character;
 
 ZoneSession::ZoneSession(std::shared_ptr<ZoneSocket> socket)
 : Session(socket)
@@ -32,8 +59,8 @@ ZoneSession::~ZoneSession()
 std::shared_ptr<PacketHandler> ZoneSession::get_packet_handler() { return _packet_handler; }
 void ZoneSession::set_packet_handler(std::shared_ptr<PacketHandler> handler) { _packet_handler.swap(handler); }
 /* Character */
-std::shared_ptr<Character> ZoneSession::get_character() { return _character; }
-void ZoneSession::set_character(std::shared_ptr<Character> character) { _character.swap(character); }
+std::shared_ptr<Horizon::Models::Character::Character> ZoneSession::get_character() { return _character; }
+void ZoneSession::set_character(std::shared_ptr<Horizon::Models::Character::Character> character) { _character.swap(character); }
 /* Game Account */
 std::shared_ptr<GameAccount> ZoneSession::get_game_account() { return _game_account; }
 void ZoneSession::set_game_account(std::shared_ptr<GameAccount> game_acc) { _game_account.swap(game_acc); }

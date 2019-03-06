@@ -28,7 +28,7 @@
 #ifndef HORIZON_MODELS_CHARACTERS_ACCESS_HPP
 #define HORIZON_MODELS_CHARACTERS_ACCESS_HPP
 
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include "Server/Common/Server.hpp"
 #include <mysqlx/xdevapi.h>
 

@@ -457,7 +457,7 @@
 #include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ACK_WHISPER.hpp"
 #include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ACK_WHISPER02.hpp"
 #include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ACK_ZENY_FROM_RODEX.hpp"
-#include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ACTION_FAILURE.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ACTION_MESSAGE.hpp"
 #include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ACTIVE_QUEST.hpp"
 #include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ADD_EXCHANGE_ITEM.hpp"
 #include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ADD_EXCHANGE_ITEM2.hpp"

@@ -50,7 +50,7 @@ public:
 	 * @param[in|out] session    shared_ptr to a Session instance.
 	 * @return shared pointer to a new instance of Horizon::Zone::PacketHandler.
 	 */
-	static std::shared_ptr<PacketHandler> create_packet_handler(std::shared_ptr<ZoneSocket> socket, client_types client_type, uint32_t packet_ver);
+	static std::shared_ptr<PacketHandler> create_packet_handler(std::shared_ptr<ZoneSocket> socket, client_type client_type, uint32_t packet_ver);
 };
 }
 }

@@ -46,7 +46,11 @@ struct PACKET_ZC_COUPLESTATUS : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << type;
+		buf << base;
+		buf << bonus;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +67,9 @@ struct PACKET_ZC_COUPLESTATUS : public Packet
 	}
 
 	/* Size: 14 bytes */
+	uint32_t type{0};
+	uint32_t base{0};
+	uint32_t bonus{0};
 };
 }
 }

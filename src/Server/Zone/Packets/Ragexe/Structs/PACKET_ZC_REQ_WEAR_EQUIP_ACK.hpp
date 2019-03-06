@@ -46,7 +46,11 @@ struct PACKET_ZC_REQ_WEAR_EQUIP_ACK : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << inventory_index;
+		buf << equip_location_mask;
+		buf << result;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +67,9 @@ struct PACKET_ZC_REQ_WEAR_EQUIP_ACK : public Packet
 	}
 
 	/* Size: 7 bytes */
+	uint16_t inventory_index{0};
+	uint16_t equip_location_mask{0};
+	uint8_t result{0};
 };
 }
 }

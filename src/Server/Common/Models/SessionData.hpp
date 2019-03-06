@@ -28,9 +28,13 @@
 #ifndef HORIZON_SESSIONDATA_H
 #define HORIZON_SESSIONDATA_H
 
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include <ctime>
 
+namespace Horizon
+{
+namespace Models
+{
 class SessionData
 {
 public:
@@ -90,7 +94,7 @@ public:
 							  get_character_slots(),
 							  get_group_id(),
 							  get_connect_time())
-						.execute();
+			.execute();
 			s.close();
 		} catch (const mysqlx::Error &e) {
 			CoreLog->warn("SessionData::save: {}", e.what());
@@ -141,5 +145,7 @@ private:
 	uint32_t _group_id;
 	uint32_t _connect_time;
 };
+}
+}
 
 #endif //HORIZON_SESSIONDATA_H

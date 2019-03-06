@@ -28,8 +28,7 @@
 #include "ZoneSocket.hpp"
 
 #include "Server/Common/Models/Character/Character.hpp"
-#include "Server/Common/Models/SessionData.hpp"
-#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"

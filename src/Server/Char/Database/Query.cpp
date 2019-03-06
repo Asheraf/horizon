@@ -42,6 +42,8 @@
 
 #include <mysqlx/xdevapi.h>
 
+using namespace Horizon::Models;
+
 Horizon::Char::Database::Query::Query()
 {
 	InitializeQueryStrings();
@@ -84,21 +86,21 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 		"SELECT COUNT(*) FROM `characters` WHERE `name` = ?");
 }
 
-std::shared_ptr<Horizon::Models::Character::Character>
+std::shared_ptr<Character::Character>
 Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record)
 {
 	int char_id = record[0];
 
-	Horizon::Models::Character::Character c(char_id);
-	Horizon::Models::Character::Status csd(char_id);
-	Horizon::Models::Character::UISettings cus(char_id);
-	Horizon::Models::Character::View cvd(char_id);
-	Horizon::Models::Character::Position cpd(char_id);
-	Horizon::Models::Character::Misc cmd(char_id);
-	Horizon::Models::Character::Group cgd(char_id);
-	Horizon::Models::Character::Family cfd(char_id);
-	Horizon::Models::Character::Companion ccd(char_id);
-	Horizon::Models::Character::Access cad(char_id);
+	Character::Character c(char_id);
+	Character::Status csd(char_id);
+	Character::UISettings cus(char_id);
+	Character::View cvd(char_id);
+	Character::Position cpd(char_id);
+	Character::Misc cmd(char_id);
+	Character::Group cgd(char_id);
+	Character::Family cfd(char_id);
+	Character::Companion ccd(char_id);
+	Character::Access cad(char_id);
 
 	// Character
 	c.set_character_id(char_id);
@@ -186,17 +188,17 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 	cad.set_delete_date(record[62]);
 
 	// Append to character.
-	c.set_status_data(std::make_shared<Horizon::Models::Character::Status>(csd));
-	c.set_ui_settings(std::make_shared<Horizon::Models::Character::UISettings>(cus));
-	c.set_view_data(std::make_shared<Horizon::Models::Character::View>(cvd));
-	c.set_position_data(std::make_shared<Horizon::Models::Character::Position>(cpd));
-	c.set_misc_data(std::make_shared<Horizon::Models::Character::Misc>(cmd));
-	c.set_group_data(std::make_shared<Horizon::Models::Character::Group>(cgd));
-	c.set_family_data(std::make_shared<Horizon::Models::Character::Family>(cfd));
-	c.set_companion_data(std::make_shared<Horizon::Models::Character::Companion>(ccd));
-	c.set_access_data(std::make_shared<Horizon::Models::Character::Access>(cad));
+	c.set_status_data(std::make_shared<Character::Status>(csd));
+	c.set_ui_settings(std::make_shared<Character::UISettings>(cus));
+	c.set_view_data(std::make_shared<Character::View>(cvd));
+	c.set_position_data(std::make_shared<Character::Position>(cpd));
+	c.set_misc_data(std::make_shared<Character::Misc>(cmd));
+	c.set_group_data(std::make_shared<Character::Group>(cgd));
+	c.set_family_data(std::make_shared<Character::Family>(cfd));
+	c.set_companion_data(std::make_shared<Character::Companion>(ccd));
+	c.set_access_data(std::make_shared<Character::Access>(cad));
 
-	return std::make_shared<Horizon::Models::Character::Character>(c);
+	return std::make_shared<Character::Character>(c);
 }
 
 int Horizon::Char::Database::Query::load_all_characters_for_account(std::shared_ptr<GameAccount> account)

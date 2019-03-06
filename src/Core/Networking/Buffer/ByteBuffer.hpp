@@ -28,6 +28,7 @@
 
 #include "MessageBuffer.hpp"
 
+#include <type_traits>
 #include <stdlib.h>
 #include <string>
 #include <vector>
@@ -428,8 +429,16 @@ public:
 
 	void hexlike() const;
 
+	template<typename SizeT = uint16_t, typename std::enable_if<std::is_integral<SizeT>::value>::type* = nullptr>
+	void emplace_size(std::size_t pos = 2)
+	{
+		_storage.emplace(_storage.begin() + pos, 0);
+		_storage.emplace(_storage.begin() + pos + 1, 0);
+		put(pos, (uint8_t *) _storage.size(), sizeof(SizeT));
+	}
+
 protected:
-	size_t _rpos, _wpos;
+	size_t _rpos{0}, _wpos{0};
 	std::vector<uint8_t> _storage;
 };
 

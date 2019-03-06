@@ -46,7 +46,9 @@ struct PACKET_ZC_LONGPAR_CHANGE : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << type << value;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +65,8 @@ struct PACKET_ZC_LONGPAR_CHANGE : public Packet
 	}
 
 	/* Size: 8 bytes */
+	uint16_t type{0};
+	uint32_t value{0};
 };
 }
 }

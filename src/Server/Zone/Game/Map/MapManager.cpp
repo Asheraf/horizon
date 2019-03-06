@@ -28,9 +28,9 @@
 #include "MapManager.hpp"
 #include "MapThreadContainer.hpp"
 
+#include "Libraries/MapCache/MapCache.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
-#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
-#include "Core/Multithreading/WorkerThreadPool.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Zone.hpp"
 
 #include <algorithm>
@@ -117,7 +117,7 @@ std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::sh
 	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
 		std::shared_ptr<Map> map = (*i)->get_map(map_name);
 		if (map) {
-			(*i)->add_player(map_name, p);
+			(*i)->add_player(p);
 			return map;
 		}
 	}

@@ -37,4 +37,5 @@ set(CHARACTER_MODEL_SOURCES
 	${DIR}/UISettings.hpp
 	${DIR}/View.hpp
 	${DIR}/Position.hpp
+	${DIR}/Inventory.hpp
 	PARENT_SCOPE)

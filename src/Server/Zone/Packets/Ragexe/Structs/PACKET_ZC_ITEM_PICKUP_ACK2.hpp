@@ -30,9 +30,12 @@
 
 
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
+#include "Server/Zone/Packets/Ragexe/Structs/PACKET_ZC_ITEM_PICKUP_ACK.hpp"
+#include "Common/Definitions/ItemDefinitions.hpp"
 
 #include "Server/Common/PacketBuffer.hpp"
 
+#include <memory>
 
 namespace Horizon
 {
@@ -40,29 +43,30 @@ namespace Zone
 {
 namespace Ragexe
 {
-struct PACKET_ZC_ITEM_PICKUP_ACK2 : public Packet
+struct PACKET_ZC_ITEM_PICKUP_ACK2 : public PACKET_ZC_ITEM_PICKUP_ACK
 {
-	PACKET_ZC_ITEM_PICKUP_ACK2(uint16_t packet_id = ZC_ITEM_PICKUP_ACK2) : Packet(packet_id) { }
+	PACKET_ZC_ITEM_PICKUP_ACK2(uint16_t packet_id = ZC_ITEM_PICKUP_ACK2) : PACKET_ZC_ITEM_PICKUP_ACK(packet_id) { }
 
-	virtual PacketBuffer serialize()
+	virtual PacketBuffer serialize(item_entry_data const &data, uint16_t amount, item_inventory_addition_notif_type result)
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+
+		buf << data.inventory_index;
+		buf << amount;
+		buf << (uint16_t) data.item_id;
+		buf << ((uint8_t) data.info.is_identified ? 1 : 0);
+		buf << ((uint8_t) data.info.is_broken ? 1 : 0);
+		buf << data.refine_level;
+
+		for (int i = 0; i < MAX_ITEM_SLOTS; i++)
+			buf << (uint16_t) data.slot_item_id[i];
+
+		buf << (uint16_t) data.actual_equip_location_mask;
+		buf << (uint8_t) data.type;
+		buf << (uint8_t) result;
+		buf << data.hire_expire_date;
+		return buf;
 	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
-
-	virtual PACKET_ZC_ITEM_PICKUP_ACK2 & operator << (PacketBuffer &right)
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
-
-	/* Size: 27 bytes */
 };
 }
 }

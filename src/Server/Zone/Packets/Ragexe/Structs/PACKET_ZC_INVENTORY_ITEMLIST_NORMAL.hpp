@@ -30,7 +30,7 @@
 
 
 #include "Server/Zone/Packets/Ragexe/Packets.hpp"
-
+#include "PACKET_ZC_INVENTORY_ITEMLIST_NORMAL_V5.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 
 
@@ -40,27 +40,9 @@ namespace Zone
 {
 namespace Ragexe
 {
-struct PACKET_ZC_INVENTORY_ITEMLIST_NORMAL : public Packet
+struct PACKET_ZC_INVENTORY_ITEMLIST_NORMAL : public PACKET_ZC_INVENTORY_ITEMLIST_NORMAL_V5
 {
-	PACKET_ZC_INVENTORY_ITEMLIST_NORMAL(uint16_t packet_id = ZC_INVENTORY_ITEMLIST_NORMAL) : Packet(packet_id) { }
-
-	virtual PacketBuffer serialize()
-	{
-		return PacketBuffer(packet_id);
-	}
-
-	virtual void deserialize(PacketBuffer &/*buf*/) { }
-
-	virtual PACKET_ZC_INVENTORY_ITEMLIST_NORMAL & operator << (PacketBuffer &right)
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right)
-	{
-		return right = serialize();
-	}
+	PACKET_ZC_INVENTORY_ITEMLIST_NORMAL(uint16_t packet_id = ZC_INVENTORY_ITEMLIST_NORMAL) : PACKET_ZC_INVENTORY_ITEMLIST_NORMAL_V5(packet_id) { }
 
 	/* Size: -1 bytes */
 };

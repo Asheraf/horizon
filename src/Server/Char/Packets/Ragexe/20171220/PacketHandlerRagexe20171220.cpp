@@ -34,7 +34,7 @@
 #include "Server/Common/Models/GameAccount.hpp"
 
 using namespace Horizon::Char;
-using namespace Horizon::Models::Character;
+using namespace Horizon::Models;
 
 PacketHandlerRagexe20171220::PacketHandlerRagexe20171220(std::shared_ptr<CharSocket> socket)
 : PacketHandler(socket)
@@ -86,7 +86,7 @@ void PacketHandlerRagexe20171220::Send_HC_ACCEPT_ENTER()
 	CharLog->info("Sent character-list information to AID {}", game_account->get_id());
 }
 
-void PacketHandlerRagexe20171220::Send_HC_ACCEPT_MAKECHAR(std::shared_ptr<Character> character)
+void PacketHandlerRagexe20171220::Send_HC_ACCEPT_MAKECHAR(std::shared_ptr<Character::Character> character)
 {
 	Ragexe20171220::PACKET_HC_ACCEPT_MAKECHAR pkt;
 

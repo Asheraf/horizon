@@ -30,8 +30,8 @@
 
 
 #include "Server/Char/Packets/Ragexe/Packets.hpp"
-#include "Server/Common/Horizon.hpp"
-#include "Server/Common/Client.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
+#include "Server/Common/Definitions/Client.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 
 
@@ -109,7 +109,7 @@ struct PACKET_HC_ACCEPT_ENTER : public Packet
 		uint32_t maximum_hp{1};              ///< 46
 		uint16_t sp{1};                      ///< 50
 		uint16_t maximum_sp{1};              ///< 52
-		uint16_t walk_speed{DEFAULT_WALK_SPEED};              ///< 54
+		uint16_t walk_speed{DEFAULT_MOVEMENT_SPEED};              ///< 54
 		uint16_t job_id{0};                  ///< 56
 		uint16_t hair_view_id{0};            ///< 58
 		uint16_t body_view_id{0};            ///< 60 p->body in hercules.

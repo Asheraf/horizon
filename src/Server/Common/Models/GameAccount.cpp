@@ -32,6 +32,8 @@
 #include <hex.h>
 #include <files.h>
 
+using namespace Horizon::Models;
+
 bool GameAccount::verify_credentials(Server *server, std::string username, std::string password)
 {
 	std::string query = "SELECT `id`, `username`, `gender`, `email`, `group_id`, `state`, `unban_time`, `expiration_time`, UNIX_TIMESTAMP(`last_login`), `last_ip`, DATE_FORMAT(`birth_date`, '%Y-%m-%d'), `character_slots`, `pincode`, `pincode_expiry` FROM `game_accounts` WHERE `username` = ? AND `hash` = ?";

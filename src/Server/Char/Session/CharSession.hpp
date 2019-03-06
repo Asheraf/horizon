@@ -14,6 +14,15 @@ class PacketBuffer;
 
 namespace Horizon
 {
+	namespace Models
+	{
+		class GameAccount;
+		class SessionData;
+	}
+}
+
+namespace Horizon
+{
 namespace Char
 {
 class CharSocket;
@@ -32,11 +41,11 @@ public:
 	std::shared_ptr<Horizon::Models::Character::Character> get_character();
 	void set_character(std::shared_ptr<Horizon::Models::Character::Character> character);
 	/* Game Account */
-	std::shared_ptr<GameAccount> get_game_account();
-	void set_game_account(std::shared_ptr<GameAccount> account);
+	std::shared_ptr<Horizon::Models::GameAccount> get_game_account();
+	void set_game_account(std::shared_ptr<Horizon::Models::GameAccount> account);
 	/* Session Data */
-	std::shared_ptr<SessionData> get_session_data();
-	void set_session_data(std::shared_ptr<SessionData> session_data);
+	std::shared_ptr<Horizon::Models::SessionData> get_session_data();
+	void set_session_data(std::shared_ptr<Horizon::Models::SessionData> session_data);
 
 	void initialize();
 	void handle_new_connection(PacketBuffer &buf);
@@ -45,9 +54,9 @@ public:
 private:
 	std::shared_ptr<PacketHandler> _packet_handler;
 	std::shared_ptr<Horizon::Models::Character::Character> _character;
-	std::shared_ptr<GameAccount> _game_account;
-	std::shared_ptr<SessionData> _session_data;
-	client_types _client_type;
+	std::shared_ptr<Horizon::Models::GameAccount> _game_account;
+	std::shared_ptr<Horizon::Models::SessionData> _session_data;
+	client_type _client_type;
 	int32_t _packet_version;
 };
 }

@@ -103,7 +103,7 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 		char name[20]{0};          ///< Server name
 		uint16_t usercount{0};     ///< Online users
 		uint16_t is_new{0};        ///< Server state
-		uint16_t type{0};          ///< Server type @ character_server_types
+		uint16_t type{0};          ///< Server type @ character_server_type
 	};
 };
 }

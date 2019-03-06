@@ -31,7 +31,7 @@
 
 #include "Server/Char/Packets/Ragexe/Packets.hpp"
 #include "Server/Common/PacketBuffer.hpp"
-#include "Server/Common/Client.hpp"
+#include "Server/Common/Definitions/Client.hpp"
 
 namespace Horizon
 {
@@ -48,7 +48,7 @@ struct PACKET_HC_SECOND_PASSWD_LOGIN : public Packet
 		PacketBuffer buf(HC_SECOND_PASSWD_LOGIN);
 		buf << pincode_seed;
 		buf << account_id;
-		buf << (short) state;
+		buf << ((short) state);
 		return buf;
 	}
 

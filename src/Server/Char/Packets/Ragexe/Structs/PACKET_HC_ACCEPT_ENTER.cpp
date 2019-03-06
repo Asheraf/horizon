@@ -26,6 +26,7 @@
  **************************************************/
 
 #include "PACKET_HC_ACCEPT_ENTER.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/Models/Character/Access.hpp"
 #include "Server/Common/Models/Character/Companion.hpp"
@@ -61,7 +62,7 @@ void PACKET_HC_ACCEPT_ENTER::character_list_data::create_from_model(std::shared_
 	maximum_hp = status->get_max_hp();
 	sp = status->get_sp();
 	maximum_sp = status->get_max_sp();
-	walk_speed = DEFAULT_WALK_SPEED;
+	walk_speed = DEFAULT_MOVEMENT_SPEED;
 	job_id = status->get_job_id();
 	hair_view_id = view->get_hair_style_id();
 	body_view_id = view->get_body_id();

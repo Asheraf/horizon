@@ -35,14 +35,14 @@
 #include <unordered_map>
 #include <boost/filesystem/path.hpp>
 
-enum datafile_types
+enum datafile_type
 {
 	DATAFILE_TYPE_FILE          = 0x01, // entry is a file
 	DATAFILE_TYPE_DES_MIXED     = 0x02, // encryption mode 0 (header DES + periodic DES/shuffle)
 	DATAFILE_TYPE_DES_HEADER    = 0x04, // encryption mode 1 (header DES only)
 };
 
-enum grf_load_result_types
+enum grf_load_result_type
 {
 	GRF_LOAD_OK                  = 0,
 	GRF_LOAD_PATH_ERROR          = 1,
@@ -55,13 +55,13 @@ enum grf_load_result_types
 	GRF_LOAD_READ_ERROR          = 8,
 };
 
-enum grf_file_error_types
+enum grf_file_error_type
 {
 	GRF_FILE_ERROR_NONE          = 0,
 	GRF_FILE_ERROR_NAME_TOO_LONG = 1
 };
 
-enum grf_read_error_types
+enum grf_read_error_type
 {
 	GRE_OK                       = 0,
 	GRE_NOT_FOUND                = 1,
@@ -84,13 +84,13 @@ struct DataFile
 class GRF
 {
 	typedef std::unordered_map<std::string, std::shared_ptr<DataFile>> FileMapType;
-	typedef std::unordered_map<std::string, grf_file_error_types> FileErrorMapType;
+	typedef std::unordered_map<std::string, grf_file_error_type> FileErrorMapType;
 public:
 	GRF();
-	grf_load_result_types load();
+	grf_load_result_type load();
 	void extractAllFiles();
 	void extractFile(std::string file_name, std::string output_path, clock_t begin_time);
-	std::pair<grf_read_error_types, uint8_t *> read(const char *in_name, int *size);
+	std::pair<grf_read_error_type, uint8_t *> read(const char *in_name, int *size);
 	void decode(unsigned char *buf, size_t len, char entry_type, int entry_len);
 	void decodeFull(unsigned char *buf, size_t len, int cycle);
 	void decodeHeader(unsigned char *buf, size_t len);

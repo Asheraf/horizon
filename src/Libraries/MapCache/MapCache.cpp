@@ -27,7 +27,7 @@
 
 #include "MapCache.hpp"
 
-#include "Server/Common/Client.hpp"
+#include "Server/Common/Definitions/Client.hpp"
 #include "Utility/Utility.hpp"
 
 #include <iostream>
@@ -50,7 +50,7 @@ Horizon::Libraries::MapCache::~MapCache()
 {
 }
 
-mcache_import_error_types Horizon::Libraries::MapCache::ImportFromCacheFile()
+mcache_import_error_type Horizon::Libraries::MapCache::ImportFromCacheFile()
 {
 	std::ifstream ifs(getMapCachePath().c_str(), std::ios::in | std::ios::binary);
 	struct mapcache_header header;
@@ -140,7 +140,7 @@ mcache_import_error_types Horizon::Libraries::MapCache::ImportFromCacheFile()
 	return MCACHE_IMPORT_OK;
 }
 
-mcache_error_types Horizon::Libraries::MapCache::initialize()
+mcache_error_type Horizon::Libraries::MapCache::initialize()
 {
 	if (getGRFListPath().empty())
 		return MCACHE_INVALID_GRF_PATH;
@@ -166,7 +166,7 @@ bool Horizon::Libraries::MapCache::Exists()
 	return ifs.good();
 }
 
-mcache_config_error_types Horizon::Libraries::MapCache::ReadMapListConfig()
+mcache_config_error_type Horizon::Libraries::MapCache::ReadMapListConfig()
 {
 	sol::state lua;
 
@@ -189,7 +189,7 @@ mcache_config_error_types Horizon::Libraries::MapCache::ReadMapListConfig()
 	return MCACHE_CONFIG_OK;
 }
 
-mcache_grf_config_error_types Horizon::Libraries::MapCache::ReadGRFListConfig()
+mcache_grf_config_error_type Horizon::Libraries::MapCache::ReadGRFListConfig()
 {
 	sol::state lua;
 
@@ -225,15 +225,15 @@ mcache_grf_config_error_types Horizon::Libraries::MapCache::ReadGRFListConfig()
 	return MCACHE_GRF_CONF_OK;
 }
 
-std::pair<uint8_t, grf_load_result_types> Horizon::Libraries::MapCache::LoadGRFs()
+std::pair<uint8_t, grf_load_result_type> Horizon::Libraries::MapCache::LoadGRFs()
 {
-	grf_load_result_types res;
+	grf_load_result_type res;
 
 	for (auto &grf : _grfs)
 		if ((res = grf.second.load()) != GRF_LOAD_OK)
 			return std::make_pair(grf.second.get_id(), res);
 
-	return std::pair<uint8_t, grf_load_result_types>(-1, GRF_LOAD_OK);
+	return std::pair<uint8_t, grf_load_result_type>(-1, GRF_LOAD_OK);
 }
 
 int Horizon::Libraries::MapCache::BuildInternalCache()
@@ -347,7 +347,7 @@ bool Horizon::Libraries::MapCache::BuildExternalCache()
 	return true;
 }
 
-bool Horizon::Libraries::MapCache::ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_types error)
+bool Horizon::Libraries::MapCache::ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_type error)
 {
 	std::string grf_name =  grf.getGRFPath().filename().string();
 
@@ -378,7 +378,7 @@ bool Horizon::Libraries::MapCache::ParseGRFReadResult(GRF &grf, std::string cons
 bool Horizon::Libraries::MapCache::GetMapFromGRF(GRF &grf, std::string const &name)
 {
 	char filename[256];
-	std::pair<grf_read_error_types, uint8_t *> gat, rsw;
+	std::pair<grf_read_error_type, uint8_t *> gat, rsw;
 	int water_height;
 	map_data m;
 

@@ -44,27 +44,6 @@ struct PACKET_CZ_ITEM_THROW2 : public Horizon::Zone::Ragexe::PACKET_CZ_ITEM_THRO
 {
 	PACKET_CZ_ITEM_THROW2(uint16_t packet_id = CZ_ITEM_THROW2) : Horizon::Zone::Ragexe::PACKET_CZ_ITEM_THROW2(packet_id) { }
 
-	virtual PacketBuffer serialize() override
-	{
-		return Ragexe::PACKET_CZ_ITEM_THROW2::serialize();
-	}
-
-	virtual void deserialize(PacketBuffer &buf) override
-	{
-		Ragexe::PACKET_CZ_ITEM_THROW2::deserialize(buf);
-	}
-
-	virtual Ragexe::PACKET_CZ_ITEM_THROW2 & operator << (PacketBuffer &right) override
-	{
-		deserialize(right);
-		return *this;
-	}
-
-	virtual PacketBuffer operator >> (PacketBuffer &right) override
-	{
-		return right = serialize();
-	}
-
 	/* Size: 2 bytes */
 	/* Changed from 6 in version 0 to 2 */
 };

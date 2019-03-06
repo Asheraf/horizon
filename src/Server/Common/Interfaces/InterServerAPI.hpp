@@ -60,9 +60,9 @@ public:
 	 * @param[in] auth_code   session auth code to check against.
 	 * @return shared_ptr to the session data or nullptr if none found.
 	 */
-	std::shared_ptr<SessionData> get_session_data(uint32_t auth_code)
+	std::shared_ptr<Horizon::Models::SessionData> get_session_data(uint32_t auth_code)
 	{
-		std::shared_ptr<SessionData> session_data = std::make_shared<SessionData>();
+		std::shared_ptr<SessionData> session_data = std::make_shared<Horizon::Models::SessionData>();
 		PACKET_CI_SESSION_REQ send_pkt;
 		PACKET_IC_SESSION_REQ_ACK recv_pkt;
 
@@ -98,7 +98,7 @@ public:
 	 * @brief Insert or Update session data into the inter server storage.
 	 * @param[in|out] session_data   shared_ptr to the session data object.
 	 */
-	void store_session_data(std::shared_ptr<SessionData> const &session_data)
+	void store_session_data(std::shared_ptr<Horizon::Models::SessionData> const &session_data)
 	{
 		if (_inter_socket != nullptr)
 			_inter_socket->get_session()->get_packet_handler()->Send_CI_SESSION_SET(*session_data);
@@ -111,9 +111,9 @@ public:
 	 * @param[in] account_id   game account ID to check against.
 	 * @return shared_ptr to the game account data or nullptr if none found.
 	 */
-	std::shared_ptr<GameAccount> get_game_account(uint32_t account_id)
+	std::shared_ptr<Horizon::Models::GameAccount> get_game_account(uint32_t account_id)
 	{
-		std::shared_ptr<GameAccount> game_account = std::make_shared<GameAccount>();
+		std::shared_ptr<Horizon::Models::GameAccount> game_account = std::make_shared<Horizon::Models::GameAccount>();
 		PACKET_CI_GAME_ACCOUNT_REQ send_pkt;
 		PACKET_IC_GAME_ACCOUNT_REQ_ACK recv_pkt;
 
@@ -143,7 +143,7 @@ public:
 	 * @brief Insert or Update game account data into the inter server storage.
 	 * @param[in|out] game_account   shared_ptr to the game account data object.
 	 */
-	void store_game_account(std::shared_ptr<GameAccount> game_account)
+	void store_game_account(std::shared_ptr<Horizon::Models::GameAccount> game_account)
 	{
 		if (_inter_socket != nullptr)
 			_inter_socket->get_session()->get_packet_handler()->Send_CI_GAME_ACCOUNT_SET(*game_account);

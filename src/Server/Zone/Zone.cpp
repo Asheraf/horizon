@@ -30,8 +30,10 @@
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp" // required by clientmgr for update()
-#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
-#include "Server/Zone/Game/StaticDB/StaticDB.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
+#include "Server/Zone/Game/StaticDB/ExpDB.hpp"
+#include "Server/Zone/Game/StaticDB/JobDB.hpp"
+#include "Server/Zone/Game/StaticDB/ItemDB.hpp"
 
 #include <boost/asio.hpp>
 #include <iostream>
@@ -66,7 +68,6 @@ Horizon::Zone::ZoneMain::~ZoneMain()
 bool Horizon::Zone::ZoneMain::ReadConfig()
 {
 	sol::state lua;
-	int tmp_value;
 	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 
 	// Read the file. If there is an error, report it and exit.
@@ -136,8 +137,11 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	/**
 	 * Static Databases
 	 */
-	StaticDB->load_all();
-
+	ExpDB->load();
+	ExpDB->load_status_point_table();
+	JobDB->load();
+	ItemDB->load();
+	
 	/**
 	 * Core Signal Handler
 	 */

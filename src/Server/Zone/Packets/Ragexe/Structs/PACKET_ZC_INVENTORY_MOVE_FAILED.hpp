@@ -46,7 +46,10 @@ struct PACKET_ZC_INVENTORY_MOVE_FAILED : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		PacketBuffer buf(packet_id);
+		buf << inventory_index;
+		buf << silent;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +66,8 @@ struct PACKET_ZC_INVENTORY_MOVE_FAILED : public Packet
 	}
 
 	/* Size: 6 bytes */
+	uint16_t inventory_index;
+	uint16_t silent;
 };
 }
 }

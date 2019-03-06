@@ -28,7 +28,7 @@
 #ifndef HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
 #define HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
 
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include "Server/Common/Server.hpp"
 #include "Server/Common/Models/Character/Access.hpp"
 #include "Server/Common/Models/Character/Companion.hpp"
@@ -39,11 +39,12 @@
 #include "Server/Common/Models/Character/Status.hpp"
 #include "Server/Common/Models/Character/UISettings.hpp"
 #include "Server/Common/Models/Character/View.hpp"
+#include "Server/Common/Models/Character/Inventory.hpp"
 
 #include <string>
 #include <mysqlx/xdevapi.h>
 
-enum character_gender_types
+enum character_gender_type
 {
 	CHARACTER_GENDER_FEMALE = 0,
 	CHARACTER_GENDER_MALE   = 1,
@@ -61,6 +62,7 @@ enum character_save_mask
 	CHAR_SAVE_UI_SETTINGS_DATA  = 0x080,
 	CHAR_SAVE_GROUP_DATA        = 0x100,
 	CHAR_SAVE_STATUS_DATA       = 0x200,
+	CHAR_SAVE_INVENTORY_DATA    = 0x400,
 	CHAR_SAVE_ALL               = 0xfff,
 };
 namespace Horizon
@@ -76,7 +78,7 @@ public:
 	{ }
 
 	// Creation constructor without char_id.
-	Character(uint32_t account_id, std::string const &name, uint8_t slot, character_gender_types gender)
+	Character(uint32_t account_id, std::string const &name, uint8_t slot, character_gender_type gender)
 	: _account_id(account_id), _slot(slot), _name(name), _online(false), _gender(gender), _deleted_at(0)
 	{ }
 
@@ -100,7 +102,7 @@ public:
 				set_character_id(char_id);
 				set_account_id(record[0]);
 				set_slot((uint16_t) record[1].get<int>());
-				set_name(record[2]);
+				set_name(record[2].get<std::string>());
 				std::string gender = record[3].get<std::string>();
 				if (gender.compare("M") == 0)
 					set_gender(CHARACTER_GENDER_MALE);
@@ -169,6 +171,11 @@ public:
 		set_ui_settings(std::make_shared<UISettings>(char_id));
 
 		if (!get_ui_settings()->load(server, char_id))
+			return false;
+
+		set_inventory(std::make_shared<Inventory>(char_id));
+
+		if (!get_inventory()->load(server, char_id))
 			return false;
 
 		return true;
@@ -259,6 +266,9 @@ public:
 		set_ui_settings(std::make_shared<UISettings>(char_id));
 		save_mask |= CHAR_SAVE_UI_SETTINGS_DATA;
 
+		set_inventory(std::make_shared<Inventory>(char_id));
+		save_mask |= CHAR_SAVE_INVENTORY_DATA;
+
 		save(server, save_mask);
 	}
 
@@ -293,6 +303,9 @@ public:
 
 		if (type & CHAR_SAVE_UI_SETTINGS_DATA)
 			get_ui_settings()->save(server);
+
+		if (type & CHAR_SAVE_INVENTORY_DATA)
+			get_inventory()->save(server);
 	}
 
 	/* Character ID */
@@ -314,8 +327,8 @@ public:
 	void set_slot(uint16_t slot) { _slot = slot; }
 
 	/* Name */
-	const std::string &get_name() const { return _name; }
-	void set_name(const std::string &name) { _name = name; }
+	std::string const &get_name() const { return _name; }
+	void set_name(std::string const &name) { _name = name; }
 
 	/* Online */
 	bool is_online() const { return _online; }
@@ -323,56 +336,60 @@ public:
 	void set_offline() { _online = false; }
 
 	/* Gender */
-	character_gender_types get_gender() const { return _gender; }
-	void set_gender(character_gender_types gender) { _gender = gender; }
+	character_gender_type get_gender() const { return _gender; }
+	void set_gender(character_gender_type gender) { _gender = gender; }
 
 	/* Deleted */
-	void set_deleted_at(std::time_t time) { _deleted_at = time; }
 	bool get_deleted_at() { return _deleted_at; }
+	void set_deleted_at(std::time_t time) { _deleted_at = time; }
 
 	/* Access Data*/
-	const std::shared_ptr<Access> get_access_data() const { return _access_data; }
+	std::shared_ptr<Access> get_access_data() const { return _access_data; }
 	void set_access_data(std::shared_ptr<Access> const &access) { _access_data = access; }
 
 	/* Companion Data*/
-	const std::shared_ptr<Companion> get_companion_data() const { return _companion_data; }
+	std::shared_ptr<Companion> get_companion_data() const { return _companion_data; }
 	void set_companion_data(std::shared_ptr<Companion> const &companion) { _companion_data = companion; }
 
 	/* Family Data*/
-	const std::shared_ptr<Family> get_family_data() const { return _family_data; }
+	std::shared_ptr<Family> get_family_data() const { return _family_data; }
 	void set_family_data(std::shared_ptr<Family> const &family) { _family_data = family; }
 
 	/* Group Data*/
-	const std::shared_ptr<Group> get_group_data() const { return _group_data; }
+	std::shared_ptr<Group> get_group_data() const { return _group_data; }
 	void set_group_data(std::shared_ptr<Group> const &group) { _group_data = group; }
 
 	/* Misc Data*/
-	const std::shared_ptr<Misc> get_misc_data() const { return _misc_data; }
+	std::shared_ptr<Misc> get_misc_data() const { return _misc_data; }
 	void set_misc_data(std::shared_ptr<Misc> const &misc) { _misc_data = misc; }
 
 	/* Position Data*/
-	const std::shared_ptr<Position> get_position_data() const { return _position_data; }
+	std::shared_ptr<Position> get_position_data() const { return _position_data; }
 	void set_position_data(std::shared_ptr<Position> const &position) { _position_data = position; }
 
 	/* Status Data*/
-	const std::shared_ptr<Status> get_status_data() const { return _status_data; }
+	std::shared_ptr<Status> get_status_data() const { return _status_data; }
 	void set_status_data(std::shared_ptr<Status> const &status) { _status_data = status; }
 
 	/* UISettings Data*/
-	const std::shared_ptr<UISettings> get_ui_settings() const { return _ui_settings; }
+	std::shared_ptr<UISettings> get_ui_settings() const { return _ui_settings; }
 	void set_ui_settings(std::shared_ptr<UISettings> const &settings) { _ui_settings = settings; }
 
 	/* View Data*/
-	const std::shared_ptr<View> get_view_data() const { return _view_data; }
+	std::shared_ptr<View> get_view_data() const { return _view_data; }
 	void set_view_data(std::shared_ptr<View> const &view) { _view_data = view; }
 
+	/* Inventory */
+	std::shared_ptr<Inventory> get_inventory() const { return _inventory; }
+	void set_inventory(std::shared_ptr<Inventory> const &inv) { _inventory = inv; }
+	
 private:
 	uint32_t _character_id{0};
 	uint32_t _account_id{0};
 	uint16_t _slot{0};
 	std::string _name{""};
 	bool _online{false};
-	character_gender_types _gender{CHARACTER_GENDER_MALE};
+	character_gender_type _gender{CHARACTER_GENDER_MALE};
 	std::time_t _deleted_at{0};
 
 	std::shared_ptr<Access> _access_data{nullptr};
@@ -384,6 +401,7 @@ private:
 	std::shared_ptr<Status> _status_data{nullptr};
 	std::shared_ptr<UISettings> _ui_settings{nullptr};
 	std::shared_ptr<View> _view_data{nullptr};
+	std::shared_ptr<Inventory> _inventory{nullptr};
 };
 }
 }

@@ -28,7 +28,7 @@
 #ifndef HORIZON_AUTH_PACKETHANDLER_HPP
 #define HORIZON_AUTH_PACKETHANDLER_HPP
 
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include "Server/Common/PacketBuffer.hpp"
 #include "Server/Common/Base/PacketHandler/PacketHandler.hpp"
 
@@ -37,8 +37,14 @@
 #include <boost/function.hpp>
 #include <boost/system/error_code.hpp>
 
-class SessionData;
-class GameAccount;
+namespace Horizon
+{
+	namespace Models
+	{
+		class SessionData;
+		class GameAccount;
+	}
+}
 
 namespace Horizon
 {
@@ -78,7 +84,7 @@ public:
 	/**
 	 *
 	 */
-	bool validate_session_data(std::shared_ptr<GameAccount> game_account, uint32_t client_version, uint8_t client_type);
+	bool validate_session_data(std::shared_ptr<Models::GameAccount> game_account, uint32_t client_version, uint8_t client_type);
 
 	/**
 	 * Client To Auth

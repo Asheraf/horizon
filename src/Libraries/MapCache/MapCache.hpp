@@ -28,7 +28,7 @@
 #ifndef HORIZON_LIBRARIES_MAPCACHE_HPP
 #define HORIZON_LIBRARIES_MAPCACHE_HPP
 
-#include "Server/Common/Client.hpp"
+#include "Server/Common/Definitions/Client.hpp"
 #include "Libraries/GRF/GRF.hpp"
 
 #include <cstdint>
@@ -111,7 +111,7 @@ private:
 	mapcache_header _header{};
 };
 
-enum mcache_error_types
+enum mcache_error_type
 {
 	MCACHE_OK                    = 0,
 	MCACHE_INVALID_GRF_PATH      = 1,
@@ -122,14 +122,14 @@ enum mcache_error_types
 	MCACHE_GRF_LOAD_ERROR        = 6
 };
 
-enum mcache_config_error_types
+enum mcache_config_error_type
 {
 	MCACHE_CONFIG_OK                  = 0,
 	MCACHE_CONFIG_PARSE_ERROR         = 1,
 	MCACHE_CONFIG_INVALID_VALUE_TYPE  = 2,
 };
 
-enum mcache_grf_config_error_types
+enum mcache_grf_config_error_type
 {
 	MCACHE_GRF_CONF_OK                 = 0,
 	MCACHE_GRF_CONF_INVALID_FILE       = 1,
@@ -137,7 +137,7 @@ enum mcache_grf_config_error_types
 	MCACHE_GRF_CONF_INVALID_VALUE_TYPE = 3
 };
 
-enum mcache_import_error_types
+enum mcache_import_error_type
 {
 	MCACHE_IMPORT_OK                = 0,
 	MCACHE_IMPORT_NONEXISTENT_FILE  = 1,
@@ -148,7 +148,7 @@ enum mcache_import_error_types
 	MCACHE_IMPORT_CELLINFO_ERROR    = 6,
 };
 
-enum mcache_map_cell_types
+enum mcache_map_cell_type
 {
 	MAP_CELL_WALKABLE = 0,
 	MAP_CELL_WALKABLE_UNDER_WATER = 3,
@@ -165,10 +165,10 @@ public:
 	MapCache();
 	~MapCache();
 
-	mcache_error_types initialize();
+	mcache_error_type initialize();
 	bool Exists();
 
-	mcache_import_error_types ImportFromCacheFile();
+	mcache_import_error_type ImportFromCacheFile();
 
 	int BuildInternalCache();
 	bool BuildExternalCache();
@@ -178,14 +178,14 @@ public:
 
 	bool GetMapFromGRF(GRF &grf, std::string const &name);
 
-	bool ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_types error);
+	bool ParseGRFReadResult(GRF &grf, std::string const &filename, grf_read_error_type error);
 
 	/* */
-	mcache_config_error_types ReadMapListConfig();
+	mcache_config_error_type ReadMapListConfig();
 	/* */
-	mcache_grf_config_error_types ReadGRFListConfig();
+	mcache_grf_config_error_type ReadGRFListConfig();
 	/* */
-	std::pair<uint8_t, grf_load_result_types> LoadGRFs();
+	std::pair<uint8_t, grf_load_result_type> LoadGRFs();
 
 	void PrintCacheForMap(std::string const &map_name);
 

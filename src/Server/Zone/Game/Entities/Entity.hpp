@@ -28,11 +28,14 @@
 #ifndef HORIZON_ZONE_GAME_ENTITY_HPP
 #define HORIZON_ZONE_GAME_ENTITY_HPP
 
-#include "Server/Common/Horizon.hpp"
+#include "Server/Common/Definitions/Horizon.hpp"
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
-#include "Server/Zone/Game/Definitions/EntityDefinitions.hpp"
+#include "Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 #include "Server/Zone/Game/Map/Coordinates.hpp"
+#include "Server/Zone/Game/Map/Map.hpp"
+#include "Server/Zone/Game/Map/MapThreadContainer.hpp"
+#include "Server/Zone/Game/Map/Script/ScriptManager.hpp"
 
 #include <stdlib.h>
 #include <memory>
@@ -49,56 +52,125 @@ namespace Zone
 {
 namespace Game
 {
+	namespace Status
+	{
+		class Status;
+	}
 class Map;
 class Entity : public std::enable_shared_from_this<Entity>
 {
 public:
-	Entity(uint32_t guid, entity_types type);
-	Entity(uint32_t guid, entity_types type, MapCoords map_coords);
-	Entity(uint32_t guid, entity_types type, MapCoords map_coords, GridCoords grid_coords);
+	Entity(uint32_t guid, entity_type type, std::shared_ptr<Map> map, MapCoords map_coords);
 	~Entity();
 
 	virtual void initialize();
 
 	bool is_initialized() { return _is_initialized; }
 
+	/**
+	 * Movement
+	 */
+	MapCoords const &get_dest_pos() const { return _dest_pos; }
+	virtual bool move_to_pos(uint16_t x, uint16_t y);
+	bool is_walking() { return (get_dest_pos() != MapCoords(0, 0)); }
+protected:
+	bool schedule_movement(MapCoords mcoords);
+	void move();
+	virtual void stop_movement() = 0;
+	virtual void on_movement_begin() = 0;
+	virtual void on_movement_step() = 0;
+	virtual void on_movement_end() = 0;
+
+	/**
+	 * Unit Data
+	 */
+public:
 	uint32_t get_guid() const { return _guid; }
 	void set_guid(uint32_t guid) { _guid = guid; }
 
-	entity_types get_type() const { return _type; }
-	void set_type(entity_types type) { _type = type; }
+	uint16_t get_job_id() const { return _job_id; }
+	void set_job_id(uint16_t job_id) { _job_id = job_id; }
 
+	uint8_t get_gender() const { return _gender; }
+	void set_gender(uint8_t id) { _gender = id; }
+
+	entity_posture_type get_posture() const { return _posture; }
+	void set_posture(entity_posture_type posture) { _posture = posture; }
+
+	const std::string &get_name() const { return _name; }
+	void set_name(const std::string &name) { _name = name; }
+
+	directions get_direction() const { return _facing_dir; }
+	void set_direction(directions dir) { _facing_dir = dir; }
+
+	std::shared_ptr<Status::Status> get_status() { return _status; }
+	void set_status(std::shared_ptr<Status::Status> st) { _status = st; }
+
+	/**
+	 * Map & Map Container
+	 */
 	std::shared_ptr<Map> get_map() { return _map.expired() ? nullptr : _map.lock(); }
-	void set_map(std::shared_ptr<Map> map) { _map = map; }
+	void set_map(std::shared_ptr<Map> map)
+	{
+		_map = map;
+		_map_thread_container = map->get_map_container();
+		_script_manager = map->get_map_container()->get_script_manager();
+	}
 
-	/* Map Coords */
+	std::shared_ptr<MapThreadContainer> get_map_thread_container() { return _map_thread_container.lock(); }
+	std::shared_ptr<ScriptManager> get_script_manager() { return _script_manager.lock(); }
+
+	/**
+	 * Entity applications
+	 */
+	virtual void update(uint32_t diff);
+	TaskScheduler &getScheduler() { return _scheduler; }
+
+	entity_type get_type() const { return _type; }
+
+	template <class T>
+	std::shared_ptr<T> downcast()
+	{
+		return std::dynamic_pointer_cast<T>(shared_from_this());
+	}
+
+	/**
+	 * Grid applications.
+	 */
 	MapCoords const &get_map_coords() const { return _map_coords; }
 	void set_map_coords(MapCoords const &coords) { _map_coords = coords; }
 
-	/* Grid Coords */
 	GridCoords const &get_grid_coords() const { return _grid_coords; }
 	void set_grid_coords(GridCoords const &coords) { _grid_coords = coords; }
 
-	/* Update */
-	virtual void update(uint32_t diff);
-
-	/* Scheduler */
-	TaskScheduler &getScheduler() { return _scheduler; }
-
 	bool is_in_range_of(std::shared_ptr<Entity> entity, uint8_t range = MAX_VIEW_RANGE);
-
-	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
-
 	virtual void notify_nearby_players_of_self(entity_viewport_notification_type notif_type);
+	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
 
 private:
 	bool _is_initialized{false};
 	uint32_t _guid{0};
-	entity_types _type{ENTITY_UNKNOWN};
+	entity_type _type{ENTITY_UNKNOWN};
+	std::weak_ptr<Map> _map;
 	MapCoords _map_coords{0, 0};
 	GridCoords _grid_coords{0, 0};
 	TaskScheduler _scheduler;
-	std::weak_ptr<Map> _map;
+	
+	/* Simplified References */
+	std::weak_ptr<MapThreadContainer> _map_thread_container;
+	std::weak_ptr<ScriptManager> _script_manager;
+	
+	MapCoords _changed_dest_pos{0, 0}, _dest_pos{0, 0};
+	AStar::CoordinateList _walk_path;
+
+	std::shared_ptr<Status::Status> _status;
+
+	// General Data
+	std::string _name{""};
+	uint16_t _job_id{0};
+	uint8_t _gender{0};
+	entity_posture_type _posture{POSTURE_STANDING};
+	directions _facing_dir{DIR_SOUTH};
 };
 }
 }

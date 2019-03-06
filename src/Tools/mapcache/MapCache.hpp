@@ -48,11 +48,11 @@ public:
 
 	void parse_exec_args(int argc, const char *argv[]);
 
-	bool ParseInitializeResult(mcache_error_types type);
+	bool ParseInitializeResult(mcache_error_type type);
 
-	bool ParseGRFLoadResult(std::pair<uint8_t, grf_load_result_types> result);
+	bool ParseGRFLoadResult(std::pair<uint8_t, grf_load_result_type> result);
 
-	bool ParseMapCacheImportResult(mcache_import_error_types type);
+	bool ParseMapCacheImportResult(mcache_import_error_type type);
 
 	Horizon::Libraries::MapCache &getLibrary() { return _cache; }
 private:

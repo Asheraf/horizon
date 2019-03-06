@@ -49,33 +49,33 @@ namespace Horizon
 
 namespace Horizon
 {
-	namespace Char
+namespace Char
+{
+namespace Database
+{
+enum char_query_type
+{
+	SELECT_ALL_CHARS_BY_AID,
+	CHECK_EXISTING_CHAR_BY_NAME,
+};
+class Query : public Horizon::Common::Database::Query
+{
+public:
+	Query();
+	~Query();
+
+	static Query *getInstance()
 	{
-		namespace Database
-		{
-			enum char_query_types
-			{
-				SELECT_ALL_CHARS_BY_AID,
-				CHECK_EXISTING_CHAR_BY_NAME,
-			};
-			class Query : public Horizon::Common::Database::Query
-			{
-			public:
-				Query();
-				~Query();
-
-				static Query *getInstance()
-				{
-					static Query query;
-					return &query;
-				}
-
-				void InitializeQueryStrings();
-
-				std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
-			};
-		}
+		static Query query;
+		return &query;
 	}
+
+	void InitializeQueryStrings();
+
+	std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
+};
+}
+}
 }
 
 #define ZoneQuery Horizon::Zone::Database::Query::getInstance()

@@ -28,20 +28,21 @@
 #include "PacketHandler.hpp"
 
 #include "Core/Logging/Logger.hpp"
+#include "Server/Common/Definitions/Client.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
-#include "Server/Common/Client.hpp"
-#include "Server/Zone/Game/Atcommand/AtcommandExecutor.hpp"
-#include "Server/Zone/Game/Entities/Unit/Player/Player.hpp"
-#include "Server/Zone/Game/Entities/Unit/Unit.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/Player/Assets/Inventory.hpp"
+#include "Server/Zone/Game/Entities/Entity.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/Game/Map/MapThreadContainer.hpp"
-#include "Server/Zone/Game/Map/Script/ScriptMgr.hpp"
+#include "Server/Zone/Game/Map/Script/ScriptManager.hpp"
+#include "Server/Zone/Game/Status/Status.hpp"
+#include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
-#include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/Zone.hpp"
 #include "Utility/Utility.hpp"
 
@@ -54,6 +55,7 @@
 using namespace Horizon::Zone;
 using namespace Horizon::Zone::Game;
 using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Models;
 using namespace Horizon::Models::Character;
 
 /**
@@ -91,6 +93,16 @@ void PacketHandler::initialize_handlers()
 	HANDLER_FUNC(CZ_REQ_NEXT_SCRIPT)
 	HANDLER_FUNC(CZ_CLOSE_DIALOG)
 	HANDLER_FUNC(CZ_CHOOSE_MENU)
+	// Items
+	HANDLER_FUNC(CZ_USE_ITEM)
+	HANDLER_FUNC(CZ_USE_ITEM2)
+	HANDLER_FUNC(CZ_REQ_WEAR_EQUIP)
+	HANDLER_FUNC(CZ_REQ_WEAR_EQUIP_V5)
+	HANDLER_FUNC(CZ_REQ_TAKEOFF_EQUIP)
+	HANDLER_FUNC(CZ_USE_ITEM)
+	HANDLER_FUNC(CZ_USE_ITEM2)
+	// Status
+	HANDLER_FUNC(CZ_STATUS_CHANGE)
 #undef HANDLER_FUNC
 }
 
@@ -130,8 +142,7 @@ bool PacketHandler::Handle_CZ_REQNAME(PacketBuffer &buf)
 	if (entity == nullptr)
 		return true;
 
-	std::shared_ptr<Unit> unit = std::dynamic_pointer_cast<Unit>(entity);
-	Send_ZC_ACK_REQNAME(unit->get_guid(), unit->get_name());
+	Send_ZC_ACK_REQNAME(entity->get_guid(), entity->get_name());
 
 	return true;
 }
@@ -157,10 +168,10 @@ bool PacketHandler::verify_new_connection(uint32_t auth_code, uint32_t account_i
 
 	session->set_session_data(session_data);
 	session->set_game_account(game_account);
-	session->set_character(std::make_shared<Character>(char_id));
+	session->set_character(std::make_shared<Models::Character::Character>(char_id));
 
 	if (!session->get_character()->load_all(ZoneServer, char_id)) {
-		ZoneLog->info("Attempted connection for non-existent character {} by account {}.", account_id, char_id);
+		ZoneLog->error("Attempted connection for non-existent character {} by account {}.", account_id, char_id);
 		session->get_packet_handler()->Send_ZC_REFUSE_ENTER(ZONE_SERV_ERROR_REJECT);
 		return false;
 	}
@@ -176,20 +187,19 @@ bool PacketHandler::process_player_entry()
 	// Initilaize The Player
 	MapCoords mcoords(position->get_current_x(), position->get_current_y());
 
-	std::shared_ptr<Player> player = std::make_shared<Player>(session->get_game_account()->get_id(),
-															  mcoords,
-															  session);
+	std::shared_ptr<Map> map = MapMgr->get_map(position->get_current_map());
+
+	if (map == nullptr) {
+		ZoneLog->error("PacketHandler::process_player_entry: Map '{}' was not found or managed by any container! Login to session '{}' is denied.", position->get_current_map(), session->get_session_data()->get_auth_code());
+		return false;
+	}
+
+	std::shared_ptr<Player> player = std::make_shared<Player>(session->get_game_account()->get_id(), map, mcoords, session);
 	session->set_player(player);
 	set_player(player);
 
-	std::shared_ptr<Map> map = MapMgr->get_map(position->get_current_map());
-
-	if (!map) {
-		ZoneLog->error("Map {} was not found or managed by any container! Login to player {} is denied.", position->get_current_map(), player->get_name());
-		return false;
-	}
 	player->set_map(map);
-	map->get_map_container()->add_player(map->get_name(), player);
+	map->get_map_container()->add_player(player);
 
 	// Remove socket from updates on zone server after initial connection
 	// it will be managed by the map container thread.
@@ -373,11 +383,8 @@ bool PacketHandler::Handle_CZ_REQUEST_CHAT(PacketBuffer &buf)
 
 	pkt << buf;
 
-	std::string message;
-
 	if (pkt.message[msg_first_char] == '@') {
-		AtcommandExecutor atcmd(get_player(), &pkt.message[msg_first_char + 1]);
-		atcmd.execute();
+		get_player()->get_script_manager()->perform_command_from_player(get_player(), &pkt.message[msg_first_char + 1]);
 		return true;
 	}
 
@@ -387,10 +394,57 @@ bool PacketHandler::Handle_CZ_REQUEST_CHAT(PacketBuffer &buf)
 	return true;
 }
 
+bool PacketHandler::Handle_CZ_USE_ITEM(PacketBuffer &buf)
+{
+	Ragexe::PACKET_CZ_USE_ITEM pkt;
+	pkt << buf;
+	get_player()->get_inventory()->use_item(pkt.inventory_index - 2, pkt.guid);
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_USE_ITEM2(PacketBuffer &buf)
+{
+	return Handle_CZ_USE_ITEM(buf);
+}
+
+bool PacketHandler::Handle_CZ_REQ_WEAR_EQUIP(PacketBuffer &buf)
+{
+	Ragexe::PACKET_CZ_REQ_WEAR_EQUIP pkt;
+	pkt << buf;
+	get_player()->get_inventory()->equip_item(pkt.inventory_index - 2, pkt.equip_location_mask);
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_REQ_WEAR_EQUIP_V5(PacketBuffer &buf)
+{
+	return Handle_CZ_REQ_WEAR_EQUIP(buf);
+}
+
+bool PacketHandler::Handle_CZ_REQ_TAKEOFF_EQUIP(PacketBuffer &buf)
+{
+	Ragexe::PACKET_CZ_REQ_TAKEOFF_EQUIP pkt;
+	pkt << buf;
+
+	get_player()->get_inventory()->unequip_item(pkt.inventory_index - 2);
+	return true;
+}
+
+bool PacketHandler::Handle_CZ_STATUS_CHANGE(PacketBuffer &buf)
+{
+	uint32_t stat = 0;
+	Ragexe::PACKET_CZ_STATUS_CHANGE pkt;
+	pkt << buf;
+
+	stat = get_player()->get_status()->increase_status_point((status_point_type) pkt.type, pkt.amount);
+
+	Send_ZC_STATUS_CHANGE_ACK((status_point_type) pkt.type, stat ? true : false, stat);
+	return true;
+}
+
 /*==============*
  * Sender Methods
  *==============*/
-void PacketHandler::Send_ZC_REFUSE_ENTER(zone_server_reject_types error)
+void PacketHandler::Send_ZC_REFUSE_ENTER(zone_server_reject_type error)
 {
 	Ragexe::PACKET_ZC_REFUSE_ENTER pkt;
 	pkt.error = error;
@@ -422,7 +476,7 @@ void PacketHandler::Send_ZC_AID()
 
 void PacketHandler::Send_ZC_ACCEPT_ENTER3()
 {
-	std::shared_ptr<Character> character = get_socket()->get_session()->get_character();
+	std::shared_ptr<Models::Character::Character> character = get_socket()->get_session()->get_character();
 	std::shared_ptr<Position> position = character->get_position_data();
 	std::shared_ptr<UISettings> ui_settings = character->get_ui_settings();
 
@@ -467,7 +521,7 @@ void PacketHandler::Send_ZC_ACCEPT_ENTER2()
 	send_packet(pkt.serialize(x, y, DIR_SOUTH));
 }
 
-void PacketHandler::Send_ZC_NPCACK_MAPMOVE(std::string &map_name, uint16_t x, uint16_t y)
+void PacketHandler::Send_ZC_NPCACK_MAPMOVE(std::string map_name, uint16_t x, uint16_t y)
 {
 	Ragexe::PACKET_ZC_NPCACK_MAPMOVE pkt;
 
@@ -495,7 +549,7 @@ void PacketHandler::Send_ZC_NOTIFY_TIME()
 
 void PacketHandler::Send_ZC_NOTIFY_MOVE(uint32_t guid, MapCoords from, MapCoords to)
 {
-	std::shared_ptr<Character> character = get_session()->get_character();
+	std::shared_ptr<Models::Character::Character> character = get_session()->get_character();
 	Ragexe::PACKET_ZC_NOTIFY_MOVE pkt;
 
 	pkt.guid = guid;
@@ -524,6 +578,82 @@ void PacketHandler::Send_ZC_PAR_CHANGE(uint16_t type, uint16_t value)
 {
 	Ragexe::PACKET_ZC_PAR_CHANGE pkt;
 	pkt.type = type;
+	pkt.value = value;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_LONGPAR_CHANGE(uint16_t type, uint16_t value)
+{
+	Ragexe::PACKET_ZC_LONGPAR_CHANGE pkt;
+	pkt.type = type;
+	pkt.value = value;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_STATUS()
+{
+	Ragexe::PACKET_ZC_STATUS pkt;
+	std::shared_ptr<Horizon::Zone::Game::Status::Status> status = get_player()->get_status();
+
+	pkt.data.status_points = status->get_status_point()->get_base();
+	pkt.data.strength = status->get_strength()->get_base();
+	pkt.data.strength_req_stats = status->get_strength_cost()->get_base();
+	pkt.data.agility = status->get_agility()->get_base();
+	pkt.data.agility_req_stats = status->get_agility_cost()->get_base();
+	pkt.data.vitality = status->get_vitality()->get_base();
+	pkt.data.vitality_req_stats = status->get_vitality_cost()->get_base();
+	pkt.data.intelligence = status->get_intelligence()->get_base();
+	pkt.data.intelligence_req_stats = status->get_intelligence_cost()->get_base();
+	pkt.data.dexterity = status->get_dexterity()->get_base();
+	pkt.data.dexterity_req_stats = status->get_dexterity_cost()->get_base();
+	pkt.data.luck = status->get_luck()->get_base();
+	pkt.data.luck_req_stats = status->get_luck_cost()->get_base();
+	pkt.data.status_atk = status->get_status_atk()->total();
+	pkt.data.equip_atk = 0;
+	pkt.data.status_matk = status->get_status_matk()->total();
+	pkt.data.equip_matk = 0;
+	pkt.data.soft_def = status->get_soft_def()->total();
+	pkt.data.hard_def = 0;
+	pkt.data.soft_mdef = status->get_soft_mdef()->total();
+	pkt.data.hard_mdef = 0;
+	pkt.data.hit = status->get_hit()->total();
+	pkt.data.flee = status->get_flee()->total();
+	pkt.data.perfect_dodge = 0;
+	pkt.data.critical = status->get_crit()->total();
+	pkt.data.attack_speed = 0;
+	pkt.data.plus_aspd = 0;
+
+	send_packet(pkt.serialize());
+}
+void PacketHandler::Send_ZC_STATUS_CHANGE(status_point_type type, uint16_t amount)
+{
+	Ragexe::PACKET_ZC_STATUS_CHANGE pkt;
+	pkt.type = (uint16_t) type;
+	pkt.amount = amount;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_STATUS_CHANGE_ACK(status_point_type type, bool success, uint16_t amount)
+{
+	Ragexe::PACKET_ZC_STATUS_CHANGE_ACK pkt;
+	pkt.type = type;
+	pkt.success = success;
+	pkt.amount = amount;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_COUPLESTATUS(uint32_t type, uint32_t base, uint32_t bonus)
+{
+	Ragexe::PACKET_ZC_COUPLESTATUS pkt;
+	pkt.type = type;
+	pkt.base = base;
+	pkt.bonus = bonus;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_ATTACK_RANGE(uint32_t value)
+{
+	Ragexe::PACKET_ZC_ATTACK_RANGE pkt;
 	pkt.value = value;
 	send_packet(pkt.serialize());
 }
@@ -574,13 +704,6 @@ void PacketHandler::Send_ZC_OPEN_EDITDLGSTR(uint32_t npc_id)
 	send_packet(pkt.serialize());
 }
 
-
-void PacketHandler::Send_ZC_STATUS()
-{
-	Ragexe::PACKET_ZC_STATUS pkt;
-	send_packet(pkt.serialize());
-}
-
 void PacketHandler::Send_ZC_NOTIFY_NEWENTRY5()
 {
 	Ragexe::PACKET_ZC_NOTIFY_NEWENTRY5 pkt;
@@ -624,7 +747,7 @@ void PacketHandler::Send_ZC_NOTIFY_MOVEENTRY(entity_viewport_entry const &/*entr
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_ZC_NOTIFY_CHAT(uint32_t guid, std::string message, player_notifier_types type)
+void PacketHandler::Send_ZC_NOTIFY_CHAT(uint32_t guid, std::string message, player_notifier_type type)
 {
 	Ragexe::PACKET_ZC_NOTIFY_CHAT pkt;
 	PacketBuffer buf;
@@ -643,7 +766,7 @@ void PacketHandler::Send_ZC_NOTIFY_PLAYERCHAT(std::string message)
 	send_packet(pkt.serialize(message));
 }
 
-void PacketHandler::Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_notifier_types type)
+void PacketHandler::Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_notifier_type type)
 {
 	Ragexe::PACKET_ZC_NPC_CHAT pkt;
 
@@ -667,5 +790,88 @@ void PacketHandler::Send_ZC_NOTIFY_VANISH(uint32_t guid, uint8_t type)
 	Ragexe::PACKET_ZC_NOTIFY_VANISH pkt;
 	pkt.guid = guid;
 	pkt.type = type;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_NORMAL_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items)
+{
+	Ragexe::PACKET_ZC_INVENTORY_ITEMLIST_NORMAL_V5 pkt;
+	send_packet(pkt.serialize(items));
+}
+
+void PacketHandler::Send_ZC_EQUIPMENT_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items)
+{
+	Ragexe::PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 pkt;
+	send_packet(pkt.serialize(items));
+}
+
+void PacketHandler::Send_ZC_ITEM_PICKUP_ACK(item_entry_data id, uint16_t amount, item_inventory_addition_notif_type result)
+{
+	Ragexe::PACKET_ZC_ITEM_PICKUP_ACK_V7 pkt;
+	send_packet(pkt.serialize(id, amount, result));
+}
+
+void PacketHandler::Send_ZC_ITEM_THROW_ACK(uint16_t inventory_index, uint16_t amount)
+{
+	Ragexe::PACKET_ZC_ITEM_THROW_ACK pkt;
+	pkt.inventory_index = inventory_index;
+	pkt.amount = amount;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_INVENTORY_MOVE_FAILED(uint16_t inventory_index, bool silent)
+{
+	Ragexe::PACKET_ZC_INVENTORY_MOVE_FAILED pkt;
+	pkt.inventory_index = inventory_index;
+	pkt.silent = silent ? 1 : 0;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_DELETE_ITEM_FROM_BODY(uint16_t inventory_index, uint16_t amount, item_deletion_reason_type reason)
+{
+	Ragexe::PACKET_ZC_DELETE_ITEM_FROM_BODY pkt;
+	pkt.inventory_index = inventory_index;
+	pkt.amount = amount;
+	pkt.reason = reason;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_NOTIFY_BIND_ON_EQUIP(std::shared_ptr<const item_entry_data> item)
+{
+	Ragexe::PACKET_ZC_NOTIFY_BIND_ON_EQUIP pkt;
+	pkt.index = item->inventory_index;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_REQ_WEAR_EQUIP_ACK(std::shared_ptr<const item_entry_data> item, item_equip_result_type result)
+{
+	Ragexe::PACKET_ZC_REQ_WEAR_EQUIP_ACK2 pkt;
+	pkt.inventory_index = item->inventory_index;
+	pkt.equip_location_mask = item->current_equip_location_mask;
+	pkt.sprite_id = item->sprite_id;
+	pkt.result = (uint8_t) result;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_REQ_TAKEOFF_EQUIP_ACK(std::shared_ptr<const item_entry_data> item, item_unequip_result_type result)
+{
+	Ragexe::PACKET_ZC_REQ_TAKEOFF_EQUIP_ACK2 pkt;
+	pkt.inventory_index = item->inventory_index;
+	pkt.equip_location_mask = item->current_equip_location_mask;
+	pkt.result = (uint8_t) result;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_EQUIP_ARROW(std::shared_ptr<const item_entry_data> item)
+{
+	Ragexe::PACKET_ZC_EQUIP_ARROW pkt;
+	pkt.inventory_index = item->inventory_index;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_ACTION_MESSAGE(uint16_t message_type)
+{
+	Ragexe::PACKET_ZC_ACTION_MESSAGE pkt;
+	pkt.message_type = message_type;
 	send_packet(pkt.serialize());
 }
