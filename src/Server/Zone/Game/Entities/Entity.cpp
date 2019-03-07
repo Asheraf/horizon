@@ -95,12 +95,6 @@ bool Entity::schedule_movement(MapCoords coords)
 
 void Entity::move()
 {
-	if (_changed_dest_pos != MapCoords(0, 0)) {
-		_dest_pos = _changed_dest_pos;
-		schedule_movement(_dest_pos);
-		return;
-	}
-
 	MapCoords my_coords = get_map_coords();
 	AStar::Vec2i c = _walk_path.at(0);
 
@@ -119,7 +113,11 @@ void Entity::move()
 
 			on_movement_step();
 
-			if (_dest_pos == MapCoords(c.x, c.y)) {
+			if (_changed_dest_pos != MapCoords(0, 0)) {
+				_dest_pos = _changed_dest_pos;
+				schedule_movement(_dest_pos);
+				return;
+			} else if (_dest_pos == MapCoords(c.x, c.y)) {
 				_dest_pos = { 0, 0 };
 				on_movement_end();
 			}
