@@ -134,6 +134,7 @@ public:
 	/**
 	 * Player applications.
 	 */
+	void on_map_enter();
 	bool move_to_map(std::shared_ptr<Map> map, MapCoords coords = { 0, 0 });
 	void update(uint32_t diff) override;
 	

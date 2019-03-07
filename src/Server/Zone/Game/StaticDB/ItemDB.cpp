@@ -112,7 +112,8 @@ int ItemDatabase::load_items(sol::table &item_tbl)
 			} else if (t_str.compare("IT_TYPE_AMMO") == 0) {
 				id.type = IT_TYPE_AMMO;
 			} else if (t_str.compare("IT_TYPE_CONSUMPTION_DELAY") == 0) {
-				id.type = IT_TYPE_CONSUMPTION_DELAY;
+				id.type = IT_TYPE_USABLE;
+				id.config.consumption_delay = 1;
 			} else if (t_str.compare("IT_TYPE_CASH") == 0) {
 				id.type = IT_TYPE_CASH;
 			} else {
@@ -179,8 +180,23 @@ int ItemDatabase::load_items(sol::table &item_tbl)
 			}
 		}
 
-		id.value_buy = tbl.get_or("Buy", 0);
-		id.value_sell = tbl.get_or("Sell", 0);
+		id.value_buy = tbl.get_or("Buy", -1);
+		id.value_sell = tbl.get_or("Sell", -1);
+
+		if (id.value_buy == -1 && id.value_sell == -1)
+			id.value_buy = id.value_sell = 0;
+		else if (id.value_buy == -1)
+			id.value_buy = id.value_sell * 2;
+		else if (id.value_sell == -1)
+			id.value_sell = id.value_buy / 2;
+
+		// Discount / Overcharge zeny exploit check.
+		if (id.value_buy / 124.0 < id.value_sell / 75.0) {
+			ZoneLog->warn("ItemDatabase::load_items: Buying/Selling [{}/{}] price of item {} ({}) "
+						"allows Zeny making exploit through buying/selling at discounted/overcharged prices!\n",
+						id.value_buy, id.value_sell, id.item_id, id.name);
+		}
+
 		id.weight = tbl.get_or("Weight", 0);
 		id.attack = tbl.get_or("Atk", 0);
 		id.magic_atk = tbl.get_or("Matk", 0);

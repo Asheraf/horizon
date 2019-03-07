@@ -83,10 +83,11 @@ bool Inventory::use_item(uint32_t inventory_index, uint32_t guid)
 	std::shared_ptr<const item_config_data> itemd = ItemDB->get(inv_item->item_id);
 
 	if (itemd == nullptr) {
-		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
-		return IT_EQUIP_FAIL;
+		get_packet_handler()->Send_ZC_USE_ITEM_ACK(inv_item, false);
+		return false;
 	}
-	
+
+	get_packet_handler()->Send_ZC_USE_ITEM_ACK(inv_item, true);
 	return true;
 }
 
@@ -202,6 +203,7 @@ itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 	data.weight = item->weight;
 	data.attack = item->attack;
 	data.defense = item->defense;
+	data.info.place_in_fav_tab = 0;
 
 	itemstore_addition_result_type result = add_to_itemstore(data, amount);
 

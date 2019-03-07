@@ -131,18 +131,12 @@ void Status::initialize(std::shared_ptr<Character::Character> character)
 	set_robe_sprite(std::make_shared<RobeSprite>(_entity, view_model->get_robe_view_id()));
 	set_body_style(std::make_shared<BodyStyle>(_entity, view_model->get_body_id()));
 
-	// Notifications.
-	get_max_weight()->notify_update();
-	get_next_base_experience()->notify_update();
-	get_base_experience()->notify_update();
-
 	initialize_sub_attributes();
 	initialize_observable_statuses();
 
 	if (get_entity()->get_type() == ENTITY_PLAYER) {
 		get_entity()->downcast<Entities::Player>()->get_packet_handler()->Send_ZC_STATUS();
 	}
-
 }
 
 void Status::initialize_sub_attributes()

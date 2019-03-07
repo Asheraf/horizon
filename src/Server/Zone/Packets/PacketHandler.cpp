@@ -103,6 +103,8 @@ void PacketHandler::initialize_handlers()
 	HANDLER_FUNC(CZ_USE_ITEM2)
 	// Status
 	HANDLER_FUNC(CZ_STATUS_CHANGE)
+	// Map
+	HANDLER_FUNC(CZ_NOTIFY_ACTORINIT)
 #undef HANDLER_FUNC
 }
 
@@ -368,11 +370,7 @@ bool PacketHandler::Handle_CZ_CHANGE_DIRECTION(PacketBuffer &buf)
 
 bool PacketHandler::Handle_CZ_CHANGE_DIRECTION2(PacketBuffer &buf)
 {
-	Ragexe::PACKET_CZ_CHANGE_DIRECTION2 pkt;
-
-	pkt << buf;
-
-	return true;
+	return Handle_CZ_CHANGE_DIRECTION(buf);
 }
 
 bool PacketHandler::Handle_CZ_REQUEST_CHAT(PacketBuffer &buf)
@@ -441,6 +439,12 @@ bool PacketHandler::Handle_CZ_STATUS_CHANGE(PacketBuffer &buf)
 	return true;
 }
 
+bool PacketHandler::Handle_CZ_NOTIFY_ACTORINIT(PacketBuffer &buf)
+{
+	Ragexe::PACKET_CZ_NOTIFY_ACTORINIT pkt;
+	get_player()->on_map_enter();
+	return true;
+}
 /*==============*
  * Sender Methods
  *==============*/
@@ -873,5 +877,38 @@ void PacketHandler::Send_ZC_ACTION_MESSAGE(uint16_t message_type)
 {
 	Ragexe::PACKET_ZC_ACTION_MESSAGE pkt;
 	pkt.message_type = message_type;
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_MAPPROPERTY_R2(std::shared_ptr<Map> map)
+{
+	Ragexe::PACKET_ZC_MAPPROPERTY_R2 pkt;
+
+	pkt.property.pvp = 0;
+	pkt.property.gvg = 0;
+	pkt.property.siege = 0;
+	pkt.property.no_effects = 0;
+	pkt.property.party_pvp = 0;
+	pkt.property.pvp_kill_counter = 0;
+	pkt.property.disallow_party = 0;
+	pkt.property.battleground = 0;
+	pkt.property.no_costume = 0;
+	pkt.property.allow_carts = 0;
+	pkt.property.stargladiator_miracles = 0;
+	pkt.property.spare_bits = 0;
+
+	send_packet(pkt.serialize());
+}
+
+void PacketHandler::Send_ZC_USE_ITEM_ACK(std::shared_ptr<const item_entry_data> item, bool success)
+{
+	Ragexe::PACKET_ZC_USE_ITEM_ACK2 pkt;
+
+	pkt.inventory_index = item->inventory_index;
+	pkt.item_id = item->item_id;
+	pkt.amount = item->amount;
+	pkt.guid = get_player()->get_guid();
+	pkt.result = success;
+
 	send_packet(pkt.serialize());
 }

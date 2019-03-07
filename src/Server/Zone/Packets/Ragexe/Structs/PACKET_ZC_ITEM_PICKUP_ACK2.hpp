@@ -47,7 +47,7 @@ struct PACKET_ZC_ITEM_PICKUP_ACK2 : public PACKET_ZC_ITEM_PICKUP_ACK
 {
 	PACKET_ZC_ITEM_PICKUP_ACK2(uint16_t packet_id = ZC_ITEM_PICKUP_ACK2) : PACKET_ZC_ITEM_PICKUP_ACK(packet_id) { }
 
-	virtual PacketBuffer serialize(item_entry_data const &data, uint16_t amount, item_inventory_addition_notif_type result)
+	virtual PacketBuffer serialize(item_entry_data const &data, uint16_t amount, item_inventory_addition_notif_type result) override
 	{
 		PacketBuffer buf(packet_id);
 

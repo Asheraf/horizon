@@ -61,7 +61,7 @@ struct PACKET_ZC_INVENTORY_ITEMLIST_NORMAL_V5 : public PACKET_ZC_NORMAL_ITEMLIST
 			buf << id->hire_expire_date;
 
 			config |= id->info.is_identified;
-			config |= 1 << id->info.place_in_etc_tab;
+			config |= 1 << id->info.place_in_fav_tab;
 			buf << config;
 		}
 		buf.emplace_size();

@@ -398,7 +398,7 @@ struct item_entry_data
 	struct {
 		unsigned is_identified : 1;
 		unsigned is_broken : 1;
-		unsigned place_in_etc_tab : 1;
+		unsigned place_in_fav_tab : 1;
 	} info;
 	uint8_t is_favorite{0};
 	item_bind_type bind_type{IT_BIND_NONE};

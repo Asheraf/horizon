@@ -33,6 +33,7 @@
 
 #include "Server/Common/PacketBuffer.hpp"
 
+#include <cstring>
 
 namespace Horizon
 {
@@ -46,7 +47,13 @@ struct PACKET_ZC_MAPPROPERTY_R2 : public Packet
 
 	virtual PacketBuffer serialize()
 	{
-		return PacketBuffer(packet_id);
+		uint32_t properties;
+
+		PacketBuffer buf(packet_id);
+		buf << type;
+		std::memcpy(&properties, &property, sizeof(property));
+		buf << properties;
+		return buf;
 	}
 
 	virtual void deserialize(PacketBuffer &/*buf*/) { }
@@ -63,6 +70,21 @@ struct PACKET_ZC_MAPPROPERTY_R2 : public Packet
 	}
 
 	/* Size: 8 bytes */
+	uint16_t type{0x28};
+	struct {
+		unsigned pvp : 1;
+		unsigned gvg : 1;
+		unsigned siege : 1;
+		unsigned no_effects : 1;
+		unsigned party_pvp : 1;
+		unsigned pvp_kill_counter : 1;
+		unsigned disallow_party : 1;
+		unsigned battleground : 1;
+		unsigned no_costume : 1;
+		unsigned allow_carts : 1;
+		unsigned stargladiator_miracles : 1;
+		unsigned spare_bits : 21;
+	} property;
 };
 }
 }

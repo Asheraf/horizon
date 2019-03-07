@@ -48,6 +48,7 @@ namespace Horizon
 	{
 		namespace Game
 		{
+			class Map;
 			namespace Entities
 			{
 				class Player;
@@ -129,7 +130,8 @@ public:
 	virtual bool Handle_CZ_REQ_WEAR_EQUIP_V5(PacketBuffer &buf);
 	virtual bool Handle_CZ_REQ_TAKEOFF_EQUIP(PacketBuffer &buf);
 	virtual bool Handle_CZ_STATUS_CHANGE(PacketBuffer &buf);
-
+	virtual bool Handle_CZ_NOTIFY_ACTORINIT(PacketBuffer &buf);
+	
 	virtual bool verify_new_connection(uint32_t auth_code, uint32_t account_id, uint32_t char_id);
 	virtual bool process_player_entry();
 	/**
@@ -180,6 +182,8 @@ public:
 	virtual void Send_ZC_REQ_TAKEOFF_EQUIP_ACK(std::shared_ptr<const item_entry_data> item, item_unequip_result_type result);
 	virtual void Send_ZC_EQUIP_ARROW(std::shared_ptr<const item_entry_data> item);
 	virtual void Send_ZC_ACTION_MESSAGE(uint16_t message_type);
+	virtual void Send_ZC_MAPPROPERTY_R2(std::shared_ptr<Game::Map> map);
+	virtual void Send_ZC_USE_ITEM_ACK(std::shared_ptr<const item_entry_data> item, bool success);
 };
 }
 }

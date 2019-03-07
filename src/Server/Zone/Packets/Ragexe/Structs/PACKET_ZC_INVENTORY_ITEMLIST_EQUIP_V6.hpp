@@ -66,7 +66,7 @@ struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 : public PACKET_ZC_INVENTORY_ITEMLI
 
 			config |= id->info.is_identified;
 			config |= 1 << id->info.is_broken;
-			config |= 2 << id->info.place_in_etc_tab;
+			config |= 2 << id->info.place_in_fav_tab;
 			buf << config;
 		}
 		buf.emplace_size();

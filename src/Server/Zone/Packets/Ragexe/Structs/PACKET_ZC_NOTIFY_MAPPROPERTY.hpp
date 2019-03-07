@@ -63,6 +63,7 @@ struct PACKET_ZC_NOTIFY_MAPPROPERTY : public Packet
 	}
 
 	/* Size: 4 bytes */
+	uint16_t property{0};
 };
 }
 }

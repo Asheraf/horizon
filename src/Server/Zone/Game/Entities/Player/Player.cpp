@@ -88,6 +88,8 @@ void Player::initialize()
 	get_map()->ensure_grid_for_entity(this, get_map_coords());
 	// Update current viewport.
 	update_viewport();
+	// On map entry processing.
+	on_map_enter();
 }
 
 void Player::stop_movement()
@@ -270,4 +272,15 @@ void Player::on_item_equip(std::shared_ptr<const item_entry_data> item)
 void Player::on_item_unequip(std::shared_ptr<const item_entry_data> item)
 {
 
+}
+
+void Player::on_map_enter()
+{
+	get_packet_handler()->Send_ZC_MAPPROPERTY_R2(get_map());
+
+	// Status Notifications.
+	get_status()->get_max_weight()->notify_update();
+	get_status()->get_current_weight()->notify_update();
+	get_status()->get_next_base_experience()->notify_update();
+	get_status()->get_base_experience()->notify_update();
 }
