@@ -360,8 +360,10 @@ uint32_t Inventory::sync_from_model()
 		std::shared_ptr<item_entry_data> item = std::make_shared<item_entry_data>(mitem);
 		std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
 		item->type = itemd->type;
+		item->sprite_id = itemd->sprite_id;
 		item->actual_equip_location_mask = itemd->equip_location_mask;
 		_item_store.push_back(item);
+		get_player()->get_status()->get_current_weight()->add_base(itemd->weight * item->amount);
 	}
 	
 	return _item_store.size();

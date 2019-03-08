@@ -377,14 +377,6 @@ struct item_entry_data
 	uint16_t bound_type{0};
 	uint16_t sprite_id{0};
 
-	uint32_t weight{0};
-	int32_t attack{0};
-	int32_t defense{0};
-	int8_t attack_range{0};
-
-	int8_t card_slot_count{0};
-
-	uint8_t option_count{0};
 	item_element_type element_type{ELE_NEUTRAL};
 	struct options {
 		int16_t index{0};
