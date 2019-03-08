@@ -169,7 +169,7 @@ void Player::sync_with_models()
 		if (char_save_mask & CHAR_SAVE_INVENTORY_DATA)
 			saved_str.append(saved_str.empty() ? "inventory" : ", inventory");
 
-		ZoneLog->info("Saved {} data for character {} (CID: {}).", saved_str, get_char_model()->get_name(), get_char_model()->get_id());
+		ZoneLog->info("Saved {} data for character {} (AID: {}, CID: {}).", saved_str, get_char_model()->get_name(), get_guid(), get_char_model()->get_id());
 	}
 }
 

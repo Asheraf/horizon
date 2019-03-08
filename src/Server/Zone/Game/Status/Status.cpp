@@ -341,8 +341,8 @@ bool Status::sync_to_model(std::shared_ptr<Models::Character::Status> status)
 	status->set_skill_points(get_skill_point()->get_base());
 	status->set_max_hp(get_max_hp()->get_base());
 	status->set_max_sp(get_max_sp()->get_base());
-	status->set_sp(get_current_hp()->get_base());
-	status->set_hp(get_current_sp()->get_base());
+	status->set_hp(get_current_hp()->get_base());
+	status->set_sp(get_current_sp()->get_base());
 	status->set_base_level(get_base_level()->get_base());
 	status->set_job_level(get_job_level()->get_base());
 	status->set_base_exp(get_base_experience()->get_base());
