@@ -227,21 +227,14 @@ uint32_t Inventory::calculate_current_equip_location_mask(std::shared_ptr<const 
 		}
 	}
 
-	switch (item->equip_location_mask)
-	{
-		case IT_EQPM_ACC:
-			current_equip_location_mask = get_equipped_items()[IT_EQPI_ACC_L].second.expired() ? IT_EQPM_ACC_L : IT_EQPM_ACC_R;
-			break;
-		case IT_EQPM_ARMS:
-			current_equip_location_mask =  get_equipped_items()[IT_EQPI_HAND_L].second.expired() ? IT_EQPM_HAND_L : IT_EQPM_HAND_R;
-			break;
-		case IT_EQPM_SHADOW_ACC:
-			current_equip_location_mask =  get_equipped_items()[IT_EQPI_SHADOW_ACC_L].second.expired() ? IT_EQPM_SHADOW_ACC_L : IT_EQPM_SHADOW_ACC_R;
-			break;
-		case IT_EQPM_SHADOW_ARMS:
-			current_equip_location_mask =  get_equipped_items()[IT_EQPI_SHADOW_WEAPON].second.expired() ? IT_EQPM_SHADOW_WEAPON : IT_EQPM_SHADOW_SHIELD;
-			break;
-	}
+	if (current_equip_location_mask == IT_EQPM_ACC)
+		current_equip_location_mask = get_equipped_items()[IT_EQPI_ACC_L].second.expired() ? IT_EQPM_ACC_L : IT_EQPM_ACC_R;
+	else if (current_equip_location_mask == IT_EQPM_ARMS && item->equip_location_mask == IT_EQPM_WEAPON)
+		current_equip_location_mask = get_equipped_items()[IT_EQPI_HAND_L].second.expired() ? IT_EQPM_HAND_L : IT_EQPM_HAND_R;
+	else if (current_equip_location_mask == IT_EQPM_SHADOW_ACC)
+		current_equip_location_mask = get_equipped_items()[IT_EQPI_SHADOW_ACC_L].second.expired() ? IT_EQPM_SHADOW_ACC_L : IT_EQPM_SHADOW_ACC_R;
+	else if (current_equip_location_mask == IT_EQPM_SHADOW_ARMS && item->equip_location_mask == IT_EQPM_SHADOW_WEAPON)
+		current_equip_location_mask = get_equipped_items()[IT_EQPI_SHADOW_WEAPON].second.expired() ? IT_EQPM_SHADOW_WEAPON : IT_EQPM_SHADOW_SHIELD;
 
 	return current_equip_location_mask;
 }
