@@ -38,8 +38,8 @@ public:
 	std::shared_ptr<PacketHandler> get_packet_handler();
 	void set_packet_handler(std::shared_ptr<PacketHandler> handler);
 	/* Character */
-	std::shared_ptr<Horizon::Models::Character::Character> get_character();
-	void set_character(std::shared_ptr<Horizon::Models::Character::Character> character);
+	std::shared_ptr<Horizon::Models::Character::Character> get_char_model();
+	void set_char_model(std::shared_ptr<Horizon::Models::Character::Character> character);
 	/* Game Account */
 	std::shared_ptr<Horizon::Models::GameAccount> get_game_account();
 	void set_game_account(std::shared_ptr<Horizon::Models::GameAccount> account);

@@ -46,11 +46,11 @@ struct PACKET_ZC_NORMAL_ITEMLIST2 : public PACKET_ZC_NORMAL_ITEMLIST
 {
 	PACKET_ZC_NORMAL_ITEMLIST2(uint16_t packet_id = ZC_NORMAL_ITEMLIST2) : PACKET_ZC_NORMAL_ITEMLIST(packet_id) { }
 
-	virtual PacketBuffer serialize(std::vector<std::shared_ptr<item_entry_data>> const &items) const override
+	virtual PacketBuffer serialize(std::vector<std::shared_ptr<const item_entry_data>> const &items) const override
 	{
 		PacketBuffer buf(packet_id);
 		for (auto it = items.begin(); it != items.end(); it++) {
-			std::shared_ptr<item_entry_data> id = *it;
+			std::shared_ptr<const item_entry_data> id = *it;
 			buf << id->inventory_index;
 			buf << (uint16_t) id->item_id;
 			buf << (uint8_t) id->type;
@@ -58,7 +58,7 @@ struct PACKET_ZC_NORMAL_ITEMLIST2 : public PACKET_ZC_NORMAL_ITEMLIST
 			buf << id->amount;
 			buf << (uint16_t) id->actual_equip_location_mask;
 			for (int i = 0; i < sizeof(id->slot_item_id); i++)
-				buf << id->slot_item_id[i];
+				buf << (uint16_t) id->slot_item_id[i];
 		}
 		buf.emplace_size();
 		return buf;

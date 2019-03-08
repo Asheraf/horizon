@@ -54,8 +54,8 @@ CharSession::~CharSession()
 std::shared_ptr<PacketHandler> CharSession::get_packet_handler() { return _packet_handler; }
 void CharSession::set_packet_handler(std::shared_ptr<PacketHandler> handler) { _packet_handler.swap(handler); }
 /* Character */
-std::shared_ptr<Character::Character> CharSession::get_character() { return _character; }
-void CharSession::set_character(std::shared_ptr<Character::Character> character) { _character.swap(character); }
+std::shared_ptr<Character::Character> CharSession::get_char_model() { return _character; }
+void CharSession::set_char_model(std::shared_ptr<Character::Character> character) { _character.swap(character); }
 /* Game Account */
 std::shared_ptr<GameAccount> CharSession::get_game_account() { return _game_account; }
 void CharSession::set_game_account(std::shared_ptr<GameAccount> account) { _game_account.swap(account); }

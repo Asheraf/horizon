@@ -46,13 +46,11 @@ struct PACKET_ZC_EQUIPMENT_ITEMLIST : public Packet
 {
 	PACKET_ZC_EQUIPMENT_ITEMLIST(uint16_t packet_id = ZC_EQUIPMENT_ITEMLIST) : Packet(packet_id) { }
 
-	virtual PacketBuffer serialize(std::vector<std::shared_ptr<item_entry_data>> const &items) const
+	virtual PacketBuffer serialize(std::vector<std::shared_ptr<const item_entry_data>> const &items) const
 	{
 		PacketBuffer buf(packet_id);
 		for (auto it = items.begin(); it != items.end(); it++) {
-			std::shared_ptr<item_entry_data> id = (*it);
-			if (!(*it)->is_equipment())
-				continue;
+			std::shared_ptr<const item_entry_data> id = *it;
 			buf << id->inventory_index;
 			buf << ((uint16_t) id->item_id);
 			buf << ((uint8_t) id->type);
@@ -62,7 +60,7 @@ struct PACKET_ZC_EQUIPMENT_ITEMLIST : public Packet
 			buf << ((uint8_t) id->info.is_broken ? 1 : 0);
 			buf << id->refine_level;
 			for (int i = 0; i < sizeof(id->slot_item_id); i++)
-				buf << id->slot_item_id[i];
+				buf << (uint16_t) id->slot_item_id[i];
 		}
 		buf.emplace_size();
 		return buf;

@@ -70,6 +70,8 @@ public:
 	void notify_deletion(uint16_t idx, uint16_t amount, itemstore_deletion_reason_type reason);
 	void notify_drop(uint16_t idx, uint16_t amount);
 	void notify_move_fail(uint16_t idx, bool silent);
+	uint32_t sync_to_model();
+	uint32_t sync_from_model();
 
 protected:
 	uint32_t calculate_current_equip_location_mask(std::shared_ptr<const item_config_data> item);

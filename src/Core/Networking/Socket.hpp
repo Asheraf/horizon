@@ -103,7 +103,7 @@ public:
 		_read_buffer.ensureFreeSpace();
 
 		_socket->async_read_some(boost::asio::buffer(_read_buffer.get_write_pointer(), _read_buffer.get_remaining_space()),
-								 boost::bind(&Socket<SocketType>::internal_read_handler, this, boost::placeholders::_1, boost::placeholders::_2));
+								 boost::bind(&Socket<SocketType>::read_handler_internal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
 	void async_read_with_callback(MessageBuffer &buf, void (Socket<SocketType>::*/*callback*/)(boost::system::error_code, std::size_t))
@@ -115,7 +115,7 @@ public:
 		_read_buffer.ensureFreeSpace();
 
 		_socket->async_read_some(boost::asio::buffer(buf.get_write_pointer(), buf.get_remaining_space()),
-								 boost::bind(&Socket<SocketType>::internal_read_handler, this, boost::placeholders::_1, boost::placeholders::_2));
+								 boost::bind(&Socket<SocketType>::read_handler_internal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
 	/**
@@ -159,7 +159,7 @@ public:
 
 	bool is_open() { return !_closed && !_closing; }
 
-	void close_socket(bool error = false)
+	void close_socket()
 	{
 		boost::system::error_code socket_error;
 
@@ -167,7 +167,7 @@ public:
 			return;
 
 		// Finalise the child-class socket first.
-		on_close(error);
+		on_close();
 
 		/**
 		 * Socket finalisation.
@@ -188,7 +188,7 @@ public:
 	MessageBuffer &get_read_buffer() { return _read_buffer; }
 
 protected:
-	virtual void on_close(bool error = false) = 0;
+	virtual void on_close() = 0;
 	virtual void read_handler() = 0;
 	virtual void on_error() = 0;
 
@@ -238,17 +238,19 @@ private:
 	 * @param error
 	 * @param transferredBytes
 	 */
-	void internal_read_handler(boost::system::error_code error, size_t transferredBytes)
+	void read_handler_internal(boost::system::error_code error, size_t transferredBytes)
 	{
 		if (error) {
 			if (error.value() == boost::asio::error::eof) {
 				close_socket();
 			} else if (error.value() == boost::system::errc::connection_reset
 					   || error.value() == boost::system::errc::timed_out) {
-				close_socket(true);
 				on_error();
+				close_socket();
 			} else {
-				CoreLog->debug("Socket::internal_read_handler: {} - {}.", error.value(), error.message());
+				on_error();
+				close_socket();
+				CoreLog->debug("Socket::read_handler_internal: {} (Code: {}).", error.value(), error.message());
 			}
 			return;
 		}

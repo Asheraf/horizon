@@ -72,15 +72,12 @@ void AuthSocket::start()
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void AuthSocket::on_close(bool error)
+void AuthSocket::on_close()
 {
 	AuthLog->info("Closed connection from {}.", remote_ip_address());
 
-	/**
-	 * @brief Perform socket manager cleanup.
-	 */
-	if (AuthServer->get_shutdown_stage() == SHUTDOWN_NOT_STARTED)
-		ClientSocktMgr->set_socket_for_removal(shared_from_this());
+	/* Perform socket manager cleanup. */
+	ClientSocktMgr->set_socket_for_removal(shared_from_this());
 }
 
 void AuthSocket::on_error()

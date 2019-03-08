@@ -53,7 +53,7 @@ struct PACKET_ZC_ITEM_PICKUP_ACK_V7 : public PACKET_ZC_ITEM_PICKUP_ACK_V6
 
 		buf << data.inventory_index;
 		buf << amount;
-		buf << ((uint16_t) data.item_id);
+		buf << (uint16_t) data.item_id;
 		buf << (uint8_t) (data.info.is_identified ? 1 : 0);
 		buf << (uint8_t) (data.info.is_broken ? 1 : 0 );
 		buf << data.refine_level;
@@ -65,7 +65,7 @@ struct PACKET_ZC_ITEM_PICKUP_ACK_V7 : public PACKET_ZC_ITEM_PICKUP_ACK_V6
 		buf << (uint8_t) data.type;
 		buf << (uint8_t) result;
 		buf << data.hire_expire_date;
-		buf << data.bind_on_equip;
+		buf << data.bound_type;
 
 		for (int i = 0; i < MAX_ITEM_OPTIONS; i++) {
 			buf << data.option_data[i].index;
@@ -73,7 +73,7 @@ struct PACKET_ZC_ITEM_PICKUP_ACK_V7 : public PACKET_ZC_ITEM_PICKUP_ACK_V6
 			buf << data.option_data[i].param;
 		}
 
-		buf << data.is_favorite;
+		buf << (uint8_t) (data.info.is_favorite ? 1 : 0);
 		buf << data.sprite_id;
 		return buf;
 	}

@@ -434,7 +434,8 @@ public:
 	{
 		_storage.emplace(_storage.begin() + pos, 0);
 		_storage.emplace(_storage.begin() + pos + 1, 0);
-		put(pos, (uint8_t *) _storage.size(), sizeof(SizeT));
+		_wpos += 2;
+		put(pos, (uint8_t *) &_wpos, sizeof(SizeT));
 	}
 
 protected:

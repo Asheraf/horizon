@@ -82,21 +82,16 @@ void Server::parse_exec_args(const char *argv[], int argc)
 
 				if (arg_parts.at(0).compare("--dbuser") == 0) {
 					database_conf().set_username(arg_parts.at(1));
-					CoreLog->info("Database user is manually set to '{}'", database_conf().get_database());
+					CoreLog->info("Database user is set to '{}'", database_conf().get_database());
 				} else if (arg_parts.at(0).compare("--dbpassword") == 0) {
 					database_conf().set_password(arg_parts.at(1));
-					CoreLog->info("Database password is manually set to '{}'", database_conf().get_password());
+					CoreLog->info("Database password is set to '{}'", database_conf().get_password());
 				} else if (arg_parts.at(0).compare("--dbhost") == 0) {
 					database_conf().set_host(arg_parts.at(1));
-					CoreLog->info("Database host is manually set to '{}'", database_conf().get_host());
+					CoreLog->info("Database host is set to '{}'", database_conf().get_host());
 				} else if (arg_parts.at(0).compare("--dbdatabase") == 0) {
 					database_conf().set_database(arg_parts.at(1));
-					CoreLog->info("Database database is manually set to '{}'", database_conf().get_database());
-				} else if (arg_parts.at(0).compare("--dbthreads") == 0) {
-					int num = std::atoi(arg_parts.at(1).c_str());
-					int threads = std::max(1, std::min(num, 10));
-					database_conf().set_db_thread_count(threads);
-					CoreLog->info("Database max threads are manually set to '{}'", database_conf().get_db_thread_count());
+					CoreLog->info("Database database is set to '{}'", database_conf().get_database());
 				} else {
 					CoreLog->error("Unrecognised argument for test run '{}'", *it);
 				}

@@ -89,7 +89,7 @@ struct PACKET_HC_ACCEPT_ENTER : public Ragexe::PACKET_HC_ACCEPT_ENTER
 			buf << char_slot;
 			buf << rename_count;
 			buf.append(map_name, sizeof(map_name));
-			buf << delete_date;
+			buf << deleted_at;
 			buf << robe_view_id;
 			buf << change_slot_count;
 			buf << addon_option;

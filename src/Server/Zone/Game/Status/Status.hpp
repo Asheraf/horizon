@@ -41,6 +41,7 @@ namespace Horizon
 		namespace Character
 		{
 			class Character;
+			class Status;
 		}
 	}
 namespace Zone
@@ -71,9 +72,11 @@ namespace Status
 
 		uint32_t get_required_statpoints(uint16_t from, uint16_t to);
 
+		uint32_t get_status_total(status_point_type type);
+
 		uint32_t increase_status_point(status_point_type type, uint16_t amount);
 
-		uint32_t get_status_total(status_point_type type);
+		bool sync_to_model(std::shared_ptr<Models::Character::Status> status);
 		/**
 		 * Attributes
 		 */

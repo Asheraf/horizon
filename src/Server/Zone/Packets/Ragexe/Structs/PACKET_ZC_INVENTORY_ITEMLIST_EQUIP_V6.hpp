@@ -46,11 +46,11 @@ struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 : public PACKET_ZC_INVENTORY_ITEMLI
 {
 	PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6(uint16_t packet_id = ZC_INVENTORY_ITEMLIST_EQUIP_V6) : PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V5(packet_id) { }
 
-	virtual PacketBuffer serialize(std::vector<std::shared_ptr<item_entry_data>> const &items) const override
+	virtual PacketBuffer serialize(std::vector<std::shared_ptr<const item_entry_data>> const &items) const override
 	{
 		PacketBuffer buf(packet_id);
 		for (auto it = items.begin(); it != items.end(); it++) {
-			std::shared_ptr<item_entry_data> id = *it;
+			std::shared_ptr<const item_entry_data> id = *it;
 			uint8_t config = 0;
 			buf << id->inventory_index;
 			buf << ((uint16_t) id->item_id);
@@ -59,14 +59,14 @@ struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 : public PACKET_ZC_INVENTORY_ITEMLI
 			buf << id->current_equip_location_mask;
 			buf << id->refine_level;
 			for (int i = 0; i < sizeof(id->slot_item_id); i++)
-				buf << id->slot_item_id[i];
+				buf << (uint16_t) id->slot_item_id[i];
 			buf << id->hire_expire_date;
-			buf << id->bind_on_equip;
+			buf << id->bound_type;
 			buf << id->sprite_id;
 
 			config |= id->info.is_identified;
-			config |= 1 << id->info.is_broken;
-			config |= 2 << id->info.place_in_fav_tab;
+			config |= id->info.is_broken << 1;
+			config |= id->info.is_favorite << 2;
 			buf << config;
 		}
 		buf.emplace_size();

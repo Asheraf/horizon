@@ -81,8 +81,8 @@ public:
 	std::shared_ptr<Models::SessionData> get_session_data();
 	void set_session_data(std::shared_ptr<Models::SessionData> session_data);
 	/* Character */
-	std::shared_ptr<Models::Character::Character> get_character();
-	void set_character(std::shared_ptr<Models::Character::Character> character);
+	std::shared_ptr<Models::Character::Character> get_char_model();
+	void set_char_model(std::shared_ptr<Models::Character::Character> character);
 	/* Player */
 	std::shared_ptr<Horizon::Zone::Game::Entities::Player> get_player();
 	void set_player(std::weak_ptr<Horizon::Zone::Game::Entities::Player> player);
@@ -100,7 +100,7 @@ private:
 	std::shared_ptr<Models::Character::Character> _character;
 	std::shared_ptr<Models::SessionData> _session_data;
 	std::shared_ptr<Models::GameAccount> _game_account;
-	std::weak_ptr<Horizon::Zone::Game::Entities::Player> _player;
+	std::weak_ptr<Game::Entities::Player> _player;
 	client_type _client_type;
 	uint32_t _packet_version;
 };

@@ -343,28 +343,24 @@ struct item_entry_data
 	{
 		bool same = true;
 
-		for (int i = 0; i < MAX_ITEM_SLOTS; i++) {
-			if (slot_item_id[i] != data.slot_item_id[i]) {
-				same = false;
-				break;
-			}
-		}
-
-		for (int i = 0; i < MAX_ITEM_OPTIONS; i++) {
-			if (option_data[i].index != data.option_data[i].index
-				|| option_data[i].value != data.option_data[i].value
-				|| option_data[i].param != data.option_data[i].param) {
-				same = false;
-				break;
-			}
-		}
-
 		if (item_id != data.item_id
 			|| bind_type != data.bind_type
 			|| hire_expire_date != data.hire_expire_date
 			|| unique_id != data.unique_id
 			)
 			same = false;
+
+		for (int i = 0; i < MAX_ITEM_SLOTS && same; i++) {
+			if (slot_item_id[i] != data.slot_item_id[i])
+				same = false;
+		}
+
+		for (int i = 0; i < MAX_ITEM_OPTIONS && same; i++) {
+			if (option_data[i].index != data.option_data[i].index
+				|| option_data[i].value != data.option_data[i].value
+				|| option_data[i].param != data.option_data[i].param)
+				same = false;
+		}
 
 		return same;
 	}
@@ -378,7 +374,7 @@ struct item_entry_data
 	uint8_t refine_level{0};
 	uint32_t slot_item_id[MAX_ITEM_SLOTS]{0};
 	uint32_t hire_expire_date{0};
-	uint16_t bind_on_equip{0};
+	uint16_t bound_type{0};
 	uint16_t sprite_id{0};
 
 	uint32_t weight{0};
@@ -398,9 +394,9 @@ struct item_entry_data
 	struct {
 		unsigned is_identified : 1;
 		unsigned is_broken : 1;
-		unsigned place_in_fav_tab : 1;
+		unsigned is_favorite : 1;
+		unsigned spare_bits : 5;
 	} info;
-	uint8_t is_favorite{0};
 	item_bind_type bind_type{IT_BIND_NONE};
 	uint64_t unique_id{0};
 };

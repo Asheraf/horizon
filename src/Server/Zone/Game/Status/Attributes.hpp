@@ -134,6 +134,7 @@ namespace Status
 			if (notify)
 				notify_update();
 		}
+		
 		virtual void add_base(uint32_t val, bool notify = false) { set_base(_base_val + val, notify); }
 		virtual void sub_base(uint32_t val, bool notify = false) { set_base(_base_val - std::min(_base_val, val), notify); }
 		virtual uint32_t get_base() const { return _base_val; }

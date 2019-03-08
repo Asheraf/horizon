@@ -35,6 +35,7 @@
 #include "Server/Common/Definitions/NPCDefinitions.hpp"
 
 #include <memory>
+#include <atomic>
 
 #ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
 #define SOL_EXCEPTIONS_SAFE_PROPAGATION
@@ -51,7 +52,6 @@ namespace Horizon
 		namespace Character
 		{
 			class Character;
-			class Position;
 		}
 	}
 }
@@ -81,7 +81,7 @@ public:
 	 */
 	std::shared_ptr<ZoneSession> get_session() { return _session; }
 	std::shared_ptr<Models::GameAccount> get_game_account() { return _game_account.lock(); }
-	std::shared_ptr<Models::Character::Character> get_character() { return _character_model.lock(); }
+	std::shared_ptr<Models::Character::Character> get_char_model() { return _character_model.lock(); }
 	std::shared_ptr<PacketHandler> get_packet_handler() { return _packet_handler.lock(); }
 
 	/**
@@ -137,7 +137,13 @@ public:
 	void on_map_enter();
 	bool move_to_map(std::shared_ptr<Map> map, MapCoords coords = { 0, 0 });
 	void update(uint32_t diff) override;
-	
+	void sync_with_models() override;
+
+	uint64_t get_unique_item_counter() { return _unique_item_counter; }
+	void set_unique_item_counter(uint64_t counter) { _unique_item_counter = counter; }
+
+	bool is_logged_in() { return _is_logged_in; }
+	bool set_logged_in(bool logged_in) { return _is_logged_in.exchange(logged_in); }
 private:
 	std::shared_ptr<ZoneSession> _session;
 	std::weak_ptr<Models::GameAccount> _game_account;
@@ -147,6 +153,8 @@ private:
 	sol::state _lua_state;
 	std::shared_ptr<Assets::Inventory> _inventory;
 	uint32_t _max_inventory_size{MAX_INVENTORY_SIZE};
+	uint64_t _unique_item_counter{0};
+	std::atomic<bool> _is_logged_in{false};
 };
 }
 }

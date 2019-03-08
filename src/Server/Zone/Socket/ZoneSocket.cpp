@@ -73,7 +73,7 @@ void ZoneSocket::start()
 /**
  * @brief Socket cleanup method on connection closure.
  */
-void ZoneSocket::on_close(bool error)
+void ZoneSocket::on_close()
 {
 	ZoneLog->info("Closed connection from {}.", remote_ip_address());
 

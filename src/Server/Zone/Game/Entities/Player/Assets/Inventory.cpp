@@ -27,6 +27,7 @@
 
 #include "Inventory.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
+#include "Server/Common/Models/Character/Inventory.hpp"
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
@@ -37,7 +38,6 @@
 #include "Server/Zone/Game/Status/Status.hpp"
 #include "Server/Zone/Game/Status/Attributes.hpp"
 
-using namespace Horizon::Models;
 using namespace Horizon::Zone::Game::Status;
 using namespace Horizon::Zone::Game::Entities;
 using namespace Horizon::Zone::Game::Assets;
@@ -110,8 +110,8 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 		return IT_EQUIP_FAIL;
 	}
 
-	if (itemd->config.bind_on_equip != 0 && inv_item->bind_on_equip == 0) {
-		inv_item->bind_on_equip = IT_BIND_CHARACTER;
+	if (itemd->config.bind_on_equip != 0 && inv_item->bound_type == 0) {
+		inv_item->bound_type = IT_BIND_CHARACTER;
 		get_packet_handler()->Send_ZC_NOTIFY_BIND_ON_EQUIP(inv_item);
 	}
 
@@ -195,20 +195,14 @@ itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 	data.item_id = item->item_id;
 	data.type = item->type;
 	data.actual_equip_location_mask = item->equip_location_mask;
-	data.bind_on_equip = 0;
-	data.sprite_id = item->sprite_id;
+	data.bound_type = IT_BIND_NONE;
 	data.info.is_identified = is_identified;
-	data.attack_range = item->attack_range;
-	data.card_slot_count = item->card_slot_count;
-	data.weight = item->weight;
-	data.attack = item->attack;
-	data.defense = item->defense;
-	data.info.place_in_fav_tab = 0;
+	data.info.is_favorite = 0;
 
 	itemstore_addition_result_type result = add_to_itemstore(data, amount);
 
 	if (result == ITEMSTORE_ADD_SUCCESS) {
-		current_weight->add_base(data.weight * amount, true);
+		current_weight->add_base(item->weight * amount, true);
 	}
 	
 	return result;
@@ -261,12 +255,26 @@ void Inventory::notify_all()
 
 void Inventory::notify_without_equipments()
 {
-	
+	std::vector<std::shared_ptr<const item_entry_data>> normal_items;
+
+	for (auto nit = _item_store.begin(); nit != _item_store.end(); nit++) {
+		if ((*nit)->is_equipment() == false)
+			normal_items.push_back((*nit));
+	}
+
+	get_packet_handler()->Send_ZC_NORMAL_ITEMLIST(normal_items);
 }
 
 void Inventory::notify_only_equipments()
 {
+	std::vector<std::shared_ptr<const item_entry_data>> equipments;
 
+	for (auto eit = _item_store.begin(); eit != _item_store.end(); eit++) {
+		if ((*eit)->is_equipment())
+			equipments.push_back(*eit);
+	}
+
+	get_packet_handler()->Send_ZC_EQUIPMENT_ITEMLIST(equipments);
 }
 
 void Inventory::notify_add(item_entry_data const &data, uint16_t amount, itemstore_addition_result_type result)
@@ -299,4 +307,62 @@ void Inventory::notify_drop(uint16_t idx, uint16_t amount)
 void Inventory::notify_move_fail(uint16_t idx, bool silent)
 {
 
+}
+
+uint32_t Inventory::sync_to_model()
+{
+	std::vector<item_entry_data> &model_items = get_player()->get_char_model()->get_inventory_model()->get_model_items();
+	uint32_t changes = 0;
+
+	// Add / Subtract existing or new items.
+	for (auto &state_it : _item_store) {
+		auto model_it = std::find_if(model_items.begin(), model_items.end(), [&state_it](item_entry_data &model_item) {
+			return model_item == *state_it;
+		});
+
+		if (model_it != model_items.end()) {
+			if (model_it->amount != state_it->amount) {
+				model_it->amount = state_it->amount;
+				changes++;
+			}
+		} else {
+			model_items.push_back(*state_it);
+			changes++;
+		}
+	}
+
+	// Delete non-existing items.
+	for (auto model_it = model_items.begin(); model_it != model_items.end(); model_it++) {
+		auto state_it = std::find_if(_item_store.begin(), _item_store.end(), [&model_it](std::shared_ptr<item_entry_data> state_it) {
+			return *state_it == *model_it;
+		});
+
+		if (state_it == _item_store.end()) {
+			model_it = model_items.erase(model_it);
+			changes++;
+		}
+	}
+
+	return changes;
+}
+
+uint32_t Inventory::sync_from_model()
+{
+	if (_item_store.size() > 0) {
+		ZoneLog->warn("Horizon::Zone::Game::Assets::Inventory::sync_from_model:\n"
+			"Attempt to sync when item store is not empty. Current size: {}.", _item_store.size());
+		return 0;
+	}
+
+	std::vector<item_entry_data> &model_items = get_player()->get_char_model()->get_inventory_model()->get_model_items();
+
+	for (auto &mitem : model_items) {
+		std::shared_ptr<item_entry_data> item = std::make_shared<item_entry_data>(mitem);
+		std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
+		item->type = itemd->type;
+		item->actual_equip_location_mask = itemd->equip_location_mask;
+		_item_store.push_back(item);
+	}
+	
+	return _item_store.size();
 }

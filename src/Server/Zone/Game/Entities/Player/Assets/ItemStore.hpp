@@ -95,6 +95,8 @@ public:
 	virtual void notify_deletion(uint16_t idx, uint16_t amount, itemstore_deletion_reason_type reason) = 0;
 	virtual void notify_drop(uint16_t idx, uint16_t amount) = 0;
 	virtual void notify_move_fail(uint16_t idx, bool silent) = 0;
+	virtual uint32_t sync_to_model() = 0;
+	virtual uint32_t sync_from_model() = 0;
 
 protected:
 	item_storage_type _item_store;

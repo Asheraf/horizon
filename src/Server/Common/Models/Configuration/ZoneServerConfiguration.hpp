@@ -43,10 +43,14 @@ struct zone_server_configuration
 	void set_map_container_count(uint32_t threads) { _map_container_count = threads; }
 	uint32_t get_map_container_count() { return _map_container_count; }
 
+	void set_entity_save_interval(uint32_t interval) { _entity_save_interval = interval; }
+	uint32_t get_entity_save_interval() { return _entity_save_interval; }
+	
 private:
 	std::string _db_path{"db/"};
 	std::string _map_cache_file_name{"maps.dat"};
 	uint32_t _map_container_count;
+	uint32_t _entity_save_interval;
 };
 
 #endif /* HORIZON_CHARSERVERCONFIGURATION_HPP */

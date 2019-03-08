@@ -27,15 +27,10 @@
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CHARACTER_MODEL_SOURCES
-	${DIR}/Access.hpp
+	${DIR}/Character.cpp
 	${DIR}/Character.hpp
-	${DIR}/Companion.hpp
-	${DIR}/Family.hpp
-	${DIR}/Group.hpp
-	${DIR}/Misc.hpp
+	${DIR}/Status.cpp
 	${DIR}/Status.hpp
-	${DIR}/UISettings.hpp
-	${DIR}/View.hpp
-	${DIR}/Position.hpp
+	${DIR}/Inventory.cpp
 	${DIR}/Inventory.hpp
 	PARENT_SCOPE)

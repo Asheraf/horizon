@@ -37,12 +37,9 @@ using namespace Horizon::Zone::Game::Entities;
 
 int ItemStore::create_unique_id()
 {
-	std::shared_ptr<Horizon::Models::Character::Character> ch = get_player()->get_character();
-	uint32_t char_id = ch->get_character_id();
-	uint32_t index = ch->get_misc_data()->get_unique_item_counter();
-	uint32_t uid = ((uint64_t) char_id << 32) | index++;
-	ch->get_misc_data()->set_unique_item_counter(uid);
-	return uid;
+	uint32_t char_id = get_player()->get_char_model()->get_id();
+	uint32_t index = get_player()->get_unique_item_counter();
+	return ((uint64_t) char_id << 32) | index++;
 }
 
 itemstore_addition_result_type ItemStore::add_to_itemstore(item_entry_data &item, uint16_t amount)

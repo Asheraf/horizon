@@ -52,6 +52,7 @@ public:
 	virtual void on_movement_begin() override;
 	virtual void on_movement_step() override;
 	virtual void on_movement_end() override;
+	virtual void sync_with_models() override;
 
 private:
 };

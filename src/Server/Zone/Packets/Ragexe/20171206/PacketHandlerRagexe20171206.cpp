@@ -27,8 +27,6 @@
 
 #include "PacketHandlerRagexe20171206.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
-#include "Server/Common/Models/Character/Position.hpp"
-#include "Server/Common/Models/Character/UISettings.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 

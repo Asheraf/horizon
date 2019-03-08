@@ -26,19 +26,20 @@
  **************************************************/
 
 #include "Player.hpp"
+#include "Server/Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
+#include "Server/Common/Models/Character/Status.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
+#include "Server/Zone/Game/Entities/Entity.hpp"
+#include "Server/Zone/Game/Entities/Player/Assets/Inventory.hpp"
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
-#include "Server/Zone/Game/Entities/Entity.hpp"
-#include "Server/Common/Definitions/EntityDefinitions.hpp"
-#include "Server/Zone/Session/ZoneSession.hpp"
-#include "Server/Zone/Game/Entities/Player/Assets/Inventory.hpp"
-
 #include "Server/Zone/Game/Status/Attributes.hpp"
 #include "Server/Zone/Game/Status/Appearance.hpp"
 #include "Server/Zone/Game/Status/Status.hpp"
+#include "Server/Zone/Session/ZoneSession.hpp"
+#include "Server/Zone/Zone.hpp"
 
 
 using namespace Horizon::Models::Character;
@@ -48,7 +49,7 @@ using namespace Horizon::Zone;
 
 Player::Player(uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords, std::shared_ptr<ZoneSession> session)
 : Entity(guid, ENTITY_PLAYER, map, mcoords), _session(session),
- _character_model(session->get_character()), _packet_handler(session->get_packet_handler())
+ _character_model(session->get_char_model()), _packet_handler(session->get_packet_handler())
 {
 }
 
@@ -64,10 +65,10 @@ void Player::initialize()
 
 	_game_account = get_session()->get_game_account();
 
-	std::shared_ptr<Character> character = get_character();
-	std::shared_ptr<Horizon::Models::Character::Status> status = get_character()->get_status_data();
+	std::shared_ptr<Character> character = get_char_model();
+	std::shared_ptr<Horizon::Models::Character::Status> status = get_char_model()->get_status_model();
 
-	// Unit Data
+	// Unit Data.
 	set_guid(get_game_account()->get_id());
 	set_name(character->get_name());
 	set_job_id(status->get_job_id());
@@ -78,11 +79,13 @@ void Player::initialize()
 	// Initialize Script States.
 	get_script_manager()->initialize_state(get_lua_state());
 
-	// Initialize Status
+	// Initialize Status.
 	get_status()->initialize(character);
 
+	// Inventory.
+	set_unique_item_counter(character->get_unique_item_counter());
 	_inventory = std::make_shared<Assets::Inventory>(downcast<Player>(), get_max_inventory_size());
-	_inventory->notify_all();
+	_inventory->sync_from_model();
 
 	// Ensure grid for entity.
 	get_map()->ensure_grid_for_entity(this, get_map_coords());
@@ -103,6 +106,73 @@ void Player::update(uint32_t diff)
 	Entity::update(diff);
 }
 
+void Player::sync_with_models()
+{
+	uint32_t char_save_mask = 0x0;
+
+	std::shared_ptr<Status::Status> status = get_status();
+	std::shared_ptr<Models::Character::Status> csd = get_char_model()->get_status_model();
+
+	if (get_name() != get_char_model()->get_name()) {
+		get_char_model()->set_name(get_name());
+		char_save_mask |= CHAR_SAVE_BASE_DATA;
+	}
+
+	if (get_gender() != get_char_model()->get_gender()) {
+		get_char_model()->set_gender((character_gender_type) get_gender());
+		char_save_mask |= CHAR_SAVE_BASE_DATA;
+	}
+
+	if (get_unique_item_counter() != get_char_model()->get_unique_item_counter()) {
+		get_char_model()->set_unique_item_counter(get_unique_item_counter());
+		char_save_mask |= CHAR_SAVE_BASE_DATA;
+	}
+
+	if (get_map()->get_name() != get_char_model()->get_current_map()) {
+		get_char_model()->set_current_map(get_map()->get_name());
+		char_save_mask |= CHAR_SAVE_BASE_DATA;
+	}
+
+	if (get_map_coords().x() != get_char_model()->get_current_x()) {
+		get_char_model()->set_current_x(get_map_coords().x());
+		char_save_mask |= CHAR_SAVE_BASE_DATA;
+	}
+
+	if (get_map_coords().y() != get_char_model()->get_current_y()) {
+		get_char_model()->set_current_y(get_map_coords().y());
+		char_save_mask |= CHAR_SAVE_BASE_DATA;
+	}
+
+	if (is_logged_in() != get_char_model()->is_online()) {
+		if (is_logged_in())
+			get_char_model()->set_online();
+		else
+			get_char_model()->set_offline();
+		char_save_mask |= CHAR_SAVE_BASE_DATA;
+	}
+
+	if (status->sync_to_model(csd) == false)
+		char_save_mask |= CHAR_SAVE_STATUS_DATA;
+
+	if (get_inventory()->sync_to_model() > 0)
+		char_save_mask |= CHAR_SAVE_INVENTORY_DATA;
+
+	if (get_char_model()->save(ZoneServer, char_save_mask) >= CHAR_SAVE_BASE_DATA) {
+		std::string saved_str;
+
+		if (char_save_mask &  CHAR_SAVE_BASE_DATA)
+			saved_str.append("basic");
+
+		if (char_save_mask & CHAR_SAVE_STATUS_DATA)
+			saved_str.append(saved_str.empty() ? "status" : ", status");
+
+		if (char_save_mask & CHAR_SAVE_INVENTORY_DATA)
+			saved_str.append(saved_str.empty() ? "inventory" : ", inventory");
+
+		ZoneLog->info("Saved {} data for character {} (CID: {}).", saved_str, get_char_model()->get_name(), get_char_model()->get_id());
+	}
+}
+
 void Player::on_movement_begin()
 {
 	get_packet_handler()->Send_ZC_NOTIFY_PLAYERMOVE(get_dest_pos().x(), get_dest_pos().y());
@@ -114,14 +184,9 @@ void Player::on_movement_end()
 
 void Player::on_movement_step()
 {
-	std::shared_ptr<Position> p = get_character()->get_position_data();
-
 	update_viewport();
 
 	get_map()->ensure_grid_for_entity(this, get_map_coords());
-
-	p->set_current_x(get_map_coords().x());
-	p->set_current_y(get_map_coords().y());
 }
 
 void Player::update_viewport()
@@ -199,7 +264,7 @@ entity_viewport_entry Player::create_viewport_entry(std::shared_ptr<Entity> enti
 	switch (entry.unit_type)
 	{
 		case ENTITY_PLAYER:
-			entry.character_id = entity->downcast<Player>()->get_character()->get_character_id();
+			entry.character_id = entity->downcast<Player>()->get_char_model()->get_id();
 			entry.x_size = entry.y_size = 0;
 			break;
 		case ENTITY_NPC:
@@ -234,7 +299,6 @@ bool Player::move_to_map(std::shared_ptr<Map> map, MapCoords coords)
 
 		map->ensure_grid_for_entity(this, coords);
 		set_map(map);
-		get_character()->get_position_data()->set_current_map(get_map()->get_name());
 	}
 
 	get_packet_handler()->Send_ZC_NPCACK_MAPMOVE(map->get_name(), coords.x(), coords.y());
@@ -278,6 +342,7 @@ void Player::on_map_enter()
 {
 	get_packet_handler()->Send_ZC_MAPPROPERTY_R2(get_map());
 
+	get_inventory()->notify_all();
 	// Status Notifications.
 	get_status()->get_max_weight()->notify_update();
 	get_status()->get_current_weight()->notify_update();

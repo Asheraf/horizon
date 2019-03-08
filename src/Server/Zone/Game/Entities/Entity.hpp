@@ -43,7 +43,8 @@
 
 enum entity_task_schedule_group
 {
-	ENTITY_SCHEDULE_WALK = 0
+	ENTITY_SCHEDULE_WALK = 0,
+	ENTITY_SCHEDULE_SAVE = 1,
 };
 
 namespace Horizon
@@ -73,6 +74,7 @@ public:
 	MapCoords const &get_dest_pos() const { return _dest_pos; }
 	virtual bool move_to_pos(uint16_t x, uint16_t y);
 	bool is_walking() { return (get_dest_pos() != MapCoords(0, 0)); }
+
 protected:
 	bool schedule_movement(MapCoords mcoords);
 	void move();
@@ -80,6 +82,7 @@ protected:
 	virtual void on_movement_begin() = 0;
 	virtual void on_movement_step() = 0;
 	virtual void on_movement_end() = 0;
+	virtual void sync_with_models() = 0;
 
 	/**
 	 * Unit Data
@@ -117,7 +120,7 @@ public:
 		_script_manager = map->get_map_container()->get_script_manager();
 	}
 
-	std::shared_ptr<MapThreadContainer> get_map_thread_container() { return _map_thread_container.lock(); }
+	std::shared_ptr<MapThreadContainer> get_map_container() { return _map_thread_container.lock(); }
 	std::shared_ptr<ScriptManager> get_script_manager() { return _script_manager.lock(); }
 
 	/**

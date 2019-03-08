@@ -39,6 +39,7 @@
 #include <iostream>
 #include <boost/make_shared.hpp>
 #include <sol.hpp>
+#include <chrono>
 
 using namespace std;
 using boost::asio::ip::udp;
@@ -67,6 +68,8 @@ Horizon::Zone::ZoneMain::~ZoneMain()
  */
 bool Horizon::Zone::ZoneMain::ReadConfig()
 {
+	using namespace std::chrono;
+
 	sol::state lua;
 	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
 
@@ -81,14 +84,19 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	sol::table tbl = lua["server_config"];
 
 	get_zone_config().set_database_path(tbl.get_or("static_db_path", std::string("db/")));
-	ZoneLog->info("Static database path set to '{}'", get_zone_config().get_database_path());
+	ZoneLog->info("[Config] Static database path set to '{}'", get_zone_config().get_database_path());
 
 	get_zone_config().set_mapcache_file_name(tbl.get_or("map_cache_file_name", std::string("maps.dat")));
-	ZoneLog->info("Mapcache file name is set to '{}', it will be read while initializing maps.");
+	ZoneLog->info("[Config] Mapcache file name is set to '{}', it will be read while initializing maps.");
 
 	get_zone_config().set_map_container_count(tbl.get_or("map_containers", 1));
-	ZoneLog->warn("Maps will be divided into '{}' thread containers.", get_zone_config().get_map_container_count());
+	ZoneLog->warn("[Config] Maps will be divided into '{}' thread containers.", get_zone_config().get_map_container_count());
 
+	get_zone_config().set_entity_save_interval(tbl.get_or("entity_save_interval", 180000));
+	ZoneLog->info("[Config] Entity data will be saved to the database every {} minutes and {} seconds.",
+				  duration_cast<minutes>(std::chrono::milliseconds(get_zone_config().get_entity_save_interval())).count(),
+				  duration_cast<seconds>(std::chrono::milliseconds(get_zone_config().get_entity_save_interval())).count());
+	
 	/**
 	 * Process Configuration that is common between servers.
 	 */

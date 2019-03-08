@@ -166,12 +166,12 @@ public:
 	 */
 	void add_character(std::shared_ptr<Horizon::Models::Character::Character> character)
 	{
-		auto old_character = get_character(character->get_character_id());
+		auto old_character = get_character(character->get_id());
 
 		if (old_character != nullptr)
 			old_character = character;
 		else
-			_characters.insert(std::make_pair(character->get_character_id(), character));
+			_characters.insert(std::make_pair(character->get_id(), character));
 	}
 
 	/**

@@ -31,13 +31,18 @@
 cmake_minimum_required (VERSION 3.7 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(PROJECT_NAME "Horizon" CXX)
+set(PROJECT_NAME "Horizon")
+
 set(AUTH_TARGET_NAME auth)
+
 if (NOT CMAKE_BUILD_TYPE)
 		set(CMAKE_BUILD_TYPE Debug)
 endif()
-message(STATUS "${PROJECT_NAME} initiated configuring in ${CMAKE_BUILD_TYPE} mode.")
+
 project (${PROJECT_NAME})
+
+message(STATUS "Project ${PROJECT_NAME} initiated configuring in ${CMAKE_BUILD_TYPE} mode.")
+
 #################################
 # CMAKE Module Path
 #################################

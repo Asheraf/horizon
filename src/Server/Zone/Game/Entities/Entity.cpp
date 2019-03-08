@@ -34,6 +34,7 @@
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
 #include "Server/Zone/Game/Status/Status.hpp"
+#include "Server/Zone/Zone.hpp"
 
 using namespace Horizon::Zone::Game;
 
@@ -54,6 +55,12 @@ void Entity::initialize()
 	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 
 	_is_initialized = true;
+
+	getScheduler().Schedule(Milliseconds(ZoneServer->get_zone_config().get_entity_save_interval()), ENTITY_SCHEDULE_SAVE,
+		[this] (TaskContext context) {
+			sync_with_models();
+			context.Repeat();
+		});
 }
 
 

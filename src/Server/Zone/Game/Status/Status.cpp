@@ -68,8 +68,7 @@ void Status::initialize()
 
 void Status::initialize(std::shared_ptr<Character::Character> character)
 {
-	std::shared_ptr<Horizon::Models::Character::Status> status_model = character->get_status_data();
-	std::shared_ptr<Horizon::Models::Character::View> view_model = character->get_view_data();
+	std::shared_ptr<Horizon::Models::Character::Status> status_model = character->get_status_model();
 	std::shared_ptr<const job_db_data> job = JobDB->get(status_model->get_job_id());
 	std::shared_ptr<const exp_group_data> bexpg = ExpDB->get_exp_group(job->base_exp_group, EXP_GROUP_TYPE_BASE);
 	std::shared_ptr<const exp_group_data> jexpg = ExpDB->get_exp_group(job->job_exp_group, EXP_GROUP_TYPE_JOB);
@@ -120,16 +119,16 @@ void Status::initialize(std::shared_ptr<Character::Character> character)
 	set_current_weight(std::make_shared<CurrentWeight>(_entity, 0));
 	set_movement_speed(std::make_shared<MovementSpeed>(_entity, DEFAULT_MOVEMENT_SPEED));
 
-	set_hair_color(std::make_shared<HairColor>(_entity, view_model->get_hair_color_id()));
-	set_cloth_color(std::make_shared<ClothColor>(_entity, view_model->get_cloth_color_id()));
-	set_head_top_sprite(std::make_shared<HeadTopSprite>(_entity, view_model->get_head_top_view_id()));
-	set_head_mid_sprite(std::make_shared<HeadMidSprite>(_entity, view_model->get_head_mid_view_id()));
-	set_head_bottom_sprite(std::make_shared<HeadBottomSprite>(_entity, view_model->get_head_bottom_view_id()));
-	set_hair_style(std::make_shared<HairStyle>(_entity, view_model->get_hair_style_id()));
-	set_shield_sprite(std::make_shared<ShieldSprite>(_entity, view_model->get_shield_id()));
-	set_weapon_sprite(std::make_shared<WeaponSprite>(_entity, view_model->get_weapon_id()));
-	set_robe_sprite(std::make_shared<RobeSprite>(_entity, view_model->get_robe_view_id()));
-	set_body_style(std::make_shared<BodyStyle>(_entity, view_model->get_body_id()));
+	set_hair_color(std::make_shared<HairColor>(_entity, status_model->get_hair_color_id()));
+	set_cloth_color(std::make_shared<ClothColor>(_entity, status_model->get_cloth_color_id()));
+	set_head_top_sprite(std::make_shared<HeadTopSprite>(_entity, status_model->get_head_top_view_id()));
+	set_head_mid_sprite(std::make_shared<HeadMidSprite>(_entity, status_model->get_head_mid_view_id()));
+	set_head_bottom_sprite(std::make_shared<HeadBottomSprite>(_entity, status_model->get_head_bottom_view_id()));
+	set_hair_style(std::make_shared<HairStyle>(_entity, status_model->get_hair_style_id()));
+	set_shield_sprite(std::make_shared<ShieldSprite>(_entity, status_model->get_shield_id()));
+	set_weapon_sprite(std::make_shared<WeaponSprite>(_entity, status_model->get_weapon_id()));
+	set_robe_sprite(std::make_shared<RobeSprite>(_entity, status_model->get_robe_view_id()));
+	set_body_style(std::make_shared<BodyStyle>(_entity, status_model->get_body_id()));
 
 	initialize_sub_attributes();
 	initialize_observable_statuses();
@@ -300,4 +299,64 @@ uint32_t Status::increase_status_point(status_point_type type, uint16_t limit)
 	} while (get_status_total(type) < limit);
 
 	return get_status_total(type);
+}
+
+bool Status::sync_to_model(std::shared_ptr<Models::Character::Status> status)
+{
+	if (get_strength()->get_base() == status->get_strength()
+		&& get_agility()->get_base() == status->get_agility()
+		&& get_vitality()->get_base() == status->get_vitality()
+		&& get_intelligence()->get_base() == status->get_intelligence()
+		&& get_dexterity()->get_base() == status->get_dexterity()
+		&& get_luck()->get_base() == status->get_luck()
+		&& get_status_point()->get_base() == status->get_status_points()
+		&& get_skill_point()->get_base() == status->get_skill_points()
+		&& get_max_hp()->get_base() == status->get_max_hp()
+		&& get_max_sp()->get_base() == status->get_max_sp()
+		&& get_current_hp()->get_base() == status->get_hp()
+		&& get_current_sp()->get_base() == status->get_sp()
+		&& get_base_level()->get_base() == status->get_base_level()
+		&& get_job_level()->get_base() == status->get_job_level()
+		&& get_base_experience()->get_base() == status->get_base_exp()
+		&& get_job_experience()->get_base() == status->get_job_exp()
+		&& get_hair_color()->get() == status->get_hair_color_id()
+		&& get_cloth_color()->get() == status->get_cloth_color_id()
+		&& get_weapon_sprite()->get() == status->get_weapon_id()
+		&& get_shield_sprite()->get() == status->get_shield_id()
+		&& get_robe_sprite()->get() == status->get_robe_view_id()
+		&& get_head_top_sprite()->get() == status->get_head_top_view_id()
+		&& get_head_mid_sprite()->get() == status->get_head_mid_view_id()
+		&& get_head_bottom_sprite()->get() == status->get_head_bottom_view_id()
+		&& get_hair_style()->get() == status->get_hair_style_id()
+		&& get_body_style()->get() == status->get_body_id())
+		return true;
+
+	status->set_strength(get_strength()->get_base());
+	status->set_agility(get_agility()->get_base());
+	status->set_vitality(get_vitality()->get_base());
+	status->set_intelligence(get_intelligence()->get_base());
+	status->set_dexterity(get_dexterity()->get_base());
+	status->set_luck(get_luck()->get_base());
+	status->set_status_points(get_status_point()->get_base());
+	status->set_skill_points(get_skill_point()->get_base());
+	status->set_max_hp(get_max_hp()->get_base());
+	status->set_max_sp(get_max_sp()->get_base());
+	status->set_sp(get_current_hp()->get_base());
+	status->set_hp(get_current_sp()->get_base());
+	status->set_base_level(get_base_level()->get_base());
+	status->set_job_level(get_job_level()->get_base());
+	status->set_base_exp(get_base_experience()->get_base());
+	status->set_job_exp(get_job_experience()->get_base());
+	status->set_hair_color_id(get_hair_color()->get());
+	status->set_hair_color_id(get_cloth_color()->get());
+	status->set_hair_color_id(get_weapon_sprite()->get());
+	status->set_hair_color_id(get_shield_sprite()->get());
+	status->set_hair_color_id(get_robe_sprite()->get());
+	status->set_hair_color_id(get_head_top_sprite()->get());
+	status->set_hair_color_id(get_head_mid_sprite()->get());
+	status->set_hair_color_id(get_head_bottom_sprite()->get());
+	status->set_hair_color_id(get_hair_style()->get());
+	status->set_hair_color_id(get_body_style()->get());
+
+	return false;
 }

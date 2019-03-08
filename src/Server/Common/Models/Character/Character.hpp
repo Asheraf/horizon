@@ -28,21 +28,8 @@
 #ifndef HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
 #define HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
 
-#include "Server/Common/Definitions/Horizon.hpp"
-#include "Server/Common/Server.hpp"
-#include "Server/Common/Models/Character/Access.hpp"
-#include "Server/Common/Models/Character/Companion.hpp"
-#include "Server/Common/Models/Character/Family.hpp"
-#include "Server/Common/Models/Character/Group.hpp"
-#include "Server/Common/Models/Character/Misc.hpp"
-#include "Server/Common/Models/Character/Position.hpp"
-#include "Server/Common/Models/Character/Status.hpp"
-#include "Server/Common/Models/Character/UISettings.hpp"
-#include "Server/Common/Models/Character/View.hpp"
-#include "Server/Common/Models/Character/Inventory.hpp"
-
 #include <string>
-#include <mysqlx/xdevapi.h>
+#include <cstdint>
 
 enum character_gender_type
 {
@@ -52,25 +39,24 @@ enum character_gender_type
 
 enum character_save_mask
 {
-	CHAR_SAVE_BASE_DATA         = 0x001,
-	CHAR_SAVE_ACCESS_DATA       = 0x002,
-	CHAR_SAVE_VIEW_DATA         = 0x004,
-	CHAR_SAVE_FAMILY_DATA       = 0x008,
-	CHAR_SAVE_COMPANION_DATA    = 0x010,
-	CHAR_SAVE_MISC_DATA         = 0x020,
-	CHAR_SAVE_POSITION_DATA     = 0x040,
-	CHAR_SAVE_UI_SETTINGS_DATA  = 0x080,
-	CHAR_SAVE_GROUP_DATA        = 0x100,
-	CHAR_SAVE_STATUS_DATA       = 0x200,
-	CHAR_SAVE_INVENTORY_DATA    = 0x400,
-	CHAR_SAVE_ALL               = 0xfff,
+	CHAR_SAVE_BASE_DATA         = 0x1,
+	CHAR_SAVE_STATUS_DATA       = 0x2,
+	CHAR_SAVE_INVENTORY_DATA    = 0x4,
+	CHAR_SAVE_ALL               = 0xf,
 };
+
+class Server;
+
 namespace Horizon
 {
 namespace Models
 {
 namespace Character
 {
+
+class Status;
+class Inventory;
+
 class Character
 {
 public:
@@ -90,230 +76,27 @@ public:
 	 * @param char_id
 	 * @return
 	 */
-	bool load(Server *server, uint32_t char_id)
-	{
-		std::string query = "SELECT `account_id`, `slot`, `name`, `gender`, `deleted_at` FROM `characters` WHERE id = ?";
+	bool load(Server *server, uint32_t char_id);
 
-		try {
-			auto s = server->get_mysql_client()->getSession();
-			auto record = s.sql(query).bind(char_id).execute().fetchOne();
-
-			if (record) {
-				set_character_id(char_id);
-				set_account_id(record[0]);
-				set_slot((uint16_t) record[1].get<int>());
-				set_name(record[2].get<std::string>());
-				std::string gender = record[3].get<std::string>();
-				if (gender.compare("M") == 0)
-					set_gender(CHARACTER_GENDER_MALE);
-				else if (gender.compare("F") == 0)
-					set_gender(CHARACTER_GENDER_FEMALE);
-
-				if (record[4].getType() > 0)
-					set_deleted_at(record[4].get<long long>());
-
-				s.close();
-				return true;
-			}
-			s.close();
-		} catch (const mysqlx::Error &e) {
-			CoreLog->warn("Character::load: {}", e.what());
-		}
-
-		return false;
-	}
-
-	bool load_all(Server *server, uint32_t char_id)
-	{
-		if (!load(server, char_id))
-			return false;
-
-		set_status_data(std::make_shared<Status>(char_id));
-
-		if (!get_status_data()->load(server, char_id))
-			return false;
-
-		set_access_data(std::make_shared<Access>(char_id));
-
-		if (!get_access_data()->load(server, char_id))
-			return false;
-
-		set_view_data(std::make_shared<View>(char_id));
-
-		if (!get_view_data()->load(server, char_id))
-			return false;
-
-		set_family_data(std::make_shared<Family>(char_id));
-
-		if (!get_family_data()->load(server, char_id))
-			return false;
-
-		set_companion_data(std::make_shared<Companion>(char_id));
-
-		if (!get_companion_data()->load(server, char_id))
-			return false;
-
-		set_group_data(std::make_shared<Group>(char_id));
-
-		if (!get_group_data()->load(server, char_id))
-			return false;
-
-		set_misc_data(std::make_shared<Misc>(char_id));
-
-		if (!get_misc_data()->load(server, char_id))
-			return false;
-
-		set_position_data(std::make_shared<Position>(char_id));
-
-		if (!get_position_data()->load(server, char_id))
-			return false;
-
-		set_ui_settings(std::make_shared<UISettings>(char_id));
-
-		if (!get_ui_settings()->load(server, char_id))
-			return false;
-
-		set_inventory(std::make_shared<Inventory>(char_id));
-
-		if (!get_inventory()->load(server, char_id))
-			return false;
-
-		return true;
-	}
+	bool load_all(Server *server, uint32_t char_id);
 
 	/**
 	 * @brief Save this model to the database in its current state.
 	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
 	 */
-	void save(Server *server)
-	{
-		try {
-			auto s = server->get_mysql_client()->getSession();
-			auto table = s.getDefaultSchema().getTable("characters");
-			auto q = table.update()
-				.set("account_id", get_account_id())
-				.set("slot", get_slot())
-				.set("name", get_name())
-				.set("online", is_online())
-				.set("gender", get_gender() == CHARACTER_GENDER_MALE ? "M" : "F");
+	bool save(Server *server);
 
-			if (get_deleted_at())
-				q.set("deleted_at", mysqlx::internal::expr("FROM_UNIXTIME(" + std::to_string(get_deleted_at()) + ")"));
+	bool create(Server *server);
 
-				q.where("id = :id")
-				.bind("id", get_character_id())
-				.execute();
-			s.close();
-		} catch (const mysqlx::Error &e) {
-			CoreLog->warn("Character::save: {}", e.what());
-		}
-	}
-
-	void create(Server *server)
-	{
-		int char_id = 0;
-		std::string query = "SELECT `id` FROM `characters` ORDER BY `id` DESC LIMIT 1;";
-
-		try {
-			auto s = server->get_mysql_client()->getSession();
-			auto record = s.sql(query).execute().fetchOne();
-
-			if (record) {
-				char_id = record[0].get<int>() + 1;
-			} else {
-				char_id = 1;
-			}
-
-			set_character_id(char_id);
-
-			std::string gender = get_gender() == CHARACTER_GENDER_MALE ? "M" : "F";
-
-			auto table = s.getDefaultSchema().getTable("characters");
-			table.insert("id", "account_id", "slot", "name", "gender")
-				.values(char_id, get_account_id(), get_slot(), get_name(), gender)
-				.execute();
-
-		} catch (const mysqlx::Error &e) {
-			CoreLog->warn("Character::create: {}", e.what());
-		}
-
-		int save_mask = 0x0;
-
-		set_status_data(std::make_shared<Status>(char_id));
-		save_mask |= CHAR_SAVE_STATUS_DATA;
-
-		set_access_data(std::make_shared<Access>(char_id));
-		save_mask |= CHAR_SAVE_ACCESS_DATA;
-
-		set_view_data(std::make_shared<View>(char_id));
-		save_mask |= CHAR_SAVE_VIEW_DATA;
-
-		set_family_data(std::make_shared<Family>(char_id));
-		save_mask |= CHAR_SAVE_FAMILY_DATA;
-
-		set_companion_data(std::make_shared<Companion>(char_id));
-		save_mask |= CHAR_SAVE_COMPANION_DATA;
-
-		set_group_data(std::make_shared<Group>(char_id));
-		save_mask |= CHAR_SAVE_GROUP_DATA;
-
-		set_misc_data(std::make_shared<Misc>(char_id));
-		save_mask |= CHAR_SAVE_MISC_DATA;
-
-		set_position_data(std::make_shared<Position>(char_id));
-		save_mask |= CHAR_SAVE_POSITION_DATA;
-
-		set_ui_settings(std::make_shared<UISettings>(char_id));
-		save_mask |= CHAR_SAVE_UI_SETTINGS_DATA;
-
-		set_inventory(std::make_shared<Inventory>(char_id));
-		save_mask |= CHAR_SAVE_INVENTORY_DATA;
-
-		save(server, save_mask);
-	}
-
-	void save(Server *server, int type)
-	{
-		if (type & CHAR_SAVE_BASE_DATA)
-			save(server);
-
-		if (type & CHAR_SAVE_STATUS_DATA)
-			get_status_data()->save(server);
-
-		if (type & CHAR_SAVE_ACCESS_DATA)
-			get_access_data()->save(server);
-
-		if (type & CHAR_SAVE_VIEW_DATA)
-			get_view_data()->save(server);
-
-		if (type & CHAR_SAVE_FAMILY_DATA)
-			get_family_data()->save(server);
-
-		if (type & CHAR_SAVE_COMPANION_DATA)
-			get_companion_data()->save(server);
-
-		if (type & CHAR_SAVE_GROUP_DATA)
-			get_group_data()->save(server);
-
-		if (type & CHAR_SAVE_MISC_DATA)
-			get_misc_data()->save(server);
-
-		if (type & CHAR_SAVE_POSITION_DATA)
-			get_position_data()->save(server);
-
-		if (type & CHAR_SAVE_UI_SETTINGS_DATA)
-			get_ui_settings()->save(server);
-
-		if (type & CHAR_SAVE_INVENTORY_DATA)
-			get_inventory()->save(server);
-	}
+	uint32_t save(Server *server, uint32_t type);
 
 	/* Character ID */
-	uint32_t get_character_id() const
+	uint32_t get_id() const
 	{
 		return _character_id;
 	}
-	void set_character_id(uint32_t id)
+
+	void set_id(uint32_t id)
 	{
 		_character_id = id;
 	}
@@ -321,68 +104,102 @@ public:
 	/* Account ID */
 	uint32_t get_account_id() const { return _account_id; }
 	void set_account_id(uint32_t id) { _account_id = id; }
-
 	/* Slot */
 	uint16_t get_slot() const { return _slot; }
 	void set_slot(uint16_t slot) { _slot = slot; }
-
 	/* Name */
 	std::string const &get_name() const { return _name; }
 	void set_name(std::string const &name) { _name = name; }
-
 	/* Online */
 	bool is_online() const { return _online; }
 	void set_online() { _online = true; }
 	void set_offline() { _online = false; }
-
 	/* Gender */
 	character_gender_type get_gender() const { return _gender; }
 	void set_gender(character_gender_type gender) { _gender = gender; }
-
 	/* Deleted */
-	bool get_deleted_at() { return _deleted_at; }
-	void set_deleted_at(std::time_t time) { _deleted_at = time; }
+	uint32_t get_deleted_at() { return _deleted_at; }
+	void set_deleted_at(uint32_t time) { _deleted_at = time; }
+	/* Unban Time */
+	uint32_t get_unban_time() const { return _unban_time; }
+	void set_unban_time(uint32_t unban_time) { _unban_time = unban_time; }
+	/* Pet ID */
+	uint32_t get_pet_id() const { return _pet_id; }
+	void set_pet_id(uint32_t pet_id) { _pet_id = pet_id; }
+	/* Homun ID */
+	uint32_t get_homun_id() const { return _homun_id; }
+	void set_homun_id(uint32_t homun_id) { _homun_id = homun_id; }
+	/* Elemental ID */
+	uint32_t get_elemental_id() const { return _elemental_id; }
+	void set_elemental_id(uint32_t elemental_id) { _elemental_id = elemental_id; }
+	/* Parter Account ID */
+	uint32_t get_partner_aid() const { return _parter_aid; }
+	void set_partner_aid(uint32_t parter_aid) { _parter_aid = parter_aid; }
+	/* Father Account ID */
+	uint32_t get_father_aid() const { return _father_aid; }
+	void set_father_aid(uint32_t father_aid) { _father_aid = father_aid; }
+	/* Mother Account ID */
+	uint32_t get_mother_aid() const { return _mother_aid; }
+	void set_mother_aid(uint32_t mother_aid) { _mother_aid = mother_aid; }
+	/* Child Account ID */
+	uint32_t get_child_aid() const { return _child_aid; }
+	void set_child_aid(uint32_t child_aid) { _child_aid = child_aid; }
+	/* Party ID */
+	uint32_t get_party_id() const { return _party_id; }
+	void set_party_id(uint32_t party_id) { _party_id = party_id; }
+	/* Guild ID */
+	uint32_t get_guild_id() const { return _guild_id; }
+	void set_guild_id(uint32_t guild_id) { _guild_id = guild_id; }
+	/* Character Rename Count */
+	uint8_t get_rename_count() const { return _rename_count; }
+	void set_rename_count(uint8_t rename_count) { _rename_count = rename_count; }
+	/* Unique Item Counter */
+	uint64_t get_unique_item_counter() const { return _unique_item_counter; }
+	void set_unique_item_counter(uint64_t unique_item_counter) { _unique_item_counter = unique_item_counter; }
+	/* Hotkey Row Index */
+	uint8_t get_hotkey_row_index() const { return _hotkey_row_index; }
+	void set_hotkey_row_index(uint8_t hotkey_row_index) { _hotkey_row_index = hotkey_row_index; }
+	/* Change Slot Count */
+	uint8_t get_change_slot_count() const { return _change_slot_count; }
+	void set_change_slot_count(uint8_t change_slot_count) { _change_slot_count = change_slot_count; }
+	/* Current Map */
+	const std::string &get_current_map() const { return _current_map; }
+	void set_current_map(const std::string &map) { _current_map = map; }
+	/* Current X */
+	uint16_t get_current_x() const { return _current_x; }
+	void set_current_x(uint16_t current_x) { _current_x = current_x; }
+	/* Current Y */
+	uint16_t get_current_y() const { return _current_y; }
+	void set_current_y(uint16_t current_y) { _current_y = current_y; }
+	/* Saved Map */
+	const std::string &get_saved_map() const { return _saved_map; }
+	void set_saved_map(const std::string &saved_map) { _saved_map = saved_map; }
+	/* Saved X */
+	uint16_t get_saved_x() const { return _saved_x; }
+	void set_saved_x(uint16_t saved_x) { _saved_x = saved_x; }
+	/* Saved Y */
+	uint16_t get_saved_y() const { return _saved_y; }
+	void set_saved_y(uint16_t saved_y) { _saved_y = saved_y; }
+	/* Font */
+	uint8_t get_font() const { return _font; }
+	void set_font(uint8_t font) { _font = font; }
+	/* Show Equip */
+	uint8_t get_show_equip() const { return _show_equip; }
+	void set_show_equip(uint8_t show_equip) { _show_equip = show_equip; }
+	/* Allow Party */
+	uint8_t get_allow_party() const { return _allow_party; }
+	void set_allow_party(uint8_t allow_party) { _allow_party = allow_party; }
 
-	/* Access Data*/
-	std::shared_ptr<Access> get_access_data() const { return _access_data; }
-	void set_access_data(std::shared_ptr<Access> const &access) { _access_data = access; }
-
-	/* Companion Data*/
-	std::shared_ptr<Companion> get_companion_data() const { return _companion_data; }
-	void set_companion_data(std::shared_ptr<Companion> const &companion) { _companion_data = companion; }
-
-	/* Family Data*/
-	std::shared_ptr<Family> get_family_data() const { return _family_data; }
-	void set_family_data(std::shared_ptr<Family> const &family) { _family_data = family; }
-
-	/* Group Data*/
-	std::shared_ptr<Group> get_group_data() const { return _group_data; }
-	void set_group_data(std::shared_ptr<Group> const &group) { _group_data = group; }
-
-	/* Misc Data*/
-	std::shared_ptr<Misc> get_misc_data() const { return _misc_data; }
-	void set_misc_data(std::shared_ptr<Misc> const &misc) { _misc_data = misc; }
-
-	/* Position Data*/
-	std::shared_ptr<Position> get_position_data() const { return _position_data; }
-	void set_position_data(std::shared_ptr<Position> const &position) { _position_data = position; }
-
-	/* Status Data*/
-	std::shared_ptr<Status> get_status_data() const { return _status_data; }
-	void set_status_data(std::shared_ptr<Status> const &status) { _status_data = status; }
-
-	/* UISettings Data*/
-	std::shared_ptr<UISettings> get_ui_settings() const { return _ui_settings; }
-	void set_ui_settings(std::shared_ptr<UISettings> const &settings) { _ui_settings = settings; }
-
-	/* View Data*/
-	std::shared_ptr<View> get_view_data() const { return _view_data; }
-	void set_view_data(std::shared_ptr<View> const &view) { _view_data = view; }
-
+	/**
+	 * Owned models
+	 */
+	/* Status */
+	std::shared_ptr<Status> get_status_model() const { return _status_data; }
+	void set_status_model(std::shared_ptr<Status> const &status) { _status_data = status; }
 	/* Inventory */
-	std::shared_ptr<Inventory> get_inventory() const { return _inventory; }
-	void set_inventory(std::shared_ptr<Inventory> const &inv) { _inventory = inv; }
-	
+	std::shared_ptr<Inventory> get_inventory_model() const { return _inventory; }
+	void set_inventory_model(std::shared_ptr<Inventory> const &inv) { _inventory = inv; }
+
 private:
 	uint32_t _character_id{0};
 	uint32_t _account_id{0};
@@ -390,17 +207,30 @@ private:
 	std::string _name{""};
 	bool _online{false};
 	character_gender_type _gender{CHARACTER_GENDER_MALE};
-	std::time_t _deleted_at{0};
+	uint32_t _deleted_at{0};
+	uint32_t _unban_time{0};          ///< Time until character is unbanned.
+	uint32_t _pet_id{0};
+	uint32_t _homun_id{0};
+	uint32_t _elemental_id{0};
+	uint32_t _parter_aid{0};
+	uint32_t _father_aid{0};
+	uint32_t _mother_aid{0};
+	uint32_t _child_aid{0};
+	uint32_t _party_id{0};
+	uint32_t _guild_id{0};
+	uint8_t _rename_count{0};
+	uint64_t _unique_item_counter{0};
+	uint8_t _hotkey_row_index{0};
+	uint8_t _change_slot_count{0};
+	std::string _current_map{""};
+	uint16_t _current_x{0}, _current_y{0};
+	std::string _saved_map{""};
+	uint16_t _saved_x{0}, _saved_y{0};
+	uint8_t _font{0};
+	uint8_t _show_equip{0};
+	uint8_t _allow_party{0};
 
-	std::shared_ptr<Access> _access_data{nullptr};
-	std::shared_ptr<Companion> _companion_data{nullptr};
-	std::shared_ptr<Family> _family_data{nullptr};
-	std::shared_ptr<Group> _group_data{nullptr};
-	std::shared_ptr<Misc> _misc_data{nullptr};
-	std::shared_ptr<Position> _position_data{nullptr};
 	std::shared_ptr<Status> _status_data{nullptr};
-	std::shared_ptr<UISettings> _ui_settings{nullptr};
-	std::shared_ptr<View> _view_data{nullptr};
 	std::shared_ptr<Inventory> _inventory{nullptr};
 };
 }

@@ -73,3 +73,8 @@ void NPC::on_movement_end()
 {
 
 }
+
+void NPC::sync_with_models()
+{
+	
+}

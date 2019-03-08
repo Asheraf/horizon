@@ -56,7 +56,6 @@ using namespace Horizon::Zone;
 using namespace Horizon::Zone::Game;
 using namespace Horizon::Zone::Game::Entities;
 using namespace Horizon::Models;
-using namespace Horizon::Models::Character;
 
 /**
  * @brief Packet Handler Constructor.
@@ -170,9 +169,9 @@ bool PacketHandler::verify_new_connection(uint32_t auth_code, uint32_t account_i
 
 	session->set_session_data(session_data);
 	session->set_game_account(game_account);
-	session->set_character(std::make_shared<Models::Character::Character>(char_id));
+	session->set_char_model(std::make_shared<Models::Character::Character>(char_id));
 
-	if (!session->get_character()->load_all(ZoneServer, char_id)) {
+	if (!session->get_char_model()->load_all(ZoneServer, char_id)) {
 		ZoneLog->error("Attempted connection for non-existent character {} by account {}.", account_id, char_id);
 		session->get_packet_handler()->Send_ZC_REFUSE_ENTER(ZONE_SERV_ERROR_REJECT);
 		return false;
@@ -184,24 +183,26 @@ bool PacketHandler::verify_new_connection(uint32_t auth_code, uint32_t account_i
 bool PacketHandler::process_player_entry()
 {
 	std::shared_ptr<ZoneSession> session = get_socket()->get_session();
-	std::shared_ptr<Position> position = session->get_character()->get_position_data();
+	std::shared_ptr<Models::Character::Character> character = session->get_char_model();
 
 	// Initilaize The Player
-	MapCoords mcoords(position->get_current_x(), position->get_current_y());
+	MapCoords mcoords(character->get_current_x(), character->get_current_y());
 
-	std::shared_ptr<Map> map = MapMgr->get_map(position->get_current_map());
+	std::shared_ptr<Map> map = MapMgr->get_map(character->get_current_map());
 
 	if (map == nullptr) {
-		ZoneLog->error("PacketHandler::process_player_entry: Map '{}' was not found or managed by any container! Login to session '{}' is denied.", position->get_current_map(), session->get_session_data()->get_auth_code());
+		ZoneLog->error("PacketHandler::process_player_entry: Map '{}' was not found or managed by any container! Login to session '{}' is denied.", character->get_current_map(), session->get_session_data()->get_auth_code());
 		return false;
 	}
 
 	std::shared_ptr<Player> player = std::make_shared<Player>(session->get_game_account()->get_id(), map, mcoords, session);
+	player->set_logged_in(true);
+	player->set_map(map);
+
+	map->get_map_container()->add_player(player);
+
 	session->set_player(player);
 	set_player(player);
-
-	player->set_map(map);
-	map->get_map_container()->add_player(player);
 
 	// Remove socket from updates on zone server after initial connection
 	// it will be managed by the map container thread.
@@ -258,10 +259,7 @@ bool PacketHandler::Handle_CZ_RESTART(PacketBuffer &buf)
 	switch (pkt.type)
 	{
 	case 0: std::cout << "Respawn" << std::endl; break;
-	case 1:
-			Send_ZC_RESTART_ACK(1);
-			get_player()->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
-			break;
+	case 1: Send_ZC_RESTART_ACK(1); break;
 	}
 
 	return true;
@@ -272,10 +270,9 @@ bool PacketHandler::Handle_CZ_REQ_DISCONNECT(PacketBuffer &buf)
 	Ragexe::PACKET_CZ_REQ_DISCONNECT pkt;
 
 	pkt << buf;
-	ZoneLog->info("Character '{}' has logged out. {}", get_session()->get_character()->get_name(), pkt.type);
+	ZoneLog->info("Character '{}' has logged out. {}", get_session()->get_char_model()->get_name(), pkt.type);
 	Send_ZC_ACK_REQ_DISCONNECT(true);
 	get_session()->get_session_data()->remove(ZoneServer);
-	get_player()->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
 	return true;
 }
 
@@ -461,7 +458,7 @@ void PacketHandler::Send_ZC_RESTART_ACK(uint8_t type)
 	pkt.type = type;
 	send_packet(pkt.serialize());
 
-	ZoneLog->info("Character '{}' has moved to the character server.", get_session()->get_character()->get_name());
+	ZoneLog->info("Character '{}' has moved to the character server.", get_session()->get_char_model()->get_name());
 }
 
 void PacketHandler::Send_ZC_ACK_REQ_DISCONNECT(bool allowed)
@@ -480,48 +477,44 @@ void PacketHandler::Send_ZC_AID()
 
 void PacketHandler::Send_ZC_ACCEPT_ENTER3()
 {
-	std::shared_ptr<Models::Character::Character> character = get_socket()->get_session()->get_character();
-	std::shared_ptr<Position> position = character->get_position_data();
-	std::shared_ptr<UISettings> ui_settings = character->get_ui_settings();
+	std::shared_ptr<Models::Character::Character> character = get_socket()->get_session()->get_char_model();
 
 	Ragexe::PACKET_ZC_ACCEPT_ENTER3 pkt;
-	int x = position->get_current_x();
-	int y = position->get_current_y();
+	int x = character->get_current_x();
+	int y = character->get_current_y();
 
 	if (x == 0 && y == 0) {
-		if ((x = position->get_saved_x()) == 0)
+		if ((x = character->get_saved_x()) == 0)
 			x = 0;
-		if ((y = position->get_saved_y()) == 0)
+		if ((y = character->get_saved_y()) == 0)
 			y = 0;
 	}
 
 	pkt.start_time = (uint32_t) get_sys_time();
 	pkt.x_size = pkt.y_size = 5;
-	pkt.font = ui_settings->get_font();
+	pkt.font = character->get_font();
 	pkt.gender = character->get_gender();
 	send_packet(pkt.serialize(x, y, DIR_SOUTH));
 }
 
 void PacketHandler::Send_ZC_ACCEPT_ENTER2()
 {
-	std::shared_ptr<Models::Character::Character> character = get_socket()->get_session()->get_character();
-	std::shared_ptr<Models::Character::Position> position = character->get_position_data();
-	std::shared_ptr<Models::Character::UISettings> ui_settings = character->get_ui_settings();
+	std::shared_ptr<const Models::Character::Character> character = get_socket()->get_session()->get_char_model();
 
 	Ragexe::PACKET_ZC_ACCEPT_ENTER2 pkt;
-	int x = position->get_current_x();
-	int y = position->get_current_y();
+	int x = character->get_current_x();
+	int y = character->get_current_y();
 
 	if (x == 0 && y == 0) {
-		if ((x = position->get_saved_x()) == 0)
+		if ((x = character->get_saved_x()) == 0)
 			x = 0;
-		if ((y = position->get_saved_y()) == 0)
+		if ((y = character->get_saved_y()) == 0)
 			y = 0;
 	}
 
 	pkt.start_time = (uint32_t) get_sys_time();
 	pkt.x_size = pkt.y_size = 5;
-	pkt.font = ui_settings->get_font();
+	pkt.font = character->get_font();
 	send_packet(pkt.serialize(x, y, DIR_SOUTH));
 }
 
@@ -553,7 +546,7 @@ void PacketHandler::Send_ZC_NOTIFY_TIME()
 
 void PacketHandler::Send_ZC_NOTIFY_MOVE(uint32_t guid, MapCoords from, MapCoords to)
 {
-	std::shared_ptr<Models::Character::Character> character = get_session()->get_character();
+	std::shared_ptr<const Models::Character::Character> character = get_session()->get_char_model();
 	Ragexe::PACKET_ZC_NOTIFY_MOVE pkt;
 
 	pkt.guid = guid;
@@ -597,7 +590,7 @@ void PacketHandler::Send_ZC_LONGPAR_CHANGE(uint16_t type, uint16_t value)
 void PacketHandler::Send_ZC_STATUS()
 {
 	Ragexe::PACKET_ZC_STATUS pkt;
-	std::shared_ptr<Horizon::Zone::Game::Status::Status> status = get_player()->get_status();
+	std::shared_ptr<Status::Status> status = get_player()->get_status();
 
 	pkt.data.status_points = status->get_status_point()->get_base();
 	pkt.data.strength = status->get_strength()->get_base();
@@ -797,13 +790,13 @@ void PacketHandler::Send_ZC_NOTIFY_VANISH(uint32_t guid, uint8_t type)
 	send_packet(pkt.serialize());
 }
 
-void PacketHandler::Send_ZC_NORMAL_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items)
+void PacketHandler::Send_ZC_NORMAL_ITEMLIST(std::vector<std::shared_ptr<const item_entry_data>> const &items)
 {
 	Ragexe::PACKET_ZC_INVENTORY_ITEMLIST_NORMAL_V5 pkt;
 	send_packet(pkt.serialize(items));
 }
 
-void PacketHandler::Send_ZC_EQUIPMENT_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items)
+void PacketHandler::Send_ZC_EQUIPMENT_ITEMLIST(std::vector<std::shared_ptr<const item_entry_data>> const &items)
 {
 	Ragexe::PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 pkt;
 	send_packet(pkt.serialize(items));

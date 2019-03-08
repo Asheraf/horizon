@@ -32,7 +32,6 @@
 #include "Server/Auth/Packets/Ragexe/Packets.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
-#include "Server/Common/Models/Character/Group.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 #include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"

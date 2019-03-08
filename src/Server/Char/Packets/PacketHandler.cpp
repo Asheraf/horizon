@@ -36,6 +36,7 @@
 #include "Server/Char/Database/Query.hpp"
 #include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
+#include "Server/Common/Models/Character/Status.hpp"
 
 #include <boost/bind.hpp>
 #include <string>
@@ -147,8 +148,20 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 	character->set_slot(pkt.slot);
 	character->set_gender((character_gender_type) pkt.gender);
 
+	std::string start_map = CharServer->get_char_config().get_start_map();
+	uint16_t start_x = CharServer->get_char_config().get_start_x();
+	uint16_t start_y = CharServer->get_char_config().get_start_y();
+
+	character->set_saved_map(start_map);
+	character->set_saved_x(start_x);
+	character->set_saved_y(start_y);
+	character->set_current_map(start_map);
+	character->set_current_x(start_x);
+	character->set_current_y(start_y);
+	character->save(CharServer);
+
 	// Status
-	std::shared_ptr<Character::Status> status = character->get_status_data();
+	std::shared_ptr<Character::Status> status = character->get_status_model();
 	status->set_strength(1);
 	status->set_agility(1);
 	status->set_vitality(1);
@@ -165,27 +178,10 @@ bool PacketHandler::Handle_CH_MAKE_CHAR(PacketBuffer &buf)
 	status->set_job_id(pkt.job_id);
 	status->set_status_points(48);
 
-	status->save(CharServer);
-
 	// View
-	std::shared_ptr<Character::View> view = character->get_view_data();
-	view->set_hair_style_id(pkt.hair_style);
-	view->set_hair_style_id(pkt.hair_color);
-	view->save(CharServer);
-
-	// Position
-	std::string start_map = CharServer->get_char_config().get_start_map();
-	uint16_t start_x = CharServer->get_char_config().get_start_x();
-	uint16_t start_y = CharServer->get_char_config().get_start_y();
-
-	std::shared_ptr<Character::Position> p = character->get_position_data();
-	p->set_saved_map(start_map);
-	p->set_saved_x(start_x);
-	p->set_saved_y(start_y);
-	p->set_current_map(start_map);
-	p->set_current_x(start_x);
-	p->set_current_y(start_y);
-	p->save(CharServer);
+	status->set_hair_style_id(pkt.hair_style);
+	status->set_hair_style_id(pkt.hair_color);
+	status->save(CharServer);
 
 	// Add character to account.
 	game_account->add_character(character);
@@ -205,17 +201,17 @@ character_delete_result PacketHandler::delete_character(uint32_t character_id)
 		return CHAR_DEL_RESULT_DATABASE_ERR;
 	}
 
-	if (character->get_access_data()->get_delete_date() > 0)
+	if (character->get_deleted_at() > 0)
 		return CHAR_DEL_RESULT_UNKNOWN;
 
-	if (character->get_group_data()->get_guild_id() > 0)
+	if (character->get_guild_id() > 0)
 		return CHAR_DEL_RESULT_GUILD_ERR;
 
-	if (character->get_group_data()->get_party_id() > 0)
+	if (character->get_party_id() > 0)
 		return CHAR_DEL_RESULT_PARTY_ERR;
 
-	character->get_access_data()->set_delete_date(CharServer->get_char_config().get_character_deletion_time() + std::time(0));
-	character->save(CharServer, CHAR_SAVE_ACCESS_DATA);
+	character->set_deleted_at(CharServer->get_char_config().get_character_deletion_time() + std::time(0));
+	character->save(CharServer, CHAR_SAVE_BASE_DATA);
 
 	return CHAR_DEL_RESULT_SUCCESS;
 }
@@ -236,7 +232,7 @@ bool PacketHandler::Handle_CH_DELETE_CHAR3_RESERVED(PacketBuffer &buf)
 	}
 
 	if ((result = delete_character(pkt.character_id)) == CHAR_DEL_RESULT_SUCCESS) {
-		Send_HC_DELETE_CHAR3_RESERVED(pkt.character_id, result, character->get_access_data()->get_delete_date() - std::time(0));
+		Send_HC_DELETE_CHAR3_RESERVED(pkt.character_id, result, character->get_deleted_at() - std::time(0));
 		return true;
 	}
 
@@ -260,7 +256,7 @@ bool PacketHandler::Handle_CH_DELETE_CHAR(PacketBuffer &buf)
 	}
 
 	if ((result = delete_character(pkt.character_id)) == CHAR_DEL_RESULT_SUCCESS) {
-		Send_HC_DELETE_CHAR3_RESERVED(pkt.character_id, result, character->get_access_data()->get_delete_date() - std::time(0));
+		Send_HC_DELETE_CHAR3_RESERVED(pkt.character_id, result, character->get_deleted_at() - std::time(0));
 		return true;
 	}
 
@@ -284,8 +280,8 @@ bool PacketHandler::Handle_CH_DELETE_CHAR3(PacketBuffer &buf)
 		return false;
 	}
 
-	if (character->get_access_data()->get_delete_date() > std::time(0)) {
-		CharLog->warn("Attempted to delete character Id {} which is not ready for deletion, in account '{}'", character->get_character_id(), game_account->get_id());
+	if (character->get_deleted_at() > std::time(0)) {
+		CharLog->warn("Attempted to delete character Id {} which is not ready for deletion, in account '{}'", character->get_id(), game_account->get_id());
 		Send_HC_DELETE_CHAR3(pkt.character_id, CHAR_DEL_ACCEPT_RESULT_TIME_ERR);
 		return false;
 	}
@@ -324,14 +320,14 @@ bool PacketHandler::Handle_CH_DELETE_CHAR3_CANCEL(PacketBuffer &buf)
 		return false;
 	}
 
-	if (character->get_access_data()->get_delete_date() == 0) {
+	if (character->get_deleted_at() == 0) {
 		CharLog->warn("Attempted to delete character that wasn't set for deletion in account Id '{}'", game_account->get_id());
 		Send_HC_DELETE_CHAR3_CANCEL(pkt.character_id, false);
 		return false;
 	}
 
-	character->get_access_data()->set_delete_date(0);
-	character->save(CharServer, CHAR_SAVE_ACCESS_DATA);
+	character->set_deleted_at(0);
+	character->save(CharServer, CHAR_SAVE_BASE_DATA);
 
 	Send_HC_DELETE_CHAR3_CANCEL(pkt.character_id, true);
 	return true;
@@ -530,13 +526,13 @@ void PacketHandler::Send_HC_NOTIFY_ZONESVR(std::shared_ptr<Character::Character>
 	Ragexe::PACKET_HC_NOTIFY_ZONESVR pkt;
 	std::string map_name;
 
-	if ((map_name = character->get_position_data()->get_current_map()).empty())
-		if ((map_name = character->get_position_data()->get_saved_map()).empty())
+	if ((map_name = character->get_current_map()).empty())
+		if ((map_name = character->get_saved_map()).empty())
 			map_name = CharServer->get_char_config().get_start_map().c_str();
 
 	map_name += ".gat";
 
-	pkt.char_id = character->get_character_id();
+	pkt.char_id = character->get_id();
 	pkt.ip_address = inet_addr(CharServer->get_char_config().get_zone_server_ip().c_str());
 	pkt.port = CharServer->get_char_config().get_zone_server_port();
 	strncpy(pkt.map_name, map_name.c_str(), MAP_NAME_LENGTH_EXT);

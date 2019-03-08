@@ -57,63 +57,32 @@ CREATE TABLE `characters` (
   `online` tinyint(2) NOT NULL DEFAULT 0,
   `gender` enum('M','F','U') NOT NULL DEFAULT 'U',
   `deleted_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name_key` (`name`),
-  CONSTRAINT FOREIGN KEY (account_id) REFERENCES game_accounts(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_access_data` (
-  `id` int(11) unsigned NOT NULL,
   `unban_time` int(11) unsigned NOT NULL DEFAULT 0,
-  `delete_date` int(11) unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_misc_data` (
-  `id` int(11) unsigned NOT NULL,
   `rename_count` tinyint(2) unsigned NOT NULL DEFAULT 0,
   `unique_item_counter` bigint(20) unsigned NOT NULL DEFAULT 0,
   `hotkey_row_index` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `change_slot_count` tinyint(2) unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_ui_settings` (
-  `id` int(11) unsigned NOT NULL,
   `font` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `show_equip` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `allow_party` tinyint(1) unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_family_data` (
-  `id` int(11) unsigned NOT NULL,
   `partner_aid` int(11) unsigned NOT NULL DEFAULT 0,
   `father_aid` int(11) unsigned NOT NULL DEFAULT 0,
   `mother_aid` int(11) unsigned NOT NULL DEFAULT 0,
   `child_aid` int(11) unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_group_data` (
-  `id` int(11) unsigned NOT NULL,
   `party_id` int(11) unsigned NOT NULL DEFAULT 0,
   `guild_id` int(11) unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_companion_data` (
-  `id` int(11) unsigned NOT NULL,
   `pet_id` int(11) unsigned NOT NULL DEFAULT 0,
   `homun_id` int(11) unsigned NOT NULL DEFAULT 0,
   `elemental_id` int(11) unsigned NOT NULL DEFAULT 0,
+  `current_map` varchar(11) NOT NULL DEFAULT 'new_1-1',
+  `current_x` smallint(4) unsigned NOT NULL DEFAULT 53,
+  `current_y` smallint(4) unsigned NOT NULL DEFAULT 111,
+  `saved_map` varchar(11) NOT NULL DEFAULT 'new_1-1',
+  `saved_x` smallint(4) unsigned NOT NULL DEFAULT 53,
+  `saved_y` smallint(4) unsigned NOT NULL DEFAULT 111,
   PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
+  UNIQUE KEY `name_key` (`name`),
+  CONSTRAINT FOREIGN KEY (account_id) REFERENCES game_accounts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
 
 CREATE TABLE `character_status_data` (
@@ -140,12 +109,6 @@ CREATE TABLE `character_status_data` (
   `virtue` tinyint(3) NOT NULL DEFAULT 0,
   `honor` int(11) unsigned NOT NULL DEFAULT 0,
   `manner` smallint(6) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_view_data` (
-  `id` int(11) unsigned NOT NULL,
   `hair_style_id` tinyint(4) unsigned NOT NULL DEFAULT 0,
   `hair_color_id` smallint(5) unsigned NOT NULL DEFAULT 0,
   `cloth_color_id` smallint(5) unsigned NOT NULL DEFAULT 0,
@@ -156,18 +119,6 @@ CREATE TABLE `character_view_data` (
   `head_mid_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
   `head_bottom_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
   `robe_view_id` smallint(6) unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
-
-CREATE TABLE `character_position_data` (
-  `id` int(11) unsigned NOT NULL,
-  `current_map` varchar(11) NOT NULL DEFAULT 'new_1-1',
-  `current_x` smallint(4) unsigned NOT NULL DEFAULT 53,
-  `current_y` smallint(4) unsigned NOT NULL DEFAULT 111,
-  `saved_map` varchar(11) NOT NULL DEFAULT 'new_1-1',
-  `saved_x` smallint(4) unsigned NOT NULL DEFAULT 53,
-  `saved_y` smallint(4) unsigned NOT NULL DEFAULT 111,
   PRIMARY KEY (`id`),
   CONSTRAINT FOREIGN KEY (id) REFERENCES characters(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;
@@ -189,6 +140,7 @@ CREATE TABLE `session_data` (
 CREATE TABLE `character_inventory` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `char_id` int(11) unsigned NOT NULL DEFAULT '0',
+  `inventory_index` int(11) unsigned NOT NULL DEFAULT '2',
   `item_id` int(11) unsigned NOT NULL DEFAULT '0',
   `amount` int(11) unsigned NOT NULL DEFAULT '0',
   `equip_location_mask` int(11) unsigned NOT NULL DEFAULT '0',

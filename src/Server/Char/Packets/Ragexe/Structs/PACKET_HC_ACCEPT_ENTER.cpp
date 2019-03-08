@@ -28,28 +28,16 @@
 #include "PACKET_HC_ACCEPT_ENTER.hpp"
 #include "Server/Common/Definitions/Horizon.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
-#include "Server/Common/Models/Character/Access.hpp"
-#include "Server/Common/Models/Character/Companion.hpp"
-#include "Server/Common/Models/Character/Family.hpp"
-#include "Server/Common/Models/Character/Group.hpp"
-#include "Server/Common/Models/Character/Misc.hpp"
-#include "Server/Common/Models/Character/Position.hpp"
 #include "Server/Common/Models/Character/Status.hpp"
-#include "Server/Common/Models/Character/UISettings.hpp"
-#include "Server/Common/Models/Character/View.hpp"
 
 using namespace Horizon::Char::Ragexe;
 using namespace Horizon::Models::Character;
 
 void PACKET_HC_ACCEPT_ENTER::character_list_data::create_from_model(std::shared_ptr<Character> c)
 {
-	std::shared_ptr<Status> status = c->get_status_data();
-	std::shared_ptr<View> view = c->get_view_data();
-	std::shared_ptr<Misc> misc = c->get_misc_data();
-	std::shared_ptr<Position> position = c->get_position_data();
-	std::shared_ptr<Access> access = c->get_access_data();
+	std::shared_ptr<Status> status = c->get_status_model();
 
-	character_id = c->get_character_id();
+	character_id = c->get_id();
 	base_experience = status->get_base_exp();
 	zeny = status->get_zeny();
 	job_experience = status->get_job_exp();
@@ -64,17 +52,17 @@ void PACKET_HC_ACCEPT_ENTER::character_list_data::create_from_model(std::shared_
 	maximum_sp = status->get_max_sp();
 	walk_speed = DEFAULT_MOVEMENT_SPEED;
 	job_id = status->get_job_id();
-	hair_view_id = view->get_hair_style_id();
-	body_view_id = view->get_body_id();
-	weapon_view_id = view->get_weapon_id();
+	hair_view_id = status->get_hair_style_id();
+	body_view_id = status->get_body_id();
+	weapon_view_id = status->get_weapon_id();
 	base_level = status->get_base_level();
 	skill_point = status->get_skill_points();
-	head_bottom_view_id = view->get_head_bottom_view_id();
-	shield_id = view->get_shield_id();
-	head_top_view_id = view->get_head_top_view_id();
-	head_mid_view_id = view->get_head_mid_view_id();
-	hair_color_id = view->get_hair_color_id();
-	clothes_color_id = view->get_cloth_color_id();
+	head_bottom_view_id = status->get_head_bottom_view_id();
+	shield_id = status->get_shield_id();
+	head_top_view_id = status->get_head_top_view_id();
+	head_mid_view_id = status->get_head_mid_view_id();
+	hair_color_id = status->get_hair_color_id();
+	clothes_color_id = status->get_cloth_color_id();
 	strncpy(name, c->get_name().c_str(), MAX_UNIT_NAME_LENGTH);
 	strength = status->get_strength();
 	agility = status->get_agility();
@@ -83,12 +71,12 @@ void PACKET_HC_ACCEPT_ENTER::character_list_data::create_from_model(std::shared_
 	dexterity = status->get_dexterity();
 	luck = status->get_luck();
 	char_slot = c->get_slot();
-	rename_count = misc->get_rename_count();
-	strncpy(map_name, position->get_current_map().c_str(), MAP_NAME_LENGTH_EXT);
+	rename_count = c->get_rename_count();
+	strncpy(map_name, c->get_current_map().c_str(), MAP_NAME_LENGTH_EXT);
 	strcat(map_name, ".gat");
-	delete_date = access->get_delete_date();
-	robe_view_id = view->get_robe_view_id();
-	change_slot_count = misc->get_change_slot_count();
+	deleted_at = c->get_deleted_at();
+	robe_view_id = status->get_robe_view_id();
+	change_slot_count = c->get_change_slot_count();
 	gender = c->get_gender();
 }
 
@@ -132,7 +120,7 @@ PacketBuffer PACKET_HC_ACCEPT_ENTER::character_list_data::serialize(PacketBuffer
 	buf << char_slot;
 	buf << rename_count;
 	buf.append(map_name, sizeof(map_name));
-	buf << delete_date;
+	buf << deleted_at;
 	buf << robe_view_id;
 	buf << change_slot_count;
 	buf << addon_option;

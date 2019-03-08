@@ -171,8 +171,8 @@ public:
 	virtual void Send_ZC_NPC_CHAT(uint32_t guid, std::string message, player_notifier_type type);
 	virtual void Send_ZC_ACK_REQNAME(uint32_t guid, std::string name);
 	virtual void Send_ZC_NOTIFY_VANISH(uint32_t guid, uint8_t type = 0);
-	virtual void Send_ZC_NORMAL_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items);
-	virtual void Send_ZC_EQUIPMENT_ITEMLIST(std::vector<std::shared_ptr<item_entry_data>> const &items);
+	virtual void Send_ZC_NORMAL_ITEMLIST(std::vector<std::shared_ptr<const item_entry_data>> const &items);
+	virtual void Send_ZC_EQUIPMENT_ITEMLIST(std::vector<std::shared_ptr<const item_entry_data>> const &items);
 	virtual void Send_ZC_ITEM_PICKUP_ACK(item_entry_data id, uint16_t amount, item_inventory_addition_notif_type result);
 	virtual void Send_ZC_ITEM_THROW_ACK(uint16_t inventory_index, uint16_t amount);
 	virtual void Send_ZC_INVENTORY_MOVE_FAILED(uint16_t inventory_index, bool silent);

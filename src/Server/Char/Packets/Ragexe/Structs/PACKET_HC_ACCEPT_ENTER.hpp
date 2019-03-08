@@ -132,7 +132,7 @@ struct PACKET_HC_ACCEPT_ENTER : public Packet
 		uint16_t char_slot{0};               ///< 110
 		uint16_t rename_count{0};            ///< 112
 		char map_name[MAP_NAME_LENGTH_EXT]{0};///< 114
-		uint32_t delete_date{0};             ///< 130
+		uint32_t deleted_at{0};             ///< 130
 		uint32_t robe_view_id{0};            ///< 134
 		uint32_t change_slot_count{0};       ///< 138
 		uint32_t addon_option{0};            ///< 142 1: Displays "Addon" on side-bar.
