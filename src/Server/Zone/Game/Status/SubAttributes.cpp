@@ -26,9 +26,27 @@
  **************************************************/
 
 #include "SubAttributes.hpp"
+#include "Server/Zone/Game/StaticDB/JobDB.hpp"
+#include "Server/Zone/Game/StaticDB/ItemDB.hpp"
 #include "Server/Zone/Game/Status/Attributes.hpp"
+#include "Server/Zone/Game/Entities/Player/Assets/Inventory.hpp"
+#include "Server/Zone/Game/Entities/Player/Player.hpp"
+
+#include <time.h>
+#include <random>
 
 using namespace Horizon::Zone::Game::Status;
+
+uint32_t MaxWeight::compute()
+{
+	if (get_entity() == nullptr || _str.expired())
+		return 0;
+
+	std::shared_ptr<const job_db_data> job = JobDB->get(get_entity()->get_job_id());
+	std::shared_ptr<Strength> str = _str.lock();
+
+	return job->max_weight + str->get_base() * 300;
+}
 
 uint32_t StatusATK::compute()
 {
@@ -41,14 +59,21 @@ uint32_t StatusATK::compute()
 
 	if (sblvl != nullptr)
 		blvl = sblvl->get_base();
+
 	if (sstr != nullptr)
 		str = sstr->total();
+
 	if (sdex != nullptr)
 		dex = sdex->total();
+
 	if (sluk != nullptr)
 		luk = sluk->total();
 
-	// floor[(BaseLevel ÷ 4) + Str + (Dex ÷ 5) + (Luk ÷ 3)]
+	// Ranged: floor[(BaseLevel ÷ 4) + (Str ÷ 5) + Dex + (Luk ÷ 3)]
+	if (((1ULL << _weapon_type) & IT_WTM_RANGED) & ~(1ULL<<IT_WT_FIST))
+		return dex + (blvl / 4) + (str / 5) + (luk / 3);
+
+	// Melee: floor[(BaseLevel ÷ 4) + Str + (Dex ÷ 5) + (Luk ÷ 3)]
 	return str + (blvl / 4) + (dex / 5) + (luk / 3);
 }
 
@@ -141,6 +166,8 @@ uint32_t CRIT::compute()
 	return (luk / 3);
 }
 
+//! @brief Computes FLEE status based on agility, luck and Base Level.
+//! FLEE = 100 + BaseLv + AGI + Floor(LUK ÷ 5)
 uint32_t FLEE::compute()
 {
 	uint32_t blvl = 1, agi = 1, luk = 1;
@@ -156,6 +183,61 @@ uint32_t FLEE::compute()
 	if (sluk != nullptr)
 		luk = sluk->total();
 
-	// 100 + BaseLv + AGI + Floor(LUK ÷ 5)
 	return 100 + blvl + agi + (luk / 5);
+}
+
+//! @brief Computes the WeaponATK property of physical attacks.
+//! WeaponATK = floor[((BaseWeaponDamage + Variance + StatBonus + RefinementBonus + OverUpgradeBonus) × SizePenaltyMultiplier]
+uint32_t WeaponATK::compute()
+{
+	uint32_t str = 1, dex = 1;
+	using namespace Horizon::Zone::Game::Entities;
+
+	if (get_entity() == nullptr || get_entity()->get_type() != ENTITY_PLAYER)
+		return 0;
+
+	std::shared_ptr<Player> player = get_entity()->downcast<Player>();
+	std::shared_ptr<Strength> sstr = _str.lock();
+	std::shared_ptr<Dexterity> sdex = _dex.lock();
+
+	if (sstr) str = sstr->total();
+	if (sdex) dex = sdex->total();
+
+	EquippedItemsArray const &equipments = player->get_inventory()->get_equipments();
+
+	std::shared_ptr<const item_entry_data> lhw = equipments[IT_EQPI_HAND_L].second.lock();
+	std::shared_ptr<const item_entry_data> rhw = equipments[IT_EQPI_HAND_R].second.lock();
+
+	if (lhw && lhw->type == IT_TYPE_WEAPON) {
+		std::shared_ptr<const item_config_data> lhwd = ItemDB->get(lhw->item_id);
+		assert(lhwd);
+		// Base Weapon Damage
+		_left_hand_val = lhwd->attack;
+		// StatBonus = BaseWeaponDamage × (Melee: Str / Ranged: Dex) ÷ 200
+		_left_hand_val += (lhwd->attack * (((1ULL<<lhwd->sub_type.weapon_t) & IT_WTM_MELEE) ? str : dex) / 200.00f);
+	} else {
+		_left_hand_val = 0;
+	}
+
+	if (rhw && rhw->type == IT_TYPE_WEAPON) {
+		std::shared_ptr<const item_config_data> rhwd = ItemDB->get(rhw->item_id);
+		assert(rhwd);
+		// Base Weapon Damage
+		_right_hand_val = rhwd->attack;
+		// StatBonus = BaseWeaponDamage × (Melee: Str / Ranged: Dex) ÷ 200
+		_right_hand_val += (rhwd->attack * (((1ULL<<rhwd->sub_type.weapon_t) & IT_WTM_MELEE) ? str : dex) / 200.00f);
+	} else {
+		_right_hand_val = 0;
+	}
+
+	return _left_hand_val + _right_hand_val;
+}
+
+uint32_t WeaponATK::compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dmg)
+{
+	using namespace Horizon::Zone::Game::Entities;
+
+	srand(time(0));
+
+	return floor(((rand() % 1000 + (-500)) / 10000.f) * weapon_lvl * base_weapon_dmg);
 }

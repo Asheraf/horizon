@@ -75,7 +75,7 @@ JobDatabase::JobDatabase()
 	_name2id_list.emplace("Creator", JOB_CREATOR);
 	_name2id_list.emplace("Clown", JOB_CLOWN);
 	_name2id_list.emplace("Gypsy", JOB_GYPSY);
-	_name2id_list.emplace("Baby_Novice", JOB_BABY);
+	_name2id_list.emplace("Baby_Novice", JOB_BABY_NOVICE);
 	_name2id_list.emplace("Baby_Swordsman", JOB_BABY_SWORDMAN);
 	_name2id_list.emplace("Baby_Magician", JOB_BABY_MAGE);
 	_name2id_list.emplace("Baby_Archer", JOB_BABY_ARCHER);
@@ -128,19 +128,19 @@ JobDatabase::JobDatabase()
 	_name2id_list.emplace("Sura_Trans", JOB_SURA_T);
 	_name2id_list.emplace("Genetic_Trans", JOB_GENETIC_T);
 	_name2id_list.emplace("Shadow_Chaser_Trans", JOB_SHADOW_CHASER_T);
-	_name2id_list.emplace("Baby_Rune_Knight", JOB_BABY_RUNE);
+	_name2id_list.emplace("Baby_Rune_Knight", JOB_BABY_RUNE_KNIGHT);
 	_name2id_list.emplace("Baby_Warlock", JOB_BABY_WARLOCK);
 	_name2id_list.emplace("Baby_Ranger", JOB_BABY_RANGER);
 	_name2id_list.emplace("Baby_Arch_Bishop", JOB_BABY_BISHOP);
 	_name2id_list.emplace("Baby_Mechanic", JOB_BABY_MECHANIC);
-	_name2id_list.emplace("Baby_Guillotine_Cross", JOB_BABY_CROSS);
-	_name2id_list.emplace("Baby_Royal_Guard", JOB_BABY_GUARD);
+	_name2id_list.emplace("Baby_Guillotine_Cross", JOB_BABY_GUILLOTINE_CROSS);
+	_name2id_list.emplace("Baby_Royal_Guard", JOB_BABY_ROYAL_GUARD);
 	_name2id_list.emplace("Baby_Sorcerer", JOB_BABY_SORCERER);
 	_name2id_list.emplace("Baby_Minstrel", JOB_BABY_MINSTREL);
 	_name2id_list.emplace("Baby_Wanderer", JOB_BABY_WANDERER);
 	_name2id_list.emplace("Baby_Sura", JOB_BABY_SURA);
 	_name2id_list.emplace("Baby_Genetic", JOB_BABY_GENETIC);
-	_name2id_list.emplace("Baby_Shadow_Chaser", JOB_BABY_CHASER);
+	_name2id_list.emplace("Baby_Shadow_Chaser", JOB_BABY_SHADOW_CHASER);
 	_name2id_list.emplace("Expanded_Super_Novice", JOB_SUPER_NOVICE_E);
 	_name2id_list.emplace("Expanded_Super_Baby", JOB_SUPER_BABY_E);
 	_name2id_list.emplace("Kagerou", JOB_KAGEROU);
@@ -246,55 +246,55 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 
 				int val = value.as<int>();
 				if (!w_name.compare("Fist")) {
-					data.weapon_base_aspd[WT_FIST] = val;
+					data.weapon_base_aspd[IT_WT_FIST] = val;
 				} else if (!w_name.compare("Dagger")) {
-					data.weapon_base_aspd[WT_DAGGER] = val;
+					data.weapon_base_aspd[IT_WT_DAGGER] = val;
 				} else if (!w_name.compare("Sword")) {
-					data.weapon_base_aspd[WT_1HSWORD] = val;
+					data.weapon_base_aspd[IT_WT_1HSWORD] = val;
 				} else if (!w_name.compare("TwoHandSword")) {
-					data.weapon_base_aspd[WT_2HSWORD] = val;
+					data.weapon_base_aspd[IT_WT_2HSWORD] = val;
 				} else if (!w_name.compare("Spear")) {
-					data.weapon_base_aspd[WT_1HSPEAR] = val;
+					data.weapon_base_aspd[IT_WT_1HSPEAR] = val;
 				} else if (!w_name.compare("TwoHandSpear")) {
-					data.weapon_base_aspd[WT_2HSPEAR] = val;
+					data.weapon_base_aspd[IT_WT_2HSPEAR] = val;
 				} else if (!w_name.compare("Axe")) {
-					data.weapon_base_aspd[WT_1HAXE] = val;
+					data.weapon_base_aspd[IT_WT_1HAXE] = val;
 				} else if (!w_name.compare("TwoHandAxe")) {
-					data.weapon_base_aspd[WT_2HAXE] = val;
+					data.weapon_base_aspd[IT_WT_2HAXE] = val;
 				} else if (!w_name.compare("Mace")) {
-					data.weapon_base_aspd[WT_1HMACE] = val;
+					data.weapon_base_aspd[IT_WT_1HMACE] = val;
 				} else if (!w_name.compare("TwoHandMace")) {
-					data.weapon_base_aspd[WT_2HMACE] = val;
+					data.weapon_base_aspd[IT_WT_2HMACE] = val;
 				} else if (!w_name.compare("Rod")) {
-					data.weapon_base_aspd[WT_STAFF] = val;
+					data.weapon_base_aspd[IT_WT_STAFF] = val;
 				} else if (!w_name.compare("Bow")) {
-					data.weapon_base_aspd[WT_BOW] = val;
+					data.weapon_base_aspd[IT_WT_BOW] = val;
 				} else if (!w_name.compare("Knuckle")) {
-					data.weapon_base_aspd[WT_KNUCKLE] = val;
+					data.weapon_base_aspd[IT_WT_KNUCKLE] = val;
 				} else if (!w_name.compare("Instrument")) {
-					data.weapon_base_aspd[WT_MUSICAL] = val;
+					data.weapon_base_aspd[IT_WT_MUSICAL] = val;
 				} else if (!w_name.compare("Whip")) {
-					data.weapon_base_aspd[WT_WHIP] = val;
+					data.weapon_base_aspd[IT_WT_WHIP] = val;
 				} else if (!w_name.compare("Book")) {
-					data.weapon_base_aspd[WT_BOOK] = val;
+					data.weapon_base_aspd[IT_WT_BOOK] = val;
 				} else if (!w_name.compare("Katar")) {
-					data.weapon_base_aspd[WT_KATAR] = val;
+					data.weapon_base_aspd[IT_WT_KATAR] = val;
 				} else if (!w_name.compare("Revolver")) {
-					data.weapon_base_aspd[WT_REVOLVER] = val;
+					data.weapon_base_aspd[IT_WT_REVOLVER] = val;
 				} else if (!w_name.compare("Rifle")) {
-					data.weapon_base_aspd[WT_RIFLE] = val;
+					data.weapon_base_aspd[IT_WT_RIFLE] = val;
 				} else if (!w_name.compare("GatlingGun")) {
-					data.weapon_base_aspd[WT_GATLING] = val;
+					data.weapon_base_aspd[IT_WT_GATLING] = val;
 				} else if (!w_name.compare("Shotgun")) {
-					data.weapon_base_aspd[WT_SHOTGUN] = val;
+					data.weapon_base_aspd[IT_WT_SHOTGUN] = val;
 				} else if (!w_name.compare("GrenadeLauncher")) {
-					data.weapon_base_aspd[WT_GRENADE] = val;
+					data.weapon_base_aspd[IT_WT_GRENADE] = val;
 				} else if (!w_name.compare("FuumaShuriken")) {
-					data.weapon_base_aspd[WT_HUUMA] = val;
+					data.weapon_base_aspd[IT_WT_HUUMA] = val;
 				} else if (!w_name.compare("TwoHandRod")) {
-					data.weapon_base_aspd[WT_2HSTAFF] = val;
+					data.weapon_base_aspd[IT_WT_2HSTAFF] = val;
 				} else if (!w_name.compare("Shield")) {
-					data.weapon_base_aspd[WT_SHIELD] = val;
+					data.weapon_base_aspd[IT_WT_SHIELD] = val;
 				}
 			});
 
@@ -386,26 +386,16 @@ job_class_mask JobDatabase::job_id_to_mask(job_class_type job_id) const
 	case JOB_ACOLYTE:               return JMASK_ACOLYTE;
 	case JOB_MERCHANT:              return JMASK_MERCHANT;
 	case JOB_THIEF:                 return JMASK_THIEF;
-	case JOB_TAEKWON:               return JMASK_TAEKWON;
 	case JOB_WEDDING:               return JMASK_WEDDING;
-	case JOB_GUNSLINGER:            return JMASK_GUNSLINGER;
-	case JOB_NINJA:                 return JMASK_NINJA;
-	case JOB_XMAS:                  return JMASK_XMAS;
-	case JOB_SUMMER:                return JMASK_SUMMER;
 	case JOB_GANGSI:                return JMASK_GANGSI;
 	case JOB_SUMMONER:              return JMASK_SUMMONER;
 	//2-1 Jobs
-	case JOB_SUPER_NOVICE:          return JMASK_SUPER_NOVICE;
 	case JOB_KNIGHT:                return JMASK_KNIGHT;
 	case JOB_WIZARD:                return JMASK_WIZARD;
 	case JOB_HUNTER:                return JMASK_HUNTER;
 	case JOB_PRIEST:                return JMASK_PRIEST;
 	case JOB_BLACKSMITH:            return JMASK_BLACKSMITH;
 	case JOB_ASSASSIN:              return JMASK_ASSASSIN;
-	case JOB_STAR_GLADIATOR:        return JMASK_STAR_GLADIATOR;
-	case JOB_KAGEROU:
-	case JOB_OBORO:                 return JMASK_KAGEROUOBORO;
-	case JOB_REBELLION:             return JMASK_REBELLION;
 	case JOB_DEATH_KNIGHT:          return JMASK_DEATH_KNIGHT;
 	//2-2 Jobs
 	case JOB_CRUSADER:              return JMASK_CRUSADER;
@@ -415,7 +405,6 @@ job_class_mask JobDatabase::job_id_to_mask(job_class_type job_id) const
 	case JOB_MONK:                  return JMASK_MONK;
 	case JOB_ALCHEMIST:             return JMASK_ALCHEMIST;
 	case JOB_ROGUE:                 return JMASK_ROGUE;
-	case JOB_SOUL_LINKER:           return JMASK_SOUL_LINKER;
 	case JOB_DARK_COLLECTOR:        return JMASK_DARK_COLLECTOR;
 	//Trans Novice And Trans 1-1 Jobs
 	case JOB_NOVICE_HIGH:           return JMASK_NOVICE_HIGH;
@@ -441,7 +430,7 @@ job_class_mask JobDatabase::job_id_to_mask(job_class_type job_id) const
 	case JOB_CREATOR:               return JMASK_CREATOR;
 	case JOB_STALKER:               return JMASK_STALKER;
 	//Baby Novice And Baby 1-1 Jobs
-	case JOB_BABY:                  return JMASK_BABY;
+	case JOB_BABY_NOVICE:           return JMASK_BABY_NOVICE;
 	case JOB_BABY_SWORDMAN:         return JMASK_BABY_SWORDMAN;
 	case JOB_BABY_MAGE:             return JMASK_BABY_MAGE;
 	case JOB_BABY_ARCHER:           return JMASK_BABY_ARCHER;
@@ -465,7 +454,6 @@ job_class_mask JobDatabase::job_id_to_mask(job_class_type job_id) const
 	case JOB_BABY_ALCHEMIST:        return JMASK_BABY_ALCHEMIST;
 	case JOB_BABY_ROGUE:            return JMASK_BABY_ROGUE;
 	//3-1 Jobs
-	case JOB_SUPER_NOVICE_E:        return JMASK_SUPER_NOVICE_E;
 	case JOB_RUNE_KNIGHT:           return JMASK_RUNE_KNIGHT;
 	case JOB_WARLOCK:               return JMASK_WARLOCK;
 	case JOB_RANGER:                return JMASK_RANGER;
@@ -496,21 +484,32 @@ job_class_mask JobDatabase::job_id_to_mask(job_class_type job_id) const
 	case JOB_GENETIC_T:             return JMASK_GENETIC_T;
 	case JOB_SHADOW_CHASER_T:       return JMASK_SHADOW_CHASER_T;
 	//Baby 3-1 Jobs
-	case JOB_SUPER_BABY_E:          return JMASK_SUPER_BABY_E;
-	case JOB_BABY_RUNE:             return JMASK_BABY_RUNE;
+	case JOB_BABY_RUNE_KNIGHT:      return JMASK_BABY_RUNE;
 	case JOB_BABY_WARLOCK:          return JMASK_BABY_WARLOCK;
 	case JOB_BABY_RANGER:           return JMASK_BABY_RANGER;
 	case JOB_BABY_BISHOP:           return JMASK_BABY_BISHOP;
 	case JOB_BABY_MECHANIC:         return JMASK_BABY_MECHANIC;
-	case JOB_BABY_CROSS:            return JMASK_BABY_CROSS;
+	case JOB_BABY_GUILLOTINE_CROSS: return JMASK_BABY_CROSS;
 	//Baby 3-2 Jobs
-	case JOB_BABY_GUARD:            return JMASK_BABY_GUARD;
+	case JOB_BABY_ROYAL_GUARD:            return JMASK_BABY_GUARD;
 	case JOB_BABY_SORCERER:         return JMASK_BABY_SORCERER;
 	case JOB_BABY_MINSTREL:
 	case JOB_BABY_WANDERER:         return JMASK_BABY_MINSTRELWANDERER;
 	case JOB_BABY_SURA:             return JMASK_BABY_SURA;
 	case JOB_BABY_GENETIC:          return JMASK_BABY_GENETIC;
-	case JOB_BABY_CHASER:           return JMASK_BABY_CHASER;
+	case JOB_BABY_SHADOW_CHASER:           return JMASK_BABY_CHASER;
+	// Expanded Jobs
+	case JOB_SUPER_NOVICE_E:        return JMASK_SUPER_NOVICE_E;
+	case JOB_SUPER_NOVICE:          return JMASK_SUPER_NOVICE;
+	case JOB_SUPER_BABY_E:          return JMASK_SUPER_BABY_E;
+	case JOB_TAEKWON:               return JMASK_TAEKWON;
+	case JOB_SOUL_LINKER:           return JMASK_SOUL_LINKER;
+	case JOB_STAR_GLADIATOR:        return JMASK_STAR_GLADIATOR;
+	case JOB_GUNSLINGER:            return JMASK_GUNSLINGER;
+	case JOB_REBELLION:             return JMASK_REBELLION;
+	case JOB_NINJA:                 return JMASK_NINJA;
+	case JOB_KAGEROU:
+	case JOB_OBORO:                 return JMASK_KAGEROUOBORO;
 	default:                        return JMASK_INVALID;
 	}
 }

@@ -49,7 +49,7 @@ bool Character::load(Server *server, uint32_t char_id)
 						"`pet_id`, `homun_id`, `elemental_id`, "
 						"`partner_aid`, `father_aid`, `mother_aid`, `child_aid`, "
 						"`party_id`, `guild_id`, "
-						"`rename_count`, `unique_item_counter`, `hotkey_row_index`, `change_slot_count`, "
+						"`rename_count`, `last_unique_id`, `hotkey_row_index`, `change_slot_count`, "
 						"`current_map`, `current_x`, `current_y`, `saved_map`, `saved_x`, `saved_y`, "
 						"`font`, `show_equip`, `allow_party` "
 						"FROM `characters` WHERE id = ?";
@@ -83,7 +83,7 @@ bool Character::load(Server *server, uint32_t char_id)
 			set_party_id(record[13]);
 			set_guild_id(record[14]);
 			set_rename_count(record[15].get<int>());
-			set_unique_item_counter(record[16].get<int64_t>());
+			set_last_unique_id(record[16].get<int64_t>());
 			set_hotkey_row_index(record[17].get<int>());
 			set_change_slot_count(record[18].get<int>());
 			set_current_map(record[19]);
@@ -151,7 +151,7 @@ bool Character::save(Server *server)
 			.set("party_id", get_party_id())
 			.set("guild_id", get_guild_id())
 			.set("rename_count", get_rename_count())
-			.set("unique_item_counter", get_unique_item_counter())
+			.set("last_unique_id", get_last_unique_id())
 			.set("hotkey_row_index", get_hotkey_row_index())
 			.set("change_slot_count", get_change_slot_count())
 			.set("current_map", get_current_map())
@@ -203,14 +203,14 @@ bool Character::create(Server *server)
 					 "pet_id", "homun_id", "elemental_id",
 					 "partner_aid", "father_aid", "mother_aid", "child_aid",
 					 "party_id", "guild_id",
-					 "rename_count", "unique_item_counter", "hotkey_row_index", "change_slot_count",
+					 "rename_count", "last_unique_id", "hotkey_row_index", "change_slot_count",
 					 "current_map", "current_x", "current_y", "saved_map", "saved_x", "saved_y",
 					 "font", "show_equip", "allow_party")
 			.values(char_id, get_account_id(), get_slot(), get_name(), gender, get_unban_time(),
 					 get_pet_id(), get_homun_id(), get_elemental_id(),
 					 get_partner_aid(), get_father_aid(), get_mother_aid(), get_child_aid(),
 					 get_party_id(), get_guild_id(),
-					 get_rename_count(), get_unique_item_counter(), get_hotkey_row_index(), get_change_slot_count(),
+					 get_rename_count(), get_last_unique_id(), get_hotkey_row_index(), get_change_slot_count(),
 					 get_current_map(), get_current_x(), get_current_y(), get_saved_map(), get_saved_x(), get_saved_y(),
 					 get_font(), get_show_equip(), get_allow_party())
 			.execute();

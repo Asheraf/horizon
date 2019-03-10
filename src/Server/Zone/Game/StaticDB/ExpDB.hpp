@@ -76,7 +76,8 @@ public:
 
 	uint32_t get_status_point(uint32_t level)
 	{
-		assert(level > 0 && level <= _stat_point_db.size() && level < MAX_LEVEL);
+		if (level <= 0 || level > _stat_point_db.size() || level > MAX_LEVEL)
+			return 0;
 		return _stat_point_db.at(level);
 	}
 

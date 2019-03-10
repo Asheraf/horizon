@@ -50,7 +50,7 @@ struct job_db_data
 	int id{0};
 	int max_weight{20000};
 	std::string base_exp_group{""}, job_exp_group{""};
-	std::array<int, WT_MAX> weapon_base_aspd{0};
+	std::array<int, IT_WT_MAX> weapon_base_aspd{0};
 	std::vector<int> hp_table, sp_table;
 };
 class JobDatabase

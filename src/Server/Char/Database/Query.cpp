@@ -52,7 +52,7 @@ void Horizon::Char::Database::Query::InitializeQueryStrings()
 		"SELECT c.id, c.account_id, c.slot, c.name, c.online, c.gender, c.unban_time, "
 		"c.font, c.show_equip, c.allow_party, "
 	    "c.current_map, c.current_x, c.current_y, c.saved_map, c.saved_x, c.saved_y, "
-	    "c.rename_count, c.unique_item_counter, c.hotkey_row_index, c.change_slot_count, "
+	    "c.rename_count, c.last_unique_id, c.hotkey_row_index, c.change_slot_count, "
 	    "c.party_id, c.guild_id, "
 	    "c.partner_aid, c.father_aid, c.mother_aid, c.child_aid, "
 	    "c.pet_id, c.homun_id, c.elemental_id, "
@@ -78,7 +78,7 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 	Character::Status csd(char_id);
 
 	// Character
-	c.set_character_id(char_id);
+	c.set_id(char_id);
 	c.set_account_id(account_id);
 	c.set_slot(record[2].get<int>());
 	c.set_name(record[3]);
@@ -98,7 +98,7 @@ Horizon::Char::Database::Query::CreateCharacterModelFromResult(uint32_t account_
 	c.set_saved_x(record[14].get<int>());
 	c.set_saved_y(record[15].get<int>());
 	c.set_rename_count(record[16].get<int>());
-	c.set_unique_item_counter(record[17]);
+	c.set_last_unique_id(record[17]);
 	c.set_hotkey_row_index(record[18].get<int>());
 	c.set_change_slot_count(record[19].get<int>());
 	c.set_party_id(record[20]);

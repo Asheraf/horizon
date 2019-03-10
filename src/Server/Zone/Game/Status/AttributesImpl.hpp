@@ -30,66 +30,85 @@
 
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Packets/PacketHandler.hpp"
+#include "Server/Common/Definitions/EntityDefinitions.hpp"
 
-template <class T, class NOTIFIER_TYPE>
-void Horizon::Zone::Game::Status::BasicAttributeNotifier::notify(std::weak_ptr<Entity> entity, Attribute<T, NOTIFIER_TYPE> const &attr)
+template <status_point_type NOTIFIABLE_TYPE, class ... NOTIFIABLES>
+template <std::size_t I, typename... Tp>
+inline typename std::enable_if<(I < sizeof...(Tp)), void>::type
+Horizon::Zone::Game::Status::BasicAttributeNotifier<NOTIFIABLE_TYPE, NOTIFIABLES ...>::notify(std::tuple<Tp...> &t)
 {
 	using namespace Horizon::Zone::Game::Entities;
+	std::shared_ptr<Entity> entity = get_entity();
 
-	if (entity.expired())
+	if (!entity || entity->get_type() != ENTITY_PLAYER)
 		return;
 
-	if (entity.lock()->get_type() == ENTITY_PLAYER)
-		entity.lock()->downcast<Player>()->get_packet_handler()->Send_ZC_PAR_CHANGE(attr.get_type(), attr.total());
+	entity->downcast<Player>()->get_packet_handler()->Send_ZC_PAR_CHANGE(NOTIFIABLE_TYPE, std::get<I>(t).lock()->total());
 }
 
-template <class T, class NOTIFIER_TYPE>
-void Horizon::Zone::Game::Status::ExpAttributeNotifier::notify(std::weak_ptr<Entity> entity, Attribute<T, NOTIFIER_TYPE> const &attr)
+template <status_point_type NOTIFIABLE_TYPE, class ... NOTIFIABLES>
+void Horizon::Zone::Game::Status::BasicAttributeNotifier<NOTIFIABLE_TYPE, NOTIFIABLES ...>::notify_sum()
 {
 	using namespace Horizon::Zone::Game::Entities;
+	std::shared_ptr<Entity> entity = get_entity();
 
-	if (entity.expired())
+	if (!entity || entity->get_type() != ENTITY_PLAYER)
 		return;
 
-	if (entity.lock()->get_type() == ENTITY_PLAYER)
-		entity.lock()->downcast<Player>()->get_packet_handler()->Send_ZC_LONGPAR_CHANGE(attr.get_type(), attr.total());
+	entity->downcast<Player>()->get_packet_handler()->Send_ZC_PAR_CHANGE(NOTIFIABLE_TYPE, get_sum(_notifiables));
+}
+
+template <status_point_type NOTIFIABLE_TYPE, class NOTIFIABLE>
+void Horizon::Zone::Game::Status::ExperienceNotifier<NOTIFIABLE_TYPE, NOTIFIABLE>::notify()
+{
+	using namespace Horizon::Zone::Game::Entities;
+	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
+	std::shared_ptr<Entity> entity = get_entity();
+
+	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
+		return;
+
+	entity->downcast<Player>()->get_packet_handler()->Send_ZC_LONGPAR_CHANGE(NOTIFIABLE_TYPE, notifiable->get_base());
 }
 
 
-template <class T, class NOTIFIER_TYPE>
-void Horizon::Zone::Game::Status::StatusPointRequirementNotifier::notify(std::weak_ptr<Entity> entity, Attribute<T, NOTIFIER_TYPE> const &attr)
+template <status_point_type NOTIFIABLE_TYPE, class NOTIFIABLE>
+void Horizon::Zone::Game::Status::StatusPointRequirementNotifier<NOTIFIABLE_TYPE, NOTIFIABLE>::notify()
 {
 	using namespace Horizon::Zone::Game::Entities;
+	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
+	std::shared_ptr<Entity> entity = get_entity();
 
-	if (entity.expired())
+	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
 		return;
 
-	if (entity.lock()->get_type() == ENTITY_PLAYER)
-		entity.lock()->downcast<Player>()->get_packet_handler()->Send_ZC_STATUS_CHANGE(attr.get_type(), attr.total());
+	entity->downcast<Player>()->get_packet_handler()->Send_ZC_STATUS_CHANGE(NOTIFIABLE_TYPE, notifiable->get_base());
 }
 
-template <class T, class NOTIFIER_TYPE>
-void Horizon::Zone::Game::Status::StatusPointNotifier::notify(std::weak_ptr<Entity> entity, Attribute<T, NOTIFIER_TYPE> const &attr)
+template <status_point_type NOTIFIABLE_TYPE, class NOTIFIABLE>
+void Horizon::Zone::Game::Status::StatusPointNotifier<NOTIFIABLE_TYPE, NOTIFIABLE>::notify()
 {
 	using namespace Horizon::Zone::Game::Entities;
+	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
+	std::shared_ptr<Entity> entity = get_entity();
 
-	if (entity.expired())
+	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
 		return;
 
-	if (entity.lock()->get_type() == ENTITY_PLAYER)
-		entity.lock()->downcast<Player>()->get_packet_handler()->Send_ZC_COUPLESTATUS(attr.get_type(), attr.get_base(), attr.get_equip() + attr.get_status());
+	entity->downcast<Player>()->get_packet_handler()->Send_ZC_COUPLESTATUS(NOTIFIABLE_TYPE, notifiable->get_base(), notifiable->get_equip() + notifiable->get_status());
 }
 
-template <class T, class NOTIFIER_TYPE>
-void Horizon::Zone::Game::Status::AttackRangeNotifier::notify(std::weak_ptr<Entity> entity, Attribute<T, NOTIFIER_TYPE> const &attr)
+template <status_point_type NOTIFIABLE_TYPE, class NOTIFIABLE>
+void Horizon::Zone::Game::Status::AttackRangeNotifier<NOTIFIABLE_TYPE, NOTIFIABLE>::notify()
 {
 	using namespace Horizon::Zone::Game::Entities;
+	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
+	std::shared_ptr<Entity> entity = get_entity();
 
-	if (entity.expired())
+	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
 		return;
 
-	if (entity.lock()->get_type() == ENTITY_PLAYER)
-		entity.lock()->downcast<Player>()->get_packet_handler()->Send_ZC_ATTACK_RANGE(attr.total());
+	entity->downcast<Player>()->get_packet_handler()->Send_ZC_ATTACK_RANGE(notifiable->total());
 }
 
 #endif /* HORIZON_ZONE_GAME_STATUS_ATTRIBUTESIMPL_HPP */

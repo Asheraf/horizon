@@ -33,6 +33,7 @@
 
 #include <unordered_map>
 #include <array>
+
 namespace Horizon
 {
 namespace Zone
@@ -48,7 +49,6 @@ namespace Assets
 {
 class Inventory : public ItemStore
 {
-	typedef std::array<std::pair<item_equip_location_mask, std::weak_ptr<const item_entry_data>>, IT_EQPI_MAX> EquippedItemsArray;
 public:
 	Inventory(std::weak_ptr<Entities::Player> player, uint32_t max_storage);
 	virtual ~Inventory();
@@ -58,10 +58,12 @@ public:
 	itemstore_addition_result_type add_item(uint32_t item_id, uint16_t amount, bool is_identified = false);
 
 	bool use_item(uint32_t inventory_index, uint32_t guid);
+	bool can_equip(uint32_t inventory_index);
 	item_equip_result_type equip_item(uint32_t inventory_index, uint16_t equip_location_mask);
 	item_unequip_result_type unequip_item(uint32_t inventory_index);
-
-	EquippedItemsArray &get_equipped_items() { return _equipped_items; }
+	EquippedItemsArray &get_equipments() { return _equipments; }
+	void add_to_equipment_list(std::shared_ptr<item_entry_data> item);
+	void remove_from_equipment_list(std::shared_ptr<item_entry_data> item);
 
 	void notify_all();
 	void notify_without_equipments();
@@ -77,7 +79,7 @@ protected:
 	uint32_t calculate_current_equip_location_mask(std::shared_ptr<const item_config_data> item);
 private:
 	std::weak_ptr<PacketHandler> _packet_handler;
-	EquippedItemsArray _equipped_items;
+	EquippedItemsArray _equipments;
 };
 }
 }

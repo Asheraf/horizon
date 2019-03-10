@@ -80,8 +80,6 @@ void Status::initialize(std::shared_ptr<Character::Character> character)
 	uint32_t dex = status_model->get_dexterity();
 	uint32_t luk = status_model->get_luck();
 
-	// Status Data
-
 	/**
 	 * Main Attributes.
 	 */
@@ -115,8 +113,6 @@ void Status::initialize(std::shared_ptr<Character::Character> character)
 	set_job_experience(std::make_shared<JobExperience>(_entity, status_model->get_job_exp()));
 	set_next_base_experience(std::make_shared<NextBaseExperience>(_entity, bexpg->exp[status_model->get_base_level() - 1]));
 	set_next_job_experience(std::make_shared<NextJobExperience>(_entity, bexpg->exp[status_model->get_job_level() - 1]));
-	set_max_weight(std::make_shared<MaxWeight>(_entity, job->max_weight));
-	set_current_weight(std::make_shared<CurrentWeight>(_entity, 0));
 	set_movement_speed(std::make_shared<MovementSpeed>(_entity, DEFAULT_MOVEMENT_SPEED));
 
 	set_hair_color(std::make_shared<HairColor>(_entity, status_model->get_hair_color_id()));
@@ -130,58 +126,139 @@ void Status::initialize(std::shared_ptr<Character::Character> character)
 	set_robe_sprite(std::make_shared<RobeSprite>(_entity, status_model->get_robe_view_id()));
 	set_body_style(std::make_shared<BodyStyle>(_entity, status_model->get_body_id()));
 
-	initialize_sub_attributes();
+	initialize_sub_attributes(job);
+
 	initialize_observable_statuses();
+	initialize_notifiable_statuses();
 
 	if (get_entity()->get_type() == ENTITY_PLAYER) {
 		get_entity()->downcast<Entities::Player>()->get_packet_handler()->Send_ZC_STATUS();
 	}
 }
 
-void Status::initialize_sub_attributes()
+void Status::initialize_sub_attributes(std::shared_ptr<const job_db_data> job)
 {
-	set_status_atk(std::make_shared<StatusATK>(_entity));
-	get_status_atk()->set_base_level(get_base_level());
-	get_status_atk()->set_strength(get_strength());
-	get_status_atk()->set_dexterity(get_dexterity());
-	get_status_atk()->set_luck(get_luck());
-	get_status_atk()->set_base(get_status_atk()->compute(), true);
+	std::shared_ptr<StatusATK> status_atk;
+	std::shared_ptr<WeaponATK> weapon_atk;
+	std::shared_ptr<StatusMATK> status_matk;
+	std::shared_ptr<SoftDEF> soft_def;
+	std::shared_ptr<SoftMDEF> soft_mdef;
+	std::shared_ptr<HIT> hit;
+	std::shared_ptr<CRIT> crit;
+	std::shared_ptr<FLEE> flee;
+	std::shared_ptr<MaxWeight> max_weight;
 
-	set_status_matk(std::make_shared<StatusMATK>(_entity));
-	get_status_matk()->set_base_level(get_base_level());
-	get_status_matk()->set_intelligence(get_intelligence());
-	get_status_matk()->set_dexterity(get_dexterity());
-	get_status_matk()->set_luck(get_luck());
-	get_status_matk()->set_base(get_status_matk()->compute(), true);
+	set_max_weight(max_weight = std::make_shared<MaxWeight>(_entity, job->max_weight));
+	max_weight->set_strength(get_strength());
 
-	set_soft_def(std::make_shared<SoftDEF>(_entity));
-	get_soft_def()->set_vitality(get_vitality());
-	get_soft_def()->set_base(get_soft_def()->compute(), true);
+	// Calculated when inventory is synced.
+	set_current_weight(std::make_shared<CurrentWeight>(_entity, 0));
 
-	set_soft_mdef(std::make_shared<SoftMDEF>(_entity));
-	get_soft_mdef()->set_base_level(get_base_level());
-	get_soft_mdef()->set_intelligence(get_intelligence());
-	get_soft_mdef()->set_dexterity(get_dexterity());
-	get_soft_mdef()->set_vitality(get_vitality());
-	get_soft_mdef()->set_base(get_status_matk()->compute(), true);
+	set_status_atk(status_atk = std::make_shared<StatusATK>(_entity));
+	status_atk->set_base_level(get_base_level());
+	status_atk->set_strength(get_strength());
+	status_atk->set_dexterity(get_dexterity());
+	status_atk->set_luck(get_luck());
 
-	set_hit(std::make_shared<HIT>(_entity));
-	get_hit()->set_base_level(get_base_level());
-	get_hit()->set_dexterity(get_dexterity());
-	get_hit()->set_luck(get_luck());
-	get_hit()->set_base(get_hit()->compute(), true);
+	set_weapon_atk(weapon_atk = std::make_shared<WeaponATK>(_entity));
+	weapon_atk->set_strength(get_strength());
+	weapon_atk->set_dexterity(get_dexterity());
 
-	set_crit(std::make_shared<CRIT>(_entity));
-	get_crit()->set_luck(get_luck());
-	get_crit()->set_base(get_crit()->compute(), true);
+	set_equip_atk(std::make_shared<EquipATK>(_entity));
 
-	set_flee(std::make_shared<FLEE>(_entity));
-	get_flee()->set_base_level(get_base_level());
-	get_flee()->set_agility(get_agility());
-	get_flee()->set_luck(get_luck());
-	get_flee()->set_base(get_flee()->compute(), true);
+	set_status_matk(status_matk = std::make_shared<StatusMATK>(_entity));
+	status_matk->set_base_level(get_base_level());
+	status_matk->set_intelligence(get_intelligence());
+	status_matk->set_dexterity(get_dexterity());
+	status_matk->set_luck(get_luck());
+
+	set_soft_def(soft_def = std::make_shared<SoftDEF>(_entity));
+	soft_def->set_vitality(get_vitality());
+
+	set_soft_mdef(soft_mdef = std::make_shared<SoftMDEF>(_entity));
+	soft_mdef->set_base_level(get_base_level());
+	soft_mdef->set_intelligence(get_intelligence());
+	soft_mdef->set_dexterity(get_dexterity());
+	soft_mdef->set_vitality(get_vitality());
+
+	set_hit(hit = std::make_shared<HIT>(_entity));
+	hit->set_base_level(get_base_level());
+	hit->set_dexterity(get_dexterity());
+	hit->set_luck(get_luck());
+
+	set_crit(crit = std::make_shared<CRIT>(_entity));
+	crit->set_luck(get_luck());
+
+	set_flee(flee = std::make_shared<FLEE>(_entity));
+	flee->set_base_level(get_base_level());
+	flee->set_agility(get_agility());
+	flee->set_luck(get_luck());
 }
 
+//! @brief Registers client-notifiable statuses.
+//!
+void Status::initialize_notifiable_statuses()
+{
+	// Status Point Notifiables (ZC_STATUS_CHANGE)
+	get_strength()->get_notifier().set_notifiable(get_strength());
+	get_agility()->get_notifier().set_notifiable(get_agility());
+	get_vitality()->get_notifier().set_notifiable(get_vitality());
+	get_intelligence()->get_notifier().set_notifiable(get_intelligence());
+	get_dexterity()->get_notifier().set_notifiable(get_dexterity());
+	get_luck()->get_notifier().set_notifiable(get_luck());
+
+	// Status Point Cost Notifiables (ZC_COUPLE_STATUS)
+	get_strength_cost()->get_notifier().set_notifiable(get_strength_cost());
+	get_agility_cost()->get_notifier().set_notifiable(get_agility_cost());
+	get_vitality_cost()->get_notifier().set_notifiable(get_vitality_cost());
+	get_intelligence_cost()->get_notifier().set_notifiable(get_intelligence_cost());
+	get_dexterity_cost()->get_notifier().set_notifiable(get_dexterity_cost());
+	get_luck_cost()->get_notifier().set_notifiable(get_luck_cost());
+
+	// Basic Status Notifiables. (Single or Summed/Multiple) (ZC_PAR_CHANGE)
+	get_status_point()->get_notifier().register_notifiables(get_status_point());
+	get_skill_point()->get_notifier().register_notifiables(get_skill_point());
+	get_current_hp()->get_notifier().register_notifiables(get_current_hp());
+	get_current_sp()->get_notifier().register_notifiables(get_current_sp());
+	get_max_hp()->get_notifier().register_notifiables(get_max_hp());
+	get_max_sp()->get_notifier().register_notifiables(get_max_sp());
+	get_base_level()->get_notifier().register_notifiables(get_base_level());
+	get_job_level()->get_notifier().register_notifiables(get_job_level());
+	get_movement_speed()->get_notifier().register_notifiables(get_movement_speed());
+	// Sub-statuses.
+	get_status_atk()->get_notifier().register_notifiables(get_status_atk());
+	get_weapon_atk()->get_notifier().register_notifiables(get_weapon_atk(), get_equip_atk());
+	get_status_matk()->get_notifier().register_notifiables(get_status_matk());
+	get_soft_def()->get_notifier().register_notifiables(get_soft_def());
+	get_soft_mdef()->get_notifier().register_notifiables(get_soft_mdef());
+	get_hit()->get_notifier().register_notifiables(get_hit());
+	get_crit()->get_notifier().register_notifiables(get_crit());
+	get_flee()->get_notifier().register_notifiables(get_flee());
+	get_max_weight()->get_notifier().register_notifiables(get_max_weight());
+	get_current_weight()->get_notifier().register_notifiables(get_current_weight());
+
+	// Experience Notifiers (ZC_LONG_PAR_CHANGE)
+	get_base_experience()->get_notifier().set_notifiable(get_base_experience());
+	get_job_experience()->get_notifier().set_notifiable(get_job_experience());
+	get_next_base_experience()->get_notifier().set_notifiable(get_next_base_experience());
+	get_next_job_experience()->get_notifier().set_notifiable(get_next_job_experience());
+}
+
+//! Compute and notify client of sub-statuses
+void Status::compute_and_notify()
+{
+	get_max_weight()->set_base(get_max_weight()->compute());
+	get_status_atk()->set_base(get_status_atk()->compute());
+	get_weapon_atk()->set_base(get_weapon_atk()->compute());
+	get_status_matk()->set_base(get_status_matk()->compute());
+	get_soft_def()->set_base(get_soft_def()->compute());
+	get_soft_mdef()->set_base(get_soft_mdef()->compute());
+	get_hit()->set_base(get_hit()->compute());
+	get_crit()->set_base(get_crit()->compute());
+	get_flee()->set_base(get_flee()->compute());
+}
+
+//! @brief Registers status observers for observable statuses.
 void Status::initialize_observable_statuses()
 {
 	// Register Status Observables
@@ -191,16 +268,22 @@ void Status::initialize_observable_statuses()
 	get_intelligence()->register_observable(get_intelligence());
 	get_dexterity()->register_observable(get_dexterity());
 	get_luck()->register_observable(get_luck());
+	get_base_experience()->register_observable(get_base_experience());
+	get_job_experience()->register_observable(get_job_experience());
 	get_base_level()->register_observable(get_base_level());
+	get_job_level()->register_observable(get_job_level());
 
 	// Register Status Observers
-	get_strength()->register_observers(get_status_atk());
-	get_agility()->register_observers(get_flee());
-	get_intelligence()->register_observers(get_status_matk(), get_soft_mdef());
-	get_dexterity()->register_observers(get_status_atk(), get_status_matk(), get_soft_mdef(), get_hit());
-	get_luck()->register_observers(get_status_atk(), get_status_matk(), get_hit(), get_crit(), get_flee());
-	get_base_level()->register_observers(get_status_atk(), get_status_matk(), get_soft_mdef(), get_hit(), get_flee());
-	get_vitality()->register_observers(get_soft_def(), get_soft_mdef());
+	get_strength()->register_observers(get_strength_cost(), get_max_weight(), get_status_atk(), get_weapon_atk());
+	get_agility()->register_observers(get_agility_cost(), get_flee());
+	get_vitality()->register_observers(get_vitality_cost(), get_soft_def(), get_soft_mdef());
+	get_intelligence()->register_observers(get_intelligence_cost(), get_status_matk(), get_soft_mdef());
+	get_dexterity()->register_observers(get_dexterity_cost(), get_status_atk(), get_weapon_atk(), get_status_matk(), get_soft_mdef(), get_hit());
+	get_luck()->register_observers(get_luck_cost(), get_status_atk(), get_status_matk(), get_hit(), get_crit(), get_flee());
+	get_base_level()->register_observers(get_status_point(), get_next_base_experience(), get_status_atk(), get_status_matk(), get_soft_mdef(), get_hit(), get_flee());
+	get_job_level()->register_observers(get_skill_point(), get_next_job_experience());
+	get_base_experience()->register_observers(get_base_level());
+	get_job_experience()->register_observers(get_job_level());
 }
 
 uint32_t Status::get_required_statpoints(uint16_t from, uint16_t to)
@@ -230,6 +313,13 @@ uint32_t Status::get_status_total(status_point_type type)
 	return value;
 }
 
+/**
+ * @brief Increases a status point to a certain limit
+ * and returns the current total of the stat.
+ * @param type[in] Type of the status point @see status_point_type
+ * @param limit[in] Limit to increase the status point to.
+ * @return The total base value of the current status point.
+ */
 uint32_t Status::increase_status_point(status_point_type type, uint16_t limit)
 {
 	uint32_t value = 0;
@@ -249,7 +339,7 @@ uint32_t Status::increase_status_point(status_point_type type, uint16_t limit)
 		value = get_status_total(type);
 		required_points = get_required_statpoints(value + 1, value + 2);
 
-		if (required_points > available_points)
+		if (required_points > available_points || value >= MAX_STATUS_POINTS)
 			break;
 
 		available_points -= required_points;
@@ -257,45 +347,27 @@ uint32_t Status::increase_status_point(status_point_type type, uint16_t limit)
 		switch (type)
 		{
 			case STATUS_STRENGTH:
-				get_strength()->add_base(1);
-				get_strength()->notify_observers();
-				if (get_strength_cost()->get_base() != required_points)
-					get_strength_cost()->set_base(required_points, true);
+				get_strength()->add_base(1, false);
 				break;
 			case STATUS_AGILITY:
-				get_agility()->add_base(1);
-				get_agility()->notify_observers();
-				if (get_agility_cost()->get_base() != required_points)
-					get_agility_cost()->set_base(required_points, true);
+				get_agility()->add_base(1, false);
 				break;
 			case STATUS_VITALITY:
-				get_vitality()->add_base(1);
-				get_vitality()->notify_observers();
-				if (get_vitality_cost()->get_base() != required_points)
-					get_vitality_cost()->set_base(required_points, true);
+				get_vitality()->add_base(1, false);
 				break;
 			case STATUS_INTELLIGENCE:
-				get_intelligence()->add_base(1);
-				get_intelligence()->notify_observers();
-				if (get_intelligence_cost()->get_base() != required_points)
-					get_intelligence_cost()->set_base(required_points, true);
+				get_intelligence()->add_base(1, false);
 				break;
 			case STATUS_DEXTERITY:
-				get_dexterity()->add_base(1);
-				get_dexterity()->notify_observers();
-				if (get_dexterity_cost()->get_base() != required_points)
-					get_dexterity_cost()->set_base(required_points, true);
+				get_dexterity()->add_base(1, false);
 				break;
 			case STATUS_LUCK:
-				get_luck()->add_base(1);
-				get_luck()->notify_observers();
-				if (get_luck_cost()->get_base() != required_points)
-					get_luck_cost()->set_base(required_points, true);
+				get_luck()->add_base(1, false);
 				break;
 			default: return false;
 		}
 
-		get_status_point()->set_base(available_points, true);
+		get_status_point()->set_base(available_points);
 	} while (get_status_total(type) < limit);
 
 	return get_status_total(type);

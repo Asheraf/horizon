@@ -153,9 +153,9 @@ public:
 	/* Character Rename Count */
 	uint8_t get_rename_count() const { return _rename_count; }
 	void set_rename_count(uint8_t rename_count) { _rename_count = rename_count; }
-	/* Unique Item Counter */
-	uint64_t get_unique_item_counter() const { return _unique_item_counter; }
-	void set_unique_item_counter(uint64_t unique_item_counter) { _unique_item_counter = unique_item_counter; }
+	/* Last Unique Id */
+	uint64_t get_last_unique_id() const { return _last_unique_id; }
+	void set_last_unique_id(uint64_t last_unique_id) { _last_unique_id = last_unique_id; }
 	/* Hotkey Row Index */
 	uint8_t get_hotkey_row_index() const { return _hotkey_row_index; }
 	void set_hotkey_row_index(uint8_t hotkey_row_index) { _hotkey_row_index = hotkey_row_index; }
@@ -219,7 +219,7 @@ private:
 	uint32_t _party_id{0};
 	uint32_t _guild_id{0};
 	uint8_t _rename_count{0};
-	uint64_t _unique_item_counter{0};
+	uint64_t _last_unique_id{0};
 	uint8_t _hotkey_row_index{0};
 	uint8_t _change_slot_count{0};
 	std::string _current_map{""};

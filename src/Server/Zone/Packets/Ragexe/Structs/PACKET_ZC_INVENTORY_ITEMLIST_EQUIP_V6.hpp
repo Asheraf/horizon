@@ -46,6 +46,9 @@ struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 : public PACKET_ZC_INVENTORY_ITEMLI
 {
 	PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6(uint16_t packet_id = ZC_INVENTORY_ITEMLIST_EQUIP_V6) : PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V5(packet_id) { }
 
+	//! @brief Serialize equipments to buffer.
+	//! @param items[in] A vector of const shared pointers to the inventory items.
+	//! @return A new PacketBuffer with serialized contents of the same.
 	virtual PacketBuffer serialize(std::vector<std::shared_ptr<const item_entry_data>> const &items) const override
 	{
 		PacketBuffer buf(packet_id);
@@ -58,11 +61,19 @@ struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V6 : public PACKET_ZC_INVENTORY_ITEMLI
 			buf << id->actual_equip_location_mask;
 			buf << id->current_equip_location_mask;
 			buf << id->refine_level;
-			for (int i = 0; i < sizeof(id->slot_item_id); i++)
+			for (int i = 0; i < MAX_ITEM_SLOTS; i++)
 				buf << (uint16_t) id->slot_item_id[i];
 			buf << id->hire_expire_date;
 			buf << id->bound_type;
 			buf << id->sprite_id;
+
+			buf << id->option_count;
+
+			for (int i = 0; i < MAX_ITEM_OPTIONS; i++) {
+				buf << id->option_data[i].index;
+				buf << id->option_data[i].value;
+				buf << id->option_data[i].param;
+			}
 
 			config |= id->info.is_identified;
 			config |= id->info.is_broken << 1;

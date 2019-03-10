@@ -1,10 +1,11 @@
-#					 _	 _						_
-#					| | | |					(_)
-#					| |_| | ___	_ __ _ _______	_ __
-#					|	_	|/ _ \| '__| |_	/ _ \| '_ \
-#					| | | | (_) | |	| |/ / (_) | | | |
-#					\_| |_/\___/|_|	|_/___\___/|_| |_|
-#
+###################################################
+#       _   _            _                        #
+#      | | | |          (_)                       #
+#      | |_| | ___  _ __ _ _______  _ __          #
+#      |  _  |/ _ \| '__| |_  / _ \| '_  \        #
+#      | | | | (_) | |  | |/ / (_) | | | |        #
+#      \_| |_/\___/|_|  |_/___\___/|_| |_|        #
+###################################################
 # This file is part of Horizon (c).
 # Copyright (c) 2019 Horizon Dev Team.
 #
@@ -17,13 +18,12 @@
 #
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this library.	If not, see <http://www.gnu.org/licenses/>.
-#
-#########################################################
+# along with this library.  If not, see <http://www.gnu.org/licenses/>.
+####################################################
 
 #################################
 # Project Setup

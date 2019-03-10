@@ -79,57 +79,60 @@ void ScriptManager::initialize_state(sol::state &st)
 						return e->template downcast<Player>();
 					});
 
-	st.set_function("get_map",
+	st.set_function("get_map_by_name",
 					[] (std::string name)
 					{
 						return MapMgr->get_map(name);
 					});
 
 	st.new_usertype<item_entry_data>("item_entry_data",
-						sol::constructors<item_entry_data()>(),
-						"is_equipment", &item_entry_data::is_equipment,
-						"is_stackable", &item_entry_data::is_stackable);
+									sol::constructors<item_entry_data()>(),
+									"is_equipment", &item_entry_data::is_equipment,
+									"is_stackable", &item_entry_data::is_stackable
+									 );
 
 	st.new_usertype<Map>("Map",
-						"get_name", &Map::get_name,
-						"get_width", &Map::get_width,
-						"get_height", &Map::get_height,
-						"has_obstruction_at", &Map::has_obstruction_at
-						);
+									"get_name", &Map::get_name,
+									"get_width", &Map::get_width,
+									"get_height", &Map::get_height,
+									"has_obstruction_at", &Map::has_obstruction_at
+									);
 
 	st.new_usertype<MapCoords>("MapCoords",
-						sol::constructors<MapCoords(uint16_t, uint16_t)>(),
-						"x", &MapCoords::x,
-						"y", &MapCoords::y);
+									sol::constructors<MapCoords(uint16_t, uint16_t)>(),
+									"x", &MapCoords::x,
+									"y", &MapCoords::y
+									);
 
 	st.new_usertype<NPC>("NPC",
-						sol::constructors<NPC(std::string const &, std::shared_ptr<Map>, MapCoords const &, uint32_t, directions)>(),
-						"get_guid", &NPC::get_guid,
-						"map_coords", &NPC::get_map_coords,
-						"get_nearby_entity", &NPC::get_nearby_entity);
+									sol::constructors<NPC(std::string const &, std::shared_ptr<Map>, MapCoords const &, uint32_t, directions)>(),
+									"get_guid", &NPC::get_guid,
+									"map_coords", &NPC::get_map_coords,
+									"get_nearby_entity", &NPC::get_nearby_entity
+						 			);
 
 	st.new_usertype<Assets::Inventory>("Inventory",
-						"get_item_by_id", &Assets::Inventory::get_item_by_id,
-						"get_item_at_index", &Assets::Inventory::get_item_at_index,
-						"add_item", &Assets::Inventory::add_item);
+									"get_item_by_id", &Assets::Inventory::get_item_by_id,
+									"get_item_at_index", &Assets::Inventory::get_item_at_index,
+									"add_item", &Assets::Inventory::add_item);
 
 	st.new_usertype<Player>("Player",
-						"get_guid", &Player::get_guid,
-						"get_map", &Player::get_map,
-						"map_coords", &Player::get_map_coords,
-						"get_nearby_entity", &Player::get_nearby_entity,
-						"send_npc_dialog", &Player::send_npc_dialog,
-						"send_npc_next_dialog", &Player::send_npc_next_dialog,
-						"send_npc_close_dialog", &Player::send_npc_close_dialog,
-						"send_npc_menu_list", &Player::send_npc_menu_list,
-						"move_to_map", &Player::move_to_map,
-						"get_inventory", &Player::get_inventory,
-						"message", [] (std::shared_ptr<Player> player, std::string const &message)
-						{
-							player->get_packet_handler()->Send_ZC_NOTIFY_PLAYERCHAT(message);
-						},
-						"get_status", &Player::get_status
-						);
+									"get_guid", &Player::get_guid,
+									"get_map", &Player::get_map,
+									"map_coords", &Player::get_map_coords,
+									"get_nearby_entity", &Player::get_nearby_entity,
+									"send_npc_dialog", &Player::send_npc_dialog,
+									"send_npc_next_dialog", &Player::send_npc_next_dialog,
+									"send_npc_close_dialog", &Player::send_npc_close_dialog,
+									"send_npc_menu_list", &Player::send_npc_menu_list,
+									"move_to_map", &Player::move_to_map,
+									"get_inventory", &Player::get_inventory,
+									"message", [] (std::shared_ptr<Player> player, std::string const &message)
+									{
+										player->get_packet_handler()->Send_ZC_NOTIFY_PLAYERCHAT(message);
+									},
+									"get_status", &Player::get_status
+									);
 
 	st.new_usertype<Status::Status>("Status",
 									"get_strength", &Status::Status::get_strength,
@@ -146,6 +149,8 @@ void ScriptManager::initialize_state(sol::state &st)
 									"get_job_level", &Status::Status::get_job_level,
 									"get_base_experience", &Status::Status::get_base_experience,
 									"get_job_experience", &Status::Status::get_job_experience,
+									"get_next_base_experience", &Status::Status::get_next_base_experience,
+									"get_next_job_experience", &Status::Status::get_next_job_experience,
 									"get_movement_speed", &Status::Status::get_movement_speed,
 									"get_max_weight", &Status::Status::get_max_weight,
 									"get_current_weight", &Status::Status::get_current_weight,
@@ -164,78 +169,147 @@ void ScriptManager::initialize_state(sol::state &st)
 	st.new_usertype<Status::BaseLevel>("BaseLevel",
 									"add", &Status::BaseLevel::add_base,
 									"sub", &Status::BaseLevel::sub_base,
-									"get", &Status::BaseLevel::get_base);
+									"get", &Status::BaseLevel::get_base,
+									"set", &Status::BaseLevel::set_base
+									);
 	st.new_usertype<Status::JobLevel>("JobLevel",
 									"add", &Status::JobLevel::add_base,
 									"sub", &Status::JobLevel::sub_base,
-									"get", &Status::JobLevel::get_base);
+									"get", &Status::JobLevel::get_base,
+									"set", &Status::JobLevel::set_base
+									);
 	st.new_usertype<Status::MaxHP>("MaxHP",
-									"add", &Status::MaxHP::add_base,
-									"sub", &Status::MaxHP::sub_base,
-									"get", &Status::MaxHP::get_base);
+									"add_base", &Status::MaxHP::add_base,
+									"sub_base", &Status::MaxHP::sub_base,
+									"get_base", &Status::MaxHP::get_base,
+									"set_base", &Status::MaxHP::set_base
+									);
 	st.new_usertype<Status::MaxSP>("MaxSP",
-									"add", &Status::MaxSP::add_base,
-									"sub", &Status::MaxSP::sub_base,
-									"get", &Status::MaxSP::get_base);
+									"add_base", &Status::MaxSP::add_base,
+									"sub_base", &Status::MaxSP::sub_base,
+									"get_base", &Status::MaxSP::get_base,
+									"set_base", &Status::MaxSP::set_base
+								   );
 	st.new_usertype<Status::CurrentHP>("CurrentHP",
 									"add", &Status::CurrentHP::add_base,
 									"sub", &Status::CurrentHP::sub_base,
-									"get", &Status::CurrentHP::get_base);
+									"get", &Status::CurrentHP::get_base,
+									"set", &Status::CurrentHP::set_base
+									);
 	st.new_usertype<Status::CurrentSP>("CurrentSP",
 									"add", &Status::CurrentSP::add_base,
 									"sub", &Status::CurrentSP::sub_base,
-									"get", &Status::CurrentSP::get_base);
+									"get", &Status::CurrentSP::get_base,
+									"set", &Status::CurrentSP::set_base
+									);
 	st.new_usertype<Status::MovementSpeed>("MovementSpeed",
-									"add", &Status::MovementSpeed::add_base,
-									"sub", &Status::MovementSpeed::sub_base,
-									"get", &Status::MovementSpeed::get_base);
+									"add_base", &Status::MovementSpeed::add_base,
+									"sub_base", &Status::MovementSpeed::sub_base,
+									"get_base", &Status::MovementSpeed::get_base,
+									"set_base", &Status::MovementSpeed::set_base
+									);
 	st.new_usertype<Status::MaxWeight>("MaxWeight",
-									"add", &Status::MaxWeight::add_base,
-									"sub", &Status::MaxWeight::sub_base,
-									"get", &Status::MaxWeight::get_base);
+									"add_base", &Status::MaxWeight::add_base,
+									"sub_base", &Status::MaxWeight::sub_base,
+									"get_base", &Status::MaxWeight::get_base,
+									"set_base", &Status::MaxWeight::set_base
+									);
 	st.new_usertype<Status::CurrentWeight>("CurrentWeight",
 									"add", &Status::CurrentWeight::add_base,
 									"sub", &Status::CurrentWeight::sub_base,
-									"get", &Status::CurrentWeight::get_base);
+									"get", &Status::CurrentWeight::get_base,
+									"set", &Status::CurrentWeight::set_base
+									);
 	st.new_usertype<Status::Strength>("Strength",
-									"add", &Status::Strength::add_base,
-									"sub", &Status::Strength::sub_base,
-									"get", &Status::Strength::get_base);
+									"add_base", &Status::Strength::add_base,
+									"sub_base", &Status::Strength::sub_base,
+									"get_base", &Status::Strength::get_base,
+									"set_base", &Status::Strength::set_base
+									);
 	st.new_usertype<Status::Agility>("Agility",
-									"add", &Status::Agility::add_base,
-									"sub", &Status::Agility::sub_base,
-									"get", &Status::Agility::get_base);
+									"add_base", &Status::Agility::add_base,
+									"sub_base", &Status::Agility::sub_base,
+									"get_base", &Status::Agility::get_base,
+									"set_base", &Status::Agility::set_base
+									);
 	st.new_usertype<Status::Vitality>("Vitality",
-									"add", &Status::Vitality::add_base,
-									"sub", &Status::Vitality::sub_base,
-									"get", &Status::Vitality::get_base);
+									"add_base", &Status::Vitality::add_base,
+									"sub_base", &Status::Vitality::sub_base,
+									"get_base", &Status::Vitality::get_base,
+									"set_base", &Status::Vitality::set_base
+									);
 	st.new_usertype<Status::Intelligence>("Intelligence",
-									"add", &Status::Intelligence::add_base,
-									"sub", &Status::Intelligence::sub_base,
-									"get", &Status::Intelligence::get_base);
+									"add_base", &Status::Intelligence::add_base,
+									"sub_base", &Status::Intelligence::sub_base,
+									"get_base", &Status::Intelligence::get_base,
+									"set_base", &Status::Intelligence::set_base
+									);
 	st.new_usertype<Status::Dexterity>("Dexterity",
-									"add", &Status::Dexterity::add_base,
-									"sub", &Status::Dexterity::sub_base,
-									"get", &Status::Dexterity::get_base);
+									"add_base", &Status::Dexterity::add_base,
+									"sub_base", &Status::Dexterity::sub_base,
+									"get_base", &Status::Dexterity::get_base,
+									"set_base", &Status::Dexterity::set_base
+									);
 	st.new_usertype<Status::Luck>("Luck",
-									"add", &Status::Luck::add_base,
-									"sub", &Status::Luck::sub_base,
-									"get", &Status::Luck::get_base);
+									"add_base", &Status::Luck::add_base,
+									"sub_base", &Status::Luck::sub_base,
+									"get_base", &Status::Luck::get_base,
+									"set_base", &Status::Luck::set_base
+								  	);
 	st.new_usertype<Status::BaseExperience>("BaseExperience",
 									"add", &Status::BaseExperience::add_base,
 									"sub", &Status::BaseExperience::sub_base,
-									"get", &Status::BaseExperience::get_base);
+									"get", &Status::BaseExperience::get_base,
+									"set", &Status::BaseExperience::set_base
+									);
 	st.new_usertype<Status::JobExperience>("JobExperience",
 									"add", &Status::JobExperience::add_base,
 									"sub", &Status::JobExperience::sub_base,
-									"get", &Status::JobExperience::get_base);
+									"get", &Status::JobExperience::get_base,
+									"set", &Status::JobExperience::set_base
+									);
+	st.new_usertype<Status::NextBaseExperience>("NextBaseExperience",
+									"add", &Status::NextBaseExperience::add_base,
+									"sub", &Status::NextBaseExperience::sub_base,
+									"get", &Status::NextBaseExperience::get_base,
+									"set", &Status::NextBaseExperience::set_base
+									);
+	st.new_usertype<Status::NextJobExperience>("NextJobExperience",
+									"add", &Status::NextJobExperience::add_base,
+									"sub", &Status::NextJobExperience::sub_base,
+									"get", &Status::NextJobExperience::get_base,
+									"set", &Status::NextJobExperience::set_base
+									);
 
-	res = st.script_file("scripts/internals/utils/strutils.lua");
+	std::vector<std::string> _loadable_files = {
+		"scripts/internals/utils/strutils.lua",
+		"scripts/constants.lua"
+	};
 
-	if (!res.valid()) {
-		sol::error error = res;
-		ZoneLog->error("ScriptManager::initialize_state: {}", error.what());
+	for (auto &file : _loadable_files) {
+		res = st.script_file(file);
+
+		if (!res.valid()) {
+			sol::error error = res;
+			ZoneLog->error("ScriptManager::initialize_state: {}", error.what());
+		}
 	}
+
+	// Macro to constants
+	st["MAX_LEVEL"]            = MAX_LEVEL;
+	st["MAX_STATUS_POINTS"]    = MAX_STATUS_POINTS;
+	st["MAX_CHARACTER_SLOTS"]  = MAX_CHARACTER_SLOTS;
+	st["MAX_VIEW_RANGE"]       = MAX_VIEW_RANGE;
+	st["MIN_INVENTORY_SIZE"]   = MIN_INVENTORY_SIZE;
+	st["MAX_INVENTORY_SIZE"]   = MAX_INVENTORY_SIZE;
+	st["MIN_STORAGE_SIZE"]     = MIN_STORAGE_SIZE;
+	st["MAX_STORAGE_SIZE"]     = MAX_STORAGE_SIZE;
+	st["MAX_ITEM_STACK_SIZE"]  = MAX_ITEM_STACK_SIZE;
+#ifdef RENEWAL
+	st["RENEWAL"]              = true;
+#else
+	st["RENEWAL"]              = false;
+#endif
 }
 
 void ScriptManager::finalize()

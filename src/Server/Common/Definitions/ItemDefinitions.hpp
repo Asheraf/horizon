@@ -32,6 +32,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdint>
+#include <vector>
 
 #define ITEM_NAME_LENGTH 50
 #define UNKNOWN_ITEM_ID 512 // Apple
@@ -46,34 +47,45 @@ static_assert(MAX_ITEM_SLOTS > 0 && MAX_ITEM_SLOTS <= 4,
 			  "MAX_ITEM_SLOTS is limited by the client and database layout "
 			  "and should not be changed unless supported by the client.");
 
-enum weapon_type
+enum item_weapon_type
 {
-	WT_FIST,      ///< Bare hands
-	WT_DAGGER,    //1
-	WT_1HSWORD,   //2
-	WT_2HSWORD,   //3
-	WT_1HSPEAR,   //4
-	WT_2HSPEAR,   //5
-	WT_1HAXE,     //6
-	WT_2HAXE,     //7
-	WT_1HMACE,      //8
-	WT_2HMACE,    //9 (unused)
-	WT_STAFF,     //10
-	WT_BOW,       //11
-	WT_KNUCKLE,   //12
-	WT_MUSICAL,   //13
-	WT_WHIP,      //14
-	WT_BOOK,      //15
-	WT_KATAR,     //16
-	WT_REVOLVER,  //17
-	WT_RIFLE,     //18
-	WT_GATLING,   //19
-	WT_SHOTGUN,   //20
-	WT_GRENADE,   //21
-	WT_HUUMA,     //22
-	WT_2HSTAFF,   //23
-	WT_SHIELD,    //24
-	WT_MAX
+	IT_WT_FIST      = 0,      ///< Bare hands
+	IT_WT_DAGGER    = 1,
+	IT_WT_1HSWORD   = 2,
+	IT_WT_2HSWORD   = 3,
+	IT_WT_1HSPEAR   = 4,
+	IT_WT_2HSPEAR   = 5,
+	IT_WT_1HAXE     = 6,
+	IT_WT_2HAXE     = 7,
+	IT_WT_1HMACE    = 8,
+	IT_WT_2HMACE    = 9,
+	IT_WT_STAFF     = 10,
+	IT_WT_BOW       = 11,
+	IT_WT_KNUCKLE   = 12,
+	IT_WT_MUSICAL   = 13,
+	IT_WT_WHIP      = 14,
+	IT_WT_BOOK      = 15,
+	IT_WT_KATAR     = 16,
+	IT_WT_REVOLVER  = 17,
+	IT_WT_RIFLE     = 18,
+	IT_WT_GATLING   = 19,
+	IT_WT_SHOTGUN   = 20,
+	IT_WT_GRENADE   = 21,
+	IT_WT_HUUMA     = 22,
+	IT_WT_2HSTAFF   = 23,
+	IT_WT_SHIELD    = 24, 
+	IT_WT_MAX
+};
+
+enum item_weapon_type_mask
+{
+	IT_WTM_RANGED = (1ULL << IT_WT_BOW) | (1ULL << IT_WT_WHIP) | (1ULL << IT_WT_MUSICAL)
+					| (1ULL << IT_WT_RIFLE) | (1ULL < IT_WT_GATLING) | (1ULL << IT_WT_SHOTGUN)
+					| (1ULL << IT_WT_REVOLVER) | (1ULL << IT_WT_GRENADE),
+	IT_WTM_MELEE  = (1ULL << IT_WT_DAGGER)| (1ULL << IT_WT_1HSWORD) | (1ULL << IT_WT_2HSWORD)
+					| (1ULL << IT_WT_1HSPEAR) | (1ULL << IT_WT_1HAXE) | (1ULL << IT_WT_2HAXE) | (1ULL << IT_WT_1HMACE)
+					| (1ULL << IT_WT_2HMACE) | (1ULL << IT_WT_KNUCKLE) | (1ULL << IT_WT_KATAR)
+					| (1ULL << IT_WT_HUUMA)
 };
 
 enum item_gender_type
@@ -184,17 +196,17 @@ enum item_type : uint8_t {
 };
 
 enum item_ammunition_type {
-	AMMO_TYPE_NONE               = 0,
-	AMMO_TYPE_ARROW              = 1,
-	AMMO_TYPE_DAGGER             = 2,
-	AMMO_TYPE_BULLET             = 3,
-	AMMO_TYPE_SHELL              = 4,
-	AMMO_TYPE_GRENADE            = 5,
-	AMMO_TYPE_SHURIKEN           = 6,
-	AMMO_TYPE_KUNAI              = 7,
-	AMMO_TYPE_CANNONBALL         = 8,
-	AMMO_TYPE_THROWABLE_WEAPON   = 9,
-	AMMO_TYPE_MAX
+	IT_AT_NONE               = 0,
+	IT_AT_ARROW              = 1,
+	IT_AT_DAGGER             = 2,
+	IT_AT_BULLET             = 3,
+	IT_AT_SHELL              = 4,
+	IT_AT_GRENADE            = 5,
+	IT_AT_SHURIKEN           = 6,
+	IT_AT_KUNAI              = 7,
+	IT_AT_CANNONBALL         = 8,
+	IT_AT_THROWABLE_WEAPON   = 9,
+	IT_AT_MAX
 };
 
 enum item_inventory_addition_notif_type : uint8_t {
@@ -266,9 +278,9 @@ struct item_config_data
 	item_type type{IT_TYPE_ETC};
 
 	union {
-		int weapon_t;
-		int ammo_t;
-	} sub_type{0};
+		item_weapon_type weapon_t;
+		item_ammunition_type ammo_t;
+	} sub_type{IT_WT_FIST};
 
 	uint64_t equip_location_mask{0};      ///< @see equip_location_mask type.
 	uint32_t weight{0};
@@ -287,7 +299,7 @@ struct item_config_data
 	struct {
 		int32_t max_lv{0};
 		int32_t min_lv{0};
-		int32_t job_mask{0};
+		std::vector<uint32_t> job_ids;
 		item_gender_type gender{IT_GENDER_ANY};
 	} requirements;
 
@@ -339,30 +351,18 @@ struct item_entry_data
 		return true;
 	}
 
-	bool operator == (item_entry_data const &data)
+	bool operator == (item_entry_data const &right)
 	{
-		bool same = true;
-
-		if (item_id != data.item_id
-			|| bind_type != data.bind_type
-			|| hire_expire_date != data.hire_expire_date
-			|| unique_id != data.unique_id
+		if (item_id != right.item_id
+			|| bind_type != right.bind_type
+			|| hire_expire_date != right.hire_expire_date
+			|| unique_id != right.unique_id
+			|| type != right.type
+			|| info.is_favorite != right.info.is_favorite
 			)
-			same = false;
+			return false;
 
-		for (int i = 0; i < MAX_ITEM_SLOTS && same; i++) {
-			if (slot_item_id[i] != data.slot_item_id[i])
-				same = false;
-		}
-
-		for (int i = 0; i < MAX_ITEM_OPTIONS && same; i++) {
-			if (option_data[i].index != data.option_data[i].index
-				|| option_data[i].value != data.option_data[i].value
-				|| option_data[i].param != data.option_data[i].param)
-				same = false;
-		}
-
-		return same;
+		return true;
 	}
 
 	uint16_t inventory_index{0};
@@ -378,6 +378,7 @@ struct item_entry_data
 	uint16_t sprite_id{0};
 
 	item_element_type element_type{ELE_NEUTRAL};
+	uint8_t option_count{0};
 	struct options {
 		int16_t index{0};
 		int16_t value{0};
@@ -388,9 +389,11 @@ struct item_entry_data
 		unsigned is_broken : 1;
 		unsigned is_favorite : 1;
 		unsigned spare_bits : 5;
-	} info;
+	} info{0};
 	item_bind_type bind_type{IT_BIND_NONE};
 	uint64_t unique_id{0};
 };
+
+typedef std::array<std::pair<item_equip_location_mask, std::weak_ptr<const item_entry_data>>, IT_EQPI_MAX> EquippedItemsArray;
 
 #endif /* HORIZON_ZONE_GAME_ITEM_DEFINITIONS */

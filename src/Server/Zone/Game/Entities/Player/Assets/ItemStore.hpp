@@ -81,8 +81,6 @@ public:
 	
 	itemstore_addition_result_type add_to_itemstore(item_entry_data &item, uint16_t amount);
 
-	int create_unique_id();
-
 	void set_max_storage(uint32_t max_storage) { _max_storage = max_storage; }
 	uint32_t get_max_storage() { return _max_storage; }
 

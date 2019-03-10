@@ -35,13 +35,6 @@
 using namespace Horizon::Zone::Game::Assets;
 using namespace Horizon::Zone::Game::Entities;
 
-int ItemStore::create_unique_id()
-{
-	uint32_t char_id = get_player()->get_char_model()->get_id();
-	uint32_t index = get_player()->get_unique_item_counter();
-	return ((uint64_t) char_id << 32) | index++;
-}
-
 itemstore_addition_result_type ItemStore::add_to_itemstore(item_entry_data &item, uint16_t amount)
 {
 	if (_item_store.size() >= get_max_storage()) {
@@ -76,7 +69,7 @@ itemstore_addition_result_type ItemStore::add_to_itemstore(item_entry_data &item
 	} else {
 		for (int i = 0; i < amount; i++) {
 			std::shared_ptr<item_entry_data> itd = std::make_shared<item_entry_data>(item);
-			itd->unique_id = create_unique_id();
+			itd->unique_id = get_player()->new_unique_id();
 			itd->amount = 1;
 			itd->inventory_index = _item_store.size() + 2;
 			_item_store.push_back(itd);

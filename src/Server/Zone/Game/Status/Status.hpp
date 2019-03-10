@@ -48,6 +48,7 @@ namespace Zone
 {
 namespace Game
 {
+struct job_db_data;
 class Entity;
 namespace Entities
 {
@@ -67,15 +68,16 @@ namespace Status
 		void initialize();
 		// For players
 		void initialize(std::shared_ptr<Horizon::Models::Character::Character> character);
-		void initialize_sub_attributes();
+		void initialize_sub_attributes(std::shared_ptr<const job_db_data> job);
 		void initialize_observable_statuses();
-
+		void initialize_notifiable_statuses();
+		void compute_and_notify();
 		uint32_t get_required_statpoints(uint16_t from, uint16_t to);
 
 		uint32_t get_status_total(status_point_type type);
 
 		uint32_t increase_status_point(status_point_type type, uint16_t amount);
-
+		uint32_t modify_base_level(uint32_t blvl);
 		bool sync_to_model(std::shared_ptr<Models::Character::Status> status);
 		/**
 		 * Attributes
@@ -166,6 +168,12 @@ namespace Status
 		 */
 		std::shared_ptr<StatusATK> get_status_atk() { return _status_atk; }
 		void set_status_atk(std::shared_ptr<StatusATK> satk) { _status_atk = satk; }
+
+		std::shared_ptr<WeaponATK> get_weapon_atk() { return _weapon_atk; }
+		void set_weapon_atk(std::shared_ptr<WeaponATK> watk) { _weapon_atk = watk; }
+
+		std::shared_ptr<EquipATK> get_equip_atk() { return _equip_atk; }
+		void set_equip_atk(std::shared_ptr<EquipATK> eatk) { _equip_atk = eatk; }
 		
 		std::shared_ptr<StatusMATK> get_status_matk() { return _status_matk; }
 		void set_status_matk(std::shared_ptr<StatusMATK> smatk) { _status_matk = smatk; }
@@ -253,6 +261,8 @@ namespace Status
 		std::shared_ptr<CurrentWeight> _current_weight;
 		/* Sub Attributes */
 		std::shared_ptr<StatusATK> _status_atk;
+		std::shared_ptr<WeaponATK> _weapon_atk;
+		std::shared_ptr<EquipATK> _equip_atk;
 		std::shared_ptr<StatusMATK> _status_matk;
 		std::shared_ptr<SoftDEF> _soft_def;
 		std::shared_ptr<SoftMDEF> _soft_mdef;

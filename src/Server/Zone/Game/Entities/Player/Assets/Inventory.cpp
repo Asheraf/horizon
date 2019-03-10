@@ -45,27 +45,27 @@ using namespace Horizon::Zone::Game::Assets;
 Inventory::Inventory(std::weak_ptr<Player> player, uint32_t max_storage)
 : ItemStore(player, max_storage), _packet_handler(player.lock()->get_packet_handler())
 {
-	_equipped_items[IT_EQPI_ACC_L].first = IT_EQPM_ACC_L;
-	_equipped_items[IT_EQPI_ACC_R].first = IT_EQPM_ACC_R;
-	_equipped_items[IT_EQPI_SHOES].first = IT_EQPM_SHOES;
-	_equipped_items[IT_EQPI_GARMENT].first = IT_EQPM_GARMENT;
-	_equipped_items[IT_EQPI_HEAD_LOW].first = IT_EQPM_HEAD_LOW;
-	_equipped_items[IT_EQPI_HEAD_MID].first = IT_EQPM_HEAD_MID;
-	_equipped_items[IT_EQPI_HEAD_TOP].first = IT_EQPM_HEAD_TOP;
-	_equipped_items[IT_EQPI_ARMOR].first = IT_EQPM_ARMOR;
-	_equipped_items[IT_EQPI_HAND_L].first = IT_EQPM_HAND_L;
-	_equipped_items[IT_EQPI_HAND_R].first = IT_EQPM_HAND_R;
-	_equipped_items[IT_EQPI_COSTUME_TOP].first = IT_EQPM_COSTUME_HEAD_TOP;
-	_equipped_items[IT_EQPI_COSTUME_MID].first = IT_EQPM_COSTUME_HEAD_MID;
-	_equipped_items[IT_EQPI_COSTUME_LOW].first = IT_EQPM_COSTUME_HEAD_LOW;
-	_equipped_items[IT_EQPI_COSTUME_GARMENT].first = IT_EQPM_COSTUME_GARMENT;
-	_equipped_items[IT_EQPI_AMMO].first = IT_EQPM_AMMO;
-	_equipped_items[IT_EQPI_SHADOW_ARMOR].first = IT_EQPM_SHADOW_ARMOR;
-	_equipped_items[IT_EQPI_SHADOW_WEAPON].first = IT_EQPM_SHADOW_WEAPON;
-	_equipped_items[IT_EQPI_SHADOW_SHIELD].first = IT_EQPM_SHADOW_SHIELD;
-	_equipped_items[IT_EQPI_SHADOW_SHOES].first = IT_EQPM_SHADOW_SHOES;
-	_equipped_items[IT_EQPI_SHADOW_ACC_R].first = IT_EQPM_SHADOW_ACC_R;
-	_equipped_items[IT_EQPI_SHADOW_ACC_L].first = IT_EQPM_SHADOW_ACC_L;
+	_equipments[IT_EQPI_ACC_L].first = IT_EQPM_ACC_L;
+	_equipments[IT_EQPI_ACC_R].first = IT_EQPM_ACC_R;
+	_equipments[IT_EQPI_SHOES].first = IT_EQPM_SHOES;
+	_equipments[IT_EQPI_GARMENT].first = IT_EQPM_GARMENT;
+	_equipments[IT_EQPI_HEAD_LOW].first = IT_EQPM_HEAD_LOW;
+	_equipments[IT_EQPI_HEAD_MID].first = IT_EQPM_HEAD_MID;
+	_equipments[IT_EQPI_HEAD_TOP].first = IT_EQPM_HEAD_TOP;
+	_equipments[IT_EQPI_ARMOR].first = IT_EQPM_ARMOR;
+	_equipments[IT_EQPI_HAND_L].first = IT_EQPM_HAND_L;
+	_equipments[IT_EQPI_HAND_R].first = IT_EQPM_HAND_R;
+	_equipments[IT_EQPI_COSTUME_TOP].first = IT_EQPM_COSTUME_HEAD_TOP;
+	_equipments[IT_EQPI_COSTUME_MID].first = IT_EQPM_COSTUME_HEAD_MID;
+	_equipments[IT_EQPI_COSTUME_LOW].first = IT_EQPM_COSTUME_HEAD_LOW;
+	_equipments[IT_EQPI_COSTUME_GARMENT].first = IT_EQPM_COSTUME_GARMENT;
+	_equipments[IT_EQPI_AMMO].first = IT_EQPM_AMMO;
+	_equipments[IT_EQPI_SHADOW_ARMOR].first = IT_EQPM_SHADOW_ARMOR;
+	_equipments[IT_EQPI_SHADOW_WEAPON].first = IT_EQPM_SHADOW_WEAPON;
+	_equipments[IT_EQPI_SHADOW_SHIELD].first = IT_EQPM_SHADOW_SHIELD;
+	_equipments[IT_EQPI_SHADOW_SHOES].first = IT_EQPM_SHADOW_SHOES;
+	_equipments[IT_EQPI_SHADOW_ACC_R].first = IT_EQPM_SHADOW_ACC_R;
+	_equipments[IT_EQPI_SHADOW_ACC_L].first = IT_EQPM_SHADOW_ACC_L;
 }
 
 Inventory::~Inventory()
@@ -93,6 +93,7 @@ bool Inventory::use_item(uint32_t inventory_index, uint32_t guid)
 
 item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t equip_location_mask)
 {
+	uint32_t job_id = get_player()->get_job_id();
 	std::shared_ptr<item_entry_data> inv_item = get_item_at_index(inventory_index);
 
 	if (inv_item == nullptr)
@@ -110,6 +111,15 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 		return IT_EQUIP_FAIL;
 	}
 
+	auto req_job_it = std::find_if(itemd->requirements.job_ids.begin(), itemd->requirements.job_ids.end(),
+		[job_id](uint32_t id) {
+			return job_id == id;
+		});
+	if (req_job_it == itemd->requirements.job_ids.end()) {
+		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
+		return IT_EQUIP_FAIL;
+	}
+
 	if (itemd->config.bind_on_equip != 0 && inv_item->bound_type == 0) {
 		inv_item->bound_type = IT_BIND_CHARACTER;
 		get_packet_handler()->Send_ZC_NOTIFY_BIND_ON_EQUIP(inv_item);
@@ -117,15 +127,7 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 
 	inv_item->current_equip_location_mask = calculate_current_equip_location_mask(itemd);
 
-	for (int i = 0; i < IT_EQPI_MAX; i++) {
-		auto &equip = get_equipped_items()[i];
-
-		if ((inv_item->current_equip_location_mask & equip.first)) {
-			if (!equip.second.expired())
-				unequip_item(equip.second.lock()->inventory_index - 2);
-			equip.second = inv_item;
-		}
-	}
+	add_to_equipment_list(inv_item);
 
 	if (inv_item->type == IT_TYPE_AMMO) {
 		get_packet_handler()->Send_ZC_EQUIP_ARROW(inv_item);
@@ -133,8 +135,6 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 	} else {
 		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_SUCCESS);
 	}
-
-	get_player()->on_item_equip(inv_item);
 
 	return IT_EQUIP_SUCCESS;
 }
@@ -156,19 +156,38 @@ item_unequip_result_type Inventory::unequip_item(uint32_t inventory_index)
 	}
 
 	get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_SUCCESS);
-	
-	for (int i = 0; i < IT_EQPI_MAX; i++) {
-		auto &equip = get_equipped_items()[i];
 
-		if ((inv_item->current_equip_location_mask & equip.first)) {
-			inv_item->current_equip_location_mask &= ~equip.first;
+	remove_from_equipment_list(inv_item);
+	return IT_UNEQUIP_SUCCESS;
+}
+
+void Inventory::add_to_equipment_list(std::shared_ptr<item_entry_data> item)
+{
+	for (int i = 0; i < IT_EQPI_MAX; i++) {
+		auto &equip = get_equipments()[i];
+
+		if ((item->current_equip_location_mask & equip.first)) {
+			if (!equip.second.expired())
+				unequip_item(equip.second.lock()->inventory_index - 2);
+			equip.second = item;
+		}
+	}
+
+	get_player()->on_item_equip(item);
+}
+
+void Inventory::remove_from_equipment_list(std::shared_ptr<item_entry_data> item)
+{
+	for (int i = 0; i < IT_EQPI_MAX; i++) {
+		auto &equip = get_equipments()[i];
+
+		if ((item->current_equip_location_mask & equip.first)) {
+			item->current_equip_location_mask &= ~equip.first;
 			equip.second.reset();
 		}
 	}
 
-	get_player()->on_item_unequip(inv_item);
-	
-	return IT_UNEQUIP_SUCCESS;
+	get_player()->on_item_unequip(item);
 }
 
 itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t amount, bool is_identified)
@@ -201,9 +220,8 @@ itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 
 	itemstore_addition_result_type result = add_to_itemstore(data, amount);
 
-	if (result == ITEMSTORE_ADD_SUCCESS) {
-		current_weight->add_base(item->weight * amount, true);
-	}
+	if (result == ITEMSTORE_ADD_SUCCESS)
+		current_weight->add_base(item->weight * amount);
 	
 	return result;
 }
@@ -214,11 +232,11 @@ uint32_t Inventory::calculate_current_equip_location_mask(std::shared_ptr<const 
 	uint32_t current_equip_location_mask = item->equip_location_mask;
 
 	if (item->type == IT_TYPE_WEAPON) {
-		if (item->sub_type.weapon_t == WT_DAGGER ||
-			item->sub_type.weapon_t == WT_1HSWORD ||
-			item->sub_type.weapon_t == WT_1HAXE) {
-			if ((job_mask & JMASK_2) == JMASK_ASSASSIN
-				|| (job_mask & JMASK_2) == JMASK_KAGEROUOBORO) {
+		if (item->sub_type.weapon_t == IT_WT_DAGGER ||
+			item->sub_type.weapon_t == IT_WT_1HSWORD ||
+			item->sub_type.weapon_t == IT_WT_1HAXE) {
+			if ((job_mask & JMASK_ASSASSIN) == JMASK_ASSASSIN
+				 || (job_mask & JMASK_KAGEROUOBORO) == JMASK_KAGEROUOBORO) {
 				if (item->equip_location_mask == IT_EQPM_HAND_R)
 					current_equip_location_mask = IT_EQPM_ARMS;
 				if (item->equip_location_mask == IT_EQPM_SHADOW_WEAPON)
@@ -228,13 +246,13 @@ uint32_t Inventory::calculate_current_equip_location_mask(std::shared_ptr<const 
 	}
 
 	if (current_equip_location_mask == IT_EQPM_ACC)
-		current_equip_location_mask = get_equipped_items()[IT_EQPI_ACC_L].second.expired() ? IT_EQPM_ACC_L : IT_EQPM_ACC_R;
+		current_equip_location_mask = get_equipments()[IT_EQPI_ACC_L].second.expired() ? IT_EQPM_ACC_L : IT_EQPM_ACC_R;
 	else if (current_equip_location_mask == IT_EQPM_ARMS && item->equip_location_mask == IT_EQPM_WEAPON)
-		current_equip_location_mask = get_equipped_items()[IT_EQPI_HAND_L].second.expired() ? IT_EQPM_HAND_L : IT_EQPM_HAND_R;
+		current_equip_location_mask = get_equipments()[IT_EQPI_HAND_L].second.expired() ? IT_EQPM_HAND_L : IT_EQPM_HAND_R;
 	else if (current_equip_location_mask == IT_EQPM_SHADOW_ACC)
-		current_equip_location_mask = get_equipped_items()[IT_EQPI_SHADOW_ACC_L].second.expired() ? IT_EQPM_SHADOW_ACC_L : IT_EQPM_SHADOW_ACC_R;
+		current_equip_location_mask = get_equipments()[IT_EQPI_SHADOW_ACC_L].second.expired() ? IT_EQPM_SHADOW_ACC_L : IT_EQPM_SHADOW_ACC_R;
 	else if (current_equip_location_mask == IT_EQPM_SHADOW_ARMS && item->equip_location_mask == IT_EQPM_SHADOW_WEAPON)
-		current_equip_location_mask = get_equipped_items()[IT_EQPI_SHADOW_WEAPON].second.expired() ? IT_EQPM_SHADOW_WEAPON : IT_EQPM_SHADOW_SHIELD;
+		current_equip_location_mask = get_equipments()[IT_EQPI_SHADOW_WEAPON].second.expired() ? IT_EQPM_SHADOW_WEAPON : IT_EQPM_SHADOW_SHIELD;
 
 	return current_equip_location_mask;
 }
@@ -314,10 +332,17 @@ uint32_t Inventory::sync_to_model()
 		});
 
 		if (model_it != model_items.end()) {
+			bool changed = false;
 			if (model_it->amount != state_it->amount) {
 				model_it->amount = state_it->amount;
-				changes++;
+				changed = true;
 			}
+			if (model_it->current_equip_location_mask != state_it->current_equip_location_mask) {
+				model_it->current_equip_location_mask = state_it->current_equip_location_mask;
+				changed = true;
+			}
+			if (changed)
+				changes++;
 		} else {
 			model_items.push_back(*state_it);
 			changes++;
@@ -352,11 +377,15 @@ uint32_t Inventory::sync_from_model()
 	for (auto &mitem : model_items) {
 		std::shared_ptr<item_entry_data> item = std::make_shared<item_entry_data>(mitem);
 		std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
-		item->type = itemd->type;
-		item->sprite_id = itemd->sprite_id;
-		item->actual_equip_location_mask = itemd->equip_location_mask;
+		item->type = mitem.type = itemd->type;
+		item->sprite_id = mitem.sprite_id = itemd->sprite_id;
+		item->actual_equip_location_mask = mitem.actual_equip_location_mask = itemd->equip_location_mask;
 		_item_store.push_back(item);
-		get_player()->get_status()->get_current_weight()->add_base(itemd->weight * item->amount);
+		if (item->current_equip_location_mask > 0)
+			add_to_equipment_list(item);
+		// set without notifying client of weight, @see Player::on_map_enter is to be called after this
+		// method to ensure client notifications.
+		get_player()->get_status()->get_current_weight()->add_base(itemd->weight * item->amount, false);
 	}
 	
 	return _item_store.size();

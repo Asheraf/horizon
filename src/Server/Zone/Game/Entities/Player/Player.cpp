@@ -35,6 +35,7 @@
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
+#include "Server/Zone/Game/StaticDB/ItemDB.hpp"
 #include "Server/Zone/Game/Status/Attributes.hpp"
 #include "Server/Zone/Game/Status/Appearance.hpp"
 #include "Server/Zone/Game/Status/Status.hpp"
@@ -57,6 +58,16 @@ Player::~Player()
 {
 	if (has_valid_grid_reference())
 		remove_grid_reference();
+}
+
+uint64_t Player::new_unique_id()
+{
+	if (_last_unique_id > 0)
+		return ++_last_unique_id;
+
+	uint64_t char_id = get_char_model()->get_id();
+
+	return (_last_unique_id = (char_id << 32));
 }
 
 void Player::initialize()
@@ -83,9 +94,12 @@ void Player::initialize()
 	get_status()->initialize(character);
 
 	// Inventory.
-	set_unique_item_counter(character->get_unique_item_counter());
+	_last_unique_id = character->get_last_unique_id();
 	_inventory = std::make_shared<Assets::Inventory>(downcast<Player>(), get_max_inventory_size());
 	_inventory->sync_from_model();
+
+	// Compute sub-statuses and notify the client.
+	get_status()->compute_and_notify();
 
 	// Ensure grid for entity.
 	get_map()->ensure_grid_for_entity(this, get_map_coords());
@@ -123,8 +137,8 @@ void Player::sync_with_models()
 		char_save_mask |= CHAR_SAVE_BASE_DATA;
 	}
 
-	if (get_unique_item_counter() != get_char_model()->get_unique_item_counter()) {
-		get_char_model()->set_unique_item_counter(get_unique_item_counter());
+	if (_last_unique_id != get_char_model()->get_last_unique_id()) {
+		get_char_model()->set_last_unique_id(_last_unique_id);
 		char_save_mask |= CHAR_SAVE_BASE_DATA;
 	}
 
@@ -330,12 +344,24 @@ void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)
 
 void Player::on_item_equip(std::shared_ptr<const item_entry_data> item)
 {
-	
+	std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
+	std::shared_ptr<Status::Status> status = get_status();
+
+	if (item->type == IT_TYPE_WEAPON) {
+		status->get_status_atk()->set_weapon_type(itemd->sub_type.weapon_t);
+		status->get_weapon_atk()->on_equipment_change();
+	}
 }
 
 void Player::on_item_unequip(std::shared_ptr<const item_entry_data> item)
 {
+	std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
+	std::shared_ptr<Status::Status> status = get_status();
 
+	if (item->type == IT_TYPE_WEAPON) {
+		status->get_status_atk()->set_weapon_type(IT_WT_FIST);
+		status->get_weapon_atk()->on_equipment_change();
+	}
 }
 
 void Player::on_map_enter()

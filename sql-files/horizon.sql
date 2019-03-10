@@ -59,7 +59,7 @@ CREATE TABLE `characters` (
   `deleted_at` datetime DEFAULT NULL,
   `unban_time` int(11) unsigned NOT NULL DEFAULT 0,
   `rename_count` tinyint(2) unsigned NOT NULL DEFAULT 0,
-  `unique_item_counter` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `last_unique_id` bigint(20) unsigned NOT NULL DEFAULT 0,
   `hotkey_row_index` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `change_slot_count` tinyint(2) unsigned NOT NULL DEFAULT 0,
   `font` tinyint(1) unsigned NOT NULL DEFAULT 0,

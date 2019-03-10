@@ -4,7 +4,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(MSVC_EXPECTED_VERSION 19.0)
 
 if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS MSVC_EXPECTED_VERSION)
-  message(FATAL_ERROR "MSVC: TrinityCore requires version ${MSVC_EXPECTED_VERSION} (MSVC 2015) to build but found ${CMAKE_CXX_COMPILER_VERSION}")
+  message(FATAL_ERROR "MSVC: Horizon requires version ${MSVC_EXPECTED_VERSION} (MSVC 2015) to build but found ${CMAKE_CXX_COMPILER_VERSION}")
 endif()
 
 # set up output paths ofr static libraries etc (commented out - shown here as an example only)
@@ -54,7 +54,7 @@ endif()
 # and can omit all of these extra null checks from your program.
 # http://blogs.msdn.com/b/vcblog/archive/2015/08/06/new-in-vs-2015-zc-throwingnew.aspx
 if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0.23026.0))
-  # makes this flag a requirement to build TC at all
+  # makes this flag a requirement to build at all
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:throwingNew")
 endif()
 

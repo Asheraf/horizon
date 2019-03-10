@@ -30,7 +30,7 @@
 
 #include "Attributes.hpp"
 #include "Server/Common/Definitions/EntityDefinitions.hpp"
-
+#include "Server/Common/Definitions/ItemDefinitions.hpp"
 #include <cstdint>
 
 namespace Horizon
@@ -48,19 +48,50 @@ namespace Status
 	class BaseLevel;
 	class Vitality;
 	class Intelligence;
-	
-	class StatusATK : public Attribute<StatusATK, BasicAttributeNotifier>
+	class EquipATK;
+
+	class MaxWeight
+	: public Attribute<MaxWeight, BasicAttributeNotifier<STATUS_MAX_WEIGHT, std::weak_ptr<MaxWeight>>>
+	{
+	public:
+		MaxWeight(std::weak_ptr<Entity> entity, uint32_t base = 0, uint32_t equip = 0, uint32_t status = 0)
+		: Attribute(entity, base, equip, status)
+		{ }
+		~MaxWeight() { };
+
+		void on_observable_changed(std::weak_ptr<Strength> wstr) { set_base(compute()); }
+
+		uint32_t compute();
+
+		void set_strength(std::weak_ptr<Strength> str) { _str = str; }
+
+	private:
+		std::weak_ptr<Strength> _str;
+	};
+
+	class CurrentWeight
+	: public Attribute<CurrentWeight, BasicAttributeNotifier<STATUS_CURRENT_WEIGHT, std::weak_ptr<CurrentWeight>>>
+	{
+	public:
+		CurrentWeight(std::weak_ptr<Entity> entity, uint32_t base = 0, uint32_t equip = 0, uint32_t status = 0)
+		: Attribute(entity, base, equip, status)
+		{ }
+		~CurrentWeight() { };
+	};
+
+	class StatusATK
+	: public Attribute<StatusATK, BasicAttributeNotifier<STATUS_STATUS_ATK, std::weak_ptr<StatusATK>>>
 	{
 	public:
 		StatusATK(std::weak_ptr<Entity> entity)
-		: Attribute(entity, STATUS_STATUS_ATK, 0, 0, 0)
+		: Attribute(entity)
 		{ }
 		~StatusATK() { }
 
-		void on_observable_changed(std::weak_ptr<Strength>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute(), true); }
+		void on_observable_changed(std::weak_ptr<Strength>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute()); }
 		
 		uint32_t compute();
 
@@ -68,26 +99,72 @@ namespace Status
 		void set_strength(std::weak_ptr<Strength> str) { _str = str; }
 		void set_dexterity(std::weak_ptr<Dexterity> dex) { _dex = dex; }
 		void set_luck(std::weak_ptr<Luck> luk) { _luk = luk; }
+		void set_weapon_type(item_weapon_type type) { _weapon_type = type; set_base(compute()); }
 		
 	private:
 		std::weak_ptr<BaseLevel> _blvl;
 		std::weak_ptr<Strength> _str;
 		std::weak_ptr<Dexterity> _dex;
 		std::weak_ptr<Luck> _luk;
+		item_weapon_type _weapon_type;
 	};
 
-	class StatusMATK : public Attribute<StatusMATK, BasicAttributeNotifier>
+	class WeaponATK
+	: public Attribute<WeaponATK, BasicAttributeNotifier<STATUS_EQUIP_ATK, std::weak_ptr<WeaponATK>, std::weak_ptr<EquipATK>>>
+	{
+	public:
+		WeaponATK(std::weak_ptr<Entity> entity)
+		: Attribute(entity)
+		{ }
+		~WeaponATK() { }
+
+		void on_observable_changed(std::weak_ptr<Strength>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
+		void on_equipment_change() { set_base(compute()); }
+
+		void set_strength(std::weak_ptr<Strength> str) { _str = str; }
+		void set_dexterity(std::weak_ptr<Dexterity> dex) { _dex = dex; }
+
+		uint32_t compute();
+		uint32_t compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dmg);
+
+		void notify_update() override { _notifier.notify_sum(); }
+	private:
+		std::weak_ptr<Strength> _str;
+		std::weak_ptr<Dexterity> _dex;
+		uint32_t _left_hand_val{0};
+		uint32_t _right_hand_val{0};
+	};
+
+	class EquipATK
+	: public Attribute<WeaponATK, BasicAttributeNotifier<STATUS_EQUIP_ATK, std::weak_ptr<WeaponATK>, std::weak_ptr<EquipATK>>>
+	{
+	public:
+		EquipATK(std::weak_ptr<Entity> entity)
+		: Attribute(entity)
+		{ }
+		~EquipATK() { }
+
+		void on_equipments_changed() { set_base(compute()); }
+
+		uint32_t compute() { }
+
+		void notify_update() override { _notifier.notify_sum(); }
+	};
+
+	class StatusMATK
+	: public Attribute<StatusMATK, BasicAttributeNotifier<STATUS_STATUS_MATK, std::weak_ptr<StatusMATK>>>
 	{
 	public:
 		StatusMATK(std::weak_ptr<Entity> entity)
-		: Attribute(entity, STATUS_STATUS_MATK, 0, 0, 0)
+		: Attribute(entity)
 		{ }
 		~StatusMATK() { }
 
-		void on_observable_changed(std::weak_ptr<Intelligence>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute(), true); }
+		void on_observable_changed(std::weak_ptr<Intelligence>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute()); }
 
 		uint32_t compute();
 
@@ -103,15 +180,16 @@ namespace Status
 		std::weak_ptr<Luck> _luk;
 	};
 
-	class SoftDEF : public Attribute<SoftDEF, BasicAttributeNotifier>
+	class SoftDEF
+	: public Attribute<SoftDEF, BasicAttributeNotifier<STATUS_SOFT_DEF, std::weak_ptr<SoftDEF>>>
 	{
 	public:
 		SoftDEF(std::weak_ptr<Entity> entity)
-		: Attribute(entity, STATUS_SOFT_DEF, 0, 0, 0)
+		: Attribute(entity)
 		{ }
 		~SoftDEF() { }
 
-		void on_observable_changed(std::weak_ptr<Vitality>) { set_base(compute(), true); }
+		void on_observable_changed(std::weak_ptr<Vitality>) { set_base(compute()); }
 
 		uint32_t compute();
 
@@ -121,18 +199,19 @@ namespace Status
 		std::weak_ptr<Vitality> _vit;
 	};
 
-	class SoftMDEF : public Attribute<SoftMDEF, BasicAttributeNotifier>
+	class SoftMDEF
+	: public Attribute<SoftMDEF, BasicAttributeNotifier<STATUS_SOFT_MDEF, std::weak_ptr<SoftMDEF>>>
 	{
 	public:
 		SoftMDEF(std::weak_ptr<Entity> entity)
-		: Attribute(entity, STATUS_SOFT_MDEF, 0, 0, 0)
+		: Attribute(entity)
 		{ }
 		~SoftMDEF() { }
 
-		void on_observable_changed(std::weak_ptr<Intelligence>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Vitality>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute(), true); }
+		void on_observable_changed(std::weak_ptr<Intelligence>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Vitality>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute()); }
 
 		uint32_t compute();
 
@@ -148,17 +227,18 @@ namespace Status
 		std::weak_ptr<Vitality> _vit;
 	};
 
-	class HIT : public Attribute<HIT, BasicAttributeNotifier>
+	class HIT
+	: public Attribute<HIT, BasicAttributeNotifier<STATUS_HIT, std::weak_ptr<HIT>>>
 	{
 	public:
 		HIT(std::weak_ptr<Entity> entity)
-		: Attribute(entity, STATUS_HIT, 0, 0, 0)
+		: Attribute(entity)
 		{ }
 		~HIT() { }
 
-		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute(), true); }
+		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute()); }
 
 		uint32_t compute();
 
@@ -172,15 +252,16 @@ namespace Status
 		std::weak_ptr<Luck> _luk;
 	};
 
-	class CRIT : public Attribute<CRIT, BasicAttributeNotifier>
+	class CRIT
+	: public Attribute<CRIT, BasicAttributeNotifier<STATUS_CRITICAL, std::weak_ptr<CRIT>>>
 	{
 	public:
 		CRIT(std::weak_ptr<Entity> entity)
-		: Attribute(entity, STATUS_CRITICAL, 0, 0, 0)
+		: Attribute(entity)
 		{ }
 		~CRIT() { }
 
-		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute(), true); }
+		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute()); }
 
 		uint32_t compute();
 
@@ -190,17 +271,18 @@ namespace Status
 		std::weak_ptr<Luck> _luk;
 	};
 
-	class FLEE : public Attribute<FLEE, BasicAttributeNotifier>
+	class FLEE
+	: public Attribute<FLEE, BasicAttributeNotifier<STATUS_FLEE, std::weak_ptr<FLEE>>>
 	{
 	public:
 		FLEE(std::weak_ptr<Entity> entity)
-		: Attribute(entity, STATUS_FLEE, 0, 0, 0)
+		: Attribute(entity)
 		{ }
 		~FLEE() { }
 
-		void on_observable_changed(std::weak_ptr<Agility>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute(), true); }
-		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute(), true); }
+		void on_observable_changed(std::weak_ptr<Agility>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute()); }
+		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute()); }
 
 		uint32_t compute();
 

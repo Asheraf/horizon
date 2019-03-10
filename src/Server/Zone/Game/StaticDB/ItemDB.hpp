@@ -59,7 +59,6 @@ public:
 	bool load();
 
 	std::shared_ptr<const item_config_data> get(uint32_t item_id) const { return _item_db.at(item_id); }
-	
 private:
 	int load_items(sol::table &item_tbl);
 	bool load_table_item(sol::object const &key, sol::object const &value);

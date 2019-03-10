@@ -139,8 +139,7 @@ public:
 	void update(uint32_t diff) override;
 	void sync_with_models() override;
 
-	uint64_t get_unique_item_counter() { return _unique_item_counter; }
-	void set_unique_item_counter(uint64_t counter) { _unique_item_counter = counter; }
+	uint64_t new_unique_id();
 
 	bool is_logged_in() { return _is_logged_in; }
 	bool set_logged_in(bool logged_in) { return _is_logged_in.exchange(logged_in); }
@@ -153,7 +152,7 @@ private:
 	sol::state _lua_state;
 	std::shared_ptr<Assets::Inventory> _inventory;
 	uint32_t _max_inventory_size{MAX_INVENTORY_SIZE};
-	uint64_t _unique_item_counter{0};
+	uint64_t _last_unique_id{0};
 	std::atomic<bool> _is_logged_in{false};
 };
 }

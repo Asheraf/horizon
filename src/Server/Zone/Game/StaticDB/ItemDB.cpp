@@ -26,6 +26,7 @@
  **************************************************/
 
 #include "ItemDB.hpp"
+#include "Server/Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
 #include "Server/Zone/Zone.hpp"
 #include <chrono>
@@ -89,32 +90,32 @@ int ItemDatabase::load_items(sol::table &item_tbl)
 
 		t_str = tbl.get_or("Type", std::string(""));
 		if (!t_str.empty()) {
-			if (t_str.compare("IT_TYPE_HEALING") == 0) {
+			if (t_str.compare("HEALING") == 0) {
 				id.type = IT_TYPE_HEALING;
-			} else if (t_str.compare("IT_TYPE_UNKNOWN") == 0) {
+			} else if (t_str.compare("UNKNOWN") == 0) {
 				id.type = IT_TYPE_UNKNOWN;
-			} else if (t_str.compare("IT_TYPE_USABLE") == 0) {
+			} else if (t_str.compare("USABLE") == 0) {
 				id.type = IT_TYPE_USABLE;
-			} else if (t_str.compare("IT_TYPE_ETC") == 0) {
+			} else if (t_str.compare("ETC") == 0) {
 				id.type = IT_TYPE_ETC;
-			} else if (t_str.compare("IT_TYPE_WEAPON") == 0) {
+			} else if (t_str.compare("WEAPON") == 0) {
 				id.type = IT_TYPE_WEAPON;
-			} else if (t_str.compare("IT_TYPE_ARMOR") == 0) {
+			} else if (t_str.compare("ARMOR") == 0) {
 				id.type = IT_TYPE_ARMOR;
-			} else if (t_str.compare("IT_TYPE_CARD") == 0) {
+			} else if (t_str.compare("CARD") == 0) {
 				id.type = IT_TYPE_CARD;
-			} else if (t_str.compare("IT_TYPE_PET_EGG") == 0) {
+			} else if (t_str.compare("PET_EGG") == 0) {
 				id.type = IT_TYPE_PET_EGG;
-			} else if (t_str.compare("IT_TYPE_PET_ARMOR") == 0) {
+			} else if (t_str.compare("PET_ARMOR") == 0) {
 				id.type = IT_TYPE_PET_ARMOR;
-			} else if (t_str.compare("IT_TYPE_UNKNOWN2") == 0) {
+			} else if (t_str.compare("UNKNOWN2") == 0) {
 				id.type = IT_TYPE_UNKNOWN2;
-			} else if (t_str.compare("IT_TYPE_AMMO") == 0) {
+			} else if (t_str.compare("AMMO") == 0) {
 				id.type = IT_TYPE_AMMO;
-			} else if (t_str.compare("IT_TYPE_CONSUMPTION_DELAY") == 0) {
+			} else if (t_str.compare("CONSUMPTION_DELAY") == 0) {
 				id.type = IT_TYPE_USABLE;
 				id.config.consumption_delay = 1;
-			} else if (t_str.compare("IT_TYPE_CASH") == 0) {
+			} else if (t_str.compare("CASH") == 0) {
 				id.type = IT_TYPE_CASH;
 			} else {
 				ZoneLog->error("Invalid value for field 'Type' in item '{}', defaulting to 'IT_TYPE_ETC'.", id.item_id);
@@ -129,49 +130,49 @@ int ItemDatabase::load_items(sol::table &item_tbl)
 			switch (id.type)
 			{
 				case IT_TYPE_WEAPON:
-					if (t_str.compare("WT_DAGGER") == 0) { id.sub_type.weapon_t = WT_DAGGER; }
-					else if (t_str.compare("WT_1HSWORD") == 0) { id.sub_type.weapon_t = WT_1HSWORD; }
-					else if (t_str.compare("WT_2HSWORD") == 0) { id.sub_type.weapon_t = WT_2HSWORD; }
-					else if (t_str.compare("WT_1HSPEAR") == 0) { id.sub_type.weapon_t = WT_1HSPEAR; }
-					else if (t_str.compare("WT_2HSPEAR") == 0) { id.sub_type.weapon_t = WT_2HSPEAR; }
-					else if (t_str.compare("WT_1HAXE") == 0) { id.sub_type.weapon_t = WT_1HAXE; }
-					else if (t_str.compare("WT_2HAXE") == 0) { id.sub_type.weapon_t = WT_2HAXE; }
-					else if (t_str.compare("WT_1HMACE") == 0) { id.sub_type.weapon_t = WT_1HMACE; }
-					else if (t_str.compare("WT_2HMACE") == 0) { id.sub_type.weapon_t = WT_2HMACE; }
-					else if (t_str.compare("WT_STAFF") == 0) { id.sub_type.weapon_t = WT_STAFF; }
-					else if (t_str.compare("WT_BOW") == 0) { id.sub_type.weapon_t = WT_BOW; }
-					else if (t_str.compare("WT_KNUCKLE") == 0) { id.sub_type.weapon_t = WT_KNUCKLE; }
-					else if (t_str.compare("WT_MUSICAL") == 0) { id.sub_type.weapon_t = WT_MUSICAL; }
-					else if (t_str.compare("WT_WHIP") == 0) { id.sub_type.weapon_t = WT_WHIP; }
-					else if (t_str.compare("WT_BOOK") == 0) { id.sub_type.weapon_t = WT_BOOK; }
-					else if (t_str.compare("WT_KATAR") == 0) { id.sub_type.weapon_t = WT_KATAR; }
-					else if (t_str.compare("WT_REVOLVER") == 0) { id.sub_type.weapon_t = WT_REVOLVER; }
-					else if (t_str.compare("WT_RIFLE") == 0) { id.sub_type.weapon_t = WT_RIFLE; }
-					else if (t_str.compare("WT_GATLING") == 0) { id.sub_type.weapon_t = WT_GATLING; }
-					else if (t_str.compare("WT_SHOTGUN") == 0) { id.sub_type.weapon_t = WT_SHOTGUN; }
-					else if (t_str.compare("WT_GRENADE") == 0) { id.sub_type.weapon_t = WT_GRENADE; }
-					else if (t_str.compare("WT_HUUMA") == 0) { id.sub_type.weapon_t = WT_HUUMA; }
-					else if (t_str.compare("WT_2HSTAFF") == 0) { id.sub_type.weapon_t = WT_2HSTAFF; }
-					else if (t_str.compare("WT_SHIELD") == 0) { id.sub_type.weapon_t = WT_SHIELD; }
+					if (t_str.compare("DAGGER") == 0) { id.sub_type.weapon_t = IT_WT_DAGGER; }
+					else if (t_str.compare("1HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_1HSWORD; }
+					else if (t_str.compare("2HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_2HSWORD; }
+					else if (t_str.compare("1HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_1HSPEAR; }
+					else if (t_str.compare("2HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_2HSPEAR; }
+					else if (t_str.compare("1HAXE") == 0) { id.sub_type.weapon_t = IT_WT_1HAXE; }
+					else if (t_str.compare("2HAXE") == 0) { id.sub_type.weapon_t = IT_WT_2HAXE; }
+					else if (t_str.compare("1HMACE") == 0) { id.sub_type.weapon_t = IT_WT_1HMACE; }
+					else if (t_str.compare("2HMACE") == 0) { id.sub_type.weapon_t = IT_WT_2HMACE; }
+					else if (t_str.compare("STAFF") == 0) { id.sub_type.weapon_t = IT_WT_STAFF; }
+					else if (t_str.compare("BOW") == 0) { id.sub_type.weapon_t = IT_WT_BOW; }
+					else if (t_str.compare("KNUCKLE") == 0) { id.sub_type.weapon_t = IT_WT_KNUCKLE; }
+					else if (t_str.compare("MUSICAL") == 0) { id.sub_type.weapon_t = IT_WT_MUSICAL; }
+					else if (t_str.compare("WHIP") == 0) { id.sub_type.weapon_t = IT_WT_WHIP; }
+					else if (t_str.compare("BOOK") == 0) { id.sub_type.weapon_t = IT_WT_BOOK; }
+					else if (t_str.compare("KATAR") == 0) { id.sub_type.weapon_t = IT_WT_KATAR; }
+					else if (t_str.compare("REVOLVER") == 0) { id.sub_type.weapon_t = IT_WT_REVOLVER; }
+					else if (t_str.compare("RIFLE") == 0) { id.sub_type.weapon_t = IT_WT_RIFLE; }
+					else if (t_str.compare("GATLING") == 0) { id.sub_type.weapon_t = IT_WT_GATLING; }
+					else if (t_str.compare("SHOTGUN") == 0) { id.sub_type.weapon_t = IT_WT_SHOTGUN; }
+					else if (t_str.compare("GRENADE") == 0) { id.sub_type.weapon_t = IT_WT_GRENADE; }
+					else if (t_str.compare("HUUMA") == 0) { id.sub_type.weapon_t = IT_WT_HUUMA; }
+					else if (t_str.compare("2HSTAFF") == 0) { id.sub_type.weapon_t = IT_WT_2HSTAFF; }
+					else if (t_str.compare("SHIELD") == 0) { id.sub_type.weapon_t = IT_WT_SHIELD; }
 					else {
-						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'WT_FIST'.", id.item_id);
-						id.sub_type.weapon_t = WT_FIST;
+						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'FIST'.", id.item_id);
+						id.sub_type.weapon_t = IT_WT_FIST;
 					}
 					break;
 				case IT_TYPE_AMMO:
-					if (t_str.compare("AMMO_TYPE_ARROW") == 0) { id.sub_type.ammo_t = AMMO_TYPE_ARROW; }
-					else if (t_str.compare("AMMO_TYPE_DAGGER") == 0) { id.sub_type.ammo_t = AMMO_TYPE_DAGGER; }
-					else if (t_str.compare("AMMO_TYPE_BULLET") == 0) { id.sub_type.ammo_t = AMMO_TYPE_BULLET; }
-					else if (t_str.compare("AMMO_TYPE_SHELL") == 0) { id.sub_type.ammo_t = AMMO_TYPE_SHELL; }
-					else if (t_str.compare("AMMO_TYPE_GRENADE") == 0) { id.sub_type.ammo_t = AMMO_TYPE_GRENADE; }
-					else if (t_str.compare("AMMO_TYPE_SHURIKEN") == 0) { id.sub_type.ammo_t = AMMO_TYPE_SHURIKEN; }
-					else if (t_str.compare("AMMO_TYPE_KUNAI") == 0) { id.sub_type.ammo_t = AMMO_TYPE_KUNAI; }
-					else if (t_str.compare("AMMO_TYPE_CANNONBALL") == 0) { id.sub_type.ammo_t = AMMO_TYPE_CANNONBALL; }
-					else if (t_str.compare("AMMO_TYPE_THROWABLE_WEAPON") == 0) { id.sub_type.ammo_t = AMMO_TYPE_THROWABLE_WEAPON; }
-					else if (t_str.compare("AMMO_TYPE_NON") == 0) { id.sub_type.ammo_t = AMMO_TYPE_NONE; }
+					if (t_str.compare("ARROW") == 0) { id.sub_type.ammo_t = IT_AT_ARROW; }
+					else if (t_str.compare("DAGGER") == 0) { id.sub_type.ammo_t = IT_AT_DAGGER; }
+					else if (t_str.compare("BULLET") == 0) { id.sub_type.ammo_t = IT_AT_BULLET; }
+					else if (t_str.compare("SHELL") == 0) { id.sub_type.ammo_t = IT_AT_SHELL; }
+					else if (t_str.compare("GRENADE") == 0) { id.sub_type.ammo_t = IT_AT_GRENADE; }
+					else if (t_str.compare("SHURIKEN") == 0) { id.sub_type.ammo_t = IT_AT_SHURIKEN; }
+					else if (t_str.compare("KUNAI") == 0) { id.sub_type.ammo_t = IT_AT_KUNAI; }
+					else if (t_str.compare("CANNONBALL") == 0) { id.sub_type.ammo_t = IT_AT_CANNONBALL; }
+					else if (t_str.compare("THROWABLE_WEAPON") == 0) { id.sub_type.ammo_t = IT_AT_THROWABLE_WEAPON; }
+					else if (t_str.compare("NONE") == 0) { id.sub_type.ammo_t = IT_AT_NONE; }
 					else {
-						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'AMMO_TYPE_NONE'.", id.item_id);
-						id.sub_type.ammo_t = AMMO_TYPE_NONE;
+						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}', defaulting to 'IT_AT_NONE'.", id.item_id);
+						id.sub_type.ammo_t = IT_AT_NONE;
 					}
 					break;
 				default:
@@ -218,10 +219,48 @@ int ItemDatabase::load_items(sol::table &item_tbl)
 				bool enable = value.as<bool>();
 
 				if (job_name.compare("All") == 0) {
-					if (enable)
-						id.requirements.job_mask |= UINT64_MAX;
-					else
-						id.requirements.job_mask &= ~UINT64_MAX;
+					return;
+				} else if (job_name.compare("NormalJobs") == 0) {
+					for (int i = JOB_BASE_START; i < JOB_BASE_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_2_1_START; i < JOB_2_1_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_2_2_START; i < JOB_2_2_END; i++)
+						id.requirements.job_ids.push_back(i);
+					return;
+				} else if (job_name.compare("NormalBabyJobs") == 0) {
+					for (int i = JOB_BABY_BASE_START; i < JOB_BABY_BASE_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_BABY_2_1_START; i < JOB_BABY_2_1_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_BABY_2_2_START; i < JOB_BABY_2_2_END; i++)
+						id.requirements.job_ids.push_back(i);
+					return;
+				} else if (job_name.compare("TransJobs") == 0) {
+					for (int i = JOB_TRANS_BASE_START; i < JOB_TRANS_BASE_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_TRANS_2_1_START; i < JOB_TRANS_2_1_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_TRANS_2_2_START; i < JOB_TRANS_2_2_END; i++)
+						id.requirements.job_ids.push_back(i);
+					return;
+				} else if (job_name.compare("ThirdJobs") == 0) {
+					for (int i = JOB_3_1_START; i < JOB_3_1_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_3_2_START; i < JOB_3_2_END; i++)
+						id.requirements.job_ids.push_back(i);
+					return;
+				} else if (job_name.compare("ThirdTransJobs") == 0) {
+					for (int i = JOB_TRANS_3_1_START; i < JOB_TRANS_3_1_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_TRANS_3_2_START; i < JOB_TRANS_3_2_END; i++)
+						id.requirements.job_ids.push_back(i);
+					return;
+				} else if (job_name.compare("ThirdBabyJobs") == 0) {
+					for (int i = JOB_BABY_3_1_START; i < JOB_BABY_3_1_END; i++)
+						id.requirements.job_ids.push_back(i);
+					for (int i = JOB_BABY_3_2_START; i < JOB_BABY_3_2_END; i++)
+						id.requirements.job_ids.push_back(i);
 					return;
 				}
 
@@ -232,22 +271,24 @@ int ItemDatabase::load_items(sol::table &item_tbl)
 					return;
 				}
 
-				job_class_mask mask_id = JobDB->job_id_to_mask(job_id);
-
-				if (enable)
-					id.requirements.job_mask |= mask_id;
-				else
-					id.requirements.job_mask &= ~mask_id;
+				if (enable) {
+					id.requirements.job_ids.push_back(job_id);
+				} else {
+					std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [job_id](uint32_t id) {
+						return job_id == id;
+					});
+				}
 			});
 		} else if (maybe_job_tbl && maybe_job_tbl.value().get_type() == sol::type::string) {
 			std::string job_name = maybe_job_tbl.value().as<std::string>();
 			job_class_type job_id = JobDB->get_job_class_by_name(job_name);
-			job_class_mask mask_id = JobDB->job_id_to_mask(job_id);
-			id.requirements.job_mask |= mask_id;
+			if (job_id == JOB_INVALID) {
+				ZoneLog->error("Invalid Job '{}' specified in entry, skipping...", job_name);
+			} else {
+				id.requirements.job_ids.push_back(job_id);
+			}
 		} else if (maybe_job_tbl && maybe_job_tbl.value().get_type() == sol::type::number) {
-
-		} else {
-			id.requirements.job_mask = 0;
+			id.requirements.job_ids.push_back(maybe_job_tbl.value().as<uint32_t>());
 		}
 
 		t_str = tbl.get_or("Gender", std::string(""));
@@ -265,36 +306,36 @@ int ItemDatabase::load_items(sol::table &item_tbl)
 
 		t_str = tbl.get_or("Loc", std::string(""));
 		if (!t_str.empty()) {
-			if (t_str.compare("EQP_NONE") == 0) { id.equip_location_mask = IT_EQPM_NONE; }
-			else if (t_str.compare("EQP_HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_HEAD_LOW; }
-			else if (t_str.compare("EQP_HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_HEAD_MID; }
-			else if (t_str.compare("EQP_HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_HEAD_TOP; }
-			else if (t_str.compare("EQP_HAND_R") == 0) { id.equip_location_mask = IT_EQPM_HAND_R; }
-			else if (t_str.compare("EQP_HAND_L") == 0) { id.equip_location_mask = IT_EQPM_HAND_L; }
-			else if (t_str.compare("EQP_ARMOR") == 0) { id.equip_location_mask = IT_EQPM_ARMOR; }
-			else if (t_str.compare("EQP_SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHOES; }
-			else if (t_str.compare("EQP_GARMENT") == 0) { id.equip_location_mask = IT_EQPM_GARMENT; }
-			else if (t_str.compare("EQP_ACC_L") == 0) { id.equip_location_mask = IT_EQPM_ACC_L; }
-			else if (t_str.compare("EQP_ACC_R") == 0) { id.equip_location_mask = IT_EQPM_ACC_R; }
-			else if (t_str.compare("EQP_COSTUME_HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_TOP; }
-			else if (t_str.compare("EQP_COSTUME_HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_MID; }
-			else if (t_str.compare("EQP_COSTUME_HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_LOW; }
-			else if (t_str.compare("EQP_COSTUME_GARMENT") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_GARMENT; }
-			else if (t_str.compare("EQP_AMMO") == 0) { id.equip_location_mask = IT_EQPM_AMMO; }
-			else if (t_str.compare("EQP_SHADOW_ARMOR") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMOR; }
-			else if (t_str.compare("EQP_SHADOW_WEAPON") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_WEAPON; }
-			else if (t_str.compare("EQP_SHADOW_SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHIELD; }
-			else if (t_str.compare("EQP_SHADOW_SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHOES; }
-			else if (t_str.compare("EQP_SHADOW_ACC_R") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_R; }
-			else if (t_str.compare("EQP_SHADOW_ACC_L") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_L; }
-			else if (t_str.compare("EQP_WEAPON") == 0) { id.equip_location_mask = IT_EQPM_WEAPON; }
-			else if (t_str.compare("EQP_SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHIELD; }
-			else if (t_str.compare("EQP_ARMS") == 0) { id.equip_location_mask = IT_EQPM_ARMS; }
-			else if (t_str.compare("EQP_HELM") == 0) { id.equip_location_mask = IT_EQPM_HELM; }
-			else if (t_str.compare("EQP_ACC") == 0) { id.equip_location_mask = IT_EQPM_ACC; }
-			else if (t_str.compare("EQP_COSTUME") == 0) { id.equip_location_mask = IT_EQPM_COSTUME; }
-			else if (t_str.compare("EQP_SHADOW_ACC") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC; }
-			else if (t_str.compare("EQP_SHADOW_ARMS") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMS; }
+			if (t_str.compare("NONE") == 0) { id.equip_location_mask = IT_EQPM_NONE; }
+			else if (t_str.compare("HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_HEAD_LOW; }
+			else if (t_str.compare("HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_HEAD_MID; }
+			else if (t_str.compare("HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_HEAD_TOP; }
+			else if (t_str.compare("HAND_R") == 0) { id.equip_location_mask = IT_EQPM_HAND_R; }
+			else if (t_str.compare("HAND_L") == 0) { id.equip_location_mask = IT_EQPM_HAND_L; }
+			else if (t_str.compare("ARMOR") == 0) { id.equip_location_mask = IT_EQPM_ARMOR; }
+			else if (t_str.compare("SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHOES; }
+			else if (t_str.compare("GARMENT") == 0) { id.equip_location_mask = IT_EQPM_GARMENT; }
+			else if (t_str.compare("ACC_L") == 0) { id.equip_location_mask = IT_EQPM_ACC_L; }
+			else if (t_str.compare("ACC_R") == 0) { id.equip_location_mask = IT_EQPM_ACC_R; }
+			else if (t_str.compare("COSTUME_HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_TOP; }
+			else if (t_str.compare("COSTUME_HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_MID; }
+			else if (t_str.compare("COSTUME_HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_LOW; }
+			else if (t_str.compare("COSTUME_GARMENT") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_GARMENT; }
+			else if (t_str.compare("AMMO") == 0) { id.equip_location_mask = IT_EQPM_AMMO; }
+			else if (t_str.compare("SHADOW_ARMOR") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMOR; }
+			else if (t_str.compare("SHADOW_WEAPON") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_WEAPON; }
+			else if (t_str.compare("SHADOW_SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHIELD; }
+			else if (t_str.compare("SHADOW_SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHOES; }
+			else if (t_str.compare("SHADOW_ACC_R") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_R; }
+			else if (t_str.compare("SHADOW_ACC_L") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_L; }
+			else if (t_str.compare("WEAPON") == 0) { id.equip_location_mask = IT_EQPM_WEAPON; }
+			else if (t_str.compare("SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHIELD; }
+			else if (t_str.compare("ARMS") == 0) { id.equip_location_mask = IT_EQPM_ARMS; }
+			else if (t_str.compare("HELM") == 0) { id.equip_location_mask = IT_EQPM_HELM; }
+			else if (t_str.compare("ACC") == 0) { id.equip_location_mask = IT_EQPM_ACC; }
+			else if (t_str.compare("COSTUME") == 0) { id.equip_location_mask = IT_EQPM_COSTUME; }
+			else if (t_str.compare("SHADOW_ACC") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC; }
+			else if (t_str.compare("SHADOW_ARMS") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMS; }
 			else {
 				ZoneLog->error("Invalid Loc '{}' for item '{}' specified in entry {}, skipping...", t_str, id.aegis_name, id.item_id);
 				id.equip_location_mask = IT_EQPM_NONE;
