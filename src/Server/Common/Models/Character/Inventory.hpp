@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +69,7 @@ public:
 	void set_character_id(uint32_t character_id) { _character_id = character_id; }
 
 	std::vector<item_entry_data> &get_model_items() { return _inventory; }
-	
+
 private:
 	uint32_t _character_id{0};
 	std::vector<item_entry_data> _inventory;
