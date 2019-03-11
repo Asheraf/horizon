@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
- * Copyright (c) 2018 Horizon Dev Team.
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
+ * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +46,7 @@ struct zone_server_configuration
 
 	void set_entity_save_interval(uint32_t interval) { _entity_save_interval = interval; }
 	uint32_t get_entity_save_interval() { return _entity_save_interval; }
-	
+
 private:
 	std::string _db_path{"db/"};
 	std::string _map_cache_file_name{"maps.dat"};

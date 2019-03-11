@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,7 +93,7 @@ namespace Status
 		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
 		void on_observable_changed(std::weak_ptr<Luck>) { set_base(compute()); }
 		void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute()); }
-		
+
 		uint32_t compute();
 
 		void set_base_level(std::weak_ptr<BaseLevel> blvl) { _blvl = blvl; }
@@ -100,7 +101,7 @@ namespace Status
 		void set_dexterity(std::weak_ptr<Dexterity> dex) { _dex = dex; }
 		void set_luck(std::weak_ptr<Luck> luk) { _luk = luk; }
 		void set_weapon_type(item_weapon_type type) { _weapon_type = type; set_base(compute()); }
-		
+
 	private:
 		std::weak_ptr<BaseLevel> _blvl;
 		std::weak_ptr<Strength> _str;

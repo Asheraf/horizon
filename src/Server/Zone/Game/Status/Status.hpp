@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +58,7 @@ namespace Entities
 namespace Status
 {
 	class Strength;
-	
+
 	class Status
 	{
 	public:
@@ -174,7 +175,7 @@ namespace Status
 
 		std::shared_ptr<EquipATK> get_equip_atk() { return _equip_atk; }
 		void set_equip_atk(std::shared_ptr<EquipATK> eatk) { _equip_atk = eatk; }
-		
+
 		std::shared_ptr<StatusMATK> get_status_matk() { return _status_matk; }
 		void set_status_matk(std::shared_ptr<StatusMATK> smatk) { _status_matk = smatk; }
 
@@ -228,7 +229,7 @@ namespace Status
 
 	protected:
 		std::shared_ptr<Entity> get_entity() { return _entity.lock(); }
-		
+
 	private:
 		std::weak_ptr<Entity> _entity;
 		// Attributes

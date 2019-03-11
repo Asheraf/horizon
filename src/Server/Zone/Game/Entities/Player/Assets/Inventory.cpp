@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,7 +223,7 @@ itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 
 	if (result == ITEMSTORE_ADD_SUCCESS)
 		current_weight->add_base(item->weight * amount);
-	
+
 	return result;
 }
 
@@ -387,6 +388,6 @@ uint32_t Inventory::sync_from_model()
 		// method to ensure client notifications.
 		get_player()->get_status()->get_current_weight()->add_base(itemd->weight * item->amount, false);
 	}
-	
+
 	return _item_store.size();
 }

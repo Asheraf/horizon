@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,7 +132,7 @@ public:
 	virtual bool Handle_CZ_REQ_TAKEOFF_EQUIP(PacketBuffer &buf);
 	virtual bool Handle_CZ_STATUS_CHANGE(PacketBuffer &buf);
 	virtual bool Handle_CZ_NOTIFY_ACTORINIT(PacketBuffer &buf);
-	
+
 	virtual bool verify_new_connection(uint32_t auth_code, uint32_t account_id, uint32_t char_id);
 	virtual bool process_player_entry();
 	/**

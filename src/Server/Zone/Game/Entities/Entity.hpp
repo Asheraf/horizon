@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,11 +159,11 @@ private:
 	MapCoords _map_coords{0, 0};
 	GridCoords _grid_coords{0, 0};
 	TaskScheduler _scheduler;
-	
+
 	/* Simplified References */
 	std::weak_ptr<MapThreadContainer> _map_thread_container;
 	std::weak_ptr<ScriptManager> _script_manager;
-	
+
 	MapCoords _changed_dest_pos{0, 0}, _dest_pos{0, 0};
 	AStar::CoordinateList _walk_path;
 

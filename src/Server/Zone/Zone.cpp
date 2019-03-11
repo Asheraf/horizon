@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,7 +97,7 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	ZoneLog->info("[Config] Entity data will be saved to the database every {} minutes and {} seconds.",
 				  duration_cast<minutes>(std::chrono::milliseconds(get_zone_config().get_entity_save_interval())).count(),
 				  duration_cast<seconds>(std::chrono::milliseconds(get_zone_config().get_entity_save_interval())).count());
-	
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -149,7 +150,7 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	ExpDB->load_status_point_table();
 	JobDB->load();
 	ItemDB->load();
-	
+
 	/**
 	 * Core Signal Handler
 	 */

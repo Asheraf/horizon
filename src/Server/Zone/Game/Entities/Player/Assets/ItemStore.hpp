@@ -7,9 +7,10 @@
  *      \_| |_/\___/|_|  |_/___\___/|_| |_|        *
  ***************************************************
  * This file is part of Horizon (c).
+ * Copyright (c) 2019 Sagun K. (sagunxp@gmail.com).
  * Copyright (c) 2019 Horizon Dev Team.
  *
- * Base Author - Sxyz (sagunxp@gmail.com)
+ * Base Author - Sagun K. (sagunxp@gmail.com)
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +79,7 @@ public:
 	virtual ~ItemStore() { }
 
 	std::shared_ptr<Entities::Player> get_player() { return _player.lock(); }
-	
+
 	itemstore_addition_result_type add_to_itemstore(item_entry_data &item, uint16_t amount);
 
 	void set_max_storage(uint32_t max_storage) { _max_storage = max_storage; }
