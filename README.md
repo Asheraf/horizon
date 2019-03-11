@@ -63,8 +63,8 @@ Installation
   5. Now clone Horizon  `git clone https://gitlab.com/horizon_/horizoncpp.git ~/Horizon`
   6. Configure the MySQL server and start it.
   7. Connect to the MySQL server as root:
-    - Create a database (hercules): `CREATE DATABASE horizon;`
-    - Create a user (hercules): `CREATE USER 'ragnarok'@'localhost' IDENTIFIED BY 'ragnarok';`.
+    - Create a database: `CREATE DATABASE horizon;`
+    - Create a user: `CREATE USER 'ragnarok'@'localhost' IDENTIFIED BY 'ragnarok';`.
     - Give permissions (GRANT SELECT,INSERT,UPDATE,DELETE) to the user: `GRANT SELECT,INSERT,UPDATE,DELETE ON horizon.* TO 'ragnarok'@'localhost';`
   8. Connect to the MySQL server as the new user:
     - Import the .sql files in sql-files/ into the new database.
