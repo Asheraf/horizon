@@ -151,6 +151,9 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	ExpDB->load_status_point_table();
 	JobDB->load();
 	ItemDB->load();
+	ItemDB->load_refine_db();
+	ItemDB->load_weapon_target_size_modifiers_db();
+	ItemDB->load_weapon_attribute_modifiers_db();
 
 	/**
 	 * Core Signal Handler

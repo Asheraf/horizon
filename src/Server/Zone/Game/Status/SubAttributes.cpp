@@ -211,7 +211,7 @@ uint32_t WeaponATK::compute()
 	std::shared_ptr<const item_entry_data> rhw = equipments[IT_EQPI_HAND_R].second.lock();
 
 	if (lhw && lhw->type == IT_TYPE_WEAPON) {
-		std::shared_ptr<const item_config_data> lhwd = ItemDB->get(lhw->item_id);
+		std::shared_ptr<const item_config_data> lhwd = ItemDB->get_item_by_id(lhw->item_id);
 		assert(lhwd);
 		// Base Weapon Damage
 		_left_hand_val = lhwd->attack;
@@ -222,7 +222,7 @@ uint32_t WeaponATK::compute()
 	}
 
 	if (rhw && rhw->type == IT_TYPE_WEAPON) {
-		std::shared_ptr<const item_config_data> rhwd = ItemDB->get(rhw->item_id);
+		std::shared_ptr<const item_config_data> rhwd = ItemDB->get_item_by_id(rhw->item_id);
 		assert(rhwd);
 		// Base Weapon Damage
 		_right_hand_val = rhwd->attack;

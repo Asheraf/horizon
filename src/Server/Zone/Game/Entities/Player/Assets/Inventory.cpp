@@ -82,7 +82,7 @@ bool Inventory::use_item(uint32_t inventory_index, uint32_t guid)
 	if (inv_item == nullptr)
 		return false;
 
-	std::shared_ptr<const item_config_data> itemd = ItemDB->get(inv_item->item_id);
+	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(inv_item->item_id);
 
 	if (itemd == nullptr) {
 		get_packet_handler()->Send_ZC_USE_ITEM_ACK(inv_item, false);
@@ -101,7 +101,7 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 	if (inv_item == nullptr)
 		return IT_EQUIP_FAIL;
 
-	std::shared_ptr<const item_config_data> itemd = ItemDB->get(inv_item->item_id);
+	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(inv_item->item_id);
 
 	if (itemd == nullptr) {
 		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
@@ -150,7 +150,7 @@ item_unequip_result_type Inventory::unequip_item(uint32_t inventory_index)
 		return IT_UNEQUIP_FAIL;
 	}
 
-	std::shared_ptr<const item_config_data> itemd = ItemDB->get(inv_item->item_id);
+	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(inv_item->item_id);
 
 	if (itemd == nullptr) {
 		get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_FAIL);
@@ -195,7 +195,7 @@ void Inventory::remove_from_equipment_list(std::shared_ptr<item_entry_data> item
 itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t amount, bool is_identified)
 {
 	item_entry_data data;
-	std::shared_ptr<const item_config_data> item = ItemDB->get(item_id);
+	std::shared_ptr<const item_config_data> item = ItemDB->get_item_by_id(item_id);
 	std::shared_ptr<const job_db_data> job = JobDB->get(get_player()->get_job_id());
 	std::shared_ptr<CurrentWeight> current_weight = get_player()->get_status()->get_current_weight();
 
@@ -378,7 +378,7 @@ uint32_t Inventory::sync_from_model()
 
 	for (auto &mitem : model_items) {
 		std::shared_ptr<item_entry_data> item = std::make_shared<item_entry_data>(mitem);
-		std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
+		std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(item->item_id);
 		item->type = mitem.type = itemd->type;
 		item->sprite_id = mitem.sprite_id = itemd->sprite_id;
 		item->actual_equip_location_mask = mitem.actual_equip_location_mask = itemd->equip_location_mask;

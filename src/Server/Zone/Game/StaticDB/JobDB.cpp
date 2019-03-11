@@ -295,8 +295,6 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 					data.weapon_base_aspd[IT_WT_HUUMA] = val;
 				} else if (!w_name.compare("TwoHandRod")) {
 					data.weapon_base_aspd[IT_WT_2HSTAFF] = val;
-				} else if (!w_name.compare("Shield")) {
-					data.weapon_base_aspd[IT_WT_SHIELD] = val;
 				}
 			});
 

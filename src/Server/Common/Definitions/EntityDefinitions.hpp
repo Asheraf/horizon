@@ -6,6 +6,14 @@
 #include <cstring>
 #include "Server/Common/Definitions/Client.hpp"
 
+enum entity_size_type
+{
+	ESZ_SMALL   = 0,
+	ESZ_MEDIUM  = 1,
+	ESZ_LARGE   = 2,
+	ESZ_MAX     = 3
+};
+
 enum player_notifier_type
 {
 	GRID_NOTIFY_AREA,               // area

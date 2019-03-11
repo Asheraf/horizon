@@ -346,7 +346,7 @@ void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)
 
 void Player::on_item_equip(std::shared_ptr<const item_entry_data> item)
 {
-	std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
+	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(item->item_id);
 	std::shared_ptr<Status::Status> status = get_status();
 
 	if (item->type == IT_TYPE_WEAPON) {
@@ -357,7 +357,7 @@ void Player::on_item_equip(std::shared_ptr<const item_entry_data> item)
 
 void Player::on_item_unequip(std::shared_ptr<const item_entry_data> item)
 {
-	std::shared_ptr<const item_config_data> itemd = ItemDB->get(item->item_id);
+	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(item->item_id);
 	std::shared_ptr<Status::Status> status = get_status();
 
 	if (item->type == IT_TYPE_WEAPON) {

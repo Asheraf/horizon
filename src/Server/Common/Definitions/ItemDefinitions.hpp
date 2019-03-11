@@ -92,7 +92,6 @@ enum item_weapon_type
 	IT_WT_GRENADE   = 21,
 	IT_WT_HUUMA     = 22,
 	IT_WT_2HSTAFF   = 23,
-	IT_WT_SHIELD    = 24,
 	IT_WT_MAX
 };
 
@@ -105,6 +104,16 @@ enum item_weapon_type_mask
 					| (1ULL << IT_WT_1HSPEAR) | (1ULL << IT_WT_1HAXE) | (1ULL << IT_WT_2HAXE) | (1ULL << IT_WT_1HMACE)
 					| (1ULL << IT_WT_2HMACE) | (1ULL << IT_WT_KNUCKLE) | (1ULL << IT_WT_KATAR)
 					| (1ULL << IT_WT_HUUMA)
+};
+
+enum item_level_type
+{
+	IT_LVL_ARMOR     = 0,
+	IT_LVL_WEP_1     = 1,
+	IT_LVL_WEP_2     = 2,
+	IT_LVL_WEP_3     = 3,
+	IT_LVL_WEP_4     = 4,
+	IT_LVL_MAX
 };
 
 enum item_gender_type
@@ -251,18 +260,18 @@ enum item_deletion_reason_type : uint16_t {
 };
 
 enum item_element_type : uint8_t {
-	ELE_NEUTRAL = 0,
-	ELE_WATER   = 1,
-	ELE_EARTH   = 2,
-	ELE_FIRE    = 3,
-	ELE_WIND    = 4,
-	ELE_POISON  = 5,
-	ELE_HOLY    = 6,
-	ELE_DARK    = 7,
-	ELE_GHOST   = 8,
-	ELE_UNDEAD  = 9,
-	ELE_MAX     = 10,
-	ELE_ALL     = 0xFF
+	IT_ELE_NEUTRAL = 0,
+	IT_ELE_WATER   = 1,
+	IT_ELE_EARTH   = 2,
+	IT_ELE_FIRE    = 3,
+	IT_ELE_WIND    = 4,
+	IT_ELE_POISON  = 5,
+	IT_ELE_HOLY    = 6,
+	IT_ELE_DARK    = 7,
+	IT_ELE_GHOST   = 8,
+	IT_ELE_UNDEAD  = 9,
+	IT_ELE_MAX     = 10,
+	IT_ELE_ALL     = 0xFF
 };
 
 enum item_bind_type : uint8_t {
@@ -396,7 +405,7 @@ struct item_entry_data
 	uint16_t bound_type{0};
 	uint16_t sprite_id{0};
 
-	item_element_type element_type{ELE_NEUTRAL};
+	item_element_type element_type{IT_ELE_NEUTRAL};
 	uint8_t option_count{0};
 	struct options {
 		int16_t index{0};

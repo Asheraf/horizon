@@ -27,8 +27,8 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
-#ifndef HORIZON_ZONE_GAME_STATUS_STATUSATK_HPP
-#define HORIZON_ZONE_GAME_STATUS_STATUSATK_HPP
+#ifndef HORIZON_ZONE_GAME_STATUS_SUBATTRIBUTES_HPP
+#define HORIZON_ZONE_GAME_STATUS_SUBATTRIBUTES_HPP
 
 #include "Attributes.hpp"
 #include "Server/Common/Definitions/EntityDefinitions.hpp"
@@ -131,11 +131,17 @@ namespace Status
 		uint32_t compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dmg);
 
 		void notify_update() override { _notifier.notify_sum(); }
+
+		uint32_t get_lhw_overupgrade() { return _lhw_overupgrade; }
+		uint32_t get_rhw_overupgrade() { return _rhw_overupgrade; }
+
 	private:
 		std::weak_ptr<Strength> _str;
 		std::weak_ptr<Dexterity> _dex;
 		uint32_t _left_hand_val{0};
 		uint32_t _right_hand_val{0};
+		uint32_t _lhw_overupgrade{0};
+		uint32_t _rhw_overupgrade{0};
 	};
 
 	class EquipATK
@@ -149,7 +155,7 @@ namespace Status
 
 		void on_equipments_changed() { set_base(compute()); }
 
-		uint32_t compute() { }
+		uint32_t compute() { return 0; }
 
 		void notify_update() override { _notifier.notify_sum(); }
 	};
@@ -302,4 +308,4 @@ namespace Status
 }
 }
 
-#endif /* HORIZON_ZONE_GAME_STATUS_STATUSATK_HPP */
+#endif /* HORIZON_ZONE_GAME_STATUS_SUBATTRIBUTES_HPP */

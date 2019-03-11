@@ -30,6 +30,7 @@
 #ifndef HORIZON_ZONE_GAME_ITEMDB
 #define HORIZON_ZONE_GAME_ITEMDB
 
+#include "Common/Definitions/EntityDefinitions.hpp"
 #include "Common/Definitions/ItemDefinitions.hpp"
 #include "Core/Multithreading/LockedLookupTable.hpp"
 
@@ -39,6 +40,7 @@
 #include <cstring>
 #include <iostream>
 #include <sol.hpp>
+#include <array>
 
 namespace Horizon
 {
@@ -50,12 +52,12 @@ class ItemDatabase
 {
 // bonus values and upgrade chances for refining equipment
 struct refine_config {
-	int chance[REFINE_CHANCE_TYPE_MAX][MAX_REFINE_LEVEL]; // success chance
-	int bonus[MAX_REFINE_LEVEL]; // cumulative fixed bonus damage
-	int randombonus_max[MAX_REFINE_LEVEL]; // cumulative maximum random bonus damage
+	int chance[REFINE_CHANCE_TYPE_MAX][MAX_REFINE_LEVEL]{{0}}; // success chance
+	int bonus[MAX_REFINE_LEVEL]{0}; // cumulative fixed bonus damage
+	int randombonus_max[MAX_REFINE_LEVEL]{0}; // cumulative maximum random bonus damage
 };
 public:
-	ItemDatabase() { }
+	ItemDatabase();
 	~ItemDatabase() { }
 
 	static ItemDatabase *get_instance()
@@ -65,13 +67,40 @@ public:
 	}
 
 	bool load();
+	bool load_refine_db();
+	bool load_weapon_target_size_modifiers_db();
+	bool load_weapon_attribute_modifiers_db();
+	
+	std::shared_ptr<const item_config_data> get_item_by_id(uint32_t item_id) const { return _item_db.at(item_id); }
 
-	std::shared_ptr<const item_config_data> get(uint32_t item_id) const { return _item_db.at(item_id); }
+	std::shared_ptr<const refine_config> get_refine_config(refine_type type)
+	{
+		return _refine_db.at(type, std::shared_ptr<refine_config>());
+	}
+
+	uint8_t get_weapon_target_size_modifier(item_weapon_type wtype, entity_size_type stype)
+	{
+		std::shared_ptr<std::array<uint8_t, ESZ_MAX>> arr = _weapon_target_size_modifiers_db.at(wtype);
+		return arr != nullptr ? (*arr)[stype] : 0;
+	}
+
+	std::string get_weapon_type_name(item_weapon_type type)
+	{
+		try {
+			return _weapontype2name_db[type];
+		} catch (std::exception &e) {
+			return "Unknown";
+		}
+	}
+
 private:
-	int load_items(sol::table &item_tbl);
-	bool load_table_item(sol::object const &key, sol::object const &value);
+	int load_items(sol::table const &item_tbl, std::string file_path);
+	bool load_refine_table(refine_type tbl_type, sol::table const &refine_table, std::string table_name, std::string file_path);
+	std::array<std::string, IT_WT_MAX> _weapontype2name_db;
 	LockedLookupTable<uint32_t, std::shared_ptr<const item_config_data>> _item_db;
-	LockedLookupTable<refine_type, refine_config> _refine_db;
+	LockedLookupTable<refine_type, std::shared_ptr<const refine_config>> _refine_db;
+	LockedLookupTable<item_weapon_type, std::shared_ptr<std::array<uint8_t, ESZ_MAX>>> _weapon_target_size_modifiers_db;
+	LockedLookupTable<item_level_type, std::shared_ptr<std::array<std::array<uint8_t, IT_ELE_MAX>, IT_ELE_MAX>>> _weapon_attribute_modifiers_db;
 };
 }
 }
