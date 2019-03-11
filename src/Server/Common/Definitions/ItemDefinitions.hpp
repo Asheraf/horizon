@@ -38,6 +38,7 @@
 #define UNKNOWN_ITEM_ID 512 // Apple
 #define MAX_ITEM_OPTIONS 5
 #define MAX_ITEM_SLOTS 4
+#define MAX_REFINE_LEVEL 20
 
 static_assert(MAX_ITEM_OPTIONS >= 0, "MAX_ITEM_OPTIONS cannot be less than 0.");
 static_assert(MAX_ITEM_OPTIONS <= 5,
@@ -46,6 +47,23 @@ static_assert(MAX_ITEM_OPTIONS <= 5,
 static_assert(MAX_ITEM_SLOTS > 0 && MAX_ITEM_SLOTS <= 4,
 			  "MAX_ITEM_SLOTS is limited by the client and database layout "
 			  "and should not be changed unless supported by the client.");
+
+enum refine_type {
+	REFINE_TYPE_ARMOR   = 0,
+	REFINE_TYPE_WEAPON1 = 1,
+	REFINE_TYPE_WEAPON2 = 2,
+	REFINE_TYPE_WEAPON3 = 3,
+	REFINE_TYPE_WEAPON4 = 4,
+	REFINE_TYPE_MAX     = 5
+};
+
+enum refine_chance_type {
+	REFINE_CHANCE_TYPE_NORMAL     = 0, // Normal Chance
+	REFINE_CHANCE_TYPE_ENRICHED   = 1, // Enriched Ore Chance
+	REFINE_CHANCE_TYPE_E_NORMAL   = 2, // Event Normal Ore Chance
+	REFINE_CHANCE_TYPE_E_ENRICHED = 3, // Event Enriched Ore Chance
+	REFINE_CHANCE_TYPE_MAX
+};
 
 enum item_weapon_type
 {

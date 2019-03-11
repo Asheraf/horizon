@@ -46,6 +46,12 @@ namespace Game
 {
 class ItemDatabase
 {
+// bonus values and upgrade chances for refining equipment
+struct refine_config {
+	int chance[REFINE_CHANCE_TYPE_MAX][MAX_REFINE_LEVEL]; // success chance
+	int bonus[MAX_REFINE_LEVEL]; // cumulative fixed bonus damage
+	int randombonus_max[MAX_REFINE_LEVEL]; // cumulative maximum random bonus damage
+};
 public:
 	ItemDatabase() { }
 	~ItemDatabase() { }
@@ -63,6 +69,7 @@ private:
 	int load_items(sol::table &item_tbl);
 	bool load_table_item(sol::object const &key, sol::object const &value);
 	LockedLookupTable<uint32_t, std::shared_ptr<const item_config_data>> _item_db;
+	LockedLookupTable<refine_type, refine_config> _refine_db;
 };
 }
 }
