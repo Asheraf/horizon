@@ -67,7 +67,7 @@ struct PACKET_ZC_ITEM_PICKUP_ACK3 : public PACKET_ZC_ITEM_PICKUP_ACK2
 		buf << (uint8_t) data.type;
 		buf << (uint8_t) result;
 		buf << data.hire_expire_date;
-		buf << data.bound_type;
+		buf << (uint16_t) data.bind_type;
 
 		return buf;
 	}

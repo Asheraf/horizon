@@ -30,6 +30,9 @@
 #ifndef HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERSIMPL_HPP
 #define HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERSIMPL_HPP
 
+#include "Server/Zone/Game/Map/Script/ScriptManager.hpp"
+#include "Server/Common/Definitions/NPCDefinitions.hpp"
+
 template <class T>
 void GridViewPortUpdater::update(GridRefManager<T> &m)
 {
@@ -83,6 +86,7 @@ void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 template <class T>
 void GridEntitySearcher::search(GridRefManager<T> &m)
 {
+	// Found check.
 	if (!_result.expired())
 		return;
 
@@ -92,6 +96,27 @@ void GridEntitySearcher::search(GridRefManager<T> &m)
 		if (!entity.expired() && _predicate(entity)) {
 			_result = entity;
 			return;
+		}
+	}
+}
+
+
+template <class T>
+void GridNPCTrigger::check_and_trigger(GridRefManager<T> &m)
+{
+	if (_source.expired())
+		return;
+
+	using namespace Horizon::Zone::Game::Entities;
+	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
+		std::shared_ptr<NPC> npc = iter->source()->template downcast<NPC>();
+		if (npc == nullptr)
+			continue;
+
+		npc_db_data const &nd = npc->get_db_data();
+		if (nd.trigger_range && _predicate(npc, nd.trigger_range)) {
+			std::shared_ptr<Player> player = _source.lock()->downcast<Player>();
+			_source.lock()->get_script_manager()->contact_npc_for_player(player, npc->get_guid());
 		}
 	}
 }

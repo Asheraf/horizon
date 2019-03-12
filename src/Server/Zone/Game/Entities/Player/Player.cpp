@@ -200,9 +200,13 @@ void Player::on_movement_end()
 
 void Player::on_movement_step()
 {
-	update_viewport();
+	GridNPCTrigger npc_trigger(shared_from_this());
+	GridReferenceContainerVisitor<GridNPCTrigger, GridReferenceContainer<AllEntityTypes>> npc_trigger_performer(npc_trigger);
 
+	update_viewport();
 	get_map()->ensure_grid_for_entity(this, get_map_coords());
+
+	get_map()->visit_in_range(get_map_coords(), npc_trigger_performer, MAX_NPC_TRIGGER_RANGE);
 }
 
 void Player::update_viewport()
@@ -210,10 +214,7 @@ void Player::update_viewport()
 	GridViewPortUpdater updater(shared_from_this());
 	GridReferenceContainerVisitor<GridViewPortUpdater, GridReferenceContainer<AllEntityTypes>> update_caller(updater);
 
-	MapCoords lower_bounds = get_map_coords().at_range<MAX_CELLS_PER_MAP>(-MAX_VIEW_RANGE);
-	MapCoords upper_bounds = get_map_coords().at_range<MAX_CELLS_PER_MAP>(MAX_VIEW_RANGE);
-
-	get_map()->visit(lower_bounds.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>(), upper_bounds.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>(), update_caller);
+	get_map()->visit_in_range(get_map_coords(), update_caller);
 }
 
 void Player::add_entity_to_viewport(std::weak_ptr<Entity> entity)
@@ -292,11 +293,13 @@ entity_viewport_entry Player::create_viewport_entry(std::shared_ptr<Entity> enti
 	return entry;
 }
 
-
 bool Player::move_to_map(std::shared_ptr<Map> map, MapCoords coords)
 {
 	if (map == nullptr)
 		return false;
+
+	force_movement_stop(true);
+	getScheduler().CancelGroup(ENTITY_SCHEDULE_WALK);
 
 	std::shared_ptr<Player> myself = downcast<Player>();
 
@@ -311,16 +314,13 @@ bool Player::move_to_map(std::shared_ptr<Map> map, MapCoords coords)
 		if (coords == MapCoords(0, 0))
 			coords = map->get_random_coords();
 
-		set_map_coords(coords);
-
 		map->ensure_grid_for_entity(this, coords);
 		set_map(map);
+		set_map_coords(coords);
 	}
 
 	get_packet_handler()->Send_ZC_NPCACK_MAPMOVE(map->get_name(), coords.x(), coords.y());
-	update_viewport();
 	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
-
 	return true;
 }
 
@@ -368,6 +368,8 @@ void Player::on_item_unequip(std::shared_ptr<const item_entry_data> item)
 
 void Player::on_map_enter()
 {
+	force_movement_stop(false);
+
 	get_packet_handler()->Send_ZC_MAPPROPERTY_R2(get_map());
 
 	get_inventory()->notify_all();
@@ -376,4 +378,6 @@ void Player::on_map_enter()
 	get_status()->get_current_weight()->notify_update();
 	get_status()->get_next_base_experience()->notify_update();
 	get_status()->get_base_experience()->notify_update();
+
+	update_viewport();
 }

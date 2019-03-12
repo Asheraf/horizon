@@ -62,22 +62,23 @@ public:
 	void contact_npc_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void continue_npc_script_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx = 0);
 
-	void send_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string dialog);
+	void send_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string const &dialog);
 	void send_next_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void send_close_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
-	void perform_command_from_player(std::shared_ptr<Entities::Player> player, std::string cmd);
+	void perform_command_from_player(std::shared_ptr<Entities::Player> player, std::string const &cmd);
 	void initialize_state(sol::state &st);
+
+	void add_npc_to_db(uint32_t guid, npc_db_data const &data) { _npc_db.emplace(guid, data); }
+	npc_db_data &get_npc_from_db(uint32_t guid) { return _npc_db.at(guid); }
 protected:
 	void initialize();
 	void finalize();
 	void prepare_lua_state(sol::state &lua);
-	int script_exception_handler(lua_State *lua, sol::optional<const std::exception &> maybe_exception, sol::string_view description);
 
 private:
 	void load_constants();
 	void load_scripts();
 	void load_scripts_internal();
-	int load_npcs_from_script(std::string &file_path, std::string const &table_name, sol::table const &info_tables);
 
 	std::vector<std::string> _script_files;
 	std::unordered_map<uint32_t, npc_db_data> _npc_db;

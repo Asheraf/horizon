@@ -64,7 +64,7 @@ struct PACKET_ZC_EQUIPMENT_ITEMLIST3 : public PACKET_ZC_EQUIPMENT_ITEMLIST2
 			for (int i = 0; i < sizeof(id->slot_item_id); i++)
 				buf << (uint16_t) id->slot_item_id[i];
 			buf << id->hire_expire_date;
-			buf << id->bound_type;
+			buf << (uint16_t) id->bind_type;
 		}
 		buf.emplace_size();
 		return buf;

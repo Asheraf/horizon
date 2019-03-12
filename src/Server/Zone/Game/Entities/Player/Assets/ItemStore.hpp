@@ -89,6 +89,8 @@ public:
 	std::shared_ptr<item_entry_data> get_item_by_id(uint32_t id);
 	std::shared_ptr<item_entry_data> get_item_at_index(uint32_t index);
 
+	item_storage_type get_item_store() { return _item_store; }
+
 	virtual void notify_without_equipments() = 0;
 	virtual void notify_only_equipments() = 0;
 	virtual void notify_add(item_entry_data const &data, uint16_t amount, itemstore_addition_result_type result) = 0;

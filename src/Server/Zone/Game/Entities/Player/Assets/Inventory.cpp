@@ -122,8 +122,8 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 		return IT_EQUIP_FAIL;
 	}
 
-	if (itemd->config.bind_on_equip != 0 && inv_item->bound_type == 0) {
-		inv_item->bound_type = IT_BIND_CHARACTER;
+	if (itemd->config.bind_on_equip != 0 && inv_item->bind_type == IT_BIND_NONE) {
+		inv_item->bind_type = IT_BIND_CHARACTER;
 		get_packet_handler()->Send_ZC_NOTIFY_BIND_ON_EQUIP(inv_item);
 	}
 
@@ -216,7 +216,7 @@ itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 	data.item_id = item->item_id;
 	data.type = item->type;
 	data.actual_equip_location_mask = item->equip_location_mask;
-	data.bound_type = IT_BIND_NONE;
+	data.bind_type = IT_BIND_NONE;
 	data.info.is_identified = is_identified;
 	data.info.is_favorite = 0;
 

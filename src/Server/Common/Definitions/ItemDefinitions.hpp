@@ -274,7 +274,7 @@ enum item_element_type : uint8_t {
 	IT_ELE_ALL     = 0xFF
 };
 
-enum item_bind_type : uint8_t {
+enum item_bind_type : uint16_t {
 	IT_BIND_NONE      = 0x0,
 	IT_BIND_MIN       = 0x1,
 	IT_BIND_ACCOUNT   = 0x1,
@@ -393,6 +393,20 @@ struct item_entry_data
 		return true;
 	}
 
+	uint8_t get_refine_level() { return refine_level; }
+	void set_refine_level(int lvl) { refine_level = lvl; }
+
+	uint32_t get_hire_expire_date() { return hire_expire_date; }
+	void set_hire_expire_date(int date) { hire_expire_date = date; }
+
+	item_bind_type get_bind_type() { return bind_type; }
+	void set_bind_type(item_bind_type val) { bind_type = val; }
+
+	uint8_t get_option_count() { return option_count; }
+	void set_option_count(uint8_t count) { option_count = count; }
+
+	uint16_t get_sprite_id() { return sprite_id; }
+
 	uint16_t inventory_index{0};
 	uint32_t item_id{0};
 	item_type type{IT_TYPE_ETC};
@@ -402,12 +416,17 @@ struct item_entry_data
 	uint8_t refine_level{0};
 	uint32_t slot_item_id[MAX_ITEM_SLOTS]{0};
 	uint32_t hire_expire_date{0};
-	uint16_t bound_type{0};
 	uint16_t sprite_id{0};
 
 	item_element_type element_type{IT_ELE_NEUTRAL};
 	uint8_t option_count{0};
 	struct options {
+		int16_t get_index() { return index; }
+		void set_index(int idx) { index = idx; }
+
+		int16_t get_value() { return value; }
+		void set_value(int val) { value = val; }
+
 		int16_t index{0};
 		int16_t value{0};
 		uint8_t param{0};

@@ -32,6 +32,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
 #include <sol.hpp>
 #include <cstring>
 #include <fstream>
@@ -39,31 +42,15 @@
 BOOST_AUTO_TEST_CASE(Sol2Test)
 {
 	sol::state lua;
+	sol::state lua2;
+
+	lua2.open_libraries(sol::lib::base);
+
 	lua.script(R"(
-			   abc = 123;
-			   function loop()
-			       local counter = 0;
-				   while counter < 30
-				   do
-					   coroutine.yield(counter);
-					   counter = counter + 1;
-				   end
-				   return counter
-			   end
+				a = function() print('hello') end
 			   )");
-
-	sol::coroutine cr = lua["loop"];
-	sol::object abc = lua["abc"];
-
-	std::cout << "abc:" << abc.as<uint32_t>() << std::endl;
-
-	for (int counter = 0; // start from 0
-		 counter < 50 && cr; // we want 10 values, and we only want to run if the coroutine "cr" is valid
-		 // Alternative: counter < 10 && cr.valid()
-		 ++counter) {
-		// Call the coroutine, does the computation and then suspends
-		int value = cr();
-		std::cout << value << std::endl;
-	}
+	lua2.set_function("a", lua.get<sol::function>("a"));
+	lua2.script("print(a)");
+	lua2.script("a()");
 }
 

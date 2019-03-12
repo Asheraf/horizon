@@ -62,7 +62,7 @@ struct PACKET_ZC_INVENTORY_ITEMLIST_EQUIP_V5 : public PACKET_ZC_EQUIPMENT_ITEMLI
 			for (int i = 0; i < sizeof(id->slot_item_id); i++)
 				buf << (uint16_t) id->slot_item_id[i];
 			buf << id->hire_expire_date;
-			buf << id->bound_type;
+			buf << (uint16_t) id->bind_type;
 			buf << id->sprite_id;
 
 			config |= id->info.is_identified;

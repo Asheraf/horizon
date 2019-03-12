@@ -67,7 +67,7 @@ struct PACKET_ZC_ITEM_PICKUP_ACK_V7 : public PACKET_ZC_ITEM_PICKUP_ACK_V6
 		buf << (uint8_t) data.type;
 		buf << (uint8_t) result;
 		buf << data.hire_expire_date;
-		buf << data.bound_type;
+		buf << (uint16_t) data.bind_type;
 
 		for (int i = 0; i < MAX_ITEM_OPTIONS; i++) {
 			buf << data.option_data[i].index;

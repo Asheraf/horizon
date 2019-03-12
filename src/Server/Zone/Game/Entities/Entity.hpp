@@ -45,8 +45,8 @@
 
 enum entity_task_schedule_group
 {
-	ENTITY_SCHEDULE_WALK = 0,
-	ENTITY_SCHEDULE_SAVE = 1,
+	ENTITY_SCHEDULE_WALK = 1,
+	ENTITY_SCHEDULE_SAVE = 2,
 };
 
 namespace Horizon
@@ -111,6 +111,7 @@ public:
 	std::shared_ptr<Status::Status> get_status() { return _status; }
 	void set_status(std::shared_ptr<Status::Status> st) { _status = st; }
 
+	void force_movement_stop(bool stop = false) { _instep_movement_stop = stop; }
 	/**
 	 * Map & Map Container
 	 */
@@ -153,7 +154,7 @@ public:
 	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
 
 private:
-	bool _is_initialized{false};
+	bool _is_initialized{false}, _instep_movement_stop{false};
 	uint32_t _guid{0};
 	entity_type _type{ENTITY_UNKNOWN};
 	std::weak_ptr<Map> _map;

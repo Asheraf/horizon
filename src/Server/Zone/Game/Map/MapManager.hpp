@@ -76,11 +76,13 @@ public:
 	std::shared_ptr<Map> get_map(std::string map_name) const
 	{
 		for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
+			if (*i == nullptr)
+				return std::shared_ptr<Map>();
 			std::shared_ptr<Map> map = (*i)->get_map(map_name);
 			if (map) return map;
 		}
 
-		return nullptr;
+		return std::shared_ptr<Map>();
 	}
 
 	TaskScheduler &getScheduler() { return _scheduler; }

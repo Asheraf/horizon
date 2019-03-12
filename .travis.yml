@@ -1,0 +1,34 @@
+language: cpp
+sudo: required
+dist: trusty
+
+compiler:
+  - clang
+  - gcc
+os:
+  - linux
+  - macos
+
+env:
+  global:
+    - LUAROCKS=2.3.0
+  matrix:
+    - LUA=lua5.1
+    - LUA=lua5.2
+    - LUA=lua5.3
+    - LUA=luajit     # latest stable version (2.0.4)
+    - LUA=luajit2.0  # current head of 2.0 branch
+    - LUA=luajit2.1  # current head of 2.1 branch
+
+before_install:
+- echo $LANG
+- echo $LC_ALL
+
+script:
+  - if [ $TRAVIS_OS_NAME == linux ]; then
+      gcc -v; clang -v;
+    fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then
+      gcc -v; clang -v;
+      lua --version;
+    fi

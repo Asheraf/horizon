@@ -110,6 +110,23 @@ struct GridEntitySearcher
 	void Visit(GridRefManager<NOT_INTERESTED> &) { }
 };
 
+struct GridNPCTrigger
+{
+	std::weak_ptr<Horizon::Zone::Game::Entity> _source;
+	RangeCheckPredicate _predicate;
+
+	GridNPCTrigger(std::weak_ptr<Horizon::Zone::Game::Entity> entity)
+	: _source(entity), _predicate(entity)
+	{ }
+
+	template <class T>
+	void check_and_trigger(GridRefManager<T> &m);
+
+	void Visit(GridRefManager<entity_ns(NPC)> &m) { check_and_trigger(m); }
+
+	template<class NOT_INTERESTED>
+	void Visit(GridRefManager<NOT_INTERESTED> &) { }
+};
 
 template <typename ZC_PACKET_T>
 struct GridPlayerNotifier

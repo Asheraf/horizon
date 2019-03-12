@@ -34,6 +34,12 @@
 #include "Common/Definitions/NPCDefinitions.hpp"
 #include "Server/Zone/Game/Entities/GridObject.hpp"
 
+#ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
+
+#include <sol.hpp>
+
 namespace Horizon
 {
 namespace Zone
@@ -45,18 +51,24 @@ namespace Entities
 class NPC : public Entity, public GridObject<NPC>
 {
 public:
-	NPC(std::string const &name, std::shared_ptr<Map> map, MapCoords const &coords, uint32_t job_id, directions dir);
+	NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t y, uint32_t job_id, directions dir);
+	NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t y, uint32_t job_id, directions dir, std::string const &script_file);
+	NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t y, uint32_t job_id, directions dir, std::shared_ptr<NPC> duplicate);
+	NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t y, std::string const &script, uint8_t trigger_range);
 	~NPC();
 
 	void initialize() override;
-	virtual void stop_movement() override;
 
+	virtual void stop_movement() override;
 	virtual void on_movement_begin() override;
 	virtual void on_movement_step() override;
 	virtual void on_movement_end() override;
 	virtual void sync_with_models() override;
 
+	npc_db_data const &get_db_data() { return _npc_data; }
 private:
+	sol::protected_function _fn;
+	npc_db_data _npc_data;
 };
 }
 }

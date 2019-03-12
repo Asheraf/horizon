@@ -46,6 +46,7 @@
 #define MAX_CHARACTER_SLOTS 9
 #define DEFAULT_MOVEMENT_SPEED 150
 #define MAX_VIEW_RANGE 14
+#define MAX_NPC_TRIGGER_RANGE 5
 
 #define MIN_INVENTORY_SIZE 100
 #define MAX_INVENTORY_SIZE 300
@@ -65,6 +66,8 @@ static_assert(DEFAULT_MOVEMENT_SPEED > 0 && DEFAULT_MOVEMENT_SPEED < 1000,
 			  "DEFAULT_MOVEMENT_SPEED must be greater than 0 and less than 1000.");
 static_assert(MAX_VIEW_RANGE > 0,
 			  "View range affects visibility range for players and should not be 0.");
+static_assert(MAX_NPC_TRIGGER_RANGE > 0 && MAX_NPC_TRIGGER_RANGE < MAX_VIEW_RANGE,
+			  "MAX_NPC_TRIGGER_RANGE must be less than MAX_VIEW_RANGE and greater than 0.");
 static_assert(MIN_INVENTORY_SIZE > 0 && MAX_INVENTORY_SIZE > MIN_INVENTORY_SIZE,
 			  "Max Inventory should be greater than minimum storage size of 1.");
 static_assert(MIN_STORAGE_SIZE > 0 && MAX_STORAGE_SIZE >= MIN_STORAGE_SIZE,

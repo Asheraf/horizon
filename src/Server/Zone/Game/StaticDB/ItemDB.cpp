@@ -160,54 +160,54 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 		if (!t_str.empty()) {
 			switch (id.type)
 			{
-				case IT_TYPE_WEAPON:
-					if (t_str.compare("DAGGER") == 0) { id.sub_type.weapon_t = IT_WT_DAGGER; }
-					else if (t_str.compare("1HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_1HSWORD; }
-					else if (t_str.compare("2HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_2HSWORD; }
-					else if (t_str.compare("1HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_1HSPEAR; }
-					else if (t_str.compare("2HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_2HSPEAR; }
-					else if (t_str.compare("1HAXE") == 0) { id.sub_type.weapon_t = IT_WT_1HAXE; }
-					else if (t_str.compare("2HAXE") == 0) { id.sub_type.weapon_t = IT_WT_2HAXE; }
-					else if (t_str.compare("1HMACE") == 0) { id.sub_type.weapon_t = IT_WT_1HMACE; }
-					else if (t_str.compare("2HMACE") == 0) { id.sub_type.weapon_t = IT_WT_2HMACE; }
-					else if (t_str.compare("STAFF") == 0) { id.sub_type.weapon_t = IT_WT_STAFF; }
-					else if (t_str.compare("BOW") == 0) { id.sub_type.weapon_t = IT_WT_BOW; }
-					else if (t_str.compare("KNUCKLE") == 0) { id.sub_type.weapon_t = IT_WT_KNUCKLE; }
-					else if (t_str.compare("MUSICAL") == 0) { id.sub_type.weapon_t = IT_WT_MUSICAL; }
-					else if (t_str.compare("WHIP") == 0) { id.sub_type.weapon_t = IT_WT_WHIP; }
-					else if (t_str.compare("BOOK") == 0) { id.sub_type.weapon_t = IT_WT_BOOK; }
-					else if (t_str.compare("KATAR") == 0) { id.sub_type.weapon_t = IT_WT_KATAR; }
-					else if (t_str.compare("REVOLVER") == 0) { id.sub_type.weapon_t = IT_WT_REVOLVER; }
-					else if (t_str.compare("RIFLE") == 0) { id.sub_type.weapon_t = IT_WT_RIFLE; }
-					else if (t_str.compare("GATLING") == 0) { id.sub_type.weapon_t = IT_WT_GATLING; }
-					else if (t_str.compare("SHOTGUN") == 0) { id.sub_type.weapon_t = IT_WT_SHOTGUN; }
-					else if (t_str.compare("GRENADE") == 0) { id.sub_type.weapon_t = IT_WT_GRENADE; }
-					else if (t_str.compare("HUUMA") == 0) { id.sub_type.weapon_t = IT_WT_HUUMA; }
-					else if (t_str.compare("2HSTAFF") == 0) { id.sub_type.weapon_t = IT_WT_2HSTAFF; }
-					else {
-						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}' file '{}', defaulting to 'FIST'.", id.item_id, file_path);
-						id.sub_type.weapon_t = IT_WT_FIST;
-					}
-					break;
-				case IT_TYPE_AMMO:
-					if (t_str.compare("ARROW") == 0) { id.sub_type.ammo_t = IT_AT_ARROW; }
-					else if (t_str.compare("DAGGER") == 0) { id.sub_type.ammo_t = IT_AT_DAGGER; }
-					else if (t_str.compare("BULLET") == 0) { id.sub_type.ammo_t = IT_AT_BULLET; }
-					else if (t_str.compare("SHELL") == 0) { id.sub_type.ammo_t = IT_AT_SHELL; }
-					else if (t_str.compare("GRENADE") == 0) { id.sub_type.ammo_t = IT_AT_GRENADE; }
-					else if (t_str.compare("SHURIKEN") == 0) { id.sub_type.ammo_t = IT_AT_SHURIKEN; }
-					else if (t_str.compare("KUNAI") == 0) { id.sub_type.ammo_t = IT_AT_KUNAI; }
-					else if (t_str.compare("CANNONBALL") == 0) { id.sub_type.ammo_t = IT_AT_CANNONBALL; }
-					else if (t_str.compare("THROWABLE_WEAPON") == 0) { id.sub_type.ammo_t = IT_AT_THROWABLE_WEAPON; }
-					else if (t_str.compare("NONE") == 0) { id.sub_type.ammo_t = IT_AT_NONE; }
-					else {
-						ZoneLog->error("Invalid value for field 'Subtype' in entry '{}' file '{}', defaulting to 'IT_AT_NONE'.", id.item_id, file_path);
-						id.sub_type.ammo_t = IT_AT_NONE;
-					}
-					break;
-				default:
-					ZoneLog->error("Field 'Subtype' is only allowed for IT_TYPE_WEAPON and IT_TYPE_AMMO in entry '{}' file '{}', ignoring...", id.item_id, file_path);
-					break;
+			case IT_TYPE_WEAPON:
+				if (t_str.compare("DAGGER") == 0) { id.sub_type.weapon_t = IT_WT_DAGGER; }
+				else if (t_str.compare("1HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_1HSWORD; }
+				else if (t_str.compare("2HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_2HSWORD; }
+				else if (t_str.compare("1HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_1HSPEAR; }
+				else if (t_str.compare("2HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_2HSPEAR; }
+				else if (t_str.compare("1HAXE") == 0) { id.sub_type.weapon_t = IT_WT_1HAXE; }
+				else if (t_str.compare("2HAXE") == 0) { id.sub_type.weapon_t = IT_WT_2HAXE; }
+				else if (t_str.compare("1HMACE") == 0) { id.sub_type.weapon_t = IT_WT_1HMACE; }
+				else if (t_str.compare("2HMACE") == 0) { id.sub_type.weapon_t = IT_WT_2HMACE; }
+				else if (t_str.compare("STAFF") == 0) { id.sub_type.weapon_t = IT_WT_STAFF; }
+				else if (t_str.compare("BOW") == 0) { id.sub_type.weapon_t = IT_WT_BOW; }
+				else if (t_str.compare("KNUCKLE") == 0) { id.sub_type.weapon_t = IT_WT_KNUCKLE; }
+				else if (t_str.compare("MUSICAL") == 0) { id.sub_type.weapon_t = IT_WT_MUSICAL; }
+				else if (t_str.compare("WHIP") == 0) { id.sub_type.weapon_t = IT_WT_WHIP; }
+				else if (t_str.compare("BOOK") == 0) { id.sub_type.weapon_t = IT_WT_BOOK; }
+				else if (t_str.compare("KATAR") == 0) { id.sub_type.weapon_t = IT_WT_KATAR; }
+				else if (t_str.compare("REVOLVER") == 0) { id.sub_type.weapon_t = IT_WT_REVOLVER; }
+				else if (t_str.compare("RIFLE") == 0) { id.sub_type.weapon_t = IT_WT_RIFLE; }
+				else if (t_str.compare("GATLING") == 0) { id.sub_type.weapon_t = IT_WT_GATLING; }
+				else if (t_str.compare("SHOTGUN") == 0) { id.sub_type.weapon_t = IT_WT_SHOTGUN; }
+				else if (t_str.compare("GRENADE") == 0) { id.sub_type.weapon_t = IT_WT_GRENADE; }
+				else if (t_str.compare("HUUMA") == 0) { id.sub_type.weapon_t = IT_WT_HUUMA; }
+				else if (t_str.compare("2HSTAFF") == 0) { id.sub_type.weapon_t = IT_WT_2HSTAFF; }
+				else {
+					ZoneLog->error("Invalid value for field 'Subtype' in entry '{}' file '{}', defaulting to 'FIST'.", id.item_id, file_path);
+					id.sub_type.weapon_t = IT_WT_FIST;
+				}
+				break;
+			case IT_TYPE_AMMO:
+				if (t_str.compare("ARROW") == 0) { id.sub_type.ammo_t = IT_AT_ARROW; }
+				else if (t_str.compare("DAGGER") == 0) { id.sub_type.ammo_t = IT_AT_DAGGER; }
+				else if (t_str.compare("BULLET") == 0) { id.sub_type.ammo_t = IT_AT_BULLET; }
+				else if (t_str.compare("SHELL") == 0) { id.sub_type.ammo_t = IT_AT_SHELL; }
+				else if (t_str.compare("GRENADE") == 0) { id.sub_type.ammo_t = IT_AT_GRENADE; }
+				else if (t_str.compare("SHURIKEN") == 0) { id.sub_type.ammo_t = IT_AT_SHURIKEN; }
+				else if (t_str.compare("KUNAI") == 0) { id.sub_type.ammo_t = IT_AT_KUNAI; }
+				else if (t_str.compare("CANNONBALL") == 0) { id.sub_type.ammo_t = IT_AT_CANNONBALL; }
+				else if (t_str.compare("THROWABLE_WEAPON") == 0) { id.sub_type.ammo_t = IT_AT_THROWABLE_WEAPON; }
+				else if (t_str.compare("NONE") == 0) { id.sub_type.ammo_t = IT_AT_NONE; }
+				else {
+					ZoneLog->error("Invalid value for field 'Subtype' in entry '{}' file '{}', defaulting to 'IT_AT_NONE'.", id.item_id, file_path);
+					id.sub_type.ammo_t = IT_AT_NONE;
+				}
+				break;
+			default:
+				ZoneLog->error("Field 'Subtype' is only allowed for IT_TYPE_WEAPON and IT_TYPE_AMMO in entry '{}' file '{}', ignoring...", id.item_id, file_path);
+				break;
 			}
 		}
 
@@ -291,6 +291,23 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 						id.requirements.job_ids.push_back(i);
 					for (int i = JOB_BABY_3_2_START; i < JOB_BABY_3_2_END; i++)
 						id.requirements.job_ids.push_back(i);
+					return;
+				} else if (job_name.compare("ExtendedJobs") == 0) {
+						id.requirements.job_ids.push_back(JOB_SUPER_NOVICE);
+						id.requirements.job_ids.push_back(JOB_GUNSLINGER);
+						id.requirements.job_ids.push_back(JOB_NINJA);
+						id.requirements.job_ids.push_back(JOB_TAEKWON);
+						id.requirements.job_ids.push_back(JOB_STAR_GLADIATOR);
+						id.requirements.job_ids.push_back(JOB_STAR_GLADIATOR2);
+						id.requirements.job_ids.push_back(JOB_SOUL_LINKER);
+						id.requirements.job_ids.push_back(JOB_GANGSI);
+						id.requirements.job_ids.push_back(JOB_DEATH_KNIGHT);
+						id.requirements.job_ids.push_back(JOB_DARK_COLLECTOR);
+						id.requirements.job_ids.push_back(JOB_SUPER_NOVICE_E);
+						id.requirements.job_ids.push_back(JOB_SUPER_BABY_E);
+						id.requirements.job_ids.push_back(JOB_KAGEROU);
+						id.requirements.job_ids.push_back(JOB_OBORO);
+						id.requirements.job_ids.push_back(JOB_REBELLION);
 					return;
 				}
 

@@ -52,17 +52,19 @@ Entity::~Entity()
 
 void Entity::initialize()
 {
-	_status = std::make_shared<Status::Status>(shared_from_this());
 
 	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 
 	_is_initialized = true;
 
-	getScheduler().Schedule(Milliseconds(ZoneServer->get_zone_config().get_entity_save_interval()), ENTITY_SCHEDULE_SAVE,
-		[this] (TaskContext context) {
-			sync_with_models();
-			context.Repeat();
-		});
+	_status = std::make_shared<Status::Status>(shared_from_this());
+
+	if (get_type() == ENTITY_PLAYER)
+		getScheduler().Schedule(Milliseconds(ZoneServer->get_zone_config().get_entity_save_interval()), ENTITY_SCHEDULE_SAVE,
+			[this] (TaskContext context) {
+				sync_with_models();
+				context.Repeat();
+			});
 }
 
 
@@ -110,6 +112,9 @@ void Entity::move()
 	getScheduler().Schedule(Milliseconds(get_status()->get_movement_speed()->get_with_cost(c.move_cost)), ENTITY_SCHEDULE_WALK,
 		[this, c, my_coords] (TaskContext /*movement*/)
 		{
+			if (_instep_movement_stop)
+				return;
+
 			MapCoords step_coords(c.x, c.y);
 
 			set_direction((directions) my_coords.direction_to(step_coords));
