@@ -1,34 +1,182 @@
 language: cpp
-sudo: required
-dist: trusty
 
-compiler:
-  - clang
-  - gcc
-os:
-  - linux
-  - macos
+service:
+  - mysql
 
-env:
+cache:
+  - /usr/local/opt/boost
+  - /usr/local/opt/spdlog
+  - /usr/local/opt/cryptopp
+  - /usr/local/include/
+  - /usr/local/lib
+
+matrix:
   global:
-    - LUAROCKS=2.3.0
-  matrix:
-    - LUA=lua5.1
-    - LUA=lua5.2
-    - LUA=lua5.3
-    - LUA=luajit     # latest stable version (2.0.4)
-    - LUA=luajit2.0  # current head of 2.0 branch
-    - LUA=luajit2.1  # current head of 2.1 branch
+    - MYSQL_USER='travis'
+    - MYSQL_PASSWORD='travis'
+    - MYSQL_DATABASE='horizon'
+  include:
+    #
+    # LINUX GCC BUILDS
+    #
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - lcov
+            - g++-5
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - TOOLSET="gcc"
+        - BUILD_TYPE="Debug"
+        - COMPILE_OPTIONS="-DWITH_CORE_DEBUG=1 -DWITH_WARNINGS=1"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - lcov
+            - g++-6
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - TOOLSET="gcc"
+        - BUILD_TYPE="Debug"
+        - COMPILE_OPTIONS="-DWITH_CORE_DEBUG=1 -DWITH_WARNINGS=1"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - lcov
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - TOOLSET="gcc"
+        - BUILD_TYPE="Debug"
+        - COMPILE_OPTIONS="-DWITH_CORE_DEBUG=1 -DWITH_WARNINGS=1"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - lcov
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+        - TOOLSET="gcc"
+        - BUILD_TYPE="Debug"
+        - COMPILE_OPTIONS="-DWITH_CORE_DEBUG=1 -DWITH_WARNINGS=1 -DWITH_STACK_CHECK=1"
+    #
+    # OSX Debug and Sanitization
+    #
+    - os: osx
+      osx_image: xcode9.4
+      addons:
+        apt:
+          packages:
+            - lcov
+      env:
+        - TOOLSET="clang"
+        - BUILD_TYPE="Debug"
+        - COMPILE_OPTIONS="-DWITH_TSAN=1 -DWITH_WARNINGS=1 -DWITH_CORE_DEBUG=1"
+    - os: osx
+      osx_image: xcode9.4
+      addons:
+        apt:
+          packages:
+            - lcov
+      env:
+        - TOOLSET="clang"
+        - BUILD_TYPE="Debug"
+        - COMPILE_OPTIONS="-DWITH_ASAN=1 -DWITH_WARNINGS=1 -DWITH_CORE_DEBUG=1"
 
 before_install:
-- echo $LANG
-- echo $LC_ALL
+  - df -h
+  - eval "${MATRIX_EVAL}"
+
+install:
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      pushd install && chmod +x ubuntu.sh && ./ubuntu.sh;
+      popd;
+    fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      pushd install && chmod +x osx.sh && ./osx.sh;
+      popd;
+    fi
 
 script:
-  - if [ $TRAVIS_OS_NAME == linux ]; then
-      gcc -v; clang -v;
+  - pushd .
+  - echo "Initiating Horizon build...";
+  - mkdir build;
+  - pushd build;
+  #
+  # Install Linux
+  #
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      cmake ../ -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${COMPILE_OPTIONS} -DWITH_COVERAGE=1 -DWITH_TESTS=1 -DWITHOUT_SERVERS=1 || exit 1;
+      sudo make || exit 1;
     fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then
-      gcc -v; clang -v;
-      lua --version;
+  #
+  # Install OSX
+  #
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      cmake ../ -G"Xcode" -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${COMPILE_OPTIONS} -DWITH_COVERAGE=1 -DWITH_TESTS=1 -DWITHOUT_SERVERS=1 || exit 1;
+      sudo xcodebuild -target install -config $BUILD_TYPE install || exit 1;
     fi
+  - popd;
+  #
+  # Unit Testing
+  #
+  - pushd build/bin/${BUILD_TYPE}/test;
+  - for TARGET in *;
+    do
+      if [ -f "$TARGET" ]; then
+        sudo ./${TARGET} || exit 1;
+      fi;
+    done;
+  - popd;
+  - sudo rm -rf build;
+  - mkdir build;
+  - pushd build;
+  - echo "Initiating Horizon build...";
+  #
+  # Deploy Linux
+  #
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      cmake ../ -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${COMPILE_OPTIONS} -DWITH_COVERAGE=1 || exit 1;
+      sudo make || exit 1;
+      sudo make install || exit 1;
+    fi
+  #
+  # Deploy OSX
+  #
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+        cmake ../ -G"Xcode" -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${COMPILE_OPTIONS} -DWITH_COVERAGE=1 || exit 1;
+        sudo xcodebuild -target install -config $BUILD_TYPE install || exit 1;
+    fi
+  - pushd bin/${BUILD_TYPE};
+  - sudo mkdir logs;
+  - sudo cp config/auth-server.lua.dist config/auth-server.lua;
+  - sudo cp config/char-server.lua.dist config/char-server.lua;
+  - sudo cp config/zone-server.lua.dist config/zone-server.lua;
+  - sudo ./auth --test-run || exit 1;
+  - sudo ./char --test-run || exit 1;
+  - sudo ./zone --test-run || exit 1;
+
+after_success:
+  # Create lcov report
+  - lcov --capture --directory . --output-file coverage.info
+  - lcov --remove coverage.info '/usr/*' --output-file coverage.info # filter system-files
+  - lcov --list coverage.info # debug info
+  # Uploading report to CodeCov
+  - bash <(curl -s https://codecov.io/bash) -f coverage.info -t "5dd84ba6-408c-443e-895c-751187bb06dc" || echo "Codecov did not collect coverage reports"
+

@@ -89,8 +89,10 @@ void ZoneSession::update(uint32_t /*diff*/)
 {
 	std::shared_ptr<PacketBuffer> buf;
 
-	while ((buf = get_socket()->get_packet_recv_queue().try_pop())) {
-		_packet_handler->handle_received_packet(*buf);
+	if (get_socket() != nullptr) {
+		while ((buf = get_socket()->get_packet_recv_queue().try_pop())) {
+			_packet_handler->handle_received_packet(*buf);
+		}
 	}
 }
 

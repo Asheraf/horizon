@@ -8,7 +8,12 @@ endif()
 
 if (NOT DB_DIR)
   set(DB_DIR ${CMAKE_INSTALL_PREFIX}/db)
-  message(STATUS "Win: Using deafult library directory ${DB_DIR}")
+  message(STATUS "Win: Using deafult static database directory ${DB_DIR}")
+endif()
+
+if (WITH_TESTS AND NOT TEST_DIR)
+  set(TEST_DIR ${CMAKE_INSTALL_PREFIX}/test)
+  message(STATUS "Win: Using deafult test directory ${TEST_DIR}")
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

@@ -34,13 +34,15 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PROJECT_NAME "Horizon")
 
+project (${PROJECT_NAME})
+enable_language(CXX)
+enable_language(C)
+
 set(AUTH_TARGET_NAME auth)
 
 if (NOT CMAKE_BUILD_TYPE)
-		set(CMAKE_BUILD_TYPE Debug)
+	set(CMAKE_BUILD_TYPE Debug)
 endif()
-
-project (${PROJECT_NAME})
 
 message(STATUS "Project ${PROJECT_NAME} initiated configuring in ${CMAKE_BUILD_TYPE} mode.")
 
@@ -72,6 +74,15 @@ include(CheckPlatform)
 include(GroupSources)
 include(AutoCollect)
 
+#################
+# Generate version.hpp File
+#################
+set(CMAKE_DISABLE_SOURCE_CHANGES OFF)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD OFF)
+include(cmake/genversion/genversion.cmake)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
 #################################
 # print out the results before continuing
 #################################
@@ -94,7 +105,8 @@ check_cxx_source_compiles("
 #################################
 # Boost Library
 #################################
-set(BOOST_REQUIRED_VERSION 1.60)
+set(BOOST_REQUIRED_VERSION 1.66)
+set(Boost_USE_MULTITHREADED ON)
 
 set(BOOST_COMPONENTS system filesystem thread locale)
 
@@ -103,6 +115,7 @@ if (WITH_TESTS)
 endif()
 
 message(STATUS "Boost Components: ${BOOST_COMPONENTS}")
+
 
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED ${BOOST_COMPONENTS})
 
@@ -124,12 +137,6 @@ set(SPDLOG_FIND_REQUIRED true)
 include(FindSPDLog)
 
 #################
-# MySQL Library
-#################
-set(MYSQL_FIND_REQUIRED true)
-include(FindMySQL)
-
-#################
 # Readline Library
 #################
 set(Readline_FIND_REQUIRED true)
@@ -138,7 +145,7 @@ include(FindReadline)
 #################
 # MySQL CPP Connector
 #################
-set(mysqlcppconn_FIND_REQUIRED true)
+set(MYSQLCONNCPP_FIND_REQUIRED true)
 include(FindMySQLConnector)
 
 ###############
@@ -162,14 +169,3 @@ find_package(ZLIB REQUIRED)
 # Horizon Project Source
 #################
 add_subdirectory(src)
-
-#################
-# Generate version.hpp File
-#################
-set(CMAKE_DISABLE_SOURCE_CHANGES OFF)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD OFF)
-include(cmake/genversion/genversion.cmake)
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/logs)

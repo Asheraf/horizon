@@ -72,7 +72,7 @@ bool Character::load(Server *server, uint32_t char_id)
 				set_gender(CHARACTER_GENDER_FEMALE);
 
 			if (record[4].getType() > 0)
-				set_deleted_at(record[4].get<long long>());
+				set_deleted_at(record[4].get<int64_t>());
 
 			set_unban_time(record[5]);
 			set_pet_id(record[6]);

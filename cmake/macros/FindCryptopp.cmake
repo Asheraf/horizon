@@ -46,7 +46,8 @@ else()
 		C:/vcpkg/installed/x86-windows/include/cryptopp
 	)
 
-	find_library(CRYPTOPP_LIBRARIES NAMES cryptopp cryptopp-static
+	find_library(CRYPTOPP_LIBRARIES
+		NAMES cryptopp
 		PATHS
 			/usr/lib
 			/usr/local/lib

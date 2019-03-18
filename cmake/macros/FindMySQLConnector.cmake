@@ -34,13 +34,11 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
 						HINTS
 							/usr/local/mysql-connector-c++/include
 							/usr/include/mysql-cppconn-8/
-							"$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\include"
-		)
+							"$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0\\include")
 
-		if((NOT CONCPP_INCLUDE_DIR) OR CONCPP_INCLUDE_DIR STREQUAL "CONCPP_INCLUDE_DIR-NOTFOUND")
+		if(MYSQLCONNCPP_FIND_REQUIRED AND ((NOT CONCPP_INCLUDE_DIR) OR CONCPP_INCLUDE_DIR STREQUAL "CONCPP_INCLUDE_DIR-NOTFOUND"))
 			message(FATAL_ERROR
-				"Could not find MySQL Connector/C++ 8.0 headers."
-			)
+				"Could not find MySQL Connector/C++ 8.0 headers.")
 		endif()
 	endif()
 
@@ -60,14 +58,12 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
 			PATHS
 				"$ENV{ProgramFiles}\\MySQL\\Connector C++ 8.0"
 				/usr/local/mysql-connector-c++
-				/usr/lib
-		)
+				/usr/lib)
 
-    if(CONCPP_LIB_DIR STREQUAL "CONCPP_LIB_DIR-NOTFOUND")
-      message(FATAL_ERROR
-        "Could not find MySQL Connector/C++ 8.0 library directory."
-      )
-    endif()
+	    if(MYSQLCONNCPP_FIND_REQUIRED AND (CONCPP_LIB_DIR STREQUAL "CONCPP_LIB_DIR-NOTFOUND"))
+	      message(FATAL_ERROR
+	        "Could not find MySQL Connector/C++ 8.0 library directory.")
+	    endif()
 
 		set(CONCPP_LIB_DIR "${CONCPP_LIB_DIR}/${PLATFORMDIR}" CACHE STRING "" FORCE)
 
@@ -75,13 +71,11 @@ if (NOT CONCPP_INCLUDE_DIR OR NOT CONCPP_LIB)
 			NAMES "${LIBNAME}"
 			PATHS
 				"$ENV{ProgramFiles}/MySQL/Connector C++ 8.0/${PLATFORMDIR}/${VS}"
-				/usr/local/mysql-connector-c++/${PLATFORMDIR}
-		)
+				/usr/local/mysql-connector-c++/${PLATFORMDIR})
 
-		if(NOT CONCPP_LIB)
+		if(MYSQLCONNCPP_FIND_REQUIRED AND NOT CONCPP_LIB)
 			message(FATAL_ERROR
-				"Could not find MySQL Connector/C++ 8.0 library."
-			)
+				"Could not find MySQL Connector/C++ 8.0 library.")
 		endif()
 	endif()
 endif()
@@ -105,8 +99,7 @@ if(CMAKE_HOST_UNIX)
 	list(APPEND CONCPP_LIBS pthread)
 endif()
 
-message(STATUS "Found MySQL Connector C++ 8.0 Headers: ${CONCPP_INCLUDE_DIR}")
-message(STATUS "Found MySQL Connector C++ 8.0 Library: ${CONCPP_LIB}")
+message(STATUS "Found MySQL Connector C++ 8.0: ${CONCPP_INCLUDE_DIR}; ${CONCPP_LIB}")
 
 #
 # On Solaris we additionally need socket and nsl libraries.
@@ -127,7 +120,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
-link_directories(${CONCPP_LIB_DIR})
 include_directories(${CONCPP_INCLUDE_DIR})
 
 if (WIN32)
@@ -144,7 +136,6 @@ endif()
 
 set(CONCPP_LIBS
 	optimized ${LIBNAME}
-	debug		 ${debug_prefix}${LIBNAME}
-)
+	debug		 ${debug_prefix}${LIBNAME})
 
 mark_as_advanced(CONCPP_INCLUDE_DIR CONCPP_LIB CONCPP_LIBS)

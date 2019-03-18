@@ -31,6 +31,7 @@
 #define HORIZON_ZONE_GAME_MAPTHREADCONTAINER_HPP
 
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
+#include "Core/Multithreading/LockedLookupTable.hpp"
 #include "Server/Zone/Game/Map/Script/ScriptManager.hpp"
 
 #include <stdio.h>
@@ -65,6 +66,7 @@ public:
 	void remove_player(std::shared_ptr<Entities::Player> p);
 
 	void initialize();
+	void finalize();
 	void start();
 
 	std::shared_ptr<ScriptManager> get_script_manager() { return _script_mgr; }
@@ -74,7 +76,7 @@ private:
 	void update(uint32_t tick);
 
 	std::thread _thread;
-	std::unordered_map<std::string, std::shared_ptr<Map>> _managed_maps;
+	LockedLookupTable<std::string, std::shared_ptr<Map>> _managed_maps;
 	std::unordered_map<uint32_t, std::shared_ptr<Entities::Player>> _managed_players;
 	ThreadSafeQueue<std::pair<bool, std::shared_ptr<Entities::Player>>> _player_buffer;
 	std::shared_ptr<ScriptManager> _script_mgr;

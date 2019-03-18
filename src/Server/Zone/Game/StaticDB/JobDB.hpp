@@ -52,7 +52,7 @@ struct job_db_data
 	int id{0};
 	int max_weight{20000};
 	std::string base_exp_group{""}, job_exp_group{""};
-	std::array<int, IT_WT_MAX> weapon_base_aspd{0};
+	std::array<int, IT_WT_MAX> weapon_base_aspd;
 	std::vector<int> hp_table, sp_table;
 };
 class JobDatabase
@@ -77,7 +77,7 @@ public:
 
 	std::shared_ptr<const job_db_data> get(uint16_t job_id) { return _job_db.at((job_class_type) job_id); }
 private:
-	LockedLookupTable<job_class_type, std::shared_ptr<const job_db_data>> _job_db;
+	LockedLookupTable<uint32_t, std::shared_ptr<const job_db_data>> _job_db;
 	std::map<std::string, int> _name2id_list;
 };
 }

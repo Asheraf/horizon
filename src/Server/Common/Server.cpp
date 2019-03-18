@@ -131,16 +131,13 @@ bool Server::parse_common_configs(sol::table &tbl)
 	 * Database Configuration
 	 * @brief
 	 */
-	if (!general_conf().is_test_run()) {
-		sol::table dbtbl = tbl.get<sol::table>("database");
+	sol::table dbtbl = tbl.get<sol::table>("database");
 
-		database_conf().set_host(dbtbl.get_or("hostname", std::string("127.0.0.1")));
-		database_conf().set_port(dbtbl.get_or("port", 3306));
-		database_conf().set_database(dbtbl.get_or("database", std::string("horizon")));
-		database_conf().set_username(dbtbl.get_or("username", std::string("horizon")));
-		database_conf().set_password(dbtbl.get_or("password", std::string("horizon")));
-		database_conf().set_db_thread_count(dbtbl.get_or("connection_threads", 1));
-	}
+	database_conf().set_host(dbtbl.get_or("hostname", std::string("127.0.0.1")));
+	database_conf().set_port(dbtbl.get_or("port", 3306));
+	database_conf().set_database(dbtbl.get_or("database", std::string("horizon")));
+	database_conf().set_username(dbtbl.get_or("username", std::string("horizon")));
+	database_conf().set_password(dbtbl.get_or("password", std::string("horizon")));
 
 	/**
 	 * Core I/O Thread Count
@@ -200,7 +197,10 @@ bool Server::parse_common_configs(sol::table &tbl)
 
 void Server::initialize_mysql()
 {
-	std::string conn_uri = database_conf().get_username() + ":" + database_conf().get_password() + "@127.0.0.1/" + database_conf().get_database();
+	std::string conn_uri = database_conf().get_username() + ":"
+							+ database_conf().get_password() + "@"
+							+ database_conf().get_host() + "/"
+							+ database_conf().get_database();
 
 	_mysql_client = std::make_shared<mysqlx::Client>("mysqlx://" + conn_uri);
 
@@ -269,9 +269,6 @@ void Server::initialize_core()
 
 void Server::finalize_core()
 {
-	if (general_conf().is_test_run())
-		return;
-
 	int global_thread_count = std::max(general_conf().get_io_thread_count(), 1);
 
 	if (_cli_thread.joinable())
@@ -281,7 +278,7 @@ void Server::finalize_core()
 
 	_global_thread_group.join_all();
 
-	CoreLog->info("Shutting down global I/O thread pool of {} threads.", global_thread_count);
+	CoreLog->info("Shutdown global I/O thread pool of {} threads.", global_thread_count);
 }
 
 boost::asio::io_service &Server::get_io_service()

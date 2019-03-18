@@ -73,8 +73,6 @@ void PacketHandlerRagexe20171220::Send_HC_ACCEPT_ENTER()
 
 	auto char_list = game_account->get_characters();
 
-	pkt.packet_length = pkt.get_length(char_list.size());
-
 	PacketBuffer buf = pkt.serialize();
 
 	for (auto &c : char_list) {
@@ -83,6 +81,8 @@ void PacketHandlerRagexe20171220::Send_HC_ACCEPT_ENTER()
 		character.serialize(buf);
 	}
 
+	buf.emplace_size();
+	
 	send_packet(buf);
 
 	CharLog->info("Sent character-list information to AID {}", game_account->get_id());

@@ -49,7 +49,6 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 	virtual PacketBuffer serialize()
 	{
 		PacketBuffer buf(AC_ACCEPT_LOGIN);
-		buf << packet_len;
 		buf << auth_code;
 		buf << aid;
 		buf << user_level;
@@ -70,11 +69,6 @@ struct PACKET_AC_ACCEPT_LOGIN : public Packet
 	virtual PacketBuffer operator >> (PacketBuffer &right)
 	{
 		return right = serialize();
-	}
-
-	virtual uint16_t get_length(uint8_t character_server_count = 1)
-	{
-		return 47 + (32 * character_server_count);
 	}
 
 	/* Size: 47 + (32 * char server count) bytes */

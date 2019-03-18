@@ -28,6 +28,7 @@
 ###################################################
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(CHARACTER_MODEL_SOURCES
 	${DIR}/Character.cpp
 	${DIR}/Character.hpp

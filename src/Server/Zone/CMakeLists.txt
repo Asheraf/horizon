@@ -82,8 +82,23 @@ if (APPLE)
 	)
 endif()
 
+if (WITH_COVERAGE)
+	target_compile_options(zone INTERFACE
+		-O0        # no optimization
+		-g         # generate debug info
+		--coverage # sets all required flags
+	)
+	if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+		target_link_options(zone INTERFACE --coverage)
+	else()
+		target_link_libraries(zone INTERFACE --coverage)
+	endif()
+endif()
+
 install(TARGETS zone
 	DESTINATION ${CMAKE_INSTALL_PREFIX}
 	CONFIGURATIONS ${CMAKE_BUILD_TYPE})
 
 install(FILES ${PROJECT_SOURCE_DIR}/config/zone-server.lua.dist DESTINATION ${CONF_DIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/db DESTINATION ${CMAKE_INSTALL_PREFIX})

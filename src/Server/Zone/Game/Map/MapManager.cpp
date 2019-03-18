@@ -49,6 +49,15 @@ bool MapManager::initialize()
 	return LoadMapCache();
 }
 
+bool MapManager::finalize()
+{
+	for (auto &cont : _map_containers) {
+		cont->finalize();
+	}
+
+	return true;
+}
+
 bool MapManager::LoadMapCache()
 {
 	Horizon::Libraries::MapCache m;
