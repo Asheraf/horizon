@@ -50,7 +50,6 @@ struct PACKET_AC_ACCEPT_LOGIN : public Horizon::Auth::Ragexe::PACKET_AC_ACCEPT_L
 	{
 		PacketBuffer buf(packet_id);
 
-		buf << packet_len;
 		buf << auth_code;
 		buf << aid;
 		buf << user_level;
@@ -74,11 +73,6 @@ struct PACKET_AC_ACCEPT_LOGIN : public Horizon::Auth::Ragexe::PACKET_AC_ACCEPT_L
 	virtual PacketBuffer operator >> (PacketBuffer &right) override
 	{
 		return right = serialize();
-	}
-
-	virtual uint16_t get_length(uint8_t character_server_count = 1) override
-	{
-		return 64 + (160 * character_server_count);
 	}
 
 	char twitter_auth_token[16]{0};

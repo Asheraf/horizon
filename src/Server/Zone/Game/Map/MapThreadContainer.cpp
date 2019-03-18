@@ -29,6 +29,7 @@
 
 #include "MapThreadContainer.hpp"
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
+#include "Server/Zone/Game/Entities/NPC/NPC.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/Zone.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
@@ -43,23 +44,16 @@ MapThreadContainer::MapThreadContainer()
 
 MapThreadContainer::~MapThreadContainer()
 {
-	if (_thread.joinable())
-		_thread.join();
 }
 
 std::shared_ptr<Map> MapThreadContainer::get_map(std::string name) const
 {
-	auto map_it = _managed_maps.find(name);
-
-	if (map_it == _managed_maps.end())
-		return std::shared_ptr<Map>();
-
-	return map_it->second;
+	return _managed_maps.at(name);
 }
 
 void MapThreadContainer::add_map(std::shared_ptr<Map> &&m)
 {
-	_managed_maps.emplace(m->get_name(), m);
+	_managed_maps.insert(m->get_name(), m);
 }
 
 void MapThreadContainer::remove_map(std::shared_ptr<Map> &&m)
@@ -80,10 +74,12 @@ void MapThreadContainer::remove_player(std::shared_ptr<Entities::Player> p)
 void MapThreadContainer::initialize()
 {
 	_script_mgr = std::make_shared<ScriptManager>(shared_from_this());
+}
 
-	for (auto mi = _managed_maps.begin(); mi != _managed_maps.end(); mi++) {
-		mi->second->ensure_all_grids();
-	}
+void MapThreadContainer::finalize()
+{
+	if (_thread.joinable())
+		_thread.join();
 }
 
 void MapThreadContainer::start()
@@ -110,7 +106,6 @@ void MapThreadContainer::start_internal()
 
 	get_script_manager()->finalize();
 	_managed_players.clear();
-	_managed_maps.clear();
 }
 
 void MapThreadContainer::update(uint32_t diff)
@@ -140,5 +135,11 @@ void MapThreadContainer::update(uint32_t diff)
 		// update entity.
 		pi->second->update(diff);
 		pi++;
+	}
+
+	// Update NPCs
+	for (auto npci : _script_mgr->_npc_db) {
+		std::shared_ptr<Entities::NPC> npc = npci.second._npc;
+		npc->update(diff);
 	}
 }

@@ -77,7 +77,6 @@ void PacketHandlerRagexe20171213::Send_AC_ACCEPT_LOGIN()
 
 	server_list = new Ragexe20171213::PACKET_AC_ACCEPT_LOGIN::character_server_list[char_servers.size()];
 
-	pkt.packet_len = pkt.get_length(char_servers.size());
 	pkt.auth_code = session_data->get_auth_code();
 	pkt.aid = game_account->get_id();
 	pkt.user_level = 1;
@@ -101,5 +100,7 @@ void PacketHandlerRagexe20171213::Send_AC_ACCEPT_LOGIN()
 
 	delete[] server_list;
 
+	buf.emplace_size();
+	
 	send_packet(buf);
 }

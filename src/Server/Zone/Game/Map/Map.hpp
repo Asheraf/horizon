@@ -71,9 +71,6 @@ public:
 
 	GridHolderType &getGridHolder() { return _gridholder; }
 
-	bool ensure_grid(GridCoords coords);
-	void ensure_all_grids();
-
 	bool has_obstruction_at(uint16_t x, uint16_t y);
 
 	MapCoords get_random_coords()

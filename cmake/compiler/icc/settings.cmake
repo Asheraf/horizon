@@ -12,7 +12,7 @@ if( WITH_WARNINGS )
   message(STATUS "ICC: All warnings enabled")
 endif()
 
-if( WITH_COREDEBUG )
+if( WITH_CORE_DEBUG )
   add_definitions(-g)
   message(STATUS "ICC: Debug-flag set (-g)")
 endif()

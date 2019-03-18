@@ -73,8 +73,6 @@ public:
 	public:
 		typedef std::bidirectional_iterator_tag     iterator_category;
 		typedef _Ty                                 value_type;
-		typedef ptrdiff_t                           difference_type;
-		typedef ptrdiff_t                           distance_type;
 		typedef _Ty*                                pointer;
 		typedef _Ty const*                          const_pointer;
 		typedef _Ty&                                reference;

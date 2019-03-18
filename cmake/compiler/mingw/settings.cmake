@@ -20,7 +20,7 @@ if( WITH_WARNINGS )
   message(STATUS "GCC: All warnings enabled")
 endif()
 
-if( WITH_COREDEBUG )
+if( WITH_CORE_DEBUG )
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
   message(STATUS "GCC: Debug-flags set (-g3)")

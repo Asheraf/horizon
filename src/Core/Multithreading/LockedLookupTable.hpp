@@ -37,21 +37,22 @@
 #include <memory>
 #include <list>
 #include <vector>
+#include <utility>
 
 template <typename Key, typename Value, typename Hash = std::hash<Key>>
 class LockedLookupTable
 {
-class bucket_type;
+	class bucket_type;
 public:
 	typedef Key key_type;
 	typedef Value mapped_type;
 	typedef Hash hash_type;
 
 	LockedLookupTable(unsigned num_buckets = 19, const Hash &hasher_ = Hash())
-	: buckets(num_buckets), hasher(hasher_)
+	: _buckets(num_buckets), hasher(hasher_)
 	{
 		for (unsigned i = 0; i < num_buckets; ++i)
-			buckets[i].reset(new bucket_type);
+			_buckets[i].reset(new bucket_type);
 	}
 
 	LockedLookupTable(const LockedLookupTable &other) = delete;
@@ -74,15 +75,12 @@ public:
 
 	std::map<Key, Value> get_map() const
 	{
-		std::vector<boost::unique_lock<boost::shared_mutex>> locks;
 		std::map<Key, Value> res;
 
-		for (unsigned i = 0;  i < buckets.size(); ++i)
-			locks.push_back(boost::unique_lock<boost::shared_mutex>(buckets[i]->_mutex));
-
-		for (unsigned i = 0; i < buckets.size(); ++i) {
-			for (typename bucket_type::bucket_iterator it = buckets[i]->data.begin();
-				 it != buckets[i]->data.end();
+		for (unsigned i = 0; i < _buckets.size(); ++i) {
+			boost::unique_lock<boost::shared_mutex> lock(_buckets[i]->_mutex);
+			for (typename bucket_type::bucket_iterator it = _buckets[i]->data.begin();
+				 it != _buckets[i]->data.end();
 				 ++it) {
 				res.insert(*it);
 			}
@@ -91,18 +89,16 @@ public:
 		return res;
 	}
 
-	int max_collisions() { return buckets[0]->data.size() ? buckets[0]->data.size() - 1 : 0; }
+	int max_collisions() { return _buckets[0]->data.size() ? _buckets[0]->data.size() - 1 : 0; }
+
 	std::size_t size()
 	{
-		std::vector<boost::unique_lock<boost::shared_mutex>> locks;
 		std::size_t count = 0;
 
-		for (unsigned i = 0;  i < buckets.size(); ++i)
-			locks.push_back(boost::unique_lock<boost::shared_mutex>(buckets[i]->_mutex));
-
-		for (unsigned i = 0; i < buckets.size(); ++i) {
-			for (typename bucket_type::bucket_iterator it = buckets[i]->data.begin();
-				 it != buckets[i]->data.end();
+		for (unsigned i = 0; i < _buckets.size(); ++i) {
+			boost::unique_lock<boost::shared_mutex> lock(_buckets[i]->_mutex);
+			for (typename bucket_type::bucket_iterator it = _buckets[i]->data.begin();
+				 it != _buckets[i]->data.end();
 				 ++it) {
 				count++;
 			}
@@ -111,19 +107,19 @@ public:
 		return count;
 	}
 private:
-	std::vector<std::unique_ptr<bucket_type>> buckets;
+	std::vector<std::unique_ptr<bucket_type>> _buckets;
 	Hash hasher;
 
 	bucket_type &get_bucket(Key const &key) const
 	{
-		const std::size_t bucket_index = hasher(key) % buckets.size();
-		return *buckets[bucket_index];
+		const std::size_t bucket_index = hasher(key) % _buckets.size();
+		return *_buckets[bucket_index];
 	}
 
 	class bucket_type
 	{
 		typedef std::pair<Key, Value> bucket_value;
-		typedef std::list<bucket_value> bucket_data;
+		typedef std::vector<bucket_value> bucket_data;
 
 	public:
 		typedef typename bucket_data::iterator bucket_iterator;

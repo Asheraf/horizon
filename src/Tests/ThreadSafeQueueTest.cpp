@@ -80,5 +80,10 @@ BOOST_AUTO_TEST_CASE(ThreadSafeQueueTest)
 	t[2]->join();
 	t[3]->join();
 
+	delete t[0];
+	delete t[1];
+	delete t[2];
+	delete t[3];
+
 	BOOST_CHECK_EQUAL(queue.size(), MAX_PUSHES);
 }

@@ -218,7 +218,7 @@ void ScriptManager::initialize_state(sol::state &st)
 		"card_slot_count", sol::readonly(&item_config_data::card_slot_count),
 		"sprite_id", sol::readonly(&item_config_data::sprite_id),
 		"level", sol::readonly_property([] (item_config_data &item) {
-			return item.type == IT_TYPE_WEAPON ? item.level.weapon : item.level.armor;
+			return item.type == IT_TYPE_WEAPON ? (uint8_t) item.level.weapon : (uint8_t) item.level.armor;
 		}),
 		"magic_atk", sol::readonly(&item_config_data::magic_atk),
 		"req_min_lv", sol::readonly_property([] (item_config_data &item) {

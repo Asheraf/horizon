@@ -70,25 +70,5 @@ bool Map::has_obstruction_at(uint16_t x, uint16_t y)
 
 Map::~Map()
 {
-	ZoneLog->info("Performing cleanup on map '{}'...", _name);
-}
-
-bool Map::ensure_grid(GridCoords coords)
-{
-	return true;
-}
-
-void Map::ensure_all_grids()
-{
-	int grid_count = 0;
-
-	for (int x = 0; x < _max_grids.x(); x++) {
-		for (int y = 0; y < _max_grids.y(); y++) {
-			grid_count++;
-			ensure_grid(GridCoords(x, y));
-		}
-	}
-
-	ZoneLog->info("Initialized {} grids for map '{}'", grid_count, _name);
 }
 

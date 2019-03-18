@@ -178,6 +178,8 @@ void Horizon::Zone::ZoneMain::initialize_core()
 		std::this_thread::sleep_for(std::chrono::microseconds(diff));
 	}
 
+	MapMgr->finalize();
+
 	/**
 	 * Server shutdown routine begins here...
 	 */

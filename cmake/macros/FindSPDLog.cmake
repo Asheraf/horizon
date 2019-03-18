@@ -36,8 +36,9 @@ if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}")
             NAMES spdlog/spdlog.h
             HINTS
             	"C:\\vcpkg\\installed\\x${PLATFORM}-windows\\include"
-            	/usr/local/opt/include
+            	/usr/local/opt
             	/usr/local/include
+            	/usr/include
             DOC "spdlog library header files")
     if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}")
         message(FATAL_ERROR "SPDLog Headers were not found!")
@@ -45,6 +46,7 @@ if(NOT EXISTS "${SPDLOG_INCLUDE_DIR}")
     mark_as_advanced(SPDLOG_INCLUDE_DIR)
 endif()
 
+# Find libfmt on Windows systems.
 if (NOT EXISTS "${SPDLOG_LIBRARIES}" AND WIN32)
     find_library(SPDLOG_LIBRARIES
         NAMES fmt

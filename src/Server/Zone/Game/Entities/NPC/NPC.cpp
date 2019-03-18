@@ -35,7 +35,7 @@
 
 using namespace Horizon::Zone::Game::Entities;
 
-static uint32_t last_npc_guid{NPC_START_GUID};
+static std::atomic<uint32_t> last_npc_guid{NPC_START_GUID};
 
 NPC::NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t y, uint32_t job_id, directions dir)
 : Entity(last_npc_guid++, ENTITY_NPC, map, MapCoords(x, y))

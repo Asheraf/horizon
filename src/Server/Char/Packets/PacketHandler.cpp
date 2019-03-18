@@ -418,7 +418,6 @@ void PacketHandler::Send_HC_ACCEPT_ENTER2()
 	Ragexe::PACKET_HC_ACCEPT_ENTER2 pkt;
 
 	pkt.total_slots = MAX_CHARACTER_SLOTS;
-	pkt.packet_length = pkt.get_length();
 	pkt.premium_slots = session_data->get_character_slots();
 	pkt.char_slots_1 = session_data->get_character_slots();
 	pkt.char_slots_2 = session_data->get_character_slots();
@@ -443,8 +442,6 @@ void PacketHandler::Send_HC_ACCEPT_ENTER()
 
 	auto char_list = game_account->get_characters();
 
-	pkt.packet_length = pkt.get_length(char_list.size());
-
 	PacketBuffer buf = pkt.serialize();
 
 	for (auto &c : char_list) {
@@ -453,6 +450,8 @@ void PacketHandler::Send_HC_ACCEPT_ENTER()
 		character.serialize(buf);
 	}
 
+	buf.emplace_size();
+	
 	send_packet(buf);
 
 	CharLog->info("Sent character-list information to AID {}", game_account->get_id());

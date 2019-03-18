@@ -74,13 +74,9 @@ struct database_configuration
 	/* Database Name */
 	const std::string &get_database() const { return database; }
 	void set_database(const std::string &database) { database_configuration::database = database; }
-	/* Maximum Connection Threadpool */
-	int get_db_thread_count() const { return max_threads; }
-	void set_db_thread_count(int max_threads) { database_configuration::max_threads = max_threads; }
 
 	std::string host{""}, username{""}, password{""};
 	std::string database{""};
-	int max_threads{1};
 	uint16_t _port{0};
 };
 

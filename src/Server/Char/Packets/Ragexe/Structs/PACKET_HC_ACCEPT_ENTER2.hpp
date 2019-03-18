@@ -50,13 +50,13 @@ struct PACKET_HC_ACCEPT_ENTER2 : public Packet
 	{
 		PacketBuffer buf(HC_ACCEPT_ENTER2);
 
-		buf << packet_length;
 		buf << total_slots;
 		buf << premium_slots;
 		buf << unknown_byte;
 		buf << char_slots_1;
 		buf << char_slots_2;
 		buf.append(unknown_bytes, sizeof(unknown_bytes));
+		buf.emplace_size();
 		return buf;
 	}
 
@@ -72,8 +72,6 @@ struct PACKET_HC_ACCEPT_ENTER2 : public Packet
 	{
 		return right = serialize();
 	}
-
-	virtual uint16_t get_length(uint8_t max_chars = 0) { return 29; }
 
 	/* Size: -1 bytes */
 	uint16_t packet_length{29};

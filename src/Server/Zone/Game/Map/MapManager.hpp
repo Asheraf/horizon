@@ -68,6 +68,7 @@ public:
 	}
 
 	bool initialize();
+	bool finalize();
 	bool LoadMapCache();
 
 	std::shared_ptr<Map> add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p);

@@ -128,12 +128,12 @@ private:
 BOOST_AUTO_TEST_CASE(ReferenceListTest)
 {
 	TestRefManager<Player> playerRefMgr;
-	std::shared_ptr<TestObject<Player>> player[MAX_LIMIT];
+	std::shared_ptr<Player> player[MAX_LIMIT];
 	int var[MAX_LIMIT];
 
 	for (int i = 0; i < MAX_LIMIT; i++) {
 		var[i] = i;
-		player[i] = std::make_shared<TestObject<Player>>();
+		player[i] = std::make_shared<Player>();
 		player[i]->add_reference(playerRefMgr);
 		player[i]->get_reference().source()->set_id(var[i]);
 		BOOST_TEST(player[i]->valid());

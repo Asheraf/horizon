@@ -32,6 +32,7 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
 
 enum character_gender_type
 {

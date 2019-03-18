@@ -26,6 +26,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
+#pragma once
 #ifndef HORIZON_ZONE_GAME_ITEM_DEFINITIONS
 #define HORIZON_ZONE_GAME_ITEM_DEFINITIONS
 
@@ -34,6 +35,8 @@
 #include <cstdlib>
 #include <cstdint>
 #include <vector>
+#include <array>
+#include <memory>
 
 #define ITEM_NAME_LENGTH 50
 #define UNKNOWN_ITEM_ID 512 // Apple
@@ -431,12 +434,13 @@ struct item_entry_data
 		int16_t value{0};
 		uint8_t param{0};
 	} option_data[MAX_ITEM_OPTIONS];
-	struct {
+	struct item_entry_info {
+		item_entry_info () { memset(this, 0, sizeof(*this)); }
 		unsigned is_identified : 1;
 		unsigned is_broken : 1;
 		unsigned is_favorite : 1;
 		unsigned spare_bits : 5;
-	} info{0};
+	} info;
 	item_bind_type bind_type{IT_BIND_NONE};
 	uint64_t unique_id{0};
 };

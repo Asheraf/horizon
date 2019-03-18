@@ -26,6 +26,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
+#pragma once
 #ifndef HORIZON_HORIZON_HPP
 #define HORIZON_HORIZON_HPP
 
