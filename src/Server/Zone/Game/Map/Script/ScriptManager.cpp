@@ -203,7 +203,7 @@ void ScriptManager::initialize_state(sol::state &st)
 	st.new_usertype<item_config_data>("item_config_data",
 		"item_id", sol::readonly(&item_config_data::item_id),
 		"name", sol::readonly(&item_config_data::name),
-		"aegis_name", sol::readonly(&item_config_data::aegis_name),
+		"key_name", sol::readonly(&item_config_data::key_name),
 		"value_buy", sol::readonly(&item_config_data::value_buy),
 	  	"value_sell", sol::readonly(&item_config_data::value_sell),
 		"type", sol::readonly(&item_config_data::type),
@@ -292,9 +292,9 @@ void ScriptManager::initialize_state(sol::state &st)
 		"get_map", &Player::get_map,
 		"map_coords", &Player::get_map_coords,
 		"get_nearby_entity", &Player::get_nearby_entity,
-		"send_npc_dialog", &Player::send_npc_dialog,
-		"send_npc_next_dialog", &Player::send_npc_next_dialog,
-		"send_npc_close_dialog", &Player::send_npc_close_dialog,
+		"send_npc_CoreLog", &Player::send_npc_CoreLog,
+		"send_npc_next_CoreLog", &Player::send_npc_next_CoreLog,
+		"send_npc_close_CoreLog", &Player::send_npc_close_CoreLog,
 		"send_npc_menu_list", &Player::send_npc_menu_list,
 		"move_to_map", &Player::move_to_map,
 		"get_inventory", &Player::get_inventory,
@@ -463,10 +463,10 @@ void ScriptManager::initialize_state(sol::state &st)
 
 			if (!res.valid()) {
 				sol::error error = res;
-				ZoneLog->error("ScriptManager::initialize_state: {}", error.what());
+				CoreLog(error) <<"ScriptManager::initialize_state: {}", error.what());
 			}
 		} catch (sol::error &error) {
-			ZoneLog->error("ScriptManager::initialize_state: {}", error.what());
+			CoreLog(error) <<"ScriptManager::initialize_state: {}", error.what());
 		}
 	}
 
@@ -508,23 +508,23 @@ void ScriptManager::load_scripts()
 			sol::protected_function_result result = fn();
 			if (!result.valid()) {
 				sol::error error = result;
-				ZoneLog->warn("Failed to load file '{}' from '{}', reason: {}", script_file, file_path, error.what());
+				CoreLog(warn) <<"Failed to load file '{}' from '{}', reason: {}", script_file, file_path, error.what());
 			}
 		});
 	} catch (sol::error &e) {
-		ZoneLog->warn("Failed to load included script files from '{}', reason: {}", file_path, e.what());
+		CoreLog(warn) <<"Failed to load included script files from '{}', reason: {}", file_path, e.what());
 	}
 }
 void ScriptManager::load_constants()
 {
-	std::string file_path = "scripts/definitions/constants.lua";
+	std::string file_path = "db/definitions/constants.lua";
 
 	try {
 		_lua_state.script_file(file_path);
 		sol::table const_table = _lua_state.get<sol::table>("constants");
-		ZoneLog->info("Read constants from '{}' for map container {:p}.", file_path, (void *)_container.lock().get());
+		CoreLog(info) <<"Read constants from '{}' for map container {:p}.", file_path, (void *)_container.lock().get());
 	} catch (sol::error &e) {
-		ZoneLog->error("Failed to read constants from '{}', reason: {}", file_path, e.what());
+		CoreLog(error) <<"Failed to read constants from '{}', reason: {}", file_path, e.what());
 	}
 }
 
@@ -541,10 +541,10 @@ void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint3
 		sol::protected_function_result result = fx(std::move(player), std::move(nd._npc), nd.script, nd.script_is_file);
 		if (!result.valid()) {
 			sol::error err = result;
-			ZoneLog->error("ScriptManager::contact_npc_for_player: {}", err.what());
+			CoreLog(error) <<"ScriptManager::contact_npc_for_player: {}", err.what());
 		}
 	} catch (sol::error &e) {
-		ZoneLog->error("{}", e.what());
+		CoreLog(error) <<"{}", e.what());
 	}
 }
 
@@ -561,7 +561,7 @@ void ScriptManager::continue_npc_script_for_player(std::shared_ptr<Entities::Pla
 	sol::protected_function_result result = cr(cr_state["script_commands"]);
 	if (!result.valid()) {
 		sol::error err = result;
-		ZoneLog->error("ScriptManager::continue_npc_script_for_player: {}", err.what());
+		CoreLog(error) <<"ScriptManager::continue_npc_script_for_player: {}", err.what());
 	}
 }
 
@@ -573,9 +573,9 @@ void ScriptManager::perform_command_from_player(std::shared_ptr<Entities::Player
 		sol::protected_function_result result = fx(std::move(player), cmd);
 		if (!result.valid()) {
 			sol::error err = result;
-			ZoneLog->error("ScriptManager::perform_command_from_player: {}", err.what());
+			CoreLog(error) <<"ScriptManager::perform_command_from_player: {}", err.what());
 		}
 	} catch (sol::error &e) {
-		ZoneLog->error("ScriptManager::perform_command_from_player: {}", e.what());
+		CoreLog(error) <<"ScriptManager::perform_command_from_player: {}", e.what());
 	}
 }

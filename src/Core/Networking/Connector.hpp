@@ -94,19 +94,19 @@ public:
 			std::tie(socket, network_thread_idx) = _socket_factory();
 
 			do {
-				CoreLog->info("Trying to establish connection for '{}' at tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
+				HLog(info) << "Trying to establish connection for '" << _connection_name << "' at tcp://" << _endpoint.address().to_string() << ":" << _endpoint.port();
 
 				// Try connecting to the endpoint.
 				socket->connect(_endpoint, error);
 
 				if (error.value() != 0) {
-					CoreLog->error("Error connecting to '{}' endpoint tcp://{}:{}. Error Message: '{}'. Retrying in 10 seconds...", _connection_name, _endpoint.address().to_string(), _endpoint.port(), error.message());
+                    HLog(info) << "Error connecting to '" << _connection_name << "' at tcp://" << _endpoint.address().to_string() << ":" << _endpoint.port();
 					std::this_thread::sleep_for(std::chrono::seconds(10));
 					socket->close();
 					error.clear();
 				} else {
 					callback(_connection_name, socket, network_thread_idx);
-					CoreLog->info("Successfully connected to '{}' at endpoint tcp://{}:{}.", _connection_name, _endpoint.address().to_string(), _endpoint.port());
+                    HLog(info) << "Successfully connected to '" << _connection_name << "' at tcp://" << _endpoint.address().to_string() << ":" << _endpoint.port();
 				}
 			} while (!socket->is_open() && server->get_shutdown_stage() >= SHUTDOWN_INITIATED);
 		}

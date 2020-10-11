@@ -72,7 +72,12 @@ public:
 	{
 		_storage.resize(bytes);
 	}
-
+    
+    std::string to_string()
+    {
+        return std::string(get_read_pointer(), get_write_pointer());
+    }
+    
 	uint8_t *get_base_pointer() { return _storage.data(); }
 	uint8_t *get_read_pointer() { return get_base_pointer() + _rpos; }
 	uint8_t *get_write_pointer() { return get_base_pointer() + _wpos; }
@@ -96,7 +101,7 @@ public:
 	}
 
 	// Ensures there's "some" free space, make sure to call normalize() before this
-	void ensureFreeSpace()
+	void ensure_free_space()
 	{
 		// resize buffer if it's already full
 		if (get_remaining_space() == 0)

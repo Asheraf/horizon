@@ -32,14 +32,6 @@
 #include <iostream>
 #include <sstream>
 
-ByteBuffer::ByteBuffer(MessageBuffer &&buffer) : _rpos(0), _wpos(0), _storage(buffer.move())
-{
-}
-
-ByteBuffer::ByteBuffer(MessageBuffer &buffer) : _rpos(0), _wpos(0), _storage(buffer.copy())
-{
-}
-
 ByteBufferPositionException::ByteBufferPositionException(bool add, size_t pos,
 														 size_t size, size_t valueSize)
 {
@@ -66,12 +58,9 @@ ByteBufferSourceException::ByteBufferSourceException(size_t pos, size_t size,
 
 void ByteBuffer::print_storage() const
 {
-	//if (!sLog->ShouldLog("network", LOG_LEVEL_TRACE)) // optimize disabled trace output
-	//	return;
-
 	std::ostringstream o;
-	o << "STORAGE_SIZE: " << size();
-	for (uint32_t i = 0; i < size(); ++i)
+	o << "STORAGE_SIZE: " << active_length();
+	for (uint32_t i = 0; i < active_length(); ++i)
 		o << read<uint8_t>(i) << " - ";
 	o << " ";
 
@@ -81,12 +70,9 @@ void ByteBuffer::print_storage() const
 
 void ByteBuffer::textlike() const
 {
-	//if (!sLog->ShouldLog("network", LOG_LEVEL_TRACE)) // optimize disabled trace output
-	//	return;
-
 	std::ostringstream o;
-	o << "STORAGE_SIZE: " << size();
-	for (uint32_t i = 0; i < size(); ++i)
+	o << "STORAGE_SIZE: " << active_length();
+	for (uint32_t i = 0; i < active_length(); ++i)
 	{
 		char buf[2];
 		snprintf(buf, 2, "%c", read<uint8_t>(i));
@@ -99,15 +85,12 @@ void ByteBuffer::textlike() const
 
 void ByteBuffer::hexlike() const
 {
-	//if (!sLog->ShouldLog("network", LOG_LEVEL_TRACE)) // optimize disabled trace output
-	//	return;
-
 	uint32_t j = 1, k = 1;
 
 	std::ostringstream o;
-	o << "STORAGE_SIZE: " << size();
+	o << "STORAGE_SIZE: " << active_length();
 
-	for (uint32_t i = 0; i < size(); ++i)
+	for (uint32_t i = 0; i < active_length(); ++i)
 	{
 		char buf[3];
 		snprintf(buf, 3, "%2X ", read<uint8_t>(i));

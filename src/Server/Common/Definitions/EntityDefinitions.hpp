@@ -32,7 +32,7 @@
 
 #include <stdint.h>
 #include <cstring>
-#include "Server/Common/Definitions/Client.hpp"
+#include "Server/Common/Configuration/Client.hpp"
 
 enum entity_size_type
 {
@@ -190,7 +190,8 @@ enum status_point_type
 	STATUS_ATTACKRANGE            =  1000
 };
 
-enum entity_appearance_type {
+enum entity_appearance_type
+{
 	EAT_BASE                      =  0,
 	EAT_HAIR_STYLE                =  1,
 	EAT_WEAPON_SPRITE             =  2,
@@ -215,7 +216,8 @@ enum entity_posture_type : char
 	POSTURE_SITTING   = 2,
 };
 
-enum job_class_type {
+enum job_class_type
+{
 	JOB_NOVICE                    = 0,
 	JOB_SWORDMAN                  = 1,
 	JOB_MAGE                      = 2,
@@ -336,7 +338,7 @@ enum job_class_type {
 	JOB_BABY_RUNE_KNIGHT          = 4096,
 	JOB_BABY_WARLOCK              = 4097,
 	JOB_BABY_RANGER               = 4098,
-	JOB_BABY_BISHOP               = 4099,
+	JOB_BABY_ARCH_BISHOP               = 4099,
 	JOB_BABY_MECHANIC             = 4100,
 	JOB_BABY_GUILLOTINE_CROSS     = 4101,
 	JOB_BABY_ROYAL_GUARD          = 4102,
@@ -541,20 +543,20 @@ enum job_class_mask : uint64_t
 	JMASK_SHADOW_CHASER_T         = JMASK_TRANS_3_2 | JMASK_STALKER,
 
 	//Baby 3-1 Jobs
-	JMASK_BABY_RUNE               = JMASK_BABY_3_1 | JMASK_KNIGHT,
+	JMASK_BABY_RUNE_KNIGHT               = JMASK_BABY_3_1 | JMASK_KNIGHT,
 	JMASK_BABY_WARLOCK            = JMASK_BABY_3_1 | JMASK_WIZARD,
 	JMASK_BABY_RANGER             = JMASK_BABY_3_1 | JMASK_HUNTER,
-	JMASK_BABY_BISHOP             = JMASK_BABY_3_1 | JMASK_PRIEST,
+	JMASK_BABY_ARCH_BISHOP             = JMASK_BABY_3_1 | JMASK_PRIEST,
 	JMASK_BABY_MECHANIC           = JMASK_BABY_3_1 | JMASK_BLACKSMITH,
-	JMASK_BABY_CROSS              = JMASK_BABY_3_1 | JMASK_ASSASSIN,
+	JMASK_BABY_GUILLOTINE_CROSS              = JMASK_BABY_3_1 | JMASK_ASSASSIN,
 
 	//Baby 3-2 Jobs
-	JMASK_BABY_GUARD              = JMASK_BABY_3_2 | JMASK_CRUSADER,
+	JMASK_BABY_ROYAL_GUARD              = JMASK_BABY_3_2 | JMASK_CRUSADER,
 	JMASK_BABY_SORCERER           = JMASK_BABY_3_2 | JMASK_SAGE,
 	JMASK_BABY_MINSTRELWANDERER   = JMASK_BABY_3_2 | JMASK_BARDDANCER,
 	JMASK_BABY_SURA               = JMASK_BABY_3_2 | JMASK_MONK,
 	JMASK_BABY_GENETIC            = JMASK_BABY_3_2 | JMASK_ALCHEMIST,
-	JMASK_BABY_CHASER             = JMASK_BABY_3_2 | JMASK_ROGUE,
+	JMASK_BABY_SHADOW_CHASER             = JMASK_BABY_3_2 | JMASK_ROGUE,
 
 	// Expanded Jobs
 	JMASK_TAEKWON                 = JMASK_EXPANDED | JMASK_TAEKWON_BASE,

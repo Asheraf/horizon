@@ -2,7 +2,7 @@
 #define HORIZON_CHAR_SESSION_CHARSESSION_HPP
 
 #include "Core/Networking/Session.hpp"
-#include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
+#include "Server/Common/Configuration/ServerConfiguration.hpp"
 
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
@@ -31,7 +31,6 @@ class CharSession : public Horizon::Networking::Session<CharSocket>
 {
 public:
 	CharSession(std::shared_ptr<CharSocket> socket);
-
 	~CharSession();
 
 	/* Packet Handler */

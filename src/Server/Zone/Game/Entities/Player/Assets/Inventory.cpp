@@ -369,7 +369,7 @@ uint32_t Inventory::sync_to_model()
 uint32_t Inventory::sync_from_model()
 {
 	if (_item_store.size() > 0) {
-		ZoneLog->warn("Horizon::Zone::Game::Assets::Inventory::sync_from_model:\n"
+		CoreLog(warn) <<"Horizon::Zone::Game::Assets::Inventory::sync_from_model:\n"
 			"Attempt to sync when item store is not empty. Current size: {}.", _item_store.size());
 		return 0;
 	}

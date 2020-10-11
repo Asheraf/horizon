@@ -138,7 +138,7 @@ protected:
 	 */
 	void run()
 	{
-		CoreLog->trace("Network thread {:p} is ready for managing connections.", (void *) this);
+		HLog(trace) << "Network thread " << (void *) this << " is ready for managing connections.";
 
 		_update_timer.expires_from_now(boost::posix_time::milliseconds(10));
 		_update_timer.async_wait(std::bind(&NetworkThread<SocketType>::update, this));
@@ -172,7 +172,7 @@ protected:
 
 					--_connections;
 
-					CoreLog->info("Socket closed in networking thread {:p}. (Connections: {})", (void *) (_thread.get()), _connections);
+					HLog(info) << "Socket closed in networking thread " << (void *) (_thread.get()) << " (Connections: " << _connections << ")";
 
 					return true;
 				}
@@ -206,7 +206,7 @@ protected:
 
 				++_connections; // Increment network connections.
 
-				CoreLog->trace("A new socket has been added to network thread {:p}. (Connections: {}) ", (void *) (_thread.get()), _connections);
+				HLog(trace) << "A new socket has been added to network thread " << (void *) (_thread.get()) << " (Connections: " << _connections << ")";
 			}
 		}
 

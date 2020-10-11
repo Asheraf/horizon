@@ -37,14 +37,19 @@
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
 #include "Server/Zone/Game/StaticDB/ItemDB.hpp"
 
-#include <boost/asio.hpp>
 #include <iostream>
 #include <boost/make_shared.hpp>
-#include <sol.hpp>
 #include <chrono>
+#include <signal.h>
+
+#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
+	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
+
+#include <sol.hpp>
 
 using namespace std;
-using boost::asio::ip::udp;
 using namespace Horizon::Zone::Game;
 
 /**
@@ -62,7 +67,7 @@ Horizon::Zone::ZoneMain::~ZoneMain()
 }
 
 #define zone_config_error(setting_name, default) \
-	ZoneLog->error("No setting for '{}' in configuration file, defaulting to '{}'.", setting_name, default);
+	CoreLog(error) <<"No setting for '{}' in configuration file, defaulting to '{}'.", setting_name, default);
 
 /**
  * Read /config/zone-server.yaml
@@ -79,23 +84,23 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	try {
 		lua.script_file(file_path);
 	} catch(const std::exception &e) {
-		ZoneLog->error("ZoneMain::ReadConfig: {}.", e.what());
+		CoreLog(error) <<"ZoneMain::ReadConfig: {}.", e.what());
 		return false;
 	}
 
 	sol::table tbl = lua["server_config"];
 
 	get_zone_config().set_database_path(tbl.get_or("static_db_path", std::string("db/")));
-	ZoneLog->info("[Config] Static database path set to '{}'", get_zone_config().get_database_path());
+	CoreLog(info) <<"[Config] Static database path set to '{}'", get_zone_config().get_database_path());
 
 	get_zone_config().set_mapcache_file_name(tbl.get_or("map_cache_file_name", std::string("maps.dat")));
-	ZoneLog->info("[Config] Mapcache file name is set to '{}', it will be read while initializing maps.");
+	CoreLog(info) <<"[Config] Mapcache file name is set to '{}', it will be read while initializing maps.");
 
 	get_zone_config().set_map_container_count(tbl.get_or("map_containers", 1));
-	ZoneLog->warn("[Config] Maps will be divided into '{}' thread containers.", get_zone_config().get_map_container_count());
+	CoreLog(warn) <<"[Config] Maps will be divided into '{}' thread containers.", get_zone_config().get_map_container_count());
 
 	get_zone_config().set_entity_save_interval(tbl.get_or("entity_save_interval", 180000));
-	ZoneLog->info("[Config] Entity data will be saved to the database every {} minutes and {} seconds.",
+	CoreLog(info) <<"[Config] Entity data will be saved to the database every {} minutes and {} seconds.",
 				  duration_cast<minutes>(std::chrono::milliseconds(get_zone_config().get_entity_save_interval())).count(),
 				  duration_cast<seconds>(std::chrono::milliseconds(get_zone_config().get_entity_save_interval())).count());
 
@@ -105,7 +110,7 @@ bool Horizon::Zone::ZoneMain::ReadConfig()
 	if (!parse_common_configs(tbl))
 		return false;
 
-	ZoneLog->info("Done reading server configurations from '{}'.", file_path);
+	CoreLog(info) <<"Done reading server configurations from '{}'.", file_path);
 
 	return true;
 }
@@ -129,16 +134,21 @@ void Horizon::Zone::ZoneMain::update(uint32_t diff)
  * Signal Handler for the Zone-Server main thread.
  * @param error
  */
-void SignalHandler(const boost::system::error_code &error, int /*signalNumber*/)
+void SignalHandler(int signal)
 {
-	if (!error) {
+	if (signal == SIGINT || signal == SIGTERM || signal == SIGQUIT) {
 		ZoneServer->set_shutdown_stage(SHUTDOWN_INITIATED);
-		ZoneServer->set_shutdown_signal(SIGINT);
+		ZoneServer->set_shutdown_signal(signal);
 	}
 }
 
 void Horizon::Zone::ZoneMain::initialize_core()
 {
+	// Install a signal handler
+	signal(SIGINT, SignalHandler);
+	signal(SIGQUIT, SignalHandler);
+	signal(SIGTERM, SignalHandler);
+	
 	/**
 	 * Map Manager.
 	 */
@@ -155,15 +165,6 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	ItemDB->load_weapon_target_size_modifiers_db();
 	ItemDB->load_weapon_attribute_modifiers_db();
 
-	/**
-	 * Core Signal Handler
-	 */
-	boost::asio::signal_set signals(get_io_service(), SIGINT, SIGTERM);
-	// Set signal handler for callbacks.
-	// Set signal handlers (this must be done before starting io_service threads,
-	// because otherwise they would unblock and exit)
-	signals.async_wait(SignalHandler);
-
 	// Start Network
 	ClientSocktMgr->start(get_io_service(),
 						  network_conf().get_listen_ip(),
@@ -171,9 +172,9 @@ void Horizon::Zone::ZoneMain::initialize_core()
 						  network_conf().get_network_thread_count());
 
 	Server::initialize_core();
+	uint32_t diff = general_conf().get_core_update_interval();
 
 	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
-		uint32_t diff = general_conf().get_core_update_interval();
 		update(diff);
 		std::this_thread::sleep_for(std::chrono::microseconds(diff));
 	}
@@ -186,9 +187,6 @@ void Horizon::Zone::ZoneMain::initialize_core()
 	_task_scheduler.CancelAll();
 	ClientSocktMgr->stop_network();
 	Server::finalize_core();
-
-	/* Cancel signal handling. */
-	signals.cancel();
 }
 
 /**
@@ -225,7 +223,7 @@ int main(int argc, const char * argv[])
 	/*
 	 * Core Cleanup
 	 */
-	ZoneLog->info("Server shutting down...");
+	CoreLog(info) <<"Server shutting down...");
 
 	return ZoneServer->general_conf().get_shutdown_signal();
 }

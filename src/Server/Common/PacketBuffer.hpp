@@ -41,18 +41,10 @@ class PacketBuffer;
 
 typedef ThreadSafeQueue<PacketBuffer> PacketQueueType;
 
-struct Packet
-{
-	Packet(uint16_t id) : packet_id(id) { }
-	virtual ~Packet() { }
-
-	uint16_t packet_id{0};
-};
-
 class PacketBuffer : public ByteBuffer
 {
 public:
-	PacketBuffer() : ByteBuffer(0), packet_id(0x0000)
+	PacketBuffer() : ByteBuffer(0), _packet_id(0x0000)
 	{
 	}
 
@@ -60,28 +52,28 @@ public:
 	: ByteBuffer(size)
 	{
 		append(reinterpret_cast<char *>(data), size);
-		memcpy(&packet_id, data, sizeof(uint16_t));
+		memcpy(&_packet_id, data, sizeof(uint16_t));
 	}
 
 	PacketBuffer(uint16_t id, size_t reserve = 50)
-	: ByteBuffer(reserve), packet_id(id)
+	: ByteBuffer(reserve), _packet_id(id)
 	{
 		append(id);
 	}
 
-	PacketBuffer(PacketBuffer &&buf) : ByteBuffer(std::move(buf)), packet_id(buf.packet_id)
+	PacketBuffer(PacketBuffer &&buf) : ByteBuffer(std::move(buf)), _packet_id(buf._packet_id)
 	{
 	}
 
-	PacketBuffer(PacketBuffer const &right) : ByteBuffer(right), packet_id(right.packet_id)
+	PacketBuffer(PacketBuffer const &right) : ByteBuffer(right), _packet_id(right._packet_id)
 	{
 	}
 
 	PacketBuffer operator = (PacketBuffer const &right)
 	{
 		if (this != &right) {
-			append(right.packet_id);
-			packet_id = right.packet_id;
+			append(right._packet_id);
+			_packet_id = right._packet_id;
 			ByteBuffer::operator=(right);
 		}
 
@@ -91,18 +83,18 @@ public:
 	PacketBuffer operator = (PacketBuffer &&right)
 	{
 		if (this != &right) {
-			packet_id = right.packet_id;
+			_packet_id = right._packet_id;
 			ByteBuffer::operator=(std::move(right));
 		}
 
 		return *this;
 	}
 
-	uint16_t getOpCode() { return packet_id; };
-	void SetOpcode(uint16_t code) { packet_id = code; }
+	uint16_t getOpCode() { return _packet_id; };
+	void SetOpcode(uint16_t code) { _packet_id = code; }
 
 protected:
-	uint16_t packet_id;
+	uint16_t _packet_id;
 };
 
 

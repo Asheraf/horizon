@@ -300,7 +300,7 @@ WeaponLevel2 = {
 			EventEnrichedChance = 35
 		},
 		[15] = {
-			NormalChance:18,
+			NormalChance = 18,
 			EventNormalChance = 30,
 			EventEnrichedChance = 30
 		},

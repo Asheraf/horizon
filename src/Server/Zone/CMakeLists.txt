@@ -50,7 +50,7 @@ target_link_libraries(zone
 		${CONCPP_LIB}
 		${Readline_LIBRARY}
 		${LUA_LIBRARIES}
-		${SPDLOG_LIBRARIES}
+		${CoreLog_LIBRARIES}
 )
 
 set(INCLUDE_DIRS

@@ -30,7 +30,7 @@
 #ifndef HORIZON_LIBRARIES_MAPCACHE_HPP
 #define HORIZON_LIBRARIES_MAPCACHE_HPP
 
-#include "Server/Common/Definitions/Client.hpp"
+#include "Server/Common/Configuration/Client.hpp"
 #include "Libraries/GRF/GRF.hpp"
 
 #include <cstdint>

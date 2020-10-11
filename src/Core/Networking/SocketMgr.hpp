@@ -34,7 +34,7 @@
 #include "Core/Networking/AsyncAcceptor.hpp"
 #include "Core/Networking/NetworkThread.hpp"
 #include "Core/Networking/Connector.hpp"
-#include "Server/Common/Definitions/Horizon.hpp"
+#include "Server/Common/Configuration/Horizon.hpp"
 
 #include <boost/asio.hpp>
 #include <assert.h>
@@ -69,7 +69,7 @@ public:
 			NetworkThreadPtr network_thr = std::make_shared<NetworkThread<SocketType>>();
 
 			if (network_thr == nullptr) {
-				CoreLog->error("Networking: Error in creating threads, SocketMgr::StartThreadForNetworks.");
+				HLog(error) << "Networking: Error in creating threads, SocketMgr::StartThreadForNetworks.";
 				return false;
 			}
 
@@ -94,7 +94,7 @@ public:
 			while (thr->connection_count() > 0)
 				;
 			thr->join();
-			CoreLog->info("Finalized network thread {:p}.", (void *) thr.get());
+			HLog(info) << "Finalized network thread " << (void *) thr.get();
 			it = _thread_map.erase(it);
 		}
 	}
@@ -129,18 +129,18 @@ public:
 	 */
 	std::shared_ptr<SocketType> on_socket_open(std::shared_ptr<tcp::socket> const &socket, uint32_t thread_index)
 	{
-		std::shared_ptr<SocketType> new_session = std::make_shared<SocketType>(std::move(socket));
+		std::shared_ptr<SocketType> new_socket = std::make_shared<SocketType>(std::move(socket));
 
 		try {
 			// Set Socket data
-			new_session->set_socket_id(++_last_socket_id);
+			new_socket->set_socket_id(++_last_socket_id);
 			// Add socket to thread.
-			NetworkThreadPtr(_thread_map.at(thread_index))->add_socket(new_session);
+			NetworkThreadPtr(_thread_map.at(thread_index))->add_socket(new_socket);
 		} catch (boost::system::system_error const &error) {
-			CoreLog->error("Networking: Failed to retrieve client's remote address {}", error.what());
+			HLog(error) << "Networking: Failed to retrieve client's remote address " << error.what();
 		}
 
-		return new_session;
+		return new_socket;
 	}
 
 	/**

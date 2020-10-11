@@ -35,7 +35,7 @@
 
 #include "Server/Char/Char.hpp"
 #include "Server/Char/Socket/CharSocket.hpp"
-#include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
+#include "Server/Common/Configuration/ServerConfiguration.hpp"
 
 namespace Horizon
 {
@@ -62,40 +62,8 @@ public:
 		client_type type = CharServer->general_conf().get_client_type();
 		uint32_t packet_version = CharServer->general_conf().get_packet_version();
 
-		/**
-		 * Load base packet versions before overriding them with the configured version.
-		 */
-		if (packet_version >= 0) {
-			if (type == CLIENT_TYPE_RAGEXE) {
-				initialize_packet_length_db_Ragexe();
-			}
-		}
-
-		if (packet_version >= 20180117) {
-			if (type == CLIENT_TYPE_RAGEXE) {
-				initialize_packet_length_db_Ragexe_20180117();
-			}
-		} else if (packet_version >= 20180103) {
-			if (type == CLIENT_TYPE_RAGEXE) {
-				initialize_packet_length_db_Ragexe_20180103();
-			}
-		} else if (packet_version >= 20171220) {
-			if (type == CLIENT_TYPE_RAGEXE) {
-				initialize_packet_length_db_Ragexe_20171220();
-			}
-		}
-
 		return true;
 	}
-
-	/* Ragexe Base Packets */
-	void initialize_packet_length_db_Ragexe();
-	/* 20171220 Ragexe */
-	void initialize_packet_length_db_Ragexe_20171220();
-	/* 20180103 Ragexe */
-	void initialize_packet_length_db_Ragexe_20180103();
-	/* 20180117 Ragexe */
-	void initialize_packet_length_db_Ragexe_20180117();
 
 };
 }

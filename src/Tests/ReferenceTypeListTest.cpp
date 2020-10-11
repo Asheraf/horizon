@@ -95,10 +95,10 @@ protected:
 };
 
 template<class T>
-class TestObject
+class ReferenceObject
 {
 public:
-	virtual ~TestObject() { }
+	virtual ~ReferenceObject() { }
 
     bool is_valid() const { return _ref.is_valid(); }
     void add_reference(TestRefManager<T> &m) { assert(!is_valid()); _ref.link(&m, (T*) this); }
@@ -128,19 +128,19 @@ private:
 /*============================*
  * Subjects
  *============================*/
-class A : public TestObject<A>, public GenericTestObject
+class A : public ReferenceObject<A>, public GenericTestObject
 {
 public:
 	A(int id = 0) : GenericTestObject(id, 'A') { }
 };
 
-class B : public TestObject<B>, public GenericTestObject
+class B : public ReferenceObject<B>, public GenericTestObject
 {
 public:
 	B(int id = 0) : GenericTestObject(id, 'B') { }
 };
 
-class C : public TestObject<C>, public GenericTestObject
+class C : public ReferenceObject<C>, public GenericTestObject
 {
 public:
 	C(int id = 0) : GenericTestObject(id, 'C') { }

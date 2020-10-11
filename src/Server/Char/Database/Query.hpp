@@ -77,11 +77,11 @@ public:
 		return &query;
 	}
 
-	void InitializeQueryStrings();
-
-	int load_all_characters_for_account(std::shared_ptr<Models::GameAccount> account);
-	std::shared_ptr<Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
-	int CheckExistingCharByName(std::string name);
+//	void InitializeQueryStrings();
+//
+//	int load_all_characters_for_account(std::shared_ptr<Models::GameAccount> account);
+//	std::shared_ptr<Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
+//	int CheckExistingCharByName(std::string name);
 };
 }
 }

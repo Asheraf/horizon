@@ -32,7 +32,8 @@
 
 #include "Common/Definitions/NPCDefinitions.hpp"
 
-#ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
+#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
+	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
 #define SOL_EXCEPTIONS_SAFE_PROPAGATION
 #endif
 
@@ -62,9 +63,9 @@ public:
 	void contact_npc_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void continue_npc_script_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx = 0);
 
-	void send_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string const &dialog);
-	void send_next_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
-	void send_close_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_CoreLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string const &CoreLog);
+	void send_next_CoreLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_close_CoreLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void perform_command_from_player(std::shared_ptr<Entities::Player> player, std::string const &cmd);
 	void initialize_state(sol::state &st);
 

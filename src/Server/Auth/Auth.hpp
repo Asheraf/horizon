@@ -27,77 +27,73 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
-#ifndef HORIZON_AUTH_MAIN_HPP
-#define HORIZON_AUTH_MAIN_HPP
+#ifndef HORIZON_AUTH_HPP
+#define HORIZON_AUTH_HPP
 
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Common/Server.hpp"
-#include "Common/Models/Configuration/AuthServerConfiguration.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
 #include <string>
-#include <Server/Common/Models/ServerData.hpp>
+#include <mutex>
+#include <vector>
 
-typedef std::unordered_map<int, std::shared_ptr<character_server_data>> CharacterServerMapType;
 namespace Horizon
-{
-namespace Auth
 {
 /**
  * Main Auth Server Singleton Class.
  */
-class AuthMain : public Server
+struct auth_config_type {
+	std::string _password_salt_mix;
+
+	struct char_server
+	{
+	    std::string _name, _host;
+	    uint16_t _port, _type, _is_new;  
+	};
+
+    void add_char_server(char_server c) { _char_servers.push_back(c); }
+    std::vector<char_server> &get_char_servers() { return _char_servers; }
+
+    std::vector<char_server> _char_servers;
+};
+
+class Auth : public Server
 {
 public:
-	AuthMain();
-	~AuthMain();
+	Auth();
+	~Auth();
 
-	static AuthMain *getInstance()
+	static Auth *getInstance()
 	{
-		static AuthMain instance;
+		static Auth instance;
 		return &instance;
 	}
 
 	bool ReadConfig();
-
-	/* Auth Server Configuration */
-	struct auth_server_config &get_auth_config() { return _auth_config; }
 
 	void initialize_core();
 	/* CLI */
 	void initialize_cli_commands();
 	bool clicmd_reload_config();
 
-	/* Character Server Handlers */
-	void add_character_server(struct character_server_data &serv)
-	{
-		_character_servers.insert(std::make_pair(serv.id, std::make_shared<character_server_data>(serv)));
-	}
-	std::shared_ptr<character_server_data> get_character_server(int id)
-	{
-		auto it = _character_servers.find(id);
-
-		if (it != _character_servers.end())
-			return it->second;
-		else
-			return nullptr;
-	}
-	std::size_t character_server_count() { return _character_servers.size(); }
-	const CharacterServerMapType &get_character_servers() const { return _character_servers; }
-
 	/* Task Scheduler */
 	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
-
+    
+	auth_config_type &get_auth_config()
+	{
+		std::lock_guard<std::mutex> lock(_conf_lock);
+		return _auth_config;
+	}
+	
 protected:
-	/* Auth Server Configuration */
-	struct auth_server_config _auth_config;
-	CharacterServerMapType _character_servers;
 	TaskScheduler _task_scheduler;
+	std::mutex _conf_lock;
+	auth_config_type _auth_config;
+
 };
 }
-}
 
-#define AuthServer Horizon::Auth::AuthMain::getInstance()
+#define sAuth Horizon::Auth::getInstance()
 
-
-#endif /* HORIZON_AUTH_MAIN_HPP */
+#endif /* HORIZON_AUTH_HPP */

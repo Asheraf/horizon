@@ -31,7 +31,7 @@
 #define HORIZON_ZONE_GAME_MAP_HPP
 
 #include "Path/AStar.hpp"
-#include "Server/Common/Definitions/Horizon.hpp"
+#include "Server/Common/Configuration/Horizon.hpp"
 #include "Server/Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/Cell/Cell.hpp"
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"

@@ -49,7 +49,7 @@ target_link_libraries(char
         ${CONCPP_LIB}
         ${Readline_LIBRARY}
 		${LUA_LIBRARIES}
-		${SPDLOG_LIBRARIES}
+		${CoreLog_LIBRARIES}
 )
 
 set(INCLUDE_DIRS
@@ -78,7 +78,7 @@ target_include_directories(char
         ${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
 		${SOL2_INCLUDE_DIR}
-		${SPDLOG_INCLUDE_DIR}
+		${CoreLog_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

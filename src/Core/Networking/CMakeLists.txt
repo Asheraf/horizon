@@ -44,8 +44,7 @@ set(SOURCE_FILES
 	Connector.hpp
 	Buffer/ByteBuffer.cpp
 	Buffer/ByteBuffer.hpp
-	Buffer/ByteConverter.hpp
-	Buffer/MessageBuffer.hpp)
+	Buffer/ByteConverter.hpp)
 
 add_library(networking
 	${SOURCE_FILES})

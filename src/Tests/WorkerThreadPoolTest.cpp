@@ -52,6 +52,7 @@ BOOST_AUTO_TEST_CASE(WorkerThreadPoolTest)
 		std::future<typename std::result_of<std::function<void()>()>::type> fut = pool.submit([i]()
 		{
 			work_1(20);
+            std::cout << "Submitted work to thread pool " << i << std::endl;
 		});
 		fut.wait();
 	}

@@ -28,9 +28,10 @@
 find_path(SOL2_INCLUDE_DIR
 	NAMES sol.hpp
 	HINTS
-		/usr/local/include
-		/usr/local/opt/include
+		/usr/local/include/sol
+		/usr/local/opt/include/sol
 		C:/sol2
+		C:/sol
 	)
 
 if (SOL2_INCLUDE_DIR STREQUAL "SOL2_INCLUDE_DIR-NOTFOUND")

@@ -32,11 +32,17 @@
 #include "Core/Logging/Logger.hpp"
 #include "Server/Char/Session/CharSession.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
-#include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
+#include "Server/Common/Configuration/CharServerConfiguration.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/make_shared.hpp>
 #include <iostream>
+
+#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
+	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
+
 #include <sol.hpp>
 
 using namespace std;
@@ -60,7 +66,7 @@ Horizon::Char::CharMain::~CharMain()
 }
 
 #define char_config_error(setting_name, default) \
-	CharLog->error("No setting for '{}' in configuration file, defaulting to '{}'.", setting_name, default);
+	CoreLog(error) <<"No setting for '{}' in configuration file, defaulting to '{}'.", setting_name, default);
 
 /**
  * Read /config/char-server.yaml
@@ -75,7 +81,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 	try {
 		lua.script_file(file_path);
 	} catch(const std::exception &e) {
-		CharLog->error("CharMain::ReadConfig: {}.", e.what());
+		CoreLog(error) <<"CharMain::ReadConfig: {}.", e.what());
 		return false;
 	}
 
@@ -112,7 +118,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 	if (!parse_common_configs(tbl))
 		return false;
 
-	CharLog->info("Done reading server configurations from '{}'.", file_path);
+	CoreLog(info) <<"Done reading server configurations from '{}'.", file_path);
 
 	return true;
 }
@@ -200,7 +206,7 @@ int main(int argc, const char * argv[])
 	CharServer->initialize_core();
 
 	/* Core Cleanup */
-	CharLog->info("Server shutting down...");
+	CoreLog(info) <<"Server shutting down...");
 
 	return CharServer->general_conf().get_shutdown_signal();
 }

@@ -32,13 +32,16 @@
 
 #include <boost/test/unit_test.hpp>
 
-#ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-#include <sol.hpp>
 #include <cstring>
 #include <fstream>
 #include <iostream>
+
+#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
+	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
+
+#include <sol.hpp>
 
 BOOST_AUTO_TEST_CASE(Sol2Test)
 {

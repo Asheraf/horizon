@@ -28,4 +28,5 @@
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(INTERFACE_SOURCES
 	${DIR}/InterServerAPI.hpp
+	${DIR}/ClientInterface.hpp
 	PARENT_SCOPE)

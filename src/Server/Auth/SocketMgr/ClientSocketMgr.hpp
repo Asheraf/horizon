@@ -29,24 +29,22 @@
 
 /* This is an auto-generated file, please do not edit manually. */
 
-#ifndef HORIZON_AUTH_CLIENTSOCKETMGR_HPP
-#define HORIZON_AUTH_CLIENTSOCKETMGR_HPP
+#ifndef HORIZON_CLIENTSOCKETMGR_HPP
+#define HORIZON_CLIENTSOCKETMGR_HPP
 #include "Core/Networking/AcceptSocketMgr.hpp"
 
 #include "Server/Auth/Auth.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
-#include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
+#include "Server/Common/Configuration/ServerConfiguration.hpp"
 
 namespace Horizon
-{
-namespace Auth
 {
 /**
  * Manager of client sockets and initialization of the packet db * @brief Singleton class
  */
-class ClientSocketMgr : public Horizon::Networking::AcceptSocketMgr<AuthSocket>
+class ClientSocketMgr : public Networking::AcceptSocketMgr<AuthSocket>
 {
-	typedef Horizon::Networking::AcceptSocketMgr<AuthSocket> BaseSocketMgr;
+	typedef Networking::AcceptSocketMgr<AuthSocket> BaseSocketMgr;
 public:
 	static ClientSocketMgr *getInstance()
 	{
@@ -54,46 +52,14 @@ public:
 		return &instance;
 	}
 
-	bool start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = 1)
+	bool start(boost::asio::io_service &io_service, std::string const &listen_ip, uint16_t port, uint32_t threads = MAX_NETWORK_THREADS)
 	{
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
 
-		client_type type = AuthServer->general_conf().get_client_type();
-		uint32_t packet_version = AuthServer->general_conf().get_packet_version();
-
-		/**
-		 * Load base packet versions before overriding them with the configured version.
-		 */
-		if (packet_version >= 0) {
-			if (type == CLIENT_TYPE_RAGEXE) {
-				initialize_packet_length_db_Ragexe();
-			}
-		}
-
-		if (packet_version >= 20180704) {
-			if (type == CLIENT_TYPE_RAGEXE) {
-				initialize_packet_length_db_Ragexe_20180704();
-			}
-		} else if (packet_version >= 20171213) {
-			if (type == CLIENT_TYPE_RAGEXE) {
-				initialize_packet_length_db_Ragexe_20171213();
-			}
-		}
-
 		return true;
 	}
-
-	/* Ragexe Base Packets */
-	void initialize_packet_length_db_Ragexe();
-	/* 20171213 Ragexe */
-	void initialize_packet_length_db_Ragexe_20171213();
-	/* 20180704 Ragexe */
-	void initialize_packet_length_db_Ragexe_20180704();
-
 };
 }
-}
-#define ClientSocktMgr Horizon::Auth::ClientSocketMgr::getInstance()
-#define GET_AUTH_PACKETLEN(id) ClientSocktMgr->get_packet_length(id)
-#endif /* HORIZON_AUTH_CLIENTSOCKETMGR_HPP */
+#define ClientSocktMgr Horizon::ClientSocketMgr::getInstance()
+#endif /* HORIZON_CLIENTSOCKETMGR_HPP */

@@ -66,12 +66,12 @@ public:
 		std::shared_ptr<Connector> connector;
 
 		if (!(connector = std::make_shared<Horizon::Networking::Connector>(connection_name, server, connect_ip, port))) {
-			CoreLog->error("ConnectSocketMgr::Start '{}' failed to connect to tcp:://{}:{}.", connection_name, connect_ip, port);
+			HLog(error) << "ConnectSocketMgr::Start: " << connection_name << " failed to connect to tcp::" << connect_ip << "@" << port;
 			return nullptr;
 		}
 
 		if (!BaseSocketMgr::StartNetworkThreads(1)) {
-			CoreLog->error("ConnectSocketMgr::Start failed to start network threads.");
+			HLog(error) << "ConnectSocketMgr::Start failed to start network threads.";
 			return nullptr;
 		}
 

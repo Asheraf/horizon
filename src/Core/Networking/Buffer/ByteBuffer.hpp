@@ -26,9 +26,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
-#include "ByteConverter.hpp"
 
-#include "MessageBuffer.hpp"
+#ifndef HORIZON_NETWORKING_BYTEBUFFER_HPP
+#define HORIZON_NETWORKING_BYTEBUFFER_HPP
+
+#include "ByteConverter.hpp"
 
 #include <type_traits>
 #include <stdlib.h>
@@ -73,27 +75,28 @@ public:
 class ByteBuffer
 {
 public:
-	const static size_t DEFAULT_SIZE = 0x1000;
+	const static size_t DEFAULT_SIZE = 0x1000; // Reserve 4096 bytes.
 
 	// constructor
-	ByteBuffer() : _rpos(0), _wpos(0)
+	ByteBuffer()
+    : _rpos(0), _wpos(0)
 	{
 		_storage.reserve(DEFAULT_SIZE);
 	}
 
-	ByteBuffer(size_t reserve) : _rpos(0), _wpos(0)
+	ByteBuffer(size_t reserve)
+    : _rpos(0), _wpos(0)
 	{
 		_storage.reserve(reserve);
 	}
 
-	ByteBuffer(ByteBuffer&& buf) : _rpos(buf._rpos), _wpos(buf._wpos),
-								   _storage(std::move(buf._storage)) { }
+	ByteBuffer(ByteBuffer&& buf)
+    : _rpos(buf._rpos), _wpos(buf._wpos), _storage(std::move(buf._storage))
+    { }
 
-	ByteBuffer(ByteBuffer const& right) : _rpos(right._rpos), _wpos(right._wpos),
-										  _storage(right._storage) { }
-
-	ByteBuffer(MessageBuffer&& buffer);
-	ByteBuffer(MessageBuffer &buffer);
+	ByteBuffer(ByteBuffer const& right)
+    : _rpos(right._rpos), _wpos(right._wpos), _storage(right._storage)
+    { }
 
 	ByteBuffer& operator=(ByteBuffer const& right)
 	{
@@ -107,24 +110,29 @@ public:
 		return *this;
 	}
 
-	virtual ~ByteBuffer() { }
+	virtual ~ByteBuffer()
+    { }
 
 	void clear()
 	{
 		_storage.clear();
-		_rpos = _wpos = 0;
+        reset();
 	}
+    
+    void reset()
+    {
+        _wpos = 0;
+        _rpos = 0;
+    }
 
 	template <typename T> void append(T value)
 	{
-		//EndianConvert(value);
 		append((uint8_t *)&value, sizeof(value));
 	}
 
 	template <typename T> void put(size_t pos, T value)
 	{
 		static_assert(std::is_fundamental<T>::value, "append(compound)");
-		//EndianConvert(value);
 		put(pos, (uint8_t *)&value, sizeof(value));
 	}
 
@@ -263,15 +271,15 @@ public:
 
 	uint8_t& operator[](size_t const pos)
 	{
-		if (pos >= size())
-			throw ByteBufferPositionException(false, pos, 1, size());
+		if (pos >= maximum_length())
+			throw ByteBufferPositionException(false, pos, 1, maximum_length());
 		return _storage[pos];
 	}
 
 	uint8_t const& operator[](size_t const pos) const
 	{
-		if (pos >= size())
-			throw ByteBufferPositionException(false, pos, 1, size());
+		if (pos >= maximum_length())
+			throw ByteBufferPositionException(false, pos, 1, maximum_length());
 		return _storage[pos];
 	}
 
@@ -283,26 +291,75 @@ public:
 		return _rpos;
 	}
 
-	void finish_reading()
-	{
-		_rpos = wpos();
-	}
+    uint8_t* contents()
+    {
+        if (_storage.empty())
+            throw ByteBufferException();
+        return _storage.data();
+    }
 
-	size_t wpos() const { return _wpos; }
+    uint8_t const* contents() const
+    {
+        if (_storage.empty())
+            throw ByteBufferException();
+        return _storage.data();
+    }
 
-	size_t wpos(size_t wpos_)
-	{
-		_wpos = wpos_;
-		return _wpos;
-	}
+    void finish_reading() { _rpos = wpos(); }
+    void read_completed(size_t bytes) { _rpos += bytes; }
+    void write_completed(size_t bytes) { _wpos += bytes; }
+
+    size_t wpos() const { return _wpos; }
+    
+    uint8_t *get_base_pointer() { return _storage.data(); }
+    uint8_t *get_read_pointer() { return get_base_pointer() + _rpos; }
+    uint8_t *get_write_pointer() { return get_base_pointer() + _wpos; }
+
+    std::string to_string() { return std::string(get_read_pointer(), get_write_pointer()); }
+
+    size_t maximum_length() const { return _storage.size(); }
+    size_t active_length() const { return _wpos - _rpos; }
+    size_t remaining_space() const { return _storage.size() - _wpos; }
+    
+    bool is_empty() const { return _storage.empty(); }
+    
+    // Discards inactive data
+    void flush()
+    {
+        if (_rpos) {
+            if (_rpos != _wpos)
+                memmove(get_base_pointer(), get_read_pointer(), active_length());
+            _wpos -= _rpos;
+            _rpos = 0;
+        }
+    }
+    
+    // Ensures there's "some" free space, make sure to call normalize() before this
+    void ensure_free_space()
+    {
+        // resize buffer if it's already full
+        if (remaining_space() == 0)
+            _storage.resize(_storage.size() * 3 / 2);
+    }
+    
+    void resize(size_t new_size)
+    {
+        _storage.resize(new_size);
+    }
+
+    void reserve(size_t ressize)
+    {
+        if (ressize > maximum_length())
+            _storage.reserve(ressize);
+    }
 
 	template<typename T>
 	void read_skip() { read_skip(sizeof(T)); }
 
 	void read_skip(size_t skip)
 	{
-		if (_rpos + skip > size())
-			throw ByteBufferPositionException(false, _rpos, skip, size());
+		if (_rpos + skip > maximum_length())
+			throw ByteBufferPositionException(false, _rpos, skip, maximum_length());
 		_rpos += skip;
 	}
 
@@ -315,60 +372,34 @@ public:
 
 	template <typename T> T read(size_t pos) const
 	{
-		if (pos + sizeof(T) > size())
-			throw ByteBufferPositionException(false, pos, sizeof(T), size());
+		if (pos + sizeof(T) > maximum_length())
+			throw ByteBufferPositionException(false, pos, sizeof(T), maximum_length());
 		T val = *((T const*)&_storage[pos]);
 		return val;
 	}
 
 	void read(char *dest, size_t len)
 	{
-		if (_rpos  + len > size())
-			throw ByteBufferPositionException(false, _rpos, len, size());
+		if (_rpos  + len > maximum_length())
+			throw ByteBufferPositionException(false, _rpos, len, maximum_length());
 		std::memcpy((void *) dest, &_storage[_rpos], len);
 		_rpos += len;
 	}
 
-	uint8_t* contents()
-	{
-		if (_storage.empty())
-			throw ByteBufferException();
-		return _storage.data();
-	}
-
-	uint8_t const* contents() const
-	{
-		if (_storage.empty())
-			throw ByteBufferException();
-		return _storage.data();
-	}
-
-	size_t size() const { return _storage.size(); }
-	size_t buf_len() const { return _rpos; }
-	bool empty() const { return _storage.empty(); }
-
-	void resize(size_t newsize)
-	{
-		_storage.resize(newsize, 0);
-		_rpos = 0;
-		_wpos = size();
-	}
-
-	void reserve(size_t ressize)
-	{
-		if (ressize > size())
-			_storage.reserve(ressize);
-	}
-
 	void append(const char *src, size_t size)
 	{
-		return append((const uint8_t *)src, size);
+        append((const uint8_t *)src, size);
+	}
+
+	void append(std::string string)
+	{
+		append(string.c_str(), string.size());
 	}
 
 	template<class T>
 	void append(const T *src, size_t size)
 	{
-		return append((const uint8_t *) src, size);
+		append((const uint8_t *) src, size);
 	}
 
 	template<class T, class SubT>
@@ -376,18 +407,17 @@ public:
 	{
 		append((const uint8_t *) t, t_size);
 		append((const uint8_t *) sub_t, sizeof(SubT) * count);
-		return ;
 	}
 
 	void append(const uint8_t *src, size_t cnt)
 	{
 		if (!cnt)
-			throw ByteBufferSourceException(_wpos, size(), cnt);
+			throw ByteBufferSourceException(_wpos, maximum_length(), cnt);
 
 		if (!src)
-			throw ByteBufferSourceException(_wpos, size(), cnt);
+			throw ByteBufferSourceException(_wpos, maximum_length(), cnt);
 
-		assert(size() < 10000000);
+		assert(maximum_length() < 10000000);
 
 		size_t const newSize = _wpos + cnt;
 		if (_storage.capacity() < newSize) // custom memory allocation rules
@@ -416,11 +446,11 @@ public:
 
 	void put(size_t pos, const uint8_t *src, size_t cnt)
 	{
-		if (pos + cnt > size())
-			throw ByteBufferPositionException(true, pos, cnt, size());
+		if (pos + cnt > maximum_length())
+			throw ByteBufferPositionException(true, pos, cnt, maximum_length());
 
 		if (!src)
-			throw ByteBufferSourceException(_wpos, size(), cnt);
+			throw ByteBufferSourceException(_wpos, maximum_length(), cnt);
 
 		std::memcpy(&_storage[pos], src, cnt);
 	}
@@ -457,3 +487,4 @@ inline void ByteBuffer::read_skip<std::string>()
 	read_skip<char*>();
 }
 
+#endif /* HORIZON_NETWORKING_BYTEBUFFER_HPP */

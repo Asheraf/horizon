@@ -69,7 +69,7 @@ public:
 	/**
 	 * @brief Asynchronously accepts sockets and executes a callback function.
 	 *        This function is responsible for -
-	 *        1) Listening for new connections.
+	 *        1) Listening for new connections on the main thread.
 	 *        2) Executing the callback provided to this method whilst moving its ownership.
 	 *        3) Execute recursively on successful acceptances until closed.
 	 * @param[in] callback   the callback function to execute (@see type AcceptCallback)
@@ -89,7 +89,7 @@ public:
 					   socket->non_blocking(true);
 					   callback(std::move(socket), thread_index);
 				   } catch (boost::system::system_error const &err) {
-					   CoreLog->error("Networking: AsyncAcceptor failed to initialize client's socket {}", err.what());
+					   HLog(error) << "Networking: AsyncAcceptor failed to initialize client's socket :" << err.what();
 				   }
 			   }
 
@@ -108,21 +108,22 @@ public:
 		_acceptor.open(_endpoint.protocol(), errorCode);
 
 		if (errorCode) {
-			CoreLog->error("Failed to open acceptor %s", errorCode.message().c_str());
+			HLog(error) << "Failed to open acceptor " << errorCode.message().c_str();
 			return false;
 		}
 
 		_acceptor.bind(_endpoint, errorCode);
 
 		if (errorCode) {
-			CoreLog->error("Could not bind to %s:%u %s", _endpoint.address().to_string().c_str(), _endpoint.port(), errorCode.message().c_str());
+			HLog(error) << "Could not bind to " << _endpoint.address().to_string().c_str() << ":" << _endpoint.port() << " - "
+             << errorCode.message().c_str();
 			return false;
 		}
 
 		_acceptor.listen(boost::asio::socket_base::max_connections, errorCode);
 
 		if (errorCode) {
-			CoreLog->error("Failed to start listening on %s:%u %s", _endpoint.address().to_string().c_str(), _endpoint.port(), errorCode.message().c_str());
+			HLog(error) << "Failed to start listening on " << _endpoint.address().to_string().c_str() << ":" << _endpoint.port() << " " << errorCode.message().c_str();
 			return false;
 		}
 

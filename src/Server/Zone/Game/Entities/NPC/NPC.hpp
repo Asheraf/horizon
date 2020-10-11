@@ -34,7 +34,8 @@
 #include "Common/Definitions/NPCDefinitions.hpp"
 #include "Server/Zone/Game/Entities/GridObject.hpp"
 
-#ifndef SOL_EXCEPTIONS_SAFE_PROPAGATION
+#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
+	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
 #define SOL_EXCEPTIONS_SAFE_PROPAGATION
 #endif
 

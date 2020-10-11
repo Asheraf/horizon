@@ -37,7 +37,8 @@
 
 class FunctionWrapper
 {
-	struct impl_base {
+	struct impl_base
+    {
 		virtual void call()=0;
 		virtual ~impl_base() {}
 	};
@@ -50,19 +51,19 @@ class FunctionWrapper
 	};
 public:
 	template<typename F>
-	FunctionWrapper(F &&f):
-	impl(new impl_type<F>(std::move(f)))
+	FunctionWrapper(F &&f)
+    : impl(new impl_type<F>(std::move(f)))
 	{}
 
 	void call() { impl->call(); }
 
-	FunctionWrapper(FunctionWrapper &&other):
-	impl(std::move(other.impl))
+	FunctionWrapper(FunctionWrapper &&other)
+    : impl(std::move(other.impl))
 	{}
 
-	FunctionWrapper& operator=(FunctionWrapper&& other)
+	FunctionWrapper &operator= (FunctionWrapper&& other)
 	{
-		impl=std::move(other.impl);
+		impl = std::move(other.impl);
 		return *this;
 	}
 

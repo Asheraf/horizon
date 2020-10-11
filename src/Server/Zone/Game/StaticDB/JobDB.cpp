@@ -35,7 +35,7 @@ using namespace Horizon::Zone::Game;
 JobDatabase::JobDatabase()
 {
 	_name2id_list.emplace("Novice", JOB_NOVICE);
-	_name2id_list.emplace("Swordsman", JOB_SWORDMAN);
+	_name2id_list.emplace("Swordman", JOB_SWORDMAN);
 	_name2id_list.emplace("Magician", JOB_MAGE);
 	_name2id_list.emplace("Archer", JOB_ARCHER);
 	_name2id_list.emplace("Acolyte", JOB_ACOLYTE);
@@ -54,22 +54,22 @@ JobDatabase::JobDatabase()
 	_name2id_list.emplace("Alchemist", JOB_ALCHEMIST);
 	_name2id_list.emplace("Bard", JOB_BARD);
 	_name2id_list.emplace("Dancer", JOB_DANCER);
-	_name2id_list.emplace("Super_Novice", JOB_SUPER_NOVICE);
+	_name2id_list.emplace("SuperNovice", JOB_SUPER_NOVICE);
 	_name2id_list.emplace("Gunslinger", JOB_GUNSLINGER);
 	_name2id_list.emplace("Ninja", JOB_NINJA);
-	_name2id_list.emplace("Novice_High", JOB_NOVICE_HIGH);
-	_name2id_list.emplace("Swordsman_High", JOB_SWORDMAN_HIGH);
-	_name2id_list.emplace("Magician_High", JOB_MAGE_HIGH);
-	_name2id_list.emplace("Archer_High", JOB_ARCHER_HIGH);
-	_name2id_list.emplace("Acolyte_High", JOB_ACOLYTE_HIGH);
-	_name2id_list.emplace("Merchant_High", JOB_MERCHANT_HIGH);
-	_name2id_list.emplace("Thief_High", JOB_THIEF_HIGH);
-	_name2id_list.emplace("Lord_Knight", JOB_LORD_KNIGHT);
-	_name2id_list.emplace("High_Priest", JOB_HIGH_PRIEST);
-	_name2id_list.emplace("High_Wizard", JOB_HIGH_WIZARD);
+	_name2id_list.emplace("HighNovice", JOB_NOVICE_HIGH);
+	_name2id_list.emplace("HighSwordman", JOB_SWORDMAN_HIGH);
+	_name2id_list.emplace("HighMagician", JOB_MAGE_HIGH);
+	_name2id_list.emplace("HighArcher", JOB_ARCHER_HIGH);
+	_name2id_list.emplace("HighAcolyte", JOB_ACOLYTE_HIGH);
+	_name2id_list.emplace("HighMerchant", JOB_MERCHANT_HIGH);
+	_name2id_list.emplace("HighThief", JOB_THIEF_HIGH);
+	_name2id_list.emplace("LordKnight", JOB_LORD_KNIGHT);
+	_name2id_list.emplace("HighPriest", JOB_HIGH_PRIEST);
+	_name2id_list.emplace("HighWizard", JOB_HIGH_WIZARD);
 	_name2id_list.emplace("Whitesmith", JOB_WHITESMITH);
 	_name2id_list.emplace("Sniper", JOB_SNIPER);
-	_name2id_list.emplace("Assassin_Cross", JOB_ASSASSIN_CROSS);
+	_name2id_list.emplace("AssassinCross", JOB_ASSASSIN_CROSS);
 	_name2id_list.emplace("Paladin", JOB_PALADIN);
 	_name2id_list.emplace("Champion", JOB_CHAMPION);
 	_name2id_list.emplace("Professor", JOB_PROFESSOR);
@@ -77,74 +77,74 @@ JobDatabase::JobDatabase()
 	_name2id_list.emplace("Creator", JOB_CREATOR);
 	_name2id_list.emplace("Clown", JOB_CLOWN);
 	_name2id_list.emplace("Gypsy", JOB_GYPSY);
-	_name2id_list.emplace("Baby_Novice", JOB_BABY_NOVICE);
-	_name2id_list.emplace("Baby_Swordsman", JOB_BABY_SWORDMAN);
-	_name2id_list.emplace("Baby_Magician", JOB_BABY_MAGE);
-	_name2id_list.emplace("Baby_Archer", JOB_BABY_ARCHER);
-	_name2id_list.emplace("Baby_Acolyte", JOB_BABY_ACOLYTE);
-	_name2id_list.emplace("Baby_Merchant", JOB_BABY_MERCHANT);
-	_name2id_list.emplace("Baby_Thief", JOB_BABY_THIEF);
-	_name2id_list.emplace("Baby_Knight", JOB_BABY_KNIGHT);
-	_name2id_list.emplace("Baby_Priest", JOB_BABY_PRIEST);
-	_name2id_list.emplace("Baby_Wizard", JOB_BABY_WIZARD);
-	_name2id_list.emplace("Baby_Blacksmith", JOB_BABY_BLACKSMITH);
-	_name2id_list.emplace("Baby_Hunter", JOB_BABY_HUNTER);
-	_name2id_list.emplace("Baby_Assassin", JOB_BABY_ASSASSIN);
-	_name2id_list.emplace("Baby_Crusader", JOB_BABY_CRUSADER);
-	_name2id_list.emplace("Baby_Monk", JOB_BABY_MONK);
-	_name2id_list.emplace("Baby_Sage", JOB_BABY_SAGE);
-	_name2id_list.emplace("Baby_Rogue", JOB_BABY_ROGUE);
-	_name2id_list.emplace("Baby_Alchemist", JOB_BABY_ALCHEMIST);
-	_name2id_list.emplace("Baby_Bard", JOB_BABY_BARD);
-	_name2id_list.emplace("Baby_Dancer", JOB_BABY_DANCER);
-	_name2id_list.emplace("Super_Baby", JOB_SUPER_BABY);
+	_name2id_list.emplace("BabyNovice", JOB_BABY_NOVICE);
+	_name2id_list.emplace("BabySwordsman", JOB_BABY_SWORDMAN);
+	_name2id_list.emplace("BabyMagician", JOB_BABY_MAGE);
+	_name2id_list.emplace("BabyArcher", JOB_BABY_ARCHER);
+	_name2id_list.emplace("BabyAcolyte", JOB_BABY_ACOLYTE);
+	_name2id_list.emplace("BabyMerchant", JOB_BABY_MERCHANT);
+	_name2id_list.emplace("BabyThief", JOB_BABY_THIEF);
+	_name2id_list.emplace("BabyKnight", JOB_BABY_KNIGHT);
+	_name2id_list.emplace("BabyPriest", JOB_BABY_PRIEST);
+	_name2id_list.emplace("BabyWizard", JOB_BABY_WIZARD);
+	_name2id_list.emplace("BabyBlacksmith", JOB_BABY_BLACKSMITH);
+	_name2id_list.emplace("BabyHunter", JOB_BABY_HUNTER);
+	_name2id_list.emplace("BabyAssassin", JOB_BABY_ASSASSIN);
+	_name2id_list.emplace("BabyCrusader", JOB_BABY_CRUSADER);
+	_name2id_list.emplace("BabyMonk", JOB_BABY_MONK);
+	_name2id_list.emplace("BabySage", JOB_BABY_SAGE);
+	_name2id_list.emplace("BabyRogue", JOB_BABY_ROGUE);
+	_name2id_list.emplace("BabyAlchemist", JOB_BABY_ALCHEMIST);
+	_name2id_list.emplace("BabyBard", JOB_BABY_BARD);
+	_name2id_list.emplace("BabyDancer", JOB_BABY_DANCER);
+	_name2id_list.emplace("SuperBaby", JOB_SUPER_BABY);
 	_name2id_list.emplace("Taekwon", JOB_TAEKWON);
-	_name2id_list.emplace("Star_Gladiator", JOB_STAR_GLADIATOR);
-	_name2id_list.emplace("Soul_Linker", JOB_SOUL_LINKER);
+	_name2id_list.emplace("StarGladiator", JOB_STAR_GLADIATOR);
+	_name2id_list.emplace("SoulLinker", JOB_SOUL_LINKER);
 	_name2id_list.emplace("Gangsi", JOB_GANGSI);
-	_name2id_list.emplace("Death_Knight", JOB_DEATH_KNIGHT);
-	_name2id_list.emplace("Dark_Collector", JOB_DARK_COLLECTOR);
-	_name2id_list.emplace("Rune_Knight", JOB_RUNE_KNIGHT);
+	_name2id_list.emplace("DeathKnight", JOB_DEATH_KNIGHT);
+	_name2id_list.emplace("DarkCollector", JOB_DARK_COLLECTOR);
+	_name2id_list.emplace("RuneKnight", JOB_RUNE_KNIGHT);
 	_name2id_list.emplace("Warlock", JOB_WARLOCK);
 	_name2id_list.emplace("Ranger", JOB_RANGER);
-	_name2id_list.emplace("Arch_Bishop", JOB_ARCH_BISHOP);
+	_name2id_list.emplace("ArchBishop", JOB_ARCH_BISHOP);
 	_name2id_list.emplace("Mechanic", JOB_MECHANIC);
-	_name2id_list.emplace("Guillotine_Cross", JOB_GUILLOTINE_CROSS);
-	_name2id_list.emplace("Rune_Knight_Trans", JOB_RUNE_KNIGHT_T);
-	_name2id_list.emplace("Warlock_Trans", JOB_WARLOCK_T);
-	_name2id_list.emplace("Ranger_Trans", JOB_RANGER_T);
-	_name2id_list.emplace("Arch_Bishop_Trans", JOB_ARCH_BISHOP_T);
-	_name2id_list.emplace("Mechanic_Trans", JOB_MECHANIC_T);
-	_name2id_list.emplace("Guillotine_Cross_Trans", JOB_GUILLOTINE_CROSS_T);
-	_name2id_list.emplace("Royal_Guard", JOB_ROYAL_GUARD);
+	_name2id_list.emplace("GuillotineCross", JOB_GUILLOTINE_CROSS);
+	_name2id_list.emplace("RuneKnightTrans", JOB_RUNE_KNIGHT_T);
+	_name2id_list.emplace("WarlockTrans", JOB_WARLOCK_T);
+	_name2id_list.emplace("RangerTrans", JOB_RANGER_T);
+	_name2id_list.emplace("ArchbishopTrans", JOB_ARCH_BISHOP_T);
+	_name2id_list.emplace("MechanicTrans", JOB_MECHANIC_T);
+	_name2id_list.emplace("GuillotineCrossTrans", JOB_GUILLOTINE_CROSS_T);
+	_name2id_list.emplace("RoyalGuard", JOB_ROYAL_GUARD);
 	_name2id_list.emplace("Sorcerer", JOB_SORCERER);
 	_name2id_list.emplace("Minstrel", JOB_MINSTREL);
 	_name2id_list.emplace("Wanderer", JOB_WANDERER);
 	_name2id_list.emplace("Sura", JOB_SURA);
 	_name2id_list.emplace("Genetic", JOB_GENETIC);
-	_name2id_list.emplace("Shadow_Chaser", JOB_SHADOW_CHASER);
-	_name2id_list.emplace("Royal_Guard_Trans", JOB_ROYAL_GUARD_T);
-	_name2id_list.emplace("Sorcerer_Trans", JOB_SORCERER_T);
-	_name2id_list.emplace("Minstrel_Trans", JOB_MINSTREL_T);
-	_name2id_list.emplace("Wanderer_Trans", JOB_WANDERER_T);
-	_name2id_list.emplace("Sura_Trans", JOB_SURA_T);
-	_name2id_list.emplace("Genetic_Trans", JOB_GENETIC_T);
-	_name2id_list.emplace("Shadow_Chaser_Trans", JOB_SHADOW_CHASER_T);
-	_name2id_list.emplace("Baby_Rune_Knight", JOB_BABY_RUNE_KNIGHT);
-	_name2id_list.emplace("Baby_Warlock", JOB_BABY_WARLOCK);
-	_name2id_list.emplace("Baby_Ranger", JOB_BABY_RANGER);
-	_name2id_list.emplace("Baby_Arch_Bishop", JOB_BABY_BISHOP);
-	_name2id_list.emplace("Baby_Mechanic", JOB_BABY_MECHANIC);
-	_name2id_list.emplace("Baby_Guillotine_Cross", JOB_BABY_GUILLOTINE_CROSS);
-	_name2id_list.emplace("Baby_Royal_Guard", JOB_BABY_ROYAL_GUARD);
-	_name2id_list.emplace("Baby_Sorcerer", JOB_BABY_SORCERER);
-	_name2id_list.emplace("Baby_Minstrel", JOB_BABY_MINSTREL);
-	_name2id_list.emplace("Baby_Wanderer", JOB_BABY_WANDERER);
-	_name2id_list.emplace("Baby_Sura", JOB_BABY_SURA);
-	_name2id_list.emplace("Baby_Genetic", JOB_BABY_GENETIC);
-	_name2id_list.emplace("Baby_Shadow_Chaser", JOB_BABY_SHADOW_CHASER);
-	_name2id_list.emplace("Expanded_Super_Novice", JOB_SUPER_NOVICE_E);
-	_name2id_list.emplace("Expanded_Super_Baby", JOB_SUPER_BABY_E);
+	_name2id_list.emplace("ShadowChaser", JOB_SHADOW_CHASER);
+	_name2id_list.emplace("RoyalGuardTrans", JOB_ROYAL_GUARD_T);
+	_name2id_list.emplace("SorcererTrans", JOB_SORCERER_T);
+	_name2id_list.emplace("MinstrelTrans", JOB_MINSTREL_T);
+	_name2id_list.emplace("WandererTrans", JOB_WANDERER_T);
+	_name2id_list.emplace("SuraTrans", JOB_SURA_T);
+	_name2id_list.emplace("GeneticTrans", JOB_GENETIC_T);
+	_name2id_list.emplace("ShadowChaserTrans", JOB_SHADOW_CHASER_T);
+	_name2id_list.emplace("BabyRuneKnight", JOB_BABY_RUNE_KNIGHT);
+	_name2id_list.emplace("BabyWarlock", JOB_BABY_WARLOCK);
+	_name2id_list.emplace("BabyRanger", JOB_BABY_RANGER);
+	_name2id_list.emplace("BabyArch_Bishop", JOB_BABY_ARCH_BISHOP);
+	_name2id_list.emplace("BabyMechanic", JOB_BABY_MECHANIC);
+	_name2id_list.emplace("BabyGuillotine_Cross", JOB_BABY_GUILLOTINE_CROSS);
+	_name2id_list.emplace("BabyRoyal_Guard", JOB_BABY_ROYAL_GUARD);
+	_name2id_list.emplace("BabySorcerer", JOB_BABY_SORCERER);
+	_name2id_list.emplace("BabyMinstrel", JOB_BABY_MINSTREL);
+	_name2id_list.emplace("BabyWanderer", JOB_BABY_WANDERER);
+	_name2id_list.emplace("BabySura", JOB_BABY_SURA);
+	_name2id_list.emplace("BabyGenetic", JOB_BABY_GENETIC);
+	_name2id_list.emplace("BabyShadow_Chaser", JOB_BABY_SHADOW_CHASER);
+	_name2id_list.emplace("SuperNoviceExtended", JOB_SUPER_NOVICE_E);
+	_name2id_list.emplace("SuperBabyExtended", JOB_SUPER_BABY_E);
 	_name2id_list.emplace("Kagerou", JOB_KAGEROU);
 	_name2id_list.emplace("Oboro", JOB_OBORO);
 	_name2id_list.emplace("Rebellion", JOB_REBELLION);
@@ -174,9 +174,9 @@ bool JobDatabase::load()
 		lua.script_file(file_path);
 		sol::table job_tbl = lua.get<sol::table>("job_db");
 		total_entries = load_job(job_tbl);
-		ZoneLog->info("Loaded {} entries from '{}'", total_entries, file_path);
+		CoreLog(info) <<"Loaded {} entries from '{}'", total_entries, file_path);
 	} catch(const std::exception &e) {
-		ZoneLog->error("JobDB::load: {}.", e.what());
+		CoreLog(error) <<"JobDB::load: {}.", e.what());
 		return false;
 	}
 
@@ -206,7 +206,7 @@ int JobDatabase::load_job(sol::table &job_tbls, std::string name)
 			if (load_job_internal(maybe_job.value(), data, name) == true)
 				_job_db.insert(jc, std::make_shared<job_db_data>(data));
 		} else {
-			ZoneLog->warn("JobDB::load_job: Job named '{}' was not found.", name);
+			CoreLog(warn) <<"JobDB::load_job: Job named '{}' was not found.", name);
 		}
 	}
 
@@ -219,14 +219,14 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 
 	t_str = job_tbl.get_or("BaseExpGroup", std::string(""));
 	if (t_str.empty()) {
-		ZoneLog->warn("JobDB::load_job_internal: Invalid or non-existant BaseExpGroup for job '{}', skipping...", job_name);
+		CoreLog(warn) <<"JobDB::load_job_internal: Invalid or non-existant BaseExpGroup for job '{}', skipping...", job_name);
 		return false;
 	}
 	data.base_exp_group = t_str;
 
 	t_str = job_tbl.get_or("JobExpGroup", std::string(""));
 	if (t_str.empty()) {
-		ZoneLog->warn("JobDB::load_job_internal: Invalid or non-existant JobExpGroup for job '{}', skipping...", job_name);
+		CoreLog(warn) <<"JobDB::load_job_internal: Invalid or non-existant JobExpGroup for job '{}', skipping...", job_name);
 		return false;
 	}
 	data.job_exp_group = t_str;
@@ -242,7 +242,7 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 				std::string w_name = key.as<std::string>();
 
 				if (value.get_type() != sol::type::number) {
-					ZoneLog->warn("JobDB::load_job_internal: Invalid entry in BaseASPD setting weapon {} for job '{}'.", w_name, job_name);
+					CoreLog(warn) <<"JobDB::load_job_internal: Invalid entry in BaseASPD setting weapon {} for job '{}'.", w_name, job_name);
 					return;
 				}
 
@@ -303,13 +303,13 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 		job_class_type jc = get_job_class_by_name(t_str);
 
 		if (jc == JOB_INVALID) {
-			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
+			CoreLog(warn) <<"JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
 			return false;
 		}
 
 		auto jobi = _job_db.at(jc);
 		if (!jobi) {
-			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
+			CoreLog(warn) <<"JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
 			return false;
 		}
 
@@ -337,12 +337,12 @@ bool JobDatabase::load_hp_sp_table(sol::table &job_tbl, job_db_data &data, std::
 	if (!t_str.empty()) {
 		job_class_type jc = get_job_class_by_name(t_str);
 		if (jc == JOB_INVALID) {
-			ZoneLog->warn("JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
+			CoreLog(warn) <<"JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
 			return false;
 		}
 		auto jobi = _job_db.at(jc);
 		if (!jobi) {
-			ZoneLog->warn("JobDB::load_hp_sp_table: Unable to inherit {} from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", table_name, t_str, job_name);
+			CoreLog(warn) <<"JobDB::load_hp_sp_table: Unable to inherit {} from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", table_name, t_str, job_name);
 			return false;
 		}
 		std::shared_ptr<const job_db_data> inherited_data = jobi;
@@ -355,13 +355,13 @@ bool JobDatabase::load_hp_sp_table(sol::table &job_tbl, job_db_data &data, std::
 	sol::optional<sol::table> tbl = job_tbl.get<sol::optional<sol::table>>(table_name);
 
 	if (!tbl) {
-		ZoneLog->warn("JobDB::load_hp_sp_table: Job '{}' does not have a {}, skipping...", job_name, table_name);
+		CoreLog(warn) <<"JobDB::load_hp_sp_table: Job '{}' does not have a {}, skipping...", job_name, table_name);
 		return false;
 	}
 
 	tbl.value().for_each([&data, &job_name, &table_name](sol::object const &key, sol::object const &val) {
 		if (key.get_type() != sol::type::number) {
-			ZoneLog->warn("JobDB::load_hp_sp_table: Invalid index {} for entry {} in job '{}', skipping...", key.as<int>(), job_name, table_name);
+			CoreLog(warn) <<"JobDB::load_hp_sp_table: Invalid index {} for entry {} in job '{}', skipping...", key.as<int>(), job_name, table_name);
 			return;
 		}
 
@@ -484,20 +484,20 @@ job_class_mask JobDatabase::job_id_to_mask(job_class_type job_id) const
 	case JOB_GENETIC_T:             return JMASK_GENETIC_T;
 	case JOB_SHADOW_CHASER_T:       return JMASK_SHADOW_CHASER_T;
 	//Baby 3-1 Jobs
-	case JOB_BABY_RUNE_KNIGHT:      return JMASK_BABY_RUNE;
+	case JOB_BABY_RUNE_KNIGHT:      return JMASK_BABY_RUNE_KNIGHT;
 	case JOB_BABY_WARLOCK:          return JMASK_BABY_WARLOCK;
 	case JOB_BABY_RANGER:           return JMASK_BABY_RANGER;
-	case JOB_BABY_BISHOP:           return JMASK_BABY_BISHOP;
+	case JOB_BABY_ARCH_BISHOP:           return JMASK_BABY_ARCH_BISHOP;
 	case JOB_BABY_MECHANIC:         return JMASK_BABY_MECHANIC;
-	case JOB_BABY_GUILLOTINE_CROSS: return JMASK_BABY_CROSS;
+	case JOB_BABY_GUILLOTINE_CROSS: return JMASK_BABY_GUILLOTINE_CROSS;
 	//Baby 3-2 Jobs
-	case JOB_BABY_ROYAL_GUARD:            return JMASK_BABY_GUARD;
+	case JOB_BABY_ROYAL_GUARD:            return JMASK_BABY_ROYAL_GUARD;
 	case JOB_BABY_SORCERER:         return JMASK_BABY_SORCERER;
 	case JOB_BABY_MINSTREL:
 	case JOB_BABY_WANDERER:         return JMASK_BABY_MINSTRELWANDERER;
 	case JOB_BABY_SURA:             return JMASK_BABY_SURA;
 	case JOB_BABY_GENETIC:          return JMASK_BABY_GENETIC;
-	case JOB_BABY_SHADOW_CHASER:           return JMASK_BABY_CHASER;
+	case JOB_BABY_SHADOW_CHASER:           return JMASK_BABY_SHADOW_CHASER;
 	// Expanded Jobs
 	case JOB_SUPER_NOVICE_E:        return JMASK_SUPER_NOVICE_E;
 	case JOB_SUPER_NOVICE:          return JMASK_SUPER_NOVICE;

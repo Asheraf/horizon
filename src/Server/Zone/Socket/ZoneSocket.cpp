@@ -66,7 +66,7 @@ void ZoneSocket::start()
 
 	session->initialize();
 
-	ZoneLog->info("Established connection from {}.", remote_ip_address());
+	CoreLog(info) <<"Established connection from {}.", remote_ip_address());
 
 	// Start async_read loop.
 	async_read();
@@ -77,7 +77,7 @@ void ZoneSocket::start()
  */
 void ZoneSocket::on_close()
 {
-	ZoneLog->info("Closed connection from {}.", remote_ip_address());
+	CoreLog(info) <<"Closed connection from {}.", remote_ip_address());
 
 	get_session()->perform_cleanup();
 }
@@ -111,7 +111,7 @@ void ZoneSocket::read_handler()
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
 		} else if (packet_length == 0) {
-			ZoneLog->warn("Received non-existent packet id {0:x}, disconnecting session...", packet_id);
+			CoreLog(warn) <<"Received non-existent packet id {0:x}, disconnecting session...", packet_id);
 			close_socket();
 			break;
 		}

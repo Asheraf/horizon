@@ -34,7 +34,6 @@
 
 #include <map>
 #include <stdio.h>
-#include <mysqlx/xdevapi.h>
 
 class GameAccount;
 
@@ -72,9 +71,9 @@ public:
 		return &query;
 	}
 
-	void InitializeQueryStrings();
+//	void InitializeQueryStrings();
 
-	std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
+//	std::shared_ptr<Horizon::Models::Character::Character> CreateCharacterModelFromResult(uint32_t account_id, mysqlx::Row record);
 };
 }
 }

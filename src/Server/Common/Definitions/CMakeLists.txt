@@ -28,10 +28,12 @@
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(COMMON_DEFINITION_SOURCES
+	${DIR}/BattleDefinitions.hpp
 	${DIR}/Definitions.hpp
 	${DIR}/EntityDefinitions.hpp
 	${DIR}/ItemDefinitions.hpp
 	${DIR}/NPCDefinitions.hpp
-	${DIR}/Client.hpp
-	${DIR}/Horizon.hpp
+	${DIR}/MonsterDefinitions.hpp
+	${DIR}/SkillDefinitions.hpp
+	${DIR}/LuaDefinitionSync.hpp
 	PARENT_SCOPE)

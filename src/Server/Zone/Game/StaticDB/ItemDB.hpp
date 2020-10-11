@@ -27,6 +27,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
+#pragma once
 #ifndef HORIZON_ZONE_GAME_ITEMDB
 #define HORIZON_ZONE_GAME_ITEMDB
 
@@ -39,8 +40,15 @@
 #include <map>
 #include <cstring>
 #include <iostream>
-#include <sol.hpp>
 #include <array>
+
+
+#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
+	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
+
+#include <sol.hpp>
 
 namespace Horizon
 {
@@ -70,7 +78,9 @@ public:
 	bool load_refine_db();
 	bool load_weapon_target_size_modifiers_db();
 	bool load_weapon_attribute_modifiers_db();
-	
+
+	bool add_job_group_to_item(std::string const &group, item_config_data &id, bool enable, std::string const &file_path);
+
 	std::shared_ptr<const item_config_data> get_item_by_id(uint32_t item_id) const { return _item_db.at(item_id); }
 
 	std::shared_ptr<const refine_config> get_refine_config(refine_type type)

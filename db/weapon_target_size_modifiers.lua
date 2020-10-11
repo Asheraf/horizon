@@ -26,123 +26,124 @@
 ---------------------------------------------------------------------------
 --- Weapon target size modifiers.
 ---------------------------------------------------------------------------
+
 weapon_target_size_modifiers = {
-	Fist = {
+	[ WeaponType.Fist ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100
 	},
-	Dagger = {
+	[ WeaponType.Dagger ] = {
 		Small = 100,
 		Medium =  75,
 		Large = 50
 	},
-	One_Handed_Sword = {
+	[ WeaponType.OneHandedSword ] = {
 		Small = 75,
 		Medium = 100,
 		Large = 75
 	},
-	Two_Handed_Sword = {
+	[ WeaponType.TwoHandedSword ] = {
 		Small = 75,
 		Medium = 75,
 		Large = 100
 	},
-	One_Handed_Spear = {
+	[ WeaponType.OneHandedSpear ] = {
 		Small = 75,
 		Medium = 75,
 		Large = 100
 	},
-	Two_Handed_Spear = {
+	[ WeaponType.TwoHandedSpear ] = {
 		Small =  75,
 		Medium =  75,
 		Large = 100
 	},
-	One_Handed_Axe = {
+	[ WeaponType.OneHandedAxe ] = {
 		Small =  50,
 		Medium =  75,
 		Large = 100
 	},
-	Two_Handed_Axe = {
+	[ WeaponType.TwoHandedAxe ] = {
 		Small =  50,
 		Medium =  75,
 		Large = 100
 	},
-	One_Handed_Mace = {
+	[ WeaponType.OneHandedMace ] = {
 		Small = 75,
 		Medium = 100,
 		Large = 100
 	},
-	Two_Handed_Mace = {
+	[ WeaponType.TwoHandedMace ] = {
 		Small =  75,
 		Medium = 100,
 		Large = 100
 	},
-	One_Handed_Staff = {
+	[ WeaponType.OneHandedStaff ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100
 	},
-	Bow = {
+	[ WeaponType.Bow ] = {
 		Small = 100,
 		Medium = 100,
 		Large =  75
 	},
-	Knuckle = {
+	[ WeaponType.Knuckle ] = {
 		Small = 100,
 		Medium =  75,
 		Large =  50
 	},
-	Musical_Instrument = {
+	[ WeaponType.MusicalInstrument ] = {
 		Small =  75,
 		Medium = 100,
 		Large =  75
 	},
-	Whip = {
+	[ WeaponType.Whip ] = {
 		Small =  75,
 		Medium = 100,
 		Large =  50
 	},
-	Book = {
+	[ WeaponType.Book ] = {
 		Small = 100,
 		Medium = 100,
 		Large =  50
 	},
-	Katar = {
+	[ WeaponType.Katar ] = {
 		Small =  75,
 		Medium = 100,
 		Large =  75
 	},
-	Revolver = {
+	[ WeaponType.Revolver ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100
 	},
-	Rifle = {
+	[ WeaponType.Rifle ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100
 	},
-	Shotgun = {
+	[ WeaponType.Shotgun ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100
 	},
-	Gatling_Gun = {
+	[ WeaponType.GatlingGun ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100
 	},
-	Grenade_Launcher = {
+	[ WeaponType.GrenadeLauncher ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100
 	},
-	Fuuma_Shuriken = {
+	[ WeaponType.FuumaShuriken ] = {
 		Small =  75,
 		Medium =  75,
 		Large = 100
 	},
-	Two_Handed_Staff = {
+	[ WeaponType.TwoHandedStaff ] = {
 		Small = 100,
 		Medium = 100,
 		Large = 100

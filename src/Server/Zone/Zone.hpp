@@ -32,7 +32,7 @@
 
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Core/Logging/Logger.hpp"
-#include "Server/Common/Models/Configuration/ZoneServerConfiguration.hpp"
+#include "Server/Common/Configuration/ZoneServerConfiguration.hpp"
 #include "Server/Common/Server.hpp"
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 

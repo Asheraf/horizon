@@ -27,6 +27,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
+#pragma once
 #ifndef HORIZON_ZONE_GAME_JOBDB
 #define HORIZON_ZONE_GAME_JOBDB
 
@@ -39,6 +40,12 @@
 #include <vector>
 #include <array>
 #include <string>
+
+#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
+	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
+#define SOL_EXCEPTIONS_SAFE_PROPAGATION
+#endif
+
 #include <sol.hpp>
 
 namespace Horizon

@@ -34,6 +34,7 @@ message("* Horizon Build Type         : ${CMAKE_BUILD_TYPE}")
 
 message("* Install core to            : ${CMAKE_INSTALL_PREFIX}")
 message("* Install configs to         : ${CONF_DIR}")
+message("* Install scripts to         : ${LUA_DIR}")
 message("* Install static database to : ${DB_DIR}")
 if (WITH_TESTS)
 message("* Install tests to           : ${TEST_DIR}")

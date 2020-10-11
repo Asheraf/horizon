@@ -42,6 +42,7 @@
 #include "Server/Zone/Game/Status/Appearance.hpp"
 #include "Server/Zone/Game/Status/Status.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
+#include "Server/Zone/Socket/ZoneSocket.hpp"
 #include "Server/Zone/Zone.hpp"
 
 
@@ -51,7 +52,7 @@ using namespace Horizon::Zone::Game::Entities;
 using namespace Horizon::Zone;
 
 Player::Player(uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords, std::shared_ptr<ZoneSession> session)
-: Entity(guid, ENTITY_PLAYER, map, mcoords), _session(session),
+: Entity(guid, ENTITY_PLAYER, map, mcoords), _session(session), _socket(session->get_socket()),
  _character_model(session->get_char_model()), _packet_handler(session->get_packet_handler())
 {
 }
@@ -117,7 +118,7 @@ void Player::stop_movement()
 	get_packet_handler()->Send_ZC_STOPMOVE(get_guid(), coords.x(), coords.y());
 }
 
-void Player::update(uint32_t diff)
+void Player::update(uint64_t diff)
 {
 	Entity::update(diff);
 }
@@ -185,7 +186,7 @@ void Player::sync_with_models()
 		if (char_save_mask & CHAR_SAVE_INVENTORY_DATA)
 			saved_str.append(saved_str.empty() ? "inventory" : ", inventory");
 
-		ZoneLog->info("Saved {} data for character {} (AID: {}, CID: {}).", saved_str, get_char_model()->get_name(), get_guid(), get_char_model()->get_id());
+		CoreLog(info) <<"Saved {} data for character {} (AID: {}, CID: {}).", saved_str, get_char_model()->get_name(), get_guid(), get_char_model()->get_id());
 	}
 }
 
@@ -324,19 +325,19 @@ bool Player::move_to_map(std::shared_ptr<Map> map, MapCoords coords)
 	return true;
 }
 
-void Player::send_npc_dialog(uint32_t npc_guid, std::string dialog)
+void Player::send_npc_CoreLog(uint32_t npc_guid, std::string CoreLog)
 {
-	get_packet_handler()->Send_ZC_SAY_DIALOG(npc_guid, dialog);
+	get_packet_handler()->Send_ZC_SAY_CoreLog(npc_guid, CoreLog);
 }
 
-void Player::send_npc_next_dialog(uint32_t npc_guid)
+void Player::send_npc_next_CoreLog(uint32_t npc_guid)
 {
-	get_packet_handler()->Send_ZC_WAIT_DIALOG(npc_guid);
+	get_packet_handler()->Send_ZC_WAIT_CoreLog(npc_guid);
 }
 
-void Player::send_npc_close_dialog(uint32_t npc_guid)
+void Player::send_npc_close_CoreLog(uint32_t npc_guid)
 {
-	get_packet_handler()->Send_ZC_CLOSE_DIALOG(npc_guid);
+	get_packet_handler()->Send_ZC_CLOSE_CoreLog(npc_guid);
 }
 
 void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)

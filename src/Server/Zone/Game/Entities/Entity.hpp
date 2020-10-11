@@ -30,7 +30,7 @@
 #ifndef HORIZON_ZONE_GAME_ENTITY_HPP
 #define HORIZON_ZONE_GAME_ENTITY_HPP
 
-#include "Server/Common/Definitions/Horizon.hpp"
+#include "Server/Common/Configuration/Horizon.hpp"
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
@@ -129,7 +129,7 @@ public:
 	/**
 	 * Entity applications
 	 */
-	virtual void update(uint32_t diff);
+	virtual void update(uint64_t diff);
 	TaskScheduler &getScheduler() { return _scheduler; }
 
 	entity_type get_type() const { return _type; }

@@ -71,7 +71,7 @@ void cli_thread_start(Server *serv)
 			serv->queue_cli_command(CLICommand(serv, command_str, &command_complete));
 			add_history(command_str);
 			free(command_str);
-			std::this_thread::sleep_for(std::chrono::milliseconds(serv->general_conf().get_core_update_interval() + 100)); // Sleep until core has updated.
+			std::this_thread::sleep_for(std::chrono::milliseconds(MAX_CORE_UPDATE_INTERVAL + 100)); // Sleep until core has updated.
 		} else if (feof(stdin)) {
 			serv->set_shutdown_stage(SHUTDOWN_INITIATED);
 			serv->set_shutdown_signal(SIGTERM);

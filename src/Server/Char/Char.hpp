@@ -32,7 +32,7 @@
 
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Server/Common/Server.hpp"
-#include "Server/Common/Models/Configuration/CharServerConfiguration.hpp"
+#include "Server/Common/Configuration/CharServerConfiguration.hpp"
 #include <string>
 
 namespace Horizon

@@ -30,7 +30,7 @@
 #define HORIZON_ZONE_SESSION_ZONESESSION_HPP
 
 #include "Core/Networking/Session.hpp"
-#include "Server/Common/Models/Configuration/GeneralServerConfiguration.hpp"
+#include "Server/Common/Configuration/ServerConfiguration.hpp"
 
 #include <memory>
 

@@ -77,7 +77,7 @@ bool Entity::schedule_movement(MapCoords coords)
 		_walk_path.clear();
 
 	if (!get_map()) {
-		ZoneLog->error("Reference to map object has been lost for entity {:p}.", (void *) this);
+		CoreLog(error) <<"Reference to map object has been lost for entity {:p}.", (void *) this);
 		return false;
 	}
 
@@ -155,7 +155,7 @@ bool Entity::move_to_pos(uint16_t x, uint16_t y)
 	return true;
 }
 
-void Entity::update(uint32_t /*diff*/)
+void Entity::update(uint64_t /*diff*/)
 {
 	_scheduler.Update();
 }

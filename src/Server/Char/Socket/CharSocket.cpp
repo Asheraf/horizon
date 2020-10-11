@@ -66,7 +66,7 @@ void CharSocket::start()
 
 	session->initialize();
 
-	CharLog->info("Established connection from {}.", remote_ip_address());
+	CoreLog(info) <<"Established connection from {}.", remote_ip_address());
 
 	// Start async_read loop.
 	async_read();
@@ -77,7 +77,7 @@ void CharSocket::start()
  */
 void CharSocket::on_close()
 {
-	CharLog->info("Closed connection from {}.", remote_ip_address());
+	CoreLog(info) <<"Closed connection from {}.", remote_ip_address());
 
 	/* Perform socket manager cleanup. */
 	ClientSocktMgr->set_socket_for_removal(shared_from_this());
@@ -114,7 +114,7 @@ void CharSocket::read_handler()
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
 		} else if (packet_length == 0) {
-			CharLog->warn("Received non-existent packet id {0:x}, disconnecting session...", packet_id);
+			CoreLog(warn) <<"Received non-existent packet id {0:x}, disconnecting session...", packet_id);
 			close_socket();
 			break;
 		}

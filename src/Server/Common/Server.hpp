@@ -33,13 +33,18 @@
 #include "Logging/Logger.hpp"
 #include "CLI/CLICommand.hpp"
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
-#include "Models/Configuration/GeneralServerConfiguration.hpp"
-#include <mysqlx/xdevapi.h>
+#include "Server/Common/Configuration/ServerConfiguration.hpp"
+#include "Server/Common/Configuration/Horizon.hpp"
 
 #include <cstdio>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
+#include <sqlpp11/sqlpp11.h>
+#include <sqlpp11/mysql/mysql.h>
+
+#define SOL_ALL_SAFETIES_ON 1
+
 #include <sol.hpp>
 
 using boost::asio::ip::tcp;
@@ -55,7 +60,7 @@ enum shutdown_stages
 class Server
 {
 public:
-	Server(std::string name, std::string config_file_path, std::string config_file_name);
+	Server();
 	~Server();
 
 	void parse_exec_args(const char *argv[], int argc);
@@ -72,12 +77,10 @@ public:
 	/* Core I/O Service*/
 	boost::asio::io_service &get_io_service();
 	/* General Configuration */
-	struct general_server_configuration &general_conf() { return this->general_config; }
-	/* Network Configuration */
-	network_configuration &network_conf() { return network_config; };
-	void setNetwork(const network_configuration &network) { this->network_config = network; };
-	/* Database Configuration */
-	database_configuration &database_conf() { return database_config; }
+	struct general_server_configuration &general_conf()
+	{
+		return this->general_config;
+	}
 
 	/**
 	 * Processing Functions
@@ -87,8 +90,6 @@ public:
 	/* Initialize Core */
 	virtual void initialize_core();
 	virtual void finalize_core();
-	/* Mysql Threads */
-	void initialize_mysql();
 	/* Command Line Interface */
 	void initialize_command_line();
 
@@ -113,18 +114,12 @@ public:
 		set_shutdown_signal(SIGTERM);
 		return true;
 	}
-
-	std::shared_ptr<mysqlx::Client> get_mysql_client() { return _mysql_client; }
-
+    
+    std::shared_ptr<sqlpp::mysql::connection> get_mysql_connection() { return _mysql_connection; }
+    
 protected:
 	/* General Configuration */
 	struct general_server_configuration general_config;
-	/* Network Configuration */
-	struct network_configuration network_config;
-	/* Database Configuration */
-	struct database_configuration database_config;
-	/* MySQL Client */
-	std::shared_ptr<mysqlx::Client> _mysql_client;
 	// CLI command holder to be thread safe
 	ThreadSafeQueue<CLICommand> _cli_cmd_queue;
 	std::thread _cli_thread;
@@ -132,6 +127,9 @@ protected:
 	std::atomic<shutdown_stages> _shutdown_stage;
 	std::atomic<int> _shutdown_signal;
 	std::unordered_map<std::string, std::function<bool(void)>> _cli_function_map;
+	std::shared_ptr<sqlpp::mysql::connection_config> _mysql_config;
+	std::shared_ptr<sqlpp::mysql::connection> _mysql_connection;
+    
 	/**
 	 * Core IO Service
 	 */

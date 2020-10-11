@@ -27,8 +27,8 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
-#ifndef HORIZON_MODELS_GUILD_EXPULSIONLOG_HPP
-#define HORIZON_MODELS_GUILD_EXPULSIONLOG_HPP
+#ifndef HORIZON_MODELS_GUILD_CoreLog_HPP
+#define HORIZON_MODELS_GUILD_CoreLog_HPP
 
 namespace Horizon
 {
@@ -36,11 +36,11 @@ namespace Models
 {
 namespace Guild
 {
-class ExpulsionLog
+class CoreLog
 {
 public:
-	ExpulsionLog() { }
-	~ExpulsionLog() { }
+	CoreLog() { }
+	~CoreLog() { }
 
 	/* Guild ID */
 	uint32_t get_guild_id() { return _guild_id; }
@@ -61,4 +61,4 @@ private:
 }
 }
 
-#endif /* HORIZON_MODELS_GUILD_EXPULSIONLOG_HPP */
+#endif /* HORIZON_MODELS_GUILD_CoreLog_HPP */

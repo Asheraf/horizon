@@ -67,7 +67,7 @@ bool MapManager::LoadMapCache()
 	m.setMapCachePath(db_path + ZoneServer->get_zone_config().get_mapcache_file_name());
 
 	if (m.ReadMapListConfig() != MCACHE_CONFIG_OK) {
-		ZoneLog->error("Could not read map config file '{}'.", m.getMapListPath().string());
+		CoreLog(error) <<"Could not read map config file '{}'.", m.getMapListPath().string());
 		return false;
 	}
 
@@ -76,22 +76,22 @@ bool MapManager::LoadMapCache()
 		default:
 			break;
 		case MCACHE_IMPORT_NONEXISTENT_FILE:
-			ZoneLog->error("Could not open file '{}'.", m.getMapCachePath().string());
+			CoreLog(error) <<"Could not open file '{}'.", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_READ_ERROR:
-			ZoneLog->error("Could not read file '{}', rebuilding...", m.getMapCachePath().string());
+			CoreLog(error) <<"Could not read file '{}', rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_INVALID_CHECKSUM:
-			ZoneLog->error("File cache file '{}' is corrupted (invalid checksum), rebuilding...", m.getMapCachePath().string());
+			CoreLog(error) <<"File cache file '{}' is corrupted (invalid checksum), rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_DECOMPRESS_ERROR:
-			ZoneLog->error("File cache file '{}' could not be decompressed, rebuilding...", m.getMapCachePath().string());
+			CoreLog(error) <<"File cache file '{}' could not be decompressed, rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_MAPINFO_ERROR:
-			ZoneLog->error("Could not read map information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
+			CoreLog(error) <<"Could not read map information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
 			return false;
 		case MCACHE_IMPORT_CELLINFO_ERROR:
-			ZoneLog->error("Could not read cell information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
+			CoreLog(error) <<"Could not read cell information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
 			return false;
 	}
 
@@ -100,7 +100,7 @@ bool MapManager::LoadMapCache()
 	int mcache_size = m.getMCache()->maps.size();
 	int container_max = std::ceil((double) mcache_size / map_container_count);
 
-	ZoneLog->info("Initializing {} map containers with {} maps per container for a total of {} maps...", map_container_count, container_max, mcache_size);
+	CoreLog(info) <<"Initializing {} map containers with {} maps per container for a total of {} maps...", map_container_count, container_max, mcache_size);
 
 	for (int i = 0; i < map_container_count; i++)
 		_map_containers.push_back(std::make_shared<MapThreadContainer>());
@@ -112,13 +112,14 @@ bool MapManager::LoadMapCache()
 		total_maps++;
 
 		if (container_max == map_counter || total_maps == mcache_size) {
+			CoreLog(info) <<"Initializing {} maps in map container {:p}...", map_counter, (void *) _map_containers[container_idx].get());
 			_map_containers[container_idx]->initialize();
 			_map_containers[container_idx++]->start();
 			map_counter = 0;
 		}
 	}
 
-	ZoneLog->info("Done initializing '{}' maps.", total_maps);
+	CoreLog(info) <<"Done initializing {} maps in {} containers.", total_maps, map_container_count);
 
 	return true;
 }

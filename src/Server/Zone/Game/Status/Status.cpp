@@ -28,7 +28,7 @@
  **************************************************/
 
 #include "Status.hpp"
-#include "Server/Common/Definitions/Horizon.hpp"
+#include "Server/Common/Configuration/Horizon.hpp"
 #include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Common/Models/Character/Status.hpp"
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"

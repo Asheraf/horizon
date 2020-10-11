@@ -67,19 +67,19 @@ public:
 		try {
 			_acceptor = std::make_unique<AsyncAcceptor>(io_service, listen_ip, port);
 		} catch (boost::system::system_error const &error) {
-			CoreLog->error("Exception caught in AcceptSocketMgr::Start ({}, {}) {}", listen_ip, port, error.what());
+//			HLog(error) << "Exception caught in AcceptSocketMgr::Start (" << listen_ip.c_str() << ", " << port ") " << error.what();
 			return false;
 		}
 
 		if (!BaseSocketMgr::StartNetworkThreads(threads)) {
-			CoreLog->error("AcceptSocketMgr failed to start network threads.");
+			HLog(error) << "AcceptSocketMgr failed to start network threads.";
 			return false;
 		}
 
 		_acceptor->set_socket_factory(std::bind(&BaseSocketMgr::get_new_socket, this));
 		_acceptor->async_accept_with_callback(std::bind(&AcceptSocketMgr<SocketType>::on_socket_open, this, std::placeholders::_1, std::placeholders::_2));
 
-		CoreLog->info("Networking initialized, listening on {} {} (Maximum Threads: {})", listen_ip, port, threads);
+//		HLog(info) << "Networking initialized, listening on " << listen_ip << "@" port << "Maximum Threads: " << threads;
 
 		return true;
 	}
@@ -143,10 +143,12 @@ public:
 			auto socket_iter = _socket_map.find(socket->get_socket_id());
 
 			if (socket_iter != _socket_map.end())
-				_socket_map.erase(socket_iter);
+                continue; // Socket already in socket map.
 
 			if (add)
 				_socket_map.emplace(socket->get_socket_id(), socket);
+            else
+                _socket_map.erase(socket_iter);
 		}
 
 		for (auto sock : _socket_map) {
@@ -156,35 +158,10 @@ public:
 		}
 	}
 
-	int16_t get_packet_length(uint16_t packet_id)
-	{
-		std::lock_guard<std::mutex> lock(_packet_len_db_mtx);
-
-		try {
-			return _packet_length_db.at(packet_id);
-		} catch (std::out_of_range &e) {
-			return 0;
-		}
-	}
-
-	void add_packet_length(uint16_t packet_id, int16_t length)
-	{
-		std::lock_guard<std::mutex> lock(_packet_len_db_mtx);
-
-		auto it = _packet_length_db.find(packet_id);
-
-		if (it != _packet_length_db.end())
-			_packet_length_db.erase(it);
-
-		_packet_length_db.emplace(packet_id, length);
-	}
-
 private:
 	std::unique_ptr<AsyncAcceptor> _acceptor;       ///< unique pointer to an AsyncAcceptor object.
 	SocketMap _socket_map;                          ///< std::map of all connected and handled sockets.
-	std::mutex _packet_len_db_mtx;
 	ThreadSafeQueue<std::pair<bool, std::shared_ptr<SocketType>>> _socket_management_queue;
-	std::map<uint16_t, int16_t> _packet_length_db;
 };
 }
 }

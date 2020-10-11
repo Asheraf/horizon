@@ -106,6 +106,15 @@ public:
 
 		return count;
 	}
+
+	void clear()
+	{
+		for (unsigned i = 0; i < _buckets.size(); ++i) {
+			boost::unique_lock<boost::shared_mutex> lock(_buckets[i]->_mutex);
+			_buckets[i]->data.clear();
+		}
+	}
+	
 private:
 	std::vector<std::unique_ptr<bucket_type>> _buckets;
 	Hash hasher;

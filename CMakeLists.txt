@@ -30,15 +30,13 @@
 # Project Setup
 #################################
 cmake_minimum_required (VERSION 3.7 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PROJECT_NAME "Horizon")
 
 project (${PROJECT_NAME})
 enable_language(CXX)
 enable_language(C)
-
-set(AUTH_TARGET_NAME auth)
 
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Debug)
@@ -107,15 +105,15 @@ check_cxx_source_compiles("
 #################################
 set(BOOST_REQUIRED_VERSION 1.66)
 set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_SHARED_LIBS ON)
 
-set(BOOST_COMPONENTS system filesystem thread locale)
+set(BOOST_COMPONENTS system filesystem thread locale log log_setup)
 
 if (WITH_TESTS)
 		set(BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
 endif()
 
 message(STATUS "Boost Components: ${BOOST_COMPONENTS}")
-
 
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED ${BOOST_COMPONENTS})
 
@@ -130,23 +128,13 @@ target_include_directories(boost
 				INTERFACE
 				${Boost_INCLUDE_DIRS})
 
-#################
-# SPDLog Library
-#################
-set(SPDLOG_FIND_REQUIRED true)
-include(FindSPDLog)
+ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 
 #################
 # Readline Library
 #################
 set(Readline_FIND_REQUIRED true)
 include(FindReadline)
-
-#################
-# MySQL CPP Connector
-#################
-set(MYSQLCONNCPP_FIND_REQUIRED true)
-include(FindMySQLConnector)
 
 ###############
 # LuaJit
@@ -165,6 +153,20 @@ include(FindSol2)
 #################
 find_package(ZLIB REQUIRED)
 
+#################
+# Find Zlib
+#################
+set(SQLPP11_FIND_REQUIRED true)
+include(FindMySQL)
+find_package(sqlpp11 REQUIRED)
+find_package(sqlpp11-mysql REQUIRED)
+
+#################
+# Find Argon2
+#################
+if (WITH_TESTS AND NOT WITHOUT_SERVERS)
+	find_package(Argon2 REQUIRED)
+endif()
 #################
 # Horizon Project Source
 #################

@@ -31,7 +31,7 @@
 #define HORIZON_NETWORKING_SOCKET_HPP
 
 #include "Core/Logging/Logger.hpp"
-#include "Buffer/MessageBuffer.hpp"
+#include "Buffer/ByteBuffer.hpp"
 #include "Core/Multithreading/ThreadSafeQueue.hpp"
 
 #include <atomic>
@@ -49,7 +49,7 @@
 
 using boost::asio::ip::tcp;
 
-#define READ_BLOCK_SIZE 4096
+#define READ_BLOCK_SIZE 0x1000
 
 namespace Horizon
 {
@@ -72,8 +72,17 @@ public:
 		_socket->close(error);
 	}
 
+    /**
+     * @brief Initial method invoked once from the network thread that handles the AuthSocket.
+     * @thread NetworkThread
+     */
 	virtual void start() = 0;
 
+    /**
+     * @brief Socket update loop called from its NetworkThread every n nanoseconds.
+     * Processes the message queue.
+     * @thread NetworkThread
+     */
 	virtual bool update()
 	{
 		if (_closed)
@@ -96,71 +105,46 @@ public:
 	std::string &remote_ip_address() { return _remote_ip_address; }
 	uint16_t remote_port() const { return _remote_port; }
 
+    /**
+     * @brief Asynchronous read operation
+     * @thread NetworkThread
+     */
 	void async_read()
 	{
 		if (!is_open())
 			return;
 
-		_read_buffer.normalize();
-		_read_buffer.ensureFreeSpace();
-
-		_socket->async_read_some(boost::asio::buffer(_read_buffer.get_write_pointer(), _read_buffer.get_remaining_space()),
+		_read_buffer.flush();
+		_read_buffer.ensure_free_space();
+		
+		_socket->async_read_some(boost::asio::buffer(_read_buffer.get_write_pointer(), _read_buffer.remaining_space()),
 								 boost::bind(&Socket<SocketType>::read_handler_internal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
-
-	void async_read_with_callback(MessageBuffer &buf, void (Socket<SocketType>::*/*callback*/)(boost::system::error_code, std::size_t))
+    
+    /**
+     * @brief Asynchronous read operation with callback handler
+     * @thread NetworkThread
+     */
+	void async_read_with_callback(ByteBuffer &buf, void (Socket<SocketType>::*/*callback*/)(boost::system::error_code, std::size_t))
 	{
 		if (!is_open())
 			return;
 
-		_read_buffer.normalize();
-		_read_buffer.ensureFreeSpace();
+		_read_buffer.flush();
+		_read_buffer.ensure_free_space();
 
-		_socket->async_read_some(boost::asio::buffer(buf.get_write_pointer(), buf.get_remaining_space()),
+		_socket->async_read_some(boost::asio::buffer(buf.get_write_pointer(), buf.remaining_space()),
 								 boost::bind(&Socket<SocketType>::read_handler_internal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
-	/**
-	 * Synchronous reading.
-	 * @return size of the read buffer.
-	 */
-	std::size_t sync_read(MessageBuffer &buf, std::size_t read_size)
-	{
-		std::size_t size = 0;
-
-		try {
-			size = _socket->read_some(boost::asio::buffer(buf.get_write_pointer(), read_size));
-			buf.write_completed(size);
-		} catch (boost::system::system_error &e) {
-			CoreLog->info("Error '{}' while reading data from client at {}.", e.what(), _remote_ip_address);
-		}
-
-		return size;
-	}
-
-	/**
-	 * Synchronous writing.
-	 * @return size of the written buffer.
-	 */
-	std::size_t sync_write(MessageBuffer &message, std::size_t bytes_to_send)
-	{
-		boost::system::error_code error;
-		std::size_t size = 0;
-
-		try {
-			size = _socket->write_some(boost::asio::buffer(message.get_read_pointer(), bytes_to_send), error);
-			message.read_completed(size);
-		} catch (boost::system::system_error &e) {
-			CoreLog->info("Error '{}' while writing data to client at {}.", e.what(), _remote_ip_address);
-		}
-
-		return size;
-	}
-
-	void queue_packet(MessageBuffer &&buffer) { _write_queue.push(std::move(buffer)); }
+	void queue_packet(ByteBuffer &&buffer) { _write_queue.push(std::move(buffer)); }
 
 	bool is_open() { return !_closed && !_closing; }
 
+    /**
+     * @brief Socket close operation that performs cleanups before shutting down the connection.
+     * @thread NetworkThread
+     */
 	void close_socket()
 	{
 		boost::system::error_code socket_error;
@@ -180,14 +164,16 @@ public:
 		_socket->close();
 
 		if (socket_error) {
-			CoreLog->error("Error when shutting down socket from IP {} (error code: {} - {})",
-						   remote_ip_address(), socket_error.value(), socket_error.message().c_str());
+			HLog(error) << "Error when shutting down socket from IP " <<
+						   remote_ip_address() << "(error code:" << socket_error.value() << " - " << socket_error.message().c_str() << ")";
 		}
 	}
 
 	void delayed_close_socket() { if (_closing.exchange(true)) return; }
 
-	MessageBuffer &get_read_buffer() { return _read_buffer; }
+    ByteBuffer &get_read_buffer() { return _read_buffer; }
+	
+	ThreadSafeQueue<ByteBuffer> &get_recv_queue() { return _buffer_recv_queue; }
 
 protected:
 	virtual void on_close() = 0;
@@ -217,8 +203,7 @@ protected:
 		boost::system::error_code error;
 		_socket->set_option(tcp::no_delay(enable), error);
 		if (error) {
-			CoreLog->error("Networking: Socket::set_no_delay: failed to set_option(boost::asio::ip::tcp::no_delay) for IP {} (error_code: {} - {})",
-						   remote_ip_address(), error.value(), error.message().c_str());
+			HLog(error) << "Networking: Socket::set_no_delay: failed to set_option(boost::asio::ip::tcp::no_delay) for IP " << remote_ip_address() << " (error_code: " << error.value() << " - " << error.message().c_str() << ")";
 		}
 	}
 
@@ -228,17 +213,20 @@ protected:
 	 * @param error
 	 * @return
 	 */
-	std::size_t write_buffer_and_send(MessageBuffer &to_send, boost::system::error_code &error)
+	std::size_t write_buffer_and_send(ByteBuffer &to_send, boost::system::error_code &error)
 	{
-		std::size_t bytes_to_send = to_send.get_active_size();
+		std::size_t bytes_to_send = to_send.active_length();
 		std::size_t bytes_sent = _socket->write_some(boost::asio::buffer(to_send.get_read_pointer(), bytes_to_send), error);
+		HLog(debug) << "Transmitted buffer of size " << to_send.active_length() << " to endpoint " << remote_ip_address() << ".";
 		return bytes_sent;
 	}
 private:
+    
 	/**
 	 * Aysnchronous reading handler method.
 	 * @param error
 	 * @param transferredBytes
+     * @thread NetworkThread
 	 */
 	void read_handler_internal(boost::system::error_code error, size_t transferredBytes)
 	{
@@ -252,8 +240,8 @@ private:
 			} else {
 				on_error();
 				close_socket();
-				CoreLog->debug("Socket::read_handler_internal: {} (Code: {}).", error.value(), error.message());
 			}
+			HLog(debug) << "Socket::read_handler_internal: " << error.value() << " (Code: " << error.message() << ").";
 			return;
 		}
 
@@ -285,7 +273,7 @@ private:
 		if (_write_queue.empty())
 			return false;
 
-		std::shared_ptr<MessageBuffer> to_send = _write_queue.front();
+		std::shared_ptr<ByteBuffer> to_send = _write_queue.front();
 
 		std::size_t bytes_sent = write_buffer_and_send(*to_send, error);
 
@@ -295,7 +283,7 @@ private:
 		/**
 		 * Re-process queue if we have remaining bytes.
 		 */
-		if (!error && bytes_sent < to_send->get_active_size()) {
+		if (!error && bytes_sent < to_send->active_length()) {
 			to_send->read_completed(bytes_sent);
 			return async_process_queue();
 		}
@@ -315,11 +303,14 @@ private:
 	std::shared_ptr<tcp::socket> _socket;               ///< After accepting, the reference count of this pointer should be 1.
 	std::string _remote_ip_address;
 	uint16_t _remote_port;
-	MessageBuffer _read_buffer;
-	ThreadSafeQueue<MessageBuffer> _write_queue;
+	ByteBuffer _read_buffer;
+	ThreadSafeQueue<ByteBuffer> _write_queue;
 	std::atomic<bool> _closed;
 	std::atomic<bool> _closing;
 	bool _is_writing_async;
+
+protected:
+	ThreadSafeQueue<ByteBuffer> _buffer_recv_queue;
 };
 }
 }

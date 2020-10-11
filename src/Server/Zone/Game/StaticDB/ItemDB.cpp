@@ -29,6 +29,7 @@
 
 #include "ItemDB.hpp"
 #include "Server/Common/Definitions/EntityDefinitions.hpp"
+#include "Server/Common/Definitions/LuaDefinitionSync.hpp"
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
 #include "Server/Zone/Zone.hpp"
 #include <chrono>
@@ -40,28 +41,28 @@ ItemDatabase::ItemDatabase()
 {
 	_weapontype2name_db[IT_WT_FIST] = "Fist";
 	_weapontype2name_db[IT_WT_DAGGER] = "Dagger";
-	_weapontype2name_db[IT_WT_1HSWORD] = "One_Handed_Sword";
-	_weapontype2name_db[IT_WT_2HSWORD] = "Two_Handed_Sword";
-	_weapontype2name_db[IT_WT_1HSPEAR] = "One_Handed_Spear";
-	_weapontype2name_db[IT_WT_2HSPEAR] = "Two_Handed_Spear";
-	_weapontype2name_db[IT_WT_1HAXE] = "One_Handed_Axe";
-	_weapontype2name_db[IT_WT_2HAXE] = "Two_Handed_Axe";
-	_weapontype2name_db[IT_WT_1HMACE] = "One_Handed_Mace";
-	_weapontype2name_db[IT_WT_2HMACE] = "Two_Handed_Mace";
-	_weapontype2name_db[IT_WT_STAFF] = "One_Handed_Staff";
+	_weapontype2name_db[IT_WT_1HSWORD] = "OneHandedSword";
+	_weapontype2name_db[IT_WT_2HSWORD] = "TwoHandedSword";
+	_weapontype2name_db[IT_WT_1HSPEAR] = "OneHandedSpear";
+	_weapontype2name_db[IT_WT_2HSPEAR] = "TwoHandedSpear";
+	_weapontype2name_db[IT_WT_1HAXE] = "OneHandedAxe";
+	_weapontype2name_db[IT_WT_2HAXE] = "TwoHandedAxe";
+	_weapontype2name_db[IT_WT_1HMACE] = "OneHandedMace";
+	_weapontype2name_db[IT_WT_2HMACE] = "TwoHandedMace";
+	_weapontype2name_db[IT_WT_STAFF] = "OneHandedStaff";
 	_weapontype2name_db[IT_WT_BOW] = "Bow";
 	_weapontype2name_db[IT_WT_KNUCKLE] = "Knuckle";
-	_weapontype2name_db[IT_WT_MUSICAL] = "Musical_Instrument";
+	_weapontype2name_db[IT_WT_MUSICAL] = "MusicalInstrument";
 	_weapontype2name_db[IT_WT_WHIP] = "Whip";
 	_weapontype2name_db[IT_WT_BOOK] = "Book";
 	_weapontype2name_db[IT_WT_KATAR] = "Katar";
 	_weapontype2name_db[IT_WT_REVOLVER] = "Revolver";
 	_weapontype2name_db[IT_WT_RIFLE] = "Rifle";
-	_weapontype2name_db[IT_WT_GATLING] = "Gatling_Gun";
+	_weapontype2name_db[IT_WT_GATLING] = "GatlingGun";
 	_weapontype2name_db[IT_WT_SHOTGUN] = "Shotgun";
-	_weapontype2name_db[IT_WT_GRENADE] = "Grenade_Launcher";
-	_weapontype2name_db[IT_WT_HUUMA] = "Fuuma_Shuriken";
-	_weapontype2name_db[IT_WT_2HSTAFF] = "Two_Handed_Staff";
+	_weapontype2name_db[IT_WT_GRENADE] = "GrenadeLauncher";
+	_weapontype2name_db[IT_WT_HUUMA] = "FuumaShuriken";
+	_weapontype2name_db[IT_WT_2HSTAFF] = "TwoHandedStaff";
 }
 
 bool ItemDatabase::load()
@@ -70,6 +71,10 @@ bool ItemDatabase::load()
 	auto start = std::chrono::high_resolution_clock::now();
 
 	lua.open_libraries(sol::lib::base);
+	lua.open_libraries(sol::lib::package);
+
+	sync_entity_definitions(lua);
+	sync_item_definitions(lua);
 
 	int total_entries = 0;
 
@@ -80,9 +85,173 @@ bool ItemDatabase::load()
 		sol::table item_tbl = lua.get<sol::table>("item_db");
 		total_entries = load_items(item_tbl, file_path);
 		auto stop = std::chrono::high_resolution_clock::now();
-		ZoneLog->info("Loaded {} entries from '{}' ({}µs, Max Collisions: {}).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count(), _item_db.max_collisions());
+		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs, Max Collisions: {}).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count(), _item_db.max_collisions());
 	} catch(const std::exception &e) {
-		ZoneLog->error("ItemDB::load: {}", e.what());
+		CoreLog(error) <<"ItemDB::load: {}", e.what());
+		return false;
+	}
+
+	return true;
+}
+
+bool ItemDatabase::add_job_group_to_item(std::string const &group, item_config_data &id, bool enable, std::string const &file_path)
+{
+	if (group.compare("All") == 0) {
+		// This is left empty as an empty job_ids vector mean every job.
+		id.requirements.job_ids.clear();
+		return true;
+	} else if (group.compare("NormalJobs") == 0) {
+		for (int i = JOB_BASE_START; i < JOB_BASE_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_2_1_START; i < JOB_2_1_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_2_2_START; i < JOB_2_2_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+	} else if (group.compare("NormalBabyJobs") == 0) {
+		for (int i = JOB_BABY_BASE_START; i < JOB_BABY_BASE_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_BABY_2_1_START; i < JOB_BABY_2_1_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_BABY_2_2_START; i < JOB_BABY_2_2_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+	} else if (group.compare("TransJobs") == 0) {
+		for (int i = JOB_TRANS_BASE_START; i < JOB_TRANS_BASE_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_TRANS_2_1_START; i < JOB_TRANS_2_1_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_TRANS_2_2_START; i < JOB_TRANS_2_2_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+	} else if (group.compare("ThirdJobs") == 0) {
+		for (int i = JOB_3_1_START; i < JOB_3_1_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_3_2_START; i < JOB_3_2_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+	} else if (group.compare("ThirdTransJobs") == 0) {
+		for (int i = JOB_TRANS_3_1_START; i < JOB_TRANS_3_1_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_TRANS_3_2_START; i < JOB_TRANS_3_2_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+	} else if (group.compare("ThirdBabyJobs") == 0) {
+		for (int i = JOB_BABY_3_1_START; i < JOB_BABY_3_1_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+		for (int i = JOB_BABY_3_2_START; i < JOB_BABY_3_2_END; i++) {
+			if (enable)
+				id.requirements.job_ids.push_back(i);
+			else
+				std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [i] (uint32_t id) { return i == id; });
+		}
+	} else if (group.compare("ExtendedJobs") == 0) {
+		if (enable) {
+			id.requirements.job_ids.push_back(JOB_SUPER_NOVICE);
+			id.requirements.job_ids.push_back(JOB_GUNSLINGER);
+			id.requirements.job_ids.push_back(JOB_NINJA);
+			id.requirements.job_ids.push_back(JOB_TAEKWON);
+			id.requirements.job_ids.push_back(JOB_STAR_GLADIATOR);
+			id.requirements.job_ids.push_back(JOB_STAR_GLADIATOR2);
+			id.requirements.job_ids.push_back(JOB_SOUL_LINKER);
+			id.requirements.job_ids.push_back(JOB_GANGSI);
+			id.requirements.job_ids.push_back(JOB_DEATH_KNIGHT);
+			id.requirements.job_ids.push_back(JOB_DARK_COLLECTOR);
+			id.requirements.job_ids.push_back(JOB_SUPER_NOVICE_E);
+			id.requirements.job_ids.push_back(JOB_SUPER_BABY_E);
+			id.requirements.job_ids.push_back(JOB_KAGEROU);
+			id.requirements.job_ids.push_back(JOB_OBORO);
+			id.requirements.job_ids.push_back(JOB_REBELLION);
+		} else {
+			std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [] (uint32_t id)
+			   {
+				   if (id == JOB_SUPER_NOVICE)
+					   return true;
+				   if (id == JOB_GUNSLINGER)
+					   return true;
+				   if (id == JOB_NINJA)
+					   return true;
+				   if (id == JOB_TAEKWON)
+					   return true;
+				   if (id == JOB_STAR_GLADIATOR)
+					   return true;
+				   if (id == JOB_STAR_GLADIATOR2)
+					   return true;
+				   if (id == JOB_SOUL_LINKER)
+					   return true;
+				   if (id == JOB_GANGSI)
+					   return true;
+				   if (id == JOB_DEATH_KNIGHT)
+					   return true;
+				   if (id == JOB_DARK_COLLECTOR)
+					   return true;
+				   if (id == JOB_SUPER_NOVICE_E)
+					   return true;
+				   if (id == JOB_SUPER_BABY_E)
+					   return true;
+				   if (id == JOB_KAGEROU)
+					   return true;
+				   if (id == JOB_OBORO)
+					   return true;
+				   if (id == JOB_REBELLION)
+					   return true;
+
+				   return false;
+			   });
+		}
+	} else {
+		CoreLog(error) <<"Invalid Job Range '{}' specified for entry in file '{}', skipping...", group, file_path);
 		return false;
 	}
 
@@ -100,116 +269,31 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 
 		entry++;
 
-		if (key.get_type() != sol::type::number) {
-			ZoneLog->error("Invalid key type for entry {} in '{}'.", entry, file_path);
+		if (key.get_type() != sol::type::string) {
+			CoreLog(error) <<"Invalid key type for entry {} in '{}'.", entry, file_path);
 			return;
 		}
 
-		id.item_id = key.as<uint32_t>();
+		id.key_name = key.as<std::string>();
 
-		id.aegis_name = tbl.get_or("AegisName", std::string(""));
-		if (id.aegis_name.empty()) {
-			ZoneLog->error("ItemDB::load_items: Invalid or non-existent mandatory field 'AegisName' for entry {} in '{}'. Skipping...", id.item_id, file_path);
+		id.item_id = tbl.get_or("Id", 0);
+		if (id.item_id == 0) {
+			CoreLog(error) <<"ItemDB::load_items: Invalid or non-existent mandatory field 'Id' for item '{}' in '{}'. Skipping...", id.key_name, file_path);
 			return;
 		}
 
 		id.name = tbl.get_or("Name", std::string(""));
 		if (id.name.empty()) {
-			ZoneLog->error("ItemDB::load_items: Invalid or non-existent mandatory field 'Name' for entry {} in '{}'. Skipping...", id.item_id, file_path);
+			CoreLog(error) <<"ItemDB::load_items: Invalid or non-existent mandatory field 'Name' for entry {} in '{}'. Skipping...", id.item_id, file_path);
 			return;
 		}
 
-		t_str = tbl.get_or("Type", std::string(""));
-		if (!t_str.empty()) {
-			if (t_str.compare("HEALING") == 0) {
-				id.type = IT_TYPE_HEALING;
-			} else if (t_str.compare("UNKNOWN") == 0) {
-				id.type = IT_TYPE_UNKNOWN;
-			} else if (t_str.compare("USABLE") == 0) {
-				id.type = IT_TYPE_USABLE;
-			} else if (t_str.compare("ETC") == 0) {
-				id.type = IT_TYPE_ETC;
-			} else if (t_str.compare("WEAPON") == 0) {
-				id.type = IT_TYPE_WEAPON;
-			} else if (t_str.compare("ARMOR") == 0) {
-				id.type = IT_TYPE_ARMOR;
-			} else if (t_str.compare("CARD") == 0) {
-				id.type = IT_TYPE_CARD;
-			} else if (t_str.compare("PET_EGG") == 0) {
-				id.type = IT_TYPE_PET_EGG;
-			} else if (t_str.compare("PET_ARMOR") == 0) {
-				id.type = IT_TYPE_PET_ARMOR;
-			} else if (t_str.compare("UNKNOWN2") == 0) {
-				id.type = IT_TYPE_UNKNOWN2;
-			} else if (t_str.compare("AMMO") == 0) {
-				id.type = IT_TYPE_AMMO;
-			} else if (t_str.compare("CONSUMPTION_DELAY") == 0) {
-				id.type = IT_TYPE_USABLE;
-				id.config.consumption_delay = 1;
-			} else if (t_str.compare("CASH") == 0) {
-				id.type = IT_TYPE_CASH;
-			} else {
-				ZoneLog->error("Invalid value for field 'Type' in item '{}' file '{}', defaulting to 'IT_TYPE_ETC'.", id.item_id, file_path);
-				id.type = IT_TYPE_ETC;
-			}
-		} else {
-			id.type = IT_TYPE_ETC;
-		}
+		id.type = (item_type) tbl.get_or("Type", (uint16_t) IT_TYPE_ETC);
 
-		t_str = tbl.get_or("Subtype", std::string(""));
-		if (!t_str.empty()) {
-			switch (id.type)
-			{
-			case IT_TYPE_WEAPON:
-				if (t_str.compare("DAGGER") == 0) { id.sub_type.weapon_t = IT_WT_DAGGER; }
-				else if (t_str.compare("1HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_1HSWORD; }
-				else if (t_str.compare("2HSWORD") == 0) { id.sub_type.weapon_t = IT_WT_2HSWORD; }
-				else if (t_str.compare("1HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_1HSPEAR; }
-				else if (t_str.compare("2HSPEAR") == 0) { id.sub_type.weapon_t = IT_WT_2HSPEAR; }
-				else if (t_str.compare("1HAXE") == 0) { id.sub_type.weapon_t = IT_WT_1HAXE; }
-				else if (t_str.compare("2HAXE") == 0) { id.sub_type.weapon_t = IT_WT_2HAXE; }
-				else if (t_str.compare("1HMACE") == 0) { id.sub_type.weapon_t = IT_WT_1HMACE; }
-				else if (t_str.compare("2HMACE") == 0) { id.sub_type.weapon_t = IT_WT_2HMACE; }
-				else if (t_str.compare("STAFF") == 0) { id.sub_type.weapon_t = IT_WT_STAFF; }
-				else if (t_str.compare("BOW") == 0) { id.sub_type.weapon_t = IT_WT_BOW; }
-				else if (t_str.compare("KNUCKLE") == 0) { id.sub_type.weapon_t = IT_WT_KNUCKLE; }
-				else if (t_str.compare("MUSICAL") == 0) { id.sub_type.weapon_t = IT_WT_MUSICAL; }
-				else if (t_str.compare("WHIP") == 0) { id.sub_type.weapon_t = IT_WT_WHIP; }
-				else if (t_str.compare("BOOK") == 0) { id.sub_type.weapon_t = IT_WT_BOOK; }
-				else if (t_str.compare("KATAR") == 0) { id.sub_type.weapon_t = IT_WT_KATAR; }
-				else if (t_str.compare("REVOLVER") == 0) { id.sub_type.weapon_t = IT_WT_REVOLVER; }
-				else if (t_str.compare("RIFLE") == 0) { id.sub_type.weapon_t = IT_WT_RIFLE; }
-				else if (t_str.compare("GATLING") == 0) { id.sub_type.weapon_t = IT_WT_GATLING; }
-				else if (t_str.compare("SHOTGUN") == 0) { id.sub_type.weapon_t = IT_WT_SHOTGUN; }
-				else if (t_str.compare("GRENADE") == 0) { id.sub_type.weapon_t = IT_WT_GRENADE; }
-				else if (t_str.compare("HUUMA") == 0) { id.sub_type.weapon_t = IT_WT_HUUMA; }
-				else if (t_str.compare("2HSTAFF") == 0) { id.sub_type.weapon_t = IT_WT_2HSTAFF; }
-				else {
-					ZoneLog->error("Invalid value for field 'Subtype' in entry '{}' file '{}', defaulting to 'FIST'.", id.item_id, file_path);
-					id.sub_type.weapon_t = IT_WT_FIST;
-				}
-				break;
-			case IT_TYPE_AMMO:
-				if (t_str.compare("ARROW") == 0) { id.sub_type.ammo_t = IT_AT_ARROW; }
-				else if (t_str.compare("DAGGER") == 0) { id.sub_type.ammo_t = IT_AT_DAGGER; }
-				else if (t_str.compare("BULLET") == 0) { id.sub_type.ammo_t = IT_AT_BULLET; }
-				else if (t_str.compare("SHELL") == 0) { id.sub_type.ammo_t = IT_AT_SHELL; }
-				else if (t_str.compare("GRENADE") == 0) { id.sub_type.ammo_t = IT_AT_GRENADE; }
-				else if (t_str.compare("SHURIKEN") == 0) { id.sub_type.ammo_t = IT_AT_SHURIKEN; }
-				else if (t_str.compare("KUNAI") == 0) { id.sub_type.ammo_t = IT_AT_KUNAI; }
-				else if (t_str.compare("CANNONBALL") == 0) { id.sub_type.ammo_t = IT_AT_CANNONBALL; }
-				else if (t_str.compare("THROWABLE_WEAPON") == 0) { id.sub_type.ammo_t = IT_AT_THROWABLE_WEAPON; }
-				else if (t_str.compare("NONE") == 0) { id.sub_type.ammo_t = IT_AT_NONE; }
-				else {
-					ZoneLog->error("Invalid value for field 'Subtype' in entry '{}' file '{}', defaulting to 'IT_AT_NONE'.", id.item_id, file_path);
-					id.sub_type.ammo_t = IT_AT_NONE;
-				}
-				break;
-			default:
-				ZoneLog->error("Field 'Subtype' is only allowed for IT_TYPE_WEAPON and IT_TYPE_AMMO in entry '{}' file '{}', ignoring...", id.item_id, file_path);
-				break;
-			}
-		}
+		if (id.type == IT_TYPE_WEAPON)
+			id.sub_type.weapon_t = (item_weapon_type) tbl.get_or("Subtype", (int) IT_WT_FIST);
+		else if (id.type == IT_TYPE_AMMO)
+			id.sub_type.ammo_t = (item_ammunition_type) tbl.get_or("Subtype", (int) IT_AT_NONE);
 
 		id.value_buy = tbl.get_or("Buy", -1);
 		id.value_sell = tbl.get_or("Sell", -1);
@@ -223,7 +307,7 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 
 		// Discount / Overcharge zeny exploit check.
 		if (id.value_buy / 124.0 < id.value_sell / 75.0) {
-			ZoneLog->warn("Buying/Selling [{}/{}] price of item {} ({}) "
+			CoreLog(warn) <<"Buying/Selling [{}/{}] price of item {} ({}) "
 						"allows Zeny making exploit through buying/selling at discounted/overcharged prices! File '{}'.\n",
 						id.value_buy, id.value_sell, id.item_id, id.name, file_path);
 		}
@@ -241,157 +325,58 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 		else
 			id.level.armor = t_int;
 
-		sol::optional<sol::object> maybe_job_tbl = tbl["Job"];
+		sol::optional<sol::object> maybe_job_tbl = tbl.get<sol::optional<sol::object>>("Job");
 		if (maybe_job_tbl && maybe_job_tbl.value().get_type() == sol::type::table) {
 			sol::table job_tbl = maybe_job_tbl.value().as<sol::table>();
-			job_tbl.for_each([&id, &file_path](sol::object const &key, sol::object const &value) {
-				std::string job_name = key.as<std::string>();
+			job_tbl.for_each([this, &id, &file_path] (sol::object const &key, sol::object const &value)
+			{
 				bool enable = value.as<bool>();
 
-				if (job_name.compare("All") == 0) {
-					return;
-				} else if (job_name.compare("NormalJobs") == 0) {
-					for (int i = JOB_BASE_START; i < JOB_BASE_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_2_1_START; i < JOB_2_1_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_2_2_START; i < JOB_2_2_END; i++)
-						id.requirements.job_ids.push_back(i);
-					return;
-				} else if (job_name.compare("NormalBabyJobs") == 0) {
-					for (int i = JOB_BABY_BASE_START; i < JOB_BABY_BASE_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_BABY_2_1_START; i < JOB_BABY_2_1_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_BABY_2_2_START; i < JOB_BABY_2_2_END; i++)
-						id.requirements.job_ids.push_back(i);
-					return;
-				} else if (job_name.compare("TransJobs") == 0) {
-					for (int i = JOB_TRANS_BASE_START; i < JOB_TRANS_BASE_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_TRANS_2_1_START; i < JOB_TRANS_2_1_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_TRANS_2_2_START; i < JOB_TRANS_2_2_END; i++)
-						id.requirements.job_ids.push_back(i);
-					return;
-				} else if (job_name.compare("ThirdJobs") == 0) {
-					for (int i = JOB_3_1_START; i < JOB_3_1_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_3_2_START; i < JOB_3_2_END; i++)
-						id.requirements.job_ids.push_back(i);
-					return;
-				} else if (job_name.compare("ThirdTransJobs") == 0) {
-					for (int i = JOB_TRANS_3_1_START; i < JOB_TRANS_3_1_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_TRANS_3_2_START; i < JOB_TRANS_3_2_END; i++)
-						id.requirements.job_ids.push_back(i);
-					return;
-				} else if (job_name.compare("ThirdBabyJobs") == 0) {
-					for (int i = JOB_BABY_3_1_START; i < JOB_BABY_3_1_END; i++)
-						id.requirements.job_ids.push_back(i);
-					for (int i = JOB_BABY_3_2_START; i < JOB_BABY_3_2_END; i++)
-						id.requirements.job_ids.push_back(i);
-					return;
-				} else if (job_name.compare("ExtendedJobs") == 0) {
-						id.requirements.job_ids.push_back(JOB_SUPER_NOVICE);
-						id.requirements.job_ids.push_back(JOB_GUNSLINGER);
-						id.requirements.job_ids.push_back(JOB_NINJA);
-						id.requirements.job_ids.push_back(JOB_TAEKWON);
-						id.requirements.job_ids.push_back(JOB_STAR_GLADIATOR);
-						id.requirements.job_ids.push_back(JOB_STAR_GLADIATOR2);
-						id.requirements.job_ids.push_back(JOB_SOUL_LINKER);
-						id.requirements.job_ids.push_back(JOB_GANGSI);
-						id.requirements.job_ids.push_back(JOB_DEATH_KNIGHT);
-						id.requirements.job_ids.push_back(JOB_DARK_COLLECTOR);
-						id.requirements.job_ids.push_back(JOB_SUPER_NOVICE_E);
-						id.requirements.job_ids.push_back(JOB_SUPER_BABY_E);
-						id.requirements.job_ids.push_back(JOB_KAGEROU);
-						id.requirements.job_ids.push_back(JOB_OBORO);
-						id.requirements.job_ids.push_back(JOB_REBELLION);
-					return;
-				}
+				if (key.get_type() == sol::type::string) {
+					std::string job_name = key.as<std::string>();
+					if (!add_job_group_to_item(job_name, id, enable, file_path))
+						return;
+				} else if (key.get_type() == sol::type::number) {
+					int job_id = key.as<int>();
 
-				job_class_type job_id = JobDB->get_job_class_by_name(job_name);
-
-				if (job_id == JOB_INVALID) {
-					ZoneLog->error("Invalid Job '{}' specified for entry in file '{}', skipping...", job_name, file_path);
-					return;
-				}
-
-				if (enable) {
-					id.requirements.job_ids.push_back(job_id);
-				} else {
-					std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [job_id](uint32_t id) {
-						return job_id == id;
-					});
+					if (enable) {
+						id.requirements.job_ids.push_back(job_id);
+					} else {
+						std::remove_if(id.requirements.job_ids.begin(), id.requirements.job_ids.end(), [job_id] (uint32_t id) { return job_id == id; });
+					}
 				}
 			});
 		} else if (maybe_job_tbl && maybe_job_tbl.value().get_type() == sol::type::string) {
 			std::string job_name = maybe_job_tbl.value().as<std::string>();
-			job_class_type job_id = JobDB->get_job_class_by_name(job_name);
-			if (job_id == JOB_INVALID) {
-				ZoneLog->error("Invalid Job '{}' specified for entry in file '{}', skipping...", job_name, file_path);
-			} else {
-				id.requirements.job_ids.push_back(job_id);
-			}
+			if (!add_job_group_to_item(job_name, id, true, file_path))
+				return;
 		} else if (maybe_job_tbl && maybe_job_tbl.value().get_type() == sol::type::number) {
 			id.requirements.job_ids.push_back(maybe_job_tbl.value().as<uint32_t>());
 		}
 
-		t_str = tbl.get_or("Gender", std::string(""));
-		if (!t_str.empty()) {
-			if (t_str.compare("IT_GENDER_FEMALE") == 0) { id.requirements.gender = IT_GENDER_FEMALE; }
-			else if (t_str.compare("IT_GENDER_MALE") == 0) { id.requirements.gender = IT_GENDER_MALE; }
-			else if (t_str.compare("IT_GENDER_ANY") == 0) { id.requirements.gender = IT_GENDER_ANY; }
-			else {
-				ZoneLog->error("Invalid Gender '{}' for item '{}' ID {} in file '{}', skipping...", t_str, id.aegis_name, id.item_id, file_path);
-				id.requirements.gender = IT_GENDER_ANY;
-			}
-		} else {
-			id.requirements.gender = IT_GENDER_ANY;
-		}
+		id.requirements.gender = (item_gender_type) tbl.get_or("Gender", (char) IT_GENDER_ANY);
 
-		t_str = tbl.get_or("Loc", std::string(""));
-		if (!t_str.empty()) {
-			if (t_str.compare("NONE") == 0) { id.equip_location_mask = IT_EQPM_NONE; }
-			else if (t_str.compare("HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_HEAD_LOW; }
-			else if (t_str.compare("HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_HEAD_MID; }
-			else if (t_str.compare("HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_HEAD_TOP; }
-			else if (t_str.compare("HAND_R") == 0) { id.equip_location_mask = IT_EQPM_HAND_R; }
-			else if (t_str.compare("HAND_L") == 0) { id.equip_location_mask = IT_EQPM_HAND_L; }
-			else if (t_str.compare("ARMOR") == 0) { id.equip_location_mask = IT_EQPM_ARMOR; }
-			else if (t_str.compare("SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHOES; }
-			else if (t_str.compare("GARMENT") == 0) { id.equip_location_mask = IT_EQPM_GARMENT; }
-			else if (t_str.compare("ACC_L") == 0) { id.equip_location_mask = IT_EQPM_ACC_L; }
-			else if (t_str.compare("ACC_R") == 0) { id.equip_location_mask = IT_EQPM_ACC_R; }
-			else if (t_str.compare("COSTUME_HEAD_TOP") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_TOP; }
-			else if (t_str.compare("COSTUME_HEAD_MID") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_MID; }
-			else if (t_str.compare("COSTUME_HEAD_LOW") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_HEAD_LOW; }
-			else if (t_str.compare("COSTUME_GARMENT") == 0) { id.equip_location_mask = IT_EQPM_COSTUME_GARMENT; }
-			else if (t_str.compare("AMMO") == 0) { id.equip_location_mask = IT_EQPM_AMMO; }
-			else if (t_str.compare("SHADOW_ARMOR") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMOR; }
-			else if (t_str.compare("SHADOW_WEAPON") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_WEAPON; }
-			else if (t_str.compare("SHADOW_SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHIELD; }
-			else if (t_str.compare("SHADOW_SHOES") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_SHOES; }
-			else if (t_str.compare("SHADOW_ACC_R") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_R; }
-			else if (t_str.compare("SHADOW_ACC_L") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC_L; }
-			else if (t_str.compare("WEAPON") == 0) { id.equip_location_mask = IT_EQPM_WEAPON; }
-			else if (t_str.compare("SHIELD") == 0) { id.equip_location_mask = IT_EQPM_SHIELD; }
-			else if (t_str.compare("ARMS") == 0) { id.equip_location_mask = IT_EQPM_ARMS; }
-			else if (t_str.compare("HELM") == 0) { id.equip_location_mask = IT_EQPM_HELM; }
-			else if (t_str.compare("ACC") == 0) { id.equip_location_mask = IT_EQPM_ACC; }
-			else if (t_str.compare("COSTUME") == 0) { id.equip_location_mask = IT_EQPM_COSTUME; }
-			else if (t_str.compare("SHADOW_ACC") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ACC; }
-			else if (t_str.compare("SHADOW_ARMS") == 0) { id.equip_location_mask = IT_EQPM_SHADOW_ARMS; }
-			else {
-				ZoneLog->error("Invalid Loc '{}' for item '{}' ID {} in file '{}', skipping...", t_str, id.aegis_name, id.item_id, file_path);
-				id.equip_location_mask = IT_EQPM_NONE;
+		sol::optional<sol::object> location = tbl.get<sol::optional<sol::object>>("Loc");
+
+		if (location) {
+			sol::object loc = location.value();
+
+			if (loc.get_type() == sol::type::table) {
+				loc.as<sol::table>().for_each([&id, &file_path] (sol::object const &key, sol::object const &value) {
+					if (value.get_type() != sol::type::number) {
+						CoreLog(warn) <<"Invalid type for 'Loc' in entry '{}' in file '{}'", id.key_name, file_path);
+						return;
+					}
+
+					id.equip_location_mask |= value.as<int>();
+				});
+			} else if (loc.get_type() == sol::type::number) {
+				id.equip_location_mask |= loc.as<int>();
 			}
-		} else {
-			id.equip_location_mask = IT_EQPM_NONE;
 		}
 
 		sol::optional<sol::object> maybe_elv = tbl.get<sol::optional<sol::object>>("EquipLv");
+
 		if (maybe_elv) {
 			if (maybe_elv.value().get_type() == sol::type::table) {
 				sol::table elv = maybe_elv.value();
@@ -450,9 +435,9 @@ bool ItemDatabase::load_refine_db()
 				total_entries++;
 		}
 		auto stop = std::chrono::high_resolution_clock::now();
-		ZoneLog->info("Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
+		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
 	} catch(const std::exception &e) {
-		ZoneLog->error("{} in file '{}'", e.what(), file_path);
+		CoreLog(error) <<"{} in file '{}'", e.what(), file_path);
 		return false;
 	}
 
@@ -472,7 +457,7 @@ bool ItemDatabase::load_refine_table(refine_type type, sol::table const &refine_
 
 	if (maybe_rates) {
 		if (maybe_rates.value().get_type() != sol::type::table) {
-			ZoneLog->error("Invalid type for entry 'Rates' table '{}' in file '{}'. Skipping...", table_name, file_path);
+			CoreLog(error) <<"Invalid type for entry 'Rates' table '{}' in file '{}'. Skipping...", table_name, file_path);
 			return false;
 		}
 
@@ -497,7 +482,7 @@ bool ItemDatabase::load_refine_table(refine_type type, sol::table const &refine_
 			}
 		}
 	} else {
-		ZoneLog->error("Non-existent configuration for entry 'Rates' table '{}' in file '{}'. Skipping...", table_name, file_path);
+		CoreLog(error) <<"Non-existent configuration for entry 'Rates' table '{}' in file '{}'. Skipping...", table_name, file_path);
 		return false;
 	}
 
@@ -513,6 +498,8 @@ bool ItemDatabase::load_weapon_target_size_modifiers_db()
 
 	lua.open_libraries(sol::lib::base);
 
+	sync_item_definitions(lua);
+
 	int total_entries = 0;
 
 	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "weapon_target_size_modifiers.lua";
@@ -527,9 +514,9 @@ bool ItemDatabase::load_weapon_target_size_modifiers_db()
 			for (int j = ESZ_SMALL; j < ESZ_MAX; j++) {
 				std::string size = j == ESZ_SMALL ? "Small" : j == ESZ_MEDIUM ? "Medium" : "Large";
 				try {
-					(*arr)[j] = size_mod_tbl[get_weapon_type_name((item_weapon_type) i)][size];
+					(*arr)[j] = size_mod_tbl[i][size];
 				} catch (std::exception &err) {
-					ZoneLog->error("Weapon target size modifier was not found for weapon type {} size {}, defaulting to 100%...", get_weapon_type_name((item_weapon_type) i), size);
+					CoreLog(error) <<"Weapon target size modifier was not found for weapon type {} size {}, defaulting to 100%...", get_weapon_type_name((item_weapon_type) i), size);
 					(*arr)[j] = 100;
 				}
 			}
@@ -537,9 +524,9 @@ bool ItemDatabase::load_weapon_target_size_modifiers_db()
 			total_entries++;
 		}
 		auto stop = std::chrono::high_resolution_clock::now();
-		ZoneLog->info("Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
+		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
 	} catch(const std::exception &e) {
-		ZoneLog->error("{} in file '{}'", e.what(), file_path);
+		CoreLog(error) <<"{} in file '{}'", e.what(), file_path);
 		return false;
 	}
 
@@ -553,6 +540,8 @@ bool ItemDatabase::load_weapon_attribute_modifiers_db()
 
 	lua.open_libraries(sol::lib::base);
 
+	sync_item_definitions(lua);
+	
 	int total_entries = 0;
 
 	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "weapon_attribute_modifiers.lua";
@@ -578,14 +567,14 @@ bool ItemDatabase::load_weapon_attribute_modifiers_db()
 			{ IT_ELE_UNDEAD, "Undead" },
 		};
 
-		for (int i = IT_LVL_WEP_1; i < IT_LVL_MAX; i++) {
+		for (int i = IT_LVL_WEAPON1; i < IT_LVL_MAX; i++) {
 			std::shared_ptr<std::array<std::array<uint8_t, IT_ELE_MAX>, IT_ELE_MAX>> arr = std::make_shared<std::array<std::array<uint8_t, IT_ELE_MAX>, IT_ELE_MAX>>();
 			for (int j = IT_ELE_NEUTRAL; j < IT_ELE_MAX; j++) {
 				for (int k = IT_ELE_NEUTRAL; k < IT_ELE_MAX; k++) {
 					try {
-						(*arr)[j][k] = attr_mod_tbl[i][attr_s[j].ele_name][k + 1];
+						(*arr)[j][k] = attr_mod_tbl[i][j][k + 1];
 					} catch (std::exception &err) {
-						ZoneLog->error("Weapon target attribute modifier was not found for weapon type {} attribute [{}][{}], defaulting to 100%...", get_weapon_type_name((item_weapon_type) i), attr_s[j].ele_name, attr_s[k].ele_name);
+						CoreLog(error) <<"Weapon target attribute modifier was not found for weapon type {} attribute [{}][{}], defaulting to 100%...", get_weapon_type_name((item_weapon_type) i), attr_s[j].ele_name, attr_s[k].ele_name);
 						(*arr)[j][k] = 100;
 					}
 					total_entries++;
@@ -594,9 +583,9 @@ bool ItemDatabase::load_weapon_attribute_modifiers_db()
 			_weapon_attribute_modifiers_db.insert((item_level_type) i, arr);
 		}
 		auto stop = std::chrono::high_resolution_clock::now();
-		ZoneLog->info("Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
+		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
 	} catch(const std::exception &e) {
-		ZoneLog->error("{} in file '{}'", e.what(), file_path);
+		CoreLog(error) <<"{} in file '{}'", e.what(), file_path);
 		return false;
 	}
 

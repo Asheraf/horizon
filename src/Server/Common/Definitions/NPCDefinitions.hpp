@@ -39,7 +39,8 @@
 
 #define NPC_START_GUID 500000000
 
-enum npc_type {
+enum npc_type
+{
 	FAKE_NPC               =    -1,
 	NPC_TYPE_PORTAL        =    45,
 	NPC_TYPE_PORTAL_HIDDEN =   139,

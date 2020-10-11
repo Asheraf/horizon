@@ -29,165 +29,149 @@
 #include "Auth.hpp"
 #include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Common/Server.hpp"
+#include "Server/Common/Base/NetworkPacket.hpp"
 
 #include <boost/asio.hpp>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/filesystem.hpp>
+
 #include <sol.hpp>
 
 using boost::asio::ip::udp;
 using namespace std::chrono_literals;
-using namespace Horizon::Auth;
+using namespace Horizon;
+using namespace Horizon::Base;
 
 /**
- * AuthMain Constructor.
+ * Horizon Constructor.
  */
-AuthMain::AuthMain()
-: Server("Auth", "config/", "auth-server.lua")
+Auth::Auth()
+: Server()
 {
 	initialize_cli_commands();
 }
 
 /**
- * AuthMain Destructor.
+ * Horizon Destructor.
  */
-AuthMain::~AuthMain()
+Auth::~Auth()
 {
 }
 
-#define auth_config_error(setting_name, default) \
-	AuthLog->error("No setting for '{}' in configuration file, defaulting to {}", setting_name, default);
+#define horizon_config_error(setting_name, default) \
+	HLog(error) << "No setting for '" << setting_name << "' in configuration file, defaulting to " << default;
 
 /**
- * Read /config/auth-server.yaml
+ * Read /config/horizon-server.yaml
  * @return true on success, false on failure.
  */
-bool AuthMain::ReadConfig()
+bool Auth::ReadConfig()
 {
 	sol::state lua;
 
-	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
+	std::string file_path = general_conf().get_config_file_path().string();
 	std::string tmp_string;
-	int tmp_value;
 	sol::table tbl;
 
+    if (!boost::filesystem::exists(file_path)) {
+        HLog(error) << "Configuration file does not exist at " << file_path << "." << std::endl;
+        return false;
+    }
+    
 	// Read the file. If there is an error, report it and exit.
 	try {
 		lua.script_file(file_path);
-		tbl = lua["server_config"];
+		tbl = lua["horizon_config"];
 	} catch (const std::exception &error) {
-		CharLog->error("AuthMain::ReadConfig: '{}'.", error.what());
+		HLog(error) << "Horizon::ReadConfig: '" << error.what() << "'.";
 		return false;
 	}
+    
+    get_auth_config()._password_salt_mix = tbl.get_or<std::string>("password_salt_mix", "horizon-123");
 
-	tmp_value = tbl.get_or("pass_hash_method", (int) PASS_HASH_NONE);
-	if (tmp_value < PASS_HASH_NONE || tmp_value > PASS_HASH_SCRYPT) {
-		auth_config_error("pass_hash_method", PASS_HASH_NONE);
-		get_auth_config().set_pass_hash_method(PASS_HASH_NONE);
-	} else {
-		get_auth_config().set_pass_hash_method((login_hash_method) tmp_value);
-	}
-
-	if (get_auth_config().get_pass_hash_method() == PASS_HASH_NONE)
-		AuthLog->warn("Passwords are stored in plain text! This is not recommended!");
-
-	tmp_string = tbl.get_or("client_date_format", std::string("%Y-%m-%d %H:%M:%S"));
-	get_auth_config().set_client_date_format(tmp_string);
-
-	/**
-	 * Logging Configuration
-	 */
+    sol::table db_tbl = tbl.get<sol::table>("database_config");
+    
+    try {
+        general_conf().set_db_host(db_tbl.get_or<std::string>("host", "127.0.0.1"));
+        general_conf().set_db_user(db_tbl.get_or<std::string>("user", "horizon"));
+        general_conf().set_db_database(db_tbl.get_or<std::string>("db", "horizon"));
+        general_conf().set_db_pass(db_tbl.get_or<std::string>("pass", "horizon"));
+        general_conf().set_db_port(db_tbl.get_or<uint16_t>("port", 3306));
+        
+        _mysql_config->database = general_conf().get_db_database();
+        _mysql_config->user = general_conf().get_db_user();
+        _mysql_config->password = general_conf().get_db_pass();
+        _mysql_config->port = general_conf().get_db_port();
+        _mysql_config->host = general_conf().get_db_host();
+        _mysql_connection = std::make_shared<sqlpp::mysql::connection>(_mysql_config);
+        
+        HLog(info) << "Database tcp://" << general_conf().get_db_user()
+                    << ":" << general_conf().get_db_pass()
+                    << "@" << general_conf().get_db_host()
+                    << ":" << general_conf().get_db_port()
+                    << "/" << general_conf().get_db_database();
+    } catch (const std::exception &error) {
+        HLog(error) << "Database configuration error:" << error.what() << ".";
+        return false;
+    }
+	
 	try {
-		sol::table log_tbl = tbl.get<sol::table>("log");
-
-		bool enable = log_tbl.get_or("enable_logging", false);
-
-		if (enable) {
-			get_auth_config().get_log_conf().enable();
-			get_auth_config().get_log_conf().set_login_max_tries(log_tbl.get_or("login_max_tries", 0));
-			get_auth_config().get_log_conf().set_login_fail_ban_time(log_tbl.get_or("login_fail_ban_time", 0));
-			get_auth_config().get_log_conf().set_login_fail_check_time(log_tbl.get_or("login_fail_check_time", 0));
-		}
+		sol::table char_servers = tbl.get<sol::table>("character_servers");
+		char_servers.for_each([&](sol::object const &key, sol::object const &value) {
+			auth_config_type::char_server c;
+			sol::table cfg = value.as<sol::table>();
+			
+			c._name = cfg.get<std::string>("Name");
+			c._host = cfg.get<std::string>("Host");
+			c._port = cfg.get<uint16_t>("Port");
+			c._type = cfg.get<uint16_t>("Type");
+			c._is_new = cfg.get<uint16_t>("IsNew");
+			
+			sAuth->get_auth_config().add_char_server(c);
+			
+			HLog(info) << "Character server '" << c._name << "' is configured.";
+		});
 	} catch (std::exception &error) {
-		AuthLog->info("Log configuration was not found! Using default values...");
+		HLog(error) << "Character server configuration error:" << error.what() << ".";
+		return false;
 	}
-
-	AuthLog->info("Logging is {}.", get_auth_config().get_log_conf().isEnabled() ? "enabled" : "disabled");
-	AuthLog->info("Failed logins exceeding {} tries every {} seconds will be banned for {} seconds.",
-				  get_auth_config().get_log_conf().get_login_fail_check_time(), get_auth_config().get_log_conf().get_login_max_tries(), get_auth_config().get_log_conf().get_login_fail_ban_time());
-
-	/**
-	 * Character Servers.
-	 * @brief configuration for the connection to character servers.
-	 */
-	sol::table cs_tbl = tbl.get<sol::table>("character_servers");
-	cs_tbl.for_each([this](sol::object const &key, sol::object const &value) {
-		std::string t_str;
-		character_server_data char_serv;
-		sol::table serv = value.as<sol::table>();
-
-		char_serv.id = key.as<int>();
-		char_serv.name = serv.get_or("Name", std::string(""));
-		if (char_serv.name.empty()) {
-			AuthLog->error("Invalid or non-existent 'name' parameter for character server #{}, skipping...", char_serv.id);
-			return;
-		}
-
-		char_serv.ip_address = serv.get_or("Host", std::string(""));
-		if (char_serv.ip_address.empty()) {
-			AuthLog->error("Invalid or non-existent 'host' parameter for character server '{}', skipping...", char_serv.name);
-			return;
-		}
-
-		char_serv.port = serv.get_or("Port", 0);
-		if (!char_serv.port) {
-			AuthLog->error("Invalid or non-existent 'port' parameter for character server '{}', skipping...", char_serv.name);
-			return;
-		}
-
-		char_serv.server_type = (character_server_type) serv.get_or("Type", (int) CHAR_SERVER_TYPE_NORMAL);
-
-		char_serv.is_new = serv.get_or("IsNew", false);
-
-		add_character_server(char_serv);
-		AuthLog->info("Configured Character Server: {}@{}:{} {}", char_serv.name, char_serv.ip_address, char_serv.port, char_serv.is_new ? "(new)" : "");
-	});
-
+	
+	int char_server_count = sAuth->get_auth_config().get_char_servers().size();
+	HLog(info) << char_server_count << " character servers were configured.";
+	
 	/**
 	 * Process Configuration that is common between servers.
 	 */
 	if (!parse_common_configs(tbl))
 		return false;
 
-	AuthLog->info("Done reading server configuration from '{}'.", file_path);
+	HLog(info) << "Done reading server configuration from '" << file_path << "'.";
 
 	return true;
 }
 
-#undef auth_config_error
+#undef horizon_config_error
 
 /**
  * CLI Command: Reload Configuration
  * @return boolean value from AuthServer->ReadConfig()
  */
-bool AuthMain::clicmd_reload_config()
+bool Auth::clicmd_reload_config()
 {
-	// Clear all character server info before reloading.
-	_character_servers.clear();
+	HLog(info) << "Reloading configuration from '" << general_conf().get_config_file_path() << "'";
 
-	AuthLog->info("Reloading configuration from '{}'.", general_conf().get_config_file_name());
-
-	return AuthServer->ReadConfig();
+	return sAuth->ReadConfig();
 }
 
 /**
  * Initialize CLI Comamnds
  */
-void AuthMain::initialize_cli_commands()
+void Auth::initialize_cli_commands()
 {
-	add_cli_command_func("reloadconf", std::bind(&AuthMain::clicmd_reload_config, this));
+	add_cli_command_func("reloadconf", std::bind(&Auth::clicmd_reload_config, this));
 
 	Server::initialize_cli_commands();
 }
@@ -200,12 +184,12 @@ void AuthMain::initialize_cli_commands()
 void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
-		AuthServer->set_shutdown_stage(SHUTDOWN_INITIATED);
-		AuthServer->set_shutdown_signal(SIGTERM);
+		sAuth->set_shutdown_stage(SHUTDOWN_INITIATED);
+		sAuth->set_shutdown_signal(SIGTERM);
 	}
 }
 
-void AuthMain::initialize_core()
+void Auth::initialize_core()
 {
 	/**
 	 * Core Signal Handler
@@ -216,16 +200,17 @@ void AuthMain::initialize_core()
 	// because otherwise they would unblock and exit)
 	signals.async_wait(std::bind(&SignalHandler, std::placeholders::_1, std::placeholders::_2));
 
-	// Start Auth Network
+	// Start Horizon Network
 	ClientSocktMgr->start(get_io_service(),
-						  network_conf().get_listen_ip(),
-						  network_conf().get_listen_port(),
-						  network_conf().get_network_thread_count());
+						  general_conf().get_listen_ip(),
+						  general_conf().get_listen_port(),
+						  MAX_NETWORK_THREADS);
 
 	// Initialize core.
 	Server::initialize_core();
-
-	uint32_t diff = general_conf().get_core_update_interval();
+    
+	uint32_t diff = MAX_CORE_UPDATE_INTERVAL;
+    
 	/* Server Update Loop */
 	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
 		process_cli_commands();
@@ -256,24 +241,24 @@ void AuthMain::initialize_core()
 int main(int argc, const char * argv[])
 {
 	if (argc > 1)
-		AuthServer->parse_exec_args(argv, argc);
+		sAuth->parse_exec_args(argv, argc);
 
 	/*
 	 * Read Configuration Settings for
-	 * the Authentication Server.
+	 * the Horizon Server.
 	 */
-	if (!AuthServer->ReadConfig())
+	if (!sAuth->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
 	/**
 	 * Initialize the Common Core
 	 */
-	AuthServer->initialize_core();
+	sAuth->initialize_core();
 
 	/*
 	 * Core Cleanup
 	 */
-	AuthLog->info("Server shutting down...");
+	HLog(info) << "Server shutting down...";
 
-	return AuthServer->general_conf().get_shutdown_signal();
+	return sAuth->general_conf().get_shutdown_signal();
 }

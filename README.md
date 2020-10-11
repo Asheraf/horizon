@@ -27,13 +27,9 @@ Before installing Horizon, you will need to install certain tools and applicatio
   - git
   - g++ or clang (version 4.5 or newer, recommended 5.0 or newer)
   - [CMake 3.7+](https://cmake.org/)
-  - [MySQL 8.0.14+](https://dev.mysql.com/downloads/mysql/)
-  - [MySQL C++ Connector](https://dev.mysql.com/downloads/connector/cpp/8.0.html)
   - [Boost v1.60+](https://www.boost.org/)
   - [Readline](https://tiswww.case.edu/php/chet/readline/rltop.html)
-  - [CryptoPP](https://www.cryptopp.com/)
   - [LuaJit 5.1](http://luajit.org)
-  - [SPDLog](https://github.com/gabime/spdlog)
   - [Sol2](https://github.com/ThePhD/sol2)
 
 #### Optional, useful tools

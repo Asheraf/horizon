@@ -26,16 +26,14 @@
 ###################################################
 
 add_subdirectory(CLI)
-add_subdirectory(Models)
+add_subdirectory(SQL)
 add_subdirectory(Definitions)
 add_subdirectory(Interfaces)
 add_subdirectory(Base)
-add_subdirectory(Database)
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(MAIN_COMMON_SOURCES
-	${DIR}/PacketBuffer.hpp
 	${DIR}/Server.hpp
 	${DIR}/Server.cpp)
 
@@ -43,7 +41,7 @@ set(COMMON_SOURCES
 	${COMMON_DEFINITION_SOURCES}
 	${MAIN_COMMON_SOURCES}
 	${BASE_SOURCES}
-	${MODELS_SOURCES}
+	${SQL_SOURCES}
 	${INTERFACE_SOURCES}
 	${DATABASE_SOURCES}
 	${CLI_SOURCES}

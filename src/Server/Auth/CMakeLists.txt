@@ -27,8 +27,6 @@
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ###################################################
 
-include(FindCryptopp)
-
 CollectSourceFiles(
     ${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE_SOURCES
@@ -41,6 +39,7 @@ add_executable(auth
 	${COMMON_SOURCES}
     ${CORE_SOURCES}
     ${UTILITY_SOURCES}
+    ${ARGON2PP_SOURCES}
 )
 
 target_link_libraries(auth
@@ -48,11 +47,11 @@ target_link_libraries(auth
         boost
         networking
 	    -lpthread
-	    ${CRYPTOPP_LIBRARIES}
-        ${CONCPP_LIB}
         ${Readline_LIBRARY}
 		${LUA_LIBRARIES}
-		${SPDLOG_LIBRARIES}
+		${SQLPP11_MYSQL_LIBRARIES}
+		${MYSQL_LIBRARY}
+		${ARGON2_LIBRARIES}
 )
 
 set(INCLUDE_DIRS
@@ -74,12 +73,15 @@ endif()
 
 target_include_directories(auth
 	PUBLIC
+		${Boost_INCLUDE_DIRS}
 		${PUBLIC_INCLUDES}
-        ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
 		${SOL2_INCLUDE_DIR}
-		${CRYPTOPP_INCLUDE_DIR}
+		${SQLPP11_INCLUDE_DIR}
+		${SQLPP11_MYSQL_INCLUDE_DIR}
+		${MYSQL_INCLUDE_DIR}
+		${ARGON2_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

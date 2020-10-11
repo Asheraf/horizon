@@ -30,13 +30,12 @@
 #include "AuthSocket.hpp"
 
 #include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
-#include "Server/Auth/Packets/PacketHandlerFactory.hpp"
-#include "Server/Auth/Packets/PacketHandler.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
+#include "Server/Auth/Auth.hpp"
 
 #include <random>
 
-using namespace Horizon::Auth;
+using namespace Horizon;
 
 AuthSocket::AuthSocket(std::shared_ptr<tcp::socket> socket)
 : Socket(socket)
@@ -56,32 +55,40 @@ void AuthSocket::set_session(std::shared_ptr<AuthSession> session) { std::atomic
 
 /**
  * @brief Initial method invoked once from the network thread that handles the AuthSocket.
+ * @thread NetworkThread
  */
 void AuthSocket::start()
 {
 	auto session = std::make_shared<AuthSession>(shared_from_this());
-
+    
+    _pkt_tbl = std::make_unique<ShufflePacketLengthTable>(shared_from_this());
+    
 	set_session(session);
 
-	session->initialize();
+    session->initialize();
 
-	AuthLog->info("Established connection from {}.", remote_ip_address());
+	HLog(info) << "Established connection from " << remote_ip_address();
 
 	// Starts the async_read loop.
 	async_read();
 }
 
 /**
- * @brief Socket cleanup method on connection closure.
+ * @brief Socket cleanup method on connection closure. Called from close_socket() in parent class.
+ * @thread NetworkThread
  */
 void AuthSocket::on_close()
 {
-	AuthLog->info("Closed connection from {}.", remote_ip_address());
+	HLog(info) << "Closed connection from " << remote_ip_address();
 
 	/* Perform socket manager cleanup. */
 	ClientSocktMgr->set_socket_for_removal(shared_from_this());
 }
 
+/**
+ * @brief Method invoked when an error occured during a read operation on the socket.
+ * @thread NetworkThread
+ */
 void AuthSocket::on_error()
 {
 
@@ -90,38 +97,71 @@ void AuthSocket::on_error()
 /**
  * @brief Asynchronous update method periodically called from network threads.
  * @return true on successful update, false on failure.
+ * @thread NetworkThread
  */
 bool AuthSocket::update()
 {
-	if (AuthServer->get_shutdown_stage() >= SHUTDOWN_INITIATED)
+	if (sAuth->get_shutdown_stage() >= SHUTDOWN_INITIATED)
 		ClientSocktMgr->set_socket_for_removal(shared_from_this());
 
 	return BaseSocket::update();
 }
-
+/**
+ * @brief Read handler for when a message is read from the network and
+ * placed within this socket's message buffer. The packet length is checked
+ * before the packet is processed and its corresponding handler is called.
+ * @thread NetworkThread
+ */
 void AuthSocket::read_handler()
 {
-	while (get_read_buffer().get_active_size()) {
+	while (get_read_buffer().active_length()) {
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
-
-		int16_t packet_length = GET_AUTH_PACKETLEN(packet_id);
-
+		
+		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		
+		int16_t packet_length = p.first;
+		
+		HLog(debug) << "Received packet 0x" << packet_id << " of length " << packet_length << " from client.";
+		HLog(debug) << "Data:" << get_read_buffer().to_string();
+		
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
+			if (get_read_buffer().active_length() < packet_length) {
+				HLog(debug) << "Received packet 0x" << packet_id << " has expected length " << packet_length << " but buffer only supplied " << get_read_buffer().active_length() << " from client.";
+				break;
+			}
 		} else if (packet_length == 0) {
-			AuthLog->warn("Received non-existent packet id {0:x}, disconnecting session...", packet_id);
+			HLog(warning) << "Received non-existent packet id 0x" << std::hex << packet_id << ", disconnecting session..." << std::endl;
+			get_read_buffer().read_completed(get_read_buffer().active_length());
 			close_socket();
 			break;
 		}
-
-		PacketBuffer pkt(get_read_buffer().get_read_pointer(), packet_length);
+		
+		ByteBuffer b;
+		b.append(get_read_buffer().get_read_pointer(), packet_length);
+		get_recv_queue().push(std::move(b));
 		get_read_buffer().read_completed(packet_length);
-		_packet_recv_queue.push(std::move(pkt));
 	}
 }
 
+/**
+ * @brief Packets are processed within the session associated with this socket.
+ * Packets lengths are checked in the NetworkThread before being processed here in the main thread.
+ * @thread Main or Other Thread (Not Network Thread)
+ */
 void AuthSocket::update_session(uint32_t diff)
 {
+	std::shared_ptr<ByteBuffer> read_buf;
+	while ((read_buf = _buffer_recv_queue.try_pop())) {
+		uint16_t packet_id = 0x0;
+		memcpy(&packet_id, read_buf->get_read_pointer(), sizeof(uint16_t));
+		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		
+		HLog(debug) << "Handling packet 0x" << std::hex << packet_id << " - 0x" << p.first << std::endl;
+		
+		p.second->handle(std::move(*read_buf));
+	}
+	
 	get_session()->update(diff);
 }

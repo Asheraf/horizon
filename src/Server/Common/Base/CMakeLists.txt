@@ -25,8 +25,9 @@
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ###################################################
 
-add_subdirectory(PacketHandler)
+set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(BASE_SOURCES
-	${PACKET_HANDLER_SOURCES}
+	${DIR}/NetworkPacket.hpp
+	${DIR}/PacketHandler.hpp
 	PARENT_SCOPE)

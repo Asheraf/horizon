@@ -52,7 +52,8 @@ static_assert(MAX_ITEM_SLOTS > 0 && MAX_ITEM_SLOTS <= 4,
 			  "MAX_ITEM_SLOTS is limited by the client and database layout "
 			  "and should not be changed unless supported by the client.");
 
-enum refine_type {
+enum refine_type
+{
 	REFINE_TYPE_ARMOR   = 0,
 	REFINE_TYPE_WEAPON1 = 1,
 	REFINE_TYPE_WEAPON2 = 2,
@@ -61,7 +62,8 @@ enum refine_type {
 	REFINE_TYPE_MAX     = 5
 };
 
-enum refine_chance_type {
+enum refine_chance_type
+{
 	REFINE_CHANCE_TYPE_NORMAL     = 0, // Normal Chance
 	REFINE_CHANCE_TYPE_ENRICHED   = 1, // Enriched Ore Chance
 	REFINE_CHANCE_TYPE_E_NORMAL   = 2, // Event Normal Ore Chance
@@ -111,11 +113,11 @@ enum item_weapon_type_mask
 
 enum item_level_type
 {
-	IT_LVL_ARMOR     = 0,
-	IT_LVL_WEP_1     = 1,
-	IT_LVL_WEP_2     = 2,
-	IT_LVL_WEP_3     = 3,
-	IT_LVL_WEP_4     = 4,
+	IT_LVL_ARMOR       = 0,
+	IT_LVL_WEAPON1     = 1,
+	IT_LVL_WEAPON2     = 2,
+	IT_LVL_WEAPON3     = 3,
+	IT_LVL_WEAPON4     = 4,
 	IT_LVL_MAX
 };
 
@@ -127,7 +129,8 @@ enum item_gender_type
 };
 
 //Equip position constants
-enum item_equip_location_mask {
+enum item_equip_location_mask
+{
 	IT_EQPM_NONE               = 0x000000,
 	IT_EQPM_HEAD_LOW           = 0x000001,
 	IT_EQPM_HAND_R             = 0x000002, //2
@@ -163,7 +166,8 @@ enum item_equip_location_mask {
 	IT_EQPM_SHADOW_ARMS        = IT_EQPM_SHADOW_WEAPON | IT_EQPM_SHADOW_SHIELD
 };
 
-enum item_equip_location_index {
+enum item_equip_location_index
+{
 	IT_EQPI_ACC_L            = 0,
 	IT_EQPI_ACC_R            = 1,
 	IT_EQPI_SHOES            = 2,
@@ -188,28 +192,31 @@ enum item_equip_location_index {
 	IT_EQPI_MAX
 };
 
-enum item_trade_restriction_mask {
-	ITRMASK_NONE                   = 0x0000, ///< No restrictions
-	ITRMASK_NO_DROP                = 0x0001, ///< Item can't be dropped
-	ITRMASK_NO_TRADE               = 0x0002, ///< Item can't be traded (nor vended)
-	ITRMASK_CAN_TRADEWPARTNER      = 0x0004, ///< Wedded partner can override ITR_NOTRADE restriction
-	ITRMASK_NO_SELL_TO_NPC         = 0x0008, ///< Item can't be sold to NPCs
-	ITRMASK_NO_CART                = 0x0010, ///< Item can't be placed in the cart
-	ITRMASK_NO_STORAGE             = 0x0020, ///< Item can't be placed in the storage
-	ITRMASK_NO_GSTORAGE            = 0x0040, ///< Item can't be placed in the guild storage
-	ITRMASK_NO_MAIL                = 0x0080, ///< Item can't be attached to mail messages
-	ITRMASK_NO_AUCTION             = 0x0100, ///< Item can't be auctioned
-	ITRMASK_NO_BUYING_STORE        = 0x0200, ///< Item can't be listed in the buying store.
-	ITRMASK_ALL                    = 0x03ff  ///< Sum of all the above values
+enum item_transaction_mask
+{
+	ITRMASK_NONE               = 0x0000, ///< No restrictions
+	ITRMASK_DROP               = 0x0001, ///< Item can be dropped
+	ITRMASK_TRADE              = 0x0002, ///< Item can be traded (nor vended)
+	ITRMASK_TRADEWPARTNER      = 0x0004, ///< Wedded partner can override ITR_NOTRADE restriction
+	ITRMASK_SELL_TO_NPC        = 0x0008, ///< Item can be sold to NPCs
+	ITRMASK_CART               = 0x0010, ///< Item can be placed in the cart
+	ITRMASK_STORAGE            = 0x0020, ///< Item can be placed in the storage
+	ITRMASK_GSTORAGE           = 0x0040, ///< Item can be placed in the guild storage
+	ITRMASK_MAIL               = 0x0080, ///< Item can be attached to mail messages
+	ITRMASK_AUCTION            = 0x0100, ///< Item can be auctioned
+	ITRMASK_BUYING_STORE       = 0x0200, ///< Item can be listed in the buying store.
+	ITRMASK_ALL                = 0x03ff  ///< Sum of all the above values
 };
 
-enum item_usage_restriction_mask {
+enum item_usage_restriction_mask
+{
 	IURMASK_NONE    = 0x0, ///< No restrictions
 	IURMASK_SITTING = 0x1, ///< Item can't be used while sitting
 	IURMASK_ALL     = 0x1  ///< Sum of all the above values
 };
 
-enum item_type : uint8_t {
+enum item_type : uint8_t
+{
 	IT_TYPE_HEALING              = 0,
 	IT_TYPE_UNKNOWN              = 1,
 	IT_TYPE_USABLE               = 2,
@@ -226,7 +233,8 @@ enum item_type : uint8_t {
 	IT_TYPE_MAX
 };
 
-enum item_ammunition_type {
+enum item_ammunition_type
+{
 	IT_AT_NONE               = 0,
 	IT_AT_ARROW              = 1,
 	IT_AT_DAGGER             = 2,
@@ -236,33 +244,12 @@ enum item_ammunition_type {
 	IT_AT_SHURIKEN           = 6,
 	IT_AT_KUNAI              = 7,
 	IT_AT_CANNONBALL         = 8,
-	IT_AT_THROWABLE_WEAPON   = 9,
+	IT_AT_THROWABLE_ITEM     = 9,
 	IT_AT_MAX
 };
 
-enum item_inventory_addition_notif_type : uint8_t {
-	ITEM_INV_ADD_SUCCESS, // * 0 = success
-	ITEM_INV_ADD_INVALID, // * 1 = invalid itemid not found or negative amount
-	ITEM_INV_ADD_OVER_WEIGHT, // * 2 = overweight
-	ITEM_INV_ADD_UNKNOWN, // * 3 = ?
-	ITEM_INV_ADD_NO_INV_SPACE, // * 4 = no free place found
-	ITEM_INV_ADD_OVER_QUANTITY, // * 5 = max amount reached
-	ITEM_INV_ADD_UNKNOWN2, // * 6 = ?
-	ITEM_INV_ADD_OVER_STACK_LIMIT, // * 7 = stack limitation
-};
-
-enum item_deletion_reason_type : uint16_t {
-	ITEM_DEL_NORMAL         = 0, /// Normal
-	ITEM_DEL_SKILLUSE       = 1, /// Item used for a skill
-	ITEM_DEL_FAILREFINE     = 2, /// Refine failed
-	ITEM_DEL_MATERIALCHANGE = 3, /// Material changed
-	ITEM_DEL_TOSTORAGE      = 4, /// Moved to storage
-	ITEM_DEL_TOCART         = 5, /// Moved to cart
-	ITEM_DEL_SOLD           = 6, /// Item sold
-	ITEM_DEL_ANALYSIS       = 7, /// Consumed by Four Spirit Analysis (SO_EL_ANALYSIS) skill
-};
-
-enum item_element_type : uint8_t {
+enum item_element_type : uint8_t
+{
 	IT_ELE_NEUTRAL = 0,
 	IT_ELE_WATER   = 1,
 	IT_ELE_EARTH   = 2,
@@ -277,7 +264,8 @@ enum item_element_type : uint8_t {
 	IT_ELE_ALL     = 0xFF
 };
 
-enum item_bind_type : uint16_t {
+enum item_bind_type : uint16_t
+{
 	IT_BIND_NONE      = 0x0,
 	IT_BIND_MIN       = 0x1,
 	IT_BIND_ACCOUNT   = 0x1,
@@ -287,13 +275,39 @@ enum item_bind_type : uint16_t {
 	IT_BIND_MAX       = 0x4,
 };
 
-enum item_equip_result_type {
+enum item_inventory_addition_notif_type : uint8_t
+{
+	ITEM_INV_ADD_SUCCESS, // * 0 = success
+	ITEM_INV_ADD_INVALID, // * 1 = invalid itemid not found or negative amount
+	ITEM_INV_ADD_OVER_WEIGHT, // * 2 = overweight
+	ITEM_INV_ADD_UNKNOWN, // * 3 = ?
+	ITEM_INV_ADD_NO_INV_SPACE, // * 4 = no free place found
+	ITEM_INV_ADD_OVER_QUANTITY, // * 5 = max amount reached
+	ITEM_INV_ADD_UNKNOWN2, // * 6 = ?
+	ITEM_INV_ADD_OVER_STACK_LIMIT, // * 7 = stack limitation
+};
+
+enum item_deletion_reason_type : uint16_t
+{
+	ITEM_DEL_NORMAL         = 0, /// Normal
+	ITEM_DEL_SKILLUSE       = 1, /// Item used for a skill
+	ITEM_DEL_FAILREFINE     = 2, /// Refine failed
+	ITEM_DEL_MATERIALCHANGE = 3, /// Material changed
+	ITEM_DEL_TOSTORAGE      = 4, /// Moved to storage
+	ITEM_DEL_TOCART         = 5, /// Moved to cart
+	ITEM_DEL_SOLD           = 6, /// Item sold
+	ITEM_DEL_ANALYSIS       = 7, /// Consumed by Four Spirit Analysis (SO_EL_ANALYSIS) skill
+};
+
+enum item_equip_result_type
+{
 	IT_EQUIP_SUCCESS = 0x0,
 	IT_EQUIP_FAIL_LV = 0x1,
 	IT_EQUIP_FAIL    = 0x2,
 };
 
-enum item_unequip_result_type {
+enum item_unequip_result_type
+{
 	IT_UNEQUIP_SUCCESS = 0x0,
 	IT_UNEQUIP_FAIL    = 0x1,
 };
@@ -301,7 +315,7 @@ enum item_unequip_result_type {
 struct item_config_data
 {
 	uint32_t item_id;
-	std::string name{""}, aegis_name{""};
+	std::string name{""}, key_name{""};
 
 	int32_t value_buy{0};
 	int32_t value_sell{0};

@@ -63,7 +63,7 @@ class TaskContext;
 /// access to the function schedule plan which makes it possible to repeat the task
 /// with the same duration or a new one.
 /// It also provides access to the repeat counter which is useful for task that repeat itself often
-/// but behave different every time (spoken event dialogs for example).
+/// but behave different every time (spoken event HLogs for example).
 class TaskScheduler
 {
 	friend class TaskContext;

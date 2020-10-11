@@ -13,6 +13,11 @@ if (NOT CONF_DIR)
   message(STATUS "UNIX: Using default configuration directory ${CONF_DIR}")
 endif()
 
+if (NOT LUA_DIR)
+  set(LUA_DIR ${CMAKE_INSTALL_PREFIX}/lua)
+  message(STATUS "UNIX: Using default scripts directory ${LUA_DIR}")
+endif()
+
 if (NOT DB_DIR)
   set(DB_DIR ${CMAKE_INSTALL_PREFIX}/db)
   message(STATUS "UNIX: Using deafult static database directory ${DB_DIR}")

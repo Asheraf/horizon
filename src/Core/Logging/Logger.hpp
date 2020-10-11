@@ -31,11 +31,20 @@
 #define HORIZON_LOGGER_H
 
 #include <cstring>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/rotating_file_sink.h>
+
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <mutex>
 
 class Logger
 {
+    typedef boost::log::sources::severity_logger<boost::log::trivial::severity_level> logtype;
 public:
 	Logger();
 
@@ -44,17 +53,24 @@ public:
 	static Logger *getInstance()
 	{
 		static Logger instance;
+
+        if (!instance._initialized)
+            instance.initialize();
+        
 		return &instance;
 	}
 
-	std::shared_ptr<spdlog::logger> registerLogger(std::string name, std::string /*path*/, uint8_t level, size_t /*file_size*/, uint32_t /*max_files*/);
+    void initialize();
+    
+    logtype &get_core_log() { std::lock_guard<std::mutex> guard(_core_mtx); return _core_log; }
+    
+protected:
+    logtype _core_log;
+    std::mutex _core_mtx;
+    std::atomic<bool> _initialized;
 };
 
-#define InterLog Logger().getInstance()->registerLogger("Inter", "logs/inter-server.log", 0, 102400, 1)
-#define AuthLog Logger().getInstance()->registerLogger("Auth", "logs/auth-server.log", 0, 102400, 1)
-#define CharLog Logger().getInstance()->registerLogger("Char", "logs/char-server.log", 0, 102400, 1)
-#define ZoneLog Logger().getInstance()->registerLogger("Zone", "logs/zone-server.log", 0, 102400, 1)
-#define CoreLog Logger().getInstance()->registerLogger("Core", "logs/core.log", 0, 102400, 1)
-#define DBLog Logger().getInstance()->registerLogger("Database", "logs/database.log", 0, 102400, 1)
+#define HLog(type) BOOST_LOG_SEV(Logger().getInstance()->get_core_log(), boost::log::trivial::type)
+
 
 #endif //HORIZON_LOGGER_H
