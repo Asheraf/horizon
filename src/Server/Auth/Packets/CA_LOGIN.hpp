@@ -33,6 +33,8 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
 	ID_CA_LOGIN = 0x0064
@@ -65,5 +67,6 @@ protected:
     char _password[24]{0};    ///< Password
     uint8_t _client_type{0};    ///< Client Type
 };
+}
 }
 #endif /* HORIZON_CA_LOGIN_HPP */

@@ -28,26 +28,24 @@
 #include "AC_ACCEPT_LOGIN2.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACCEPT_LOGIN2::AC_ACCEPT_LOGIN2(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACCEPT_LOGIN2, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACCEPT_LOGIN2, sock) { }
 
 AC_ACCEPT_LOGIN2::~AC_ACCEPT_LOGIN2() { }
 
 void AC_ACCEPT_LOGIN2::deliver()
 {
 }
-
 ByteBuffer &AC_ACCEPT_LOGIN2::serialize()
 {
 	return buf();
 }
-
 void AC_ACCEPT_LOGIN2::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACCEPT_LOGIN2::deserialize(ByteBuffer &buf)
 {
 }

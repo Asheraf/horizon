@@ -28,26 +28,24 @@
 #include "AC_ACK_EKEY_FAIL_NOTEXIST.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACK_EKEY_FAIL_NOTEXIST::AC_ACK_EKEY_FAIL_NOTEXIST(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_NOTEXIST, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_NOTEXIST, sock) { }
 
 AC_ACK_EKEY_FAIL_NOTEXIST::~AC_ACK_EKEY_FAIL_NOTEXIST() { }
 
 void AC_ACK_EKEY_FAIL_NOTEXIST::deliver()
 {
 }
-
 ByteBuffer &AC_ACK_EKEY_FAIL_NOTEXIST::serialize()
 {
 	return buf();
 }
-
 void AC_ACK_EKEY_FAIL_NOTEXIST::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACK_EKEY_FAIL_NOTEXIST::deserialize(ByteBuffer &buf)
 {
 }

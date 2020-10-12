@@ -38,6 +38,8 @@ class PacketBuffer;
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 class AuthSession : public Horizon::Networking::Session<AuthSocket>
 {
@@ -53,7 +55,7 @@ public:
 	
 private:
 	AuthClientInterface _clif;
-	
 };
+}
 }
 #endif /* HORIZON_SESSION_AuthSession_HPP */

@@ -28,8 +28,8 @@
 ###################################################
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CONFIGURATION_MODELS_SOURCES
-	${DIR}/GeneralServerConfiguration.hpp
+set(CONFIGURATION_SOURCES
+	${DIR}/ServerConfiguration.hpp
 	${DIR}/Horizon.hpp
 	${DIR}/Client.hpp
 	PARENT_SCOPE)

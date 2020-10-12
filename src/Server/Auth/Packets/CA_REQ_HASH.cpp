@@ -28,26 +28,24 @@
 #include "CA_REQ_HASH.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_REQ_HASH::CA_REQ_HASH(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_REQ_HASH, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_REQ_HASH, sock) { }
 
 CA_REQ_HASH::~CA_REQ_HASH() { }
 
 void CA_REQ_HASH::deliver()
 {
 }
-
 ByteBuffer &CA_REQ_HASH::serialize()
 {
 	return buf();
 }
-
 void CA_REQ_HASH::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_REQ_HASH::deserialize(ByteBuffer &buf)
 {
 }

@@ -44,12 +44,10 @@ target_link_libraries(char
         boost
         networking
 	    -lpthread
-	    ${CRYPTOPP_LIBRARIES}
-        ${YAMLCPP_LIBRARY}
-        ${CONCPP_LIB}
         ${Readline_LIBRARY}
 		${LUA_LIBRARIES}
-		${CoreLog_LIBRARIES}
+		${SQLPP11_MYSQL_LIBRARIES}
+		${MYSQL_LIBRARY}
 )
 
 set(INCLUDE_DIRS
@@ -72,13 +70,12 @@ endif()
 target_include_directories(char
 	PUBLIC
 		${PUBLIC_INCLUDES}
-		${CRYPTOPP_INCLUDE_DIR}
-        ${YAMLCPP_INCLUDE_DIR}
-        ${CONCPP_INCLUDE_DIR}
         ${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
 		${SOL2_INCLUDE_DIR}
-		${CoreLog_INCLUDE_DIR}
+		${SQLPP11_INCLUDE_DIR}
+		${SQLPP11_MYSQL_INCLUDE_DIR}
+		${MYSQL_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

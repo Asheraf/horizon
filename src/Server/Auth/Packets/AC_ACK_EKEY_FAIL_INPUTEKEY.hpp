@@ -33,11 +33,13 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20060109
+#if PACKETVER >= 20060109
 	ID_AC_ACK_EKEY_FAIL_INPUTEKEY = 0x026b
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_AC_ACK_EKEY_FAIL_INPUTEKEY = 0x026b
 #endif
 };
@@ -54,15 +56,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_AC_ACK_EKEY_FAIL_INPUTEKEY_HPP */

@@ -33,9 +33,7 @@ set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SQL_SOURCES
 	${CHARACTER_MODEL_SOURCES}
-	${DIR}/GameAccount.cpp
 	${DIR}/GameAccount.hpp
-	${DIR}/SessionData.cpp
 	${DIR}/SessionData.hpp
 	${DIR}/ServerData.hpp
 	PARENT_SCOPE)

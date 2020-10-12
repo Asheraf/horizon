@@ -28,26 +28,24 @@
 #include "CA_ACK_LOGIN_ACCOUNT_INFO.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_ACK_LOGIN_ACCOUNT_INFO::CA_ACK_LOGIN_ACCOUNT_INFO(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_ACK_LOGIN_ACCOUNT_INFO, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_ACK_LOGIN_ACCOUNT_INFO, sock) { }
 
 CA_ACK_LOGIN_ACCOUNT_INFO::~CA_ACK_LOGIN_ACCOUNT_INFO() { }
 
 void CA_ACK_LOGIN_ACCOUNT_INFO::deliver()
 {
 }
-
 ByteBuffer &CA_ACK_LOGIN_ACCOUNT_INFO::serialize()
 {
 	return buf();
 }
-
 void CA_ACK_LOGIN_ACCOUNT_INFO::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_ACK_LOGIN_ACCOUNT_INFO::deserialize(ByteBuffer &buf)
 {
 }

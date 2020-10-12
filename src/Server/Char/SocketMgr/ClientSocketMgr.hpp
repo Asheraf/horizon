@@ -59,9 +59,6 @@ public:
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
 
-		client_type type = CharServer->general_conf().get_client_type();
-		uint32_t packet_version = CharServer->general_conf().get_packet_version();
-
 		return true;
 	}
 
@@ -69,5 +66,4 @@ public:
 }
 }
 #define ClientSocktMgr Horizon::Char::ClientSocketMgr::getInstance()
-#define GET_CHAR_PACKETLEN(id) ClientSocktMgr->get_packet_length(id)
 #endif /* HORIZON_CHAR_CLIENTSOCKETMGR_HPP */

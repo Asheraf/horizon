@@ -28,26 +28,24 @@
 #include "AC_REQ_LOGIN_OLDEKEY.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_REQ_LOGIN_OLDEKEY::AC_REQ_LOGIN_OLDEKEY(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_REQ_LOGIN_OLDEKEY, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_REQ_LOGIN_OLDEKEY, sock) { }
 
 AC_REQ_LOGIN_OLDEKEY::~AC_REQ_LOGIN_OLDEKEY() { }
 
 void AC_REQ_LOGIN_OLDEKEY::deliver()
 {
 }
-
 ByteBuffer &AC_REQ_LOGIN_OLDEKEY::serialize()
 {
 	return buf();
 }
-
 void AC_REQ_LOGIN_OLDEKEY::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_REQ_LOGIN_OLDEKEY::deserialize(ByteBuffer &buf)
 {
 }

@@ -25,8 +25,8 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
-#ifndef HORIZON_AUTH_SHUFFLE_PACKET_LENGTH_TABLE_20070227
-#define HORIZON_AUTH_SHUFFLE_PACKET_LENGTH_TABLE_20070227
+#ifndef HORIZON_AUTH_CLIENT_PACKET_LENGTH_TABLE_20070227
+#define HORIZON_AUTH_CLIENT_PACKET_LENGTH_TABLE_20070227
 
 #include "Server/Common/Base/NetworkPacket.hpp"
 #include "Core/Multithreading/LockedLookupTable.hpp"
@@ -37,26 +37,29 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 /**
- * @brief Shuffle Packet Length Table object that stores
+ * @brief Client Packet Length Table object that stores
  * the packet length of each packet of this client version.
  * Packets with IDs already existent in the database are over-written.
  * The data is stored in a thread-safe lookup table.
  * RAII techinque ensures that the table is populated on instantiation.
  */
-class ShufflePacketLengthTable : public PacketLengthTable
+class ClientPacketLengthTable : public PacketLengthTable
 {
 public:
-	ShufflePacketLengthTable(std::shared_ptr<AuthSocket> sock)
-: PacketLengthTable(sock)
+	ClientPacketLengthTable(std::shared_ptr<AuthSocket> sock)
+	: PacketLengthTable(sock)
 	{
 #define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(sock)))
 		ADD_PKT(0x02ad, 8, AC_REQUEST_SECOND_PASSWORD);
 #undef ADD_PKT
 	}
 
-	~ShufflePacketLengthTable() { }
+	~ClientPacketLengthTable() { }
 
 };
 }
-#endif /* HORIZON_AUTH_SHUFFLE_PACKET_LENGTH_TABLE_20070227 */
+}
+#endif /* HORIZON_AUTH_CLIENT_PACKET_LENGTH_TABLE_20070227 */

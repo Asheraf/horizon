@@ -256,6 +256,8 @@ using boost::asio::ip::tcp;
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSession;
 class AuthSocket : public Horizon::Networking::Socket<AuthSocket>
 {
@@ -280,8 +282,9 @@ protected:
 
 private:
 	std::shared_ptr<AuthSession> _session;
-    std::unique_ptr<ShufflePacketLengthTable> _pkt_tbl;
+    std::unique_ptr<ClientPacketLengthTable> _pkt_tbl;
 };
+}
 }
 
 #endif /* HORIZON_SOCKET_AuthSocket_HPP */

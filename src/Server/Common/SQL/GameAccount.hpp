@@ -32,8 +32,6 @@
 
 #include "Server/Common/Server.hpp"
 
-#include <cstdint>
-
 #include <sqlpp11/table.h>
 #include <sqlpp11/data_types.h>
 #include <sqlpp11/char_sequence.h>
@@ -507,6 +505,7 @@ struct TableGameAccounts : sqlpp::table_t<TableGameAccounts,
 		};
 	};
 };
+
 }
 }
 

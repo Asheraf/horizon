@@ -33,15 +33,17 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20130115
+#if PACKETVER >= 20130115
 	ID_CA_LOGIN6 = 0x0987
-#elif PACKET_VERSION >= 20130103
+#elif PACKETVER >= 20130103
 	ID_CA_LOGIN6 = 0x0987
-#elif PACKET_VERSION >= 20120702
+#elif PACKETVER >= 20120702
 	ID_CA_LOGIN6 = 0x0987
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_CA_LOGIN6 = 0x0987
 #endif
 };
@@ -58,15 +60,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_CA_LOGIN6_HPP */

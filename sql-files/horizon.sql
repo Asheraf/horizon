@@ -131,7 +131,7 @@ CREATE TABLE `session_data` (
   `character_slots` int(11) unsigned NOT NULL DEFAULT '0',
   `group_id` int(11) unsigned NOT NULL DEFAULT '0',
   `connect_time` int(11) unsigned NOT NULL DEFAULT '0',
-  `current_server` enum('AUTH','CHAR','ZONE') NOT NULL,
+  `current_server` enum('A','C','Z') NOT NULL,
   PRIMARY KEY (`auth_code`),
   KEY `game_account_id` (`game_account_id`),
   CONSTRAINT FOREIGN KEY (game_account_id) REFERENCES game_accounts(id)

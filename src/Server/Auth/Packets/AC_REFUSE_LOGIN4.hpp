@@ -33,13 +33,15 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20180704
+#if PACKETVER >= 20180704
 	ID_AC_REFUSE_LOGIN4 = 0x0b02
-#elif PACKET_VERSION >= 20180627
+#elif PACKETVER >= 20180627
 	ID_AC_REFUSE_LOGIN4 = 0x0b02
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_AC_REFUSE_LOGIN4 = 0x0b02
 #endif
 };
@@ -56,15 +58,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_AC_REFUSE_LOGIN4_HPP */

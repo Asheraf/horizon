@@ -28,26 +28,24 @@
 #include "AC_ACK_GAME_GUARD.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACK_GAME_GUARD::AC_ACK_GAME_GUARD(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACK_GAME_GUARD, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACK_GAME_GUARD, sock) { }
 
 AC_ACK_GAME_GUARD::~AC_ACK_GAME_GUARD() { }
 
 void AC_ACK_GAME_GUARD::deliver()
 {
 }
-
 ByteBuffer &AC_ACK_GAME_GUARD::serialize()
 {
 	return buf();
 }
-
 void AC_ACK_GAME_GUARD::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACK_GAME_GUARD::deserialize(ByteBuffer &buf)
 {
 }

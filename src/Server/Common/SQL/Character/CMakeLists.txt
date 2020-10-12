@@ -30,10 +30,7 @@
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CHARACTER_MODEL_SOURCES
-	${DIR}/Character.cpp
 	${DIR}/Character.hpp
-	${DIR}/Status.cpp
 	${DIR}/Status.hpp
-	${DIR}/Inventory.cpp
 	${DIR}/Inventory.hpp
 	PARENT_SCOPE)

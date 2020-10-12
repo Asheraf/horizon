@@ -28,26 +28,24 @@
 #include "CA_ACK_MOBILE_OTP.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_ACK_MOBILE_OTP::CA_ACK_MOBILE_OTP(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_ACK_MOBILE_OTP, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_ACK_MOBILE_OTP, sock) { }
 
 CA_ACK_MOBILE_OTP::~CA_ACK_MOBILE_OTP() { }
 
 void CA_ACK_MOBILE_OTP::deliver()
 {
 }
-
 ByteBuffer &CA_ACK_MOBILE_OTP::serialize()
 {
 	return buf();
 }
-
 void CA_ACK_MOBILE_OTP::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_ACK_MOBILE_OTP::deserialize(ByteBuffer &buf)
 {
 }

@@ -26,184 +26,810 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
-#ifndef HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP
-#define HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP
+#ifndef HORIZON_SQL_CHARACTERS_STATUS_HPP
+#define HORIZON_SQL_CHARACTERS_STATUS_HPP
 
-#include <cstdint>
+#include <sqlpp11/table.h>
+#include <sqlpp11/data_types.h>
+#include <sqlpp11/char_sequence.h>
 
 class Server;
 
 namespace Horizon
 {
-namespace Models
+namespace SQL
 {
-namespace Character
+namespace TableCharacterStatus_
 {
-class Status
-{
-public:
 
-	Status(uint32_t char_id)
-	: _character_id(char_id), _base_level(1), _job_level(1), _zeny(0)
+struct id
+{
+	struct _alias_t
 	{
-		//
-	}
+		static constexpr const char _literal[] = "id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T id;
+			T& operator()()
+			{
+				return id;
+			}
+			const T& operator()() const
+			{
+				return id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
 
-	Status(uint32_t z, uint8_t str, uint8_t agi, uint8_t int_, uint8_t vit, uint8_t dex, uint8_t luk)
-	: _base_level(1), _job_level(1), _zeny(z), _strength(str), _agility(agi), _vitality(vit), _intelligence(int_), _dexterity(dex), _luck(luk)
+struct job_id
+{
+	struct _alias_t
 	{
-		_hp = _maximum_hp = (40 * (100 + vit)/100);
-		_sp = _maximum_sp = (11 * (100 + int_)/100);
-	}
+		static constexpr const char _literal[] = "job_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T job_id;
+			T& operator()()
+			{
+				return job_id;
+			}
+			const T& operator()() const
+			{
+				return job_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
 
-	~Status() {}
+struct base_level
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "base_level";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T base_level;
+			T& operator()()
+			{
+				return base_level;
+			}
+			const T& operator()() const
+			{
+				return base_level;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
 
-	/**
-	 * Load all fields from the database into this instance.
-	 * @param server
-	 * @param char_id
-	 * @return
-	 */
-	bool load(Server *server, uint32_t char_id);
+struct job_level
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "job_level";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T job_level;
+			T& operator()()
+			{
+				return job_level;
+			}
+			const T& operator()() const
+			{
+				return job_level;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
 
-	/**
-	 * @brief Save this model to the database in its current state.
-	 * @param[in|out] server   instance of the server object used to borrow mysql connections.
-	 */
-	bool save(Server *server);
+struct base_experience
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "base_experience";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T base_experience;
+			T& operator()()
+			{
+				return base_experience;
+			}
+			const T& operator()() const
+			{
+				return base_experience;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::bigint>;
+};
 
-	/* Character ID */
-	uint32_t get_character_id() const { return _character_id; }
-	void set_character_id(uint32_t character_id) { _character_id = character_id; }
-	/* Job Class */
-	uint16_t get_job_id() const { return _job_id; }
-	void set_job_id(uint16_t id) { _job_id = id; }
-	/* Base Level */
-	uint16_t get_base_level() const { return _base_level; }
-	void set_base_level(uint16_t base_level) { _base_level = base_level; }
-	/* Job Level */
-	uint16_t get_job_level() const { return _job_level; }
-	void set_job_level(uint16_t job_level) { _job_level = job_level; }
-	/* Base Experience */
-	uint64_t get_base_exp() const { return _base_experience; }
-	void set_base_exp(uint64_t base_experience) { _base_experience = base_experience; }
-	/* Job Experience */
-	uint64_t get_job_exp() const { return _job_experience; }
-	void set_job_exp(uint64_t job_experience) { _job_experience = job_experience; }
-	/* Zeny */
-	uint32_t get_zeny() const { return _zeny; }
-	void set_zeny(uint32_t zeny) { _zeny = zeny; }
-	/* Strength */
-	uint16_t get_strength() const { return _strength; }
-	void set_strength(uint16_t strength) { _strength = strength; }
-	/* Agility */
-	uint16_t get_agility() const { return _agility; }
-	void set_agility(uint16_t agility) { _agility = agility; }
-	/* Vitality */
-	uint16_t get_vitality() const { return _vitality; }
-	void set_vitality(uint16_t vitality) { _vitality = vitality; }
-	/* Intelligence */
-	uint16_t get_intelligence() const { return _intelligence; }
-	void set_intelligence(uint16_t intelligence) { _intelligence = intelligence; }
-	/* Dexterity */
-	uint16_t get_dexterity() const { return _dexterity; }
-	void set_dexterity(uint16_t dexterity) { _dexterity = dexterity; }
-	/* Luck */
-	uint16_t get_luck() const { return _luck; }
-	void set_luck(uint16_t luck) { _luck = luck; }
-	/* Maximum HP */
-	uint32_t get_max_hp() const { return _maximum_hp; }
-	void set_max_hp(uint32_t maximum_hp) { _maximum_hp = maximum_hp; }
-	/* Maximum SP */
-	uint32_t get_max_sp() const { return _maximum_sp; }
-	void set_max_sp(uint32_t maximum_sp) { _maximum_sp = maximum_sp; }
-	/* HP */
-	uint32_t get_hp() const { return _hp; }
-	void set_hp(uint32_t hp) { _hp = hp; }
-	/* SP */
-	uint32_t get_sp() const { return _sp; }
-	void set_sp(uint32_t sp) { _sp = sp; }
-	/* Status Point */
-	uint32_t get_status_points() const { return _status_points; }
-	void set_status_points(uint32_t status_points) { _status_points = status_points; }
-	/* Skill Points */
-	uint32_t get_skill_points() const { return _skill_points; }
-	void set_skill_points(uint32_t skill_points) { _skill_points = skill_points; }
-	/* Body State */
-	uint32_t get_body_state() const { return _body_state; }
-	void set_body_state(uint32_t body_state) { _body_state = body_state; }
-	/* Virtue */
-	int16_t get_virtue() const { return _virtue; }
-	void set_virtue(int16_t virtue) { _virtue = virtue; }
-	/* Honor */
-	uint32_t get_honor() const { return _honor; }
-	void set_honor(uint32_t honor) { _honor = honor; }
-	/* Manner */
-	int16_t get_manner() const { return _manner; }
-	void set_manner(int16_t manner) { _manner = manner; }
-	/* Hair Style ID */
-	uint8_t get_hair_style_id() const { return _hair_style_id; }
-	void set_hair_style_id(uint8_t hair_style_id) { _hair_style_id = hair_style_id; }
-	/* Hair Color ID */
-	uint16_t get_hair_color_id() const { return _hair_color_id; }
-	void set_hair_color_id(uint16_t hair_color_id) { _hair_color_id = hair_color_id; }
-	/* Cloth Color ID */
-	uint16_t get_cloth_color_id() const { return _cloth_color_id; }
-	void set_cloth_color_id(uint16_t cloth_color_id) { _cloth_color_id = cloth_color_id; }
-	/* Body ID */
-	uint16_t get_body_id() const { return _body_id; }
-	void set_body_id(uint16_t body_id) { _body_id = body_id; }
-	/* Weapon ID */
-	uint16_t get_weapon_id() const { return _weapon_id; }
-	void set_weapon_id(uint16_t weapon_id) { _weapon_id = weapon_id; }
-	/* Shield ID */
-	uint16_t get_shield_id() const { return _shield_id; }
-	void set_shield_id(uint16_t shield_id) { _shield_id = shield_id; }
-	/* Head Top View ID */
-	uint16_t get_head_top_view_id() const { return _head_top_view_id; }
-	void set_head_top_view_id(uint16_t head_top_view_id) { _head_top_view_id = head_top_view_id; }
-	/* Head Mid View ID */
-	uint16_t get_head_mid_view_id() const { return _head_mid_view_id; }
-	void set_head_mid_view_id(uint16_t head_mid_view_id) { _head_mid_view_id = head_mid_view_id; }
-	/* Head Bottom View ID */
-	uint16_t get_head_bottom_view_id() const { return _head_bottom_view_id; }
-	void set_head_bottom_view_id(uint16_t head_bottom_view_id) { _head_bottom_view_id = head_bottom_view_id; }
-	/* Robe View ID */
-	uint16_t get_robe_view_id() const { return _robe_view_id; }
-	void set_robe_view_id(uint16_t robe_view_id) { _robe_view_id = robe_view_id; }
-private:
-	uint32_t _character_id{0};
-	uint16_t _job_id{0};
-	uint16_t _base_level{0};
-	uint16_t _job_level{0};
-	uint64_t _base_experience{0};
-	uint64_t _job_experience{0};
-	uint32_t _zeny{0};
-	uint16_t _strength{0};
-	uint16_t _agility{0};
-	uint16_t _vitality{0};
-	uint16_t _intelligence{0};
-	uint16_t _dexterity{0};
-	uint16_t _luck{0};
-	uint32_t _maximum_hp{0}, _maximum_sp{0};
-	uint32_t _hp{0}, _sp{0};
-	uint32_t _status_points{0}, _skill_points{0};
-	uint32_t _body_state{0};
-	int16_t _virtue{0};
-	uint32_t _honor{0};
-	int16_t _manner{0};
-	uint8_t _hair_style_id{0};
-	uint16_t _hair_color_id{0};
-	uint16_t _cloth_color_id{0};
-	uint16_t _body_id{0};
-	uint16_t _weapon_id{0};
-	uint16_t _shield_id{0};
-	uint16_t _head_top_view_id{0};
-	uint16_t _head_mid_view_id{0};
-	uint16_t _head_bottom_view_id{0};
-	uint16_t _robe_view_id{0};
+struct job_experience
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "job_experience";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T job_experience;
+			T& operator()()
+			{
+				return job_experience;
+			}
+			const T& operator()() const
+			{
+				return job_experience;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::bigint>;
+};
+
+struct zeny
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "zeny";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T zeny;
+			T& operator()()
+			{
+				return zeny;
+			}
+			const T& operator()() const
+			{
+				return zeny;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct strength
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "strength";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T strength;
+			T& operator()()
+			{
+				return strength;
+			}
+			const T& operator()() const
+			{
+				return strength;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct agility
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "agility";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T agility;
+			T& operator()()
+			{
+				return agility;
+			}
+			const T& operator()() const
+			{
+				return agility;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct vitality
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "vitality";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T vitality;
+			T& operator()()
+			{
+				return vitality;
+			}
+			const T& operator()() const
+			{
+				return vitality;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct intelligence
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "intelligence";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T intelligence;
+			T& operator()()
+			{
+				return intelligence;
+			}
+			const T& operator()() const
+			{
+				return intelligence;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct dexterity
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "dexterity";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T dexterity;
+			T& operator()()
+			{
+				return dexterity;
+			}
+			const T& operator()() const
+			{
+				return dexterity;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct luck
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "luck";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T luck;
+			T& operator()()
+			{
+				return luck;
+			}
+			const T& operator()() const
+			{
+				return luck;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct maximum_hp
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "maximum_hp";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T maximum_hp;
+			T& operator()()
+			{
+				return maximum_hp;
+			}
+			const T& operator()() const
+			{
+				return maximum_hp;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct hp
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "hp";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T hp;
+			T& operator()()
+			{
+				return hp;
+			}
+			const T& operator()() const
+			{
+				return hp;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct maximum_sp
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "maximum_sp";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T maximum_sp;
+			T& operator()()
+			{
+				return maximum_sp;
+			}
+			const T& operator()() const
+			{
+				return maximum_sp;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct sp
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "sp";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T sp;
+			T& operator()()
+			{
+				return sp;
+			}
+			const T& operator()() const
+			{
+				return sp;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct status_points
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "status_points";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T status_points;
+			T& operator()()
+			{
+				return status_points;
+			}
+			const T& operator()() const
+			{
+				return status_points;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct skill_points
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "skill_points";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T skill_points;
+			T& operator()()
+			{
+				return skill_points;
+			}
+			const T& operator()() const
+			{
+				return skill_points;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct body_state
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "body_state";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T body_state;
+			T& operator()()
+			{
+				return body_state;
+			}
+			const T& operator()() const
+			{
+				return body_state;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct virtue
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "virtue";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T virtue;
+			T& operator()()
+			{
+				return virtue;
+			}
+			const T& operator()() const
+			{
+				return virtue;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct honor
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "honor";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T honor;
+			T& operator()()
+			{
+				return honor;
+			}
+			const T& operator()() const
+			{
+				return honor;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct manner
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "manner";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T manner;
+			T& operator()()
+			{
+				return manner;
+			}
+			const T& operator()() const
+			{
+				return manner;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct hair_style_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "hair_style_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T hair_style_id;
+			T& operator()()
+			{
+				return hair_style_id;
+			}
+			const T& operator()() const
+			{
+				return hair_style_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct hair_color_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "hair_color_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T hair_color_id;
+			T& operator()()
+			{
+				return hair_color_id;
+			}
+			const T& operator()() const
+			{
+				return hair_color_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct cloth_color_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "cloth_color_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T cloth_color_id;
+			T& operator()()
+			{
+				return cloth_color_id;
+			}
+			const T& operator()() const
+			{
+				return cloth_color_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct body_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "body_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T body_id;
+			T& operator()()
+			{
+				return body_id;
+			}
+			const T& operator()() const
+			{
+				return body_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct weapon_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "weapon_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T weapon_id;
+			T& operator()()
+			{
+				return weapon_id;
+			}
+			const T& operator()() const
+			{
+				return weapon_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct shield_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "shield_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T shield_id;
+			T& operator()()
+			{
+				return shield_id;
+			}
+			const T& operator()() const
+			{
+				return shield_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct head_top_view_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "head_top_view_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T head_top_view_id;
+			T& operator()()
+			{
+				return head_top_view_id;
+			}
+			const T& operator()() const
+			{
+				return head_top_view_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct head_mid_view_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "head_mid_view_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T head_mid_view_id;
+			T& operator()()
+			{
+				return head_mid_view_id;
+			}
+			const T& operator()() const
+			{
+				return head_mid_view_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct head_bottom_view_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "head_bottom_view_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T head_bottom_view_id;
+			T& operator()()
+			{
+				return head_bottom_view_id;
+			}
+			const T& operator()() const
+			{
+				return head_bottom_view_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
+};
+
+struct robe_view_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "robe_view_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T robe_view_id;
+			T& operator()()
+			{
+				return robe_view_id;
+			}
+			const T& operator()() const
+			{
+				return robe_view_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::smallint>;
 };
 }
+
+struct TableCharacterStatus : sqlpp::table_t<TableCharacterStatus,
+TableCharacterStatus_::id, TableCharacterStatus_::job_id, TableCharacterStatus_::base_level, TableCharacterStatus_::job_level, TableCharacterStatus_::base_experience, TableCharacterStatus_::job_experience,
+TableCharacterStatus_::zeny, TableCharacterStatus_::strength, TableCharacterStatus_::agility, TableCharacterStatus_::vitality, TableCharacterStatus_::intelligence, TableCharacterStatus_::dexterity,
+TableCharacterStatus_::luck, TableCharacterStatus_::maximum_hp, TableCharacterStatus_::hp, TableCharacterStatus_::maximum_sp, TableCharacterStatus_::sp, TableCharacterStatus_::status_point,
+TableCharacterStatus_::skill_points, TableCharacterStatus_::body_state, TableCharacterStatus_::virtue, TableCharacterStatus_::honor, TableCharacterStatus_::manner, TableCharacterStatus_::hair_style_id,
+TableCharacterStatus_::hair_color_id, TableCharacterStatus_::cloth_color_id, TableCharacterStatus_::body_id, TableCharacterStatus_::weapon_id, TableCharacterStatus_::shield_id,
+TableCharacterStatus_::head_top_view_id, TableCharacterStatus_::head_mid_view_id, TableCharacterStatus_::head_bottom_view_id, TableCharacterStatus_::robe_view_id>
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "character_status";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T character_status;
+			T& operator()()
+			{
+				return character_status;
+			}
+			const T& operator()() const
+			{
+				return character_status;
+			}
+		};
+	};
+};
+
 }
 }
-#endif // HORIZON_MODELS_CHARACTERS_STATUSDATA_HPP
+#endif // HORIZON_SQL_CHARACTERS_STATUS_HPP

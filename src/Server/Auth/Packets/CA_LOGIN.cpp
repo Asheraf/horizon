@@ -32,12 +32,9 @@
 #include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
 
-#include <sqlpp11/select.h>
-#include <sqlpp11/functions.h>
-
 #include <string>
 
-using namespace Horizon;
+using namespace Horizon::Auth;
 
 CA_LOGIN::CA_LOGIN(std::shared_ptr<AuthSocket> sock)
  : Base::NetworkPacket<AuthSocket>(ID_CA_LOGIN, sock) { }

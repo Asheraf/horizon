@@ -28,26 +28,24 @@
 #include "AC_ACK_EKEY_FAIL_NEEDCARDPASS.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACK_EKEY_FAIL_NEEDCARDPASS::AC_ACK_EKEY_FAIL_NEEDCARDPASS(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_NEEDCARDPASS, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_NEEDCARDPASS, sock) { }
 
 AC_ACK_EKEY_FAIL_NEEDCARDPASS::~AC_ACK_EKEY_FAIL_NEEDCARDPASS() { }
 
 void AC_ACK_EKEY_FAIL_NEEDCARDPASS::deliver()
 {
 }
-
 ByteBuffer &AC_ACK_EKEY_FAIL_NEEDCARDPASS::serialize()
 {
 	return buf();
 }
-
 void AC_ACK_EKEY_FAIL_NEEDCARDPASS::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACK_EKEY_FAIL_NEEDCARDPASS::deserialize(ByteBuffer &buf)
 {
 }

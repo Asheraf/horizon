@@ -33,13 +33,15 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20120626
+#if PACKETVER >= 20120626
 	ID_AC_SHUTDOWN_NOTIFY = 0x0986
-#elif PACKET_VERSION >= 20120612
+#elif PACKETVER >= 20120612
 	ID_AC_SHUTDOWN_NOTIFY = 0x0986
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_AC_SHUTDOWN_NOTIFY = 0x0986
 #endif
 };
@@ -56,15 +58,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_AC_SHUTDOWN_NOTIFY_HPP */

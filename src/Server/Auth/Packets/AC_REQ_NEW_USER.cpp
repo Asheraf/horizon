@@ -28,26 +28,24 @@
 #include "AC_REQ_NEW_USER.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_REQ_NEW_USER::AC_REQ_NEW_USER(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_REQ_NEW_USER, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_REQ_NEW_USER, sock) { }
 
 AC_REQ_NEW_USER::~AC_REQ_NEW_USER() { }
 
 void AC_REQ_NEW_USER::deliver()
 {
 }
-
 ByteBuffer &AC_REQ_NEW_USER::serialize()
 {
 	return buf();
 }
-
 void AC_REQ_NEW_USER::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_REQ_NEW_USER::deserialize(ByteBuffer &buf)
 {
 }

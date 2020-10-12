@@ -98,7 +98,6 @@ public:
 protected:
     ByteBuffer _buffer;                    ///< Buffer storage facility for the packet stream.
     uint16_t _packet_id;                   ///< ID of the network packet.
-    uint16_t _actual_length;               ///< Actual length of the packet.
     
 private:
 	std::weak_ptr<SocketType> _socket;     ///< Pointer to the instantiated session object.

@@ -28,26 +28,24 @@
 #include "CA_LOGIN_PCBANG.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_LOGIN_PCBANG::CA_LOGIN_PCBANG(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_LOGIN_PCBANG, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_LOGIN_PCBANG, sock) { }
 
 CA_LOGIN_PCBANG::~CA_LOGIN_PCBANG() { }
 
 void CA_LOGIN_PCBANG::deliver()
 {
 }
-
 ByteBuffer &CA_LOGIN_PCBANG::serialize()
 {
 	return buf();
 }
-
 void CA_LOGIN_PCBANG::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_LOGIN_PCBANG::deserialize(ByteBuffer &buf)
 {
 }

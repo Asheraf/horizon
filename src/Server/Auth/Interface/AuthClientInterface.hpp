@@ -33,7 +33,8 @@
 
 namespace Horizon
 {
-
+namespace Auth
+{
 class AuthClientInterface : public ClientInterface<AuthSocket>
 {
 public:
@@ -42,7 +43,7 @@ public:
 	
 	bool process_login(std::string username, std::string hash, uint16_t version, uint16_t client_type);
 };
-
+}
 }
 
 #endif /* HORIZON_AUTHCLIENTINTERFACE_HPP */

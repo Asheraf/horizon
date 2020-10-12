@@ -33,6 +33,8 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 
 enum class login_error_codes
 {
@@ -78,17 +80,16 @@ public:
 
 	void deliver(login_error_codes error_code, char *block_date, std::size_t bd_size);
 
-private:
 	ByteBuffer &serialize();
-
 	virtual void handle(ByteBuffer &&buf) override;
-
 	void deserialize(ByteBuffer &buf);
 
 protected:
-	/* Size: 26 bytes */
+	/* Structure Goes Here */
 	uint32_t _error_code{0};      ///< Error code
 	char _block_date[20]{0};      ///< Ban expiration date
 };
 }
+}
+
 #endif /* HORIZON_AC_REFUSE_LOGIN_HPP */

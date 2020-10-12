@@ -39,6 +39,8 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 /**
  * Manager of client sockets and initialization of the packet db * @brief Singleton class
  */
@@ -61,5 +63,6 @@ public:
 	}
 };
 }
-#define ClientSocktMgr Horizon::ClientSocketMgr::getInstance()
+}
+#define ClientSocktMgr Horizon::Auth::ClientSocketMgr::getInstance()
 #endif /* HORIZON_CLIENTSOCKETMGR_HPP */

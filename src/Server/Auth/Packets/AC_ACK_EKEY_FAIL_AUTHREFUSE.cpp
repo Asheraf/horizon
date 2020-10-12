@@ -28,26 +28,24 @@
 #include "AC_ACK_EKEY_FAIL_AUTHREFUSE.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACK_EKEY_FAIL_AUTHREFUSE::AC_ACK_EKEY_FAIL_AUTHREFUSE(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_AUTHREFUSE, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_AUTHREFUSE, sock) { }
 
 AC_ACK_EKEY_FAIL_AUTHREFUSE::~AC_ACK_EKEY_FAIL_AUTHREFUSE() { }
 
 void AC_ACK_EKEY_FAIL_AUTHREFUSE::deliver()
 {
 }
-
 ByteBuffer &AC_ACK_EKEY_FAIL_AUTHREFUSE::serialize()
 {
 	return buf();
 }
-
 void AC_ACK_EKEY_FAIL_AUTHREFUSE::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACK_EKEY_FAIL_AUTHREFUSE::deserialize(ByteBuffer &buf)
 {
 }

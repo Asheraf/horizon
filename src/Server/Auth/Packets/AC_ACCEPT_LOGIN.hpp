@@ -35,6 +35,8 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
 #if PACKET_VERSION >= 20170228
@@ -96,5 +98,6 @@ protected:
 	s_ac_accept_login _al;
 	std::vector<s_ac_char_server_list> _c;
 };
+}
 }
 #endif /* HORIZON_AC_ACCEPT_LOGIN_HPP */

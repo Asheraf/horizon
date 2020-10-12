@@ -28,26 +28,24 @@
 #include "AC_ACK_EKEY_FAIL_NOTUSESEKEY.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACK_EKEY_FAIL_NOTUSESEKEY::AC_ACK_EKEY_FAIL_NOTUSESEKEY(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_NOTUSESEKEY, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_NOTUSESEKEY, sock) { }
 
 AC_ACK_EKEY_FAIL_NOTUSESEKEY::~AC_ACK_EKEY_FAIL_NOTUSESEKEY() { }
 
 void AC_ACK_EKEY_FAIL_NOTUSESEKEY::deliver()
 {
 }
-
 ByteBuffer &AC_ACK_EKEY_FAIL_NOTUSESEKEY::serialize()
 {
 	return buf();
 }
-
 void AC_ACK_EKEY_FAIL_NOTUSESEKEY::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACK_EKEY_FAIL_NOTUSESEKEY::deserialize(ByteBuffer &buf)
 {
 }

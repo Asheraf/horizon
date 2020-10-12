@@ -33,67 +33,228 @@
 #include <ctime>
 #include <cstdint>
 
+#include <sqlpp11/table.h>
+#include <sqlpp11/data_types.h>
+#include <sqlpp11/char_sequence.h>
+
 class Server;
 
 namespace Horizon
 {
-namespace Models
+namespace SQL
 {
-class SessionData
+namespace TableSessionData_
 {
-public:
-	SessionData() { };
-	~SessionData() { };
 
-	SessionData(uint32_t _auth_code, uint32_t _client_version, uint8_t _client_type, uint32_t _game_account_id)
-	: _auth_code(_auth_code), _game_account_id(_game_account_id), _client_version(_client_version), _client_type(_client_type)
+struct auth_code
+{
+	struct _alias_t
 	{
-		//
-	}
-
-//	/**
-//	 * Load all fields from the database into this instance.
-//	 * @param server
-//	 * @param char_id
-//	 * @return
-//	 */
-//	bool load(Server *server, uint32_t game_account_id);
-//
-//	bool save(Server *server);
-//
-//	bool remove(Server *server);
-//
-//	/* Auth Code */
-//	uint32_t get_auth_code() const { return _auth_code; }
-//	void set_auth_code(uint32_t code) { _auth_code = code; }
-//	/* Client Version */
-//	uint32_t get_client_version() const { return _client_version; }
-//	void set_client_version(uint32_t version) { _client_version = version; }
-//	/* Client Type */
-//	uint8_t get_client_type() const { return _client_type; }
-//	void set_client_type(uint8_t type) { _client_type = type; }
-//	/* Game Account ID */
-//	uint32_t get_game_account_id() const { return _game_account_id; }
-//	void set_game_account_id(uint32_t account_id) { _game_account_id = account_id; }
-//	/* Character Slots */
-//	uint32_t get_character_slots() const { return _character_slots; }
-//	void set_character_slots(uint32_t slots) { _character_slots = slots; }
-//	/* Group ID */
-//	uint32_t get_group_id() const { return _group_id; }
-//	void set_group_id(uint32_t id) { _group_id = id; }
-//	/* Connect Time (Zone Only) */
-//	uint32_t get_connect_time() const { return _connect_time; }
-//	void set_connect_time(uint32_t time) { _connect_time = time; }
-
-private:
-	uint32_t _auth_code;
-	uint32_t _game_account_id;
-	uint32_t _client_version;
-	uint8_t _client_type;
-	uint32_t _character_slots;
-	uint32_t _group_id;
-	uint32_t _connect_time;
+		static constexpr const char _literal[] = "auth_code";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T auth_code;
+			T& operator()()
+			{
+				return auth_code;
+			}
+			const T& operator()() const
+			{
+				return auth_code;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
 };
+
+struct game_account_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "game_account_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T game_account_id;
+			T& operator()()
+			{
+				return game_account_id;
+			}
+			const T& operator()() const
+			{
+				return game_account_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct client_version
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "client_version";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T client_version;
+			T& operator()()
+			{
+				return client_version;
+			}
+			const T& operator()() const
+			{
+				return client_version;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct client_type
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "client_type";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T client_type;
+			T& operator()()
+			{
+				return client_type;
+			}
+			const T& operator()() const
+			{
+				return client_type;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct character_slots
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "character_slots";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T character_slots;
+			T& operator()()
+			{
+				return character_slots;
+			}
+			const T& operator()() const
+			{
+				return character_slots;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct group_id
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "group_id";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T group_id;
+			T& operator()()
+			{
+				return group_id;
+			}
+			const T& operator()() const
+			{
+				return group_id;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct connect_time
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "connect_time";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T connect_time;
+			T& operator()()
+			{
+				return connect_time;
+			}
+			const T& operator()() const
+			{
+				return connect_time;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+
+struct current_server
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "current_server";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T current_server;
+			T& operator()()
+			{
+				return current_server;
+			}
+			const T& operator()() const
+			{
+				return current_server;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
+}
+
+struct TableSessionData : sqlpp::table_t<TableSessionData,
+TableSessionData_::auth_code, TableSessionData_::game_account_id, TableSessionData_::client_version, TableSessionData_::client_type, TableSessionData_::character_slots,
+TableSessionData_::group_id, TableSessionData_::connect_time, TableSessionData_::current_server>
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "session_data";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T session_data;
+			T& operator()()
+			{
+				return session_data;
+			}
+			const T& operator()() const
+			{
+				return session_data;
+			}
+		};
+	};
+};
+
 }
 }
 

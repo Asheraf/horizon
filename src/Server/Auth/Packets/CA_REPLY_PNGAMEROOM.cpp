@@ -28,26 +28,24 @@
 #include "CA_REPLY_PNGAMEROOM.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_REPLY_PNGAMEROOM::CA_REPLY_PNGAMEROOM(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_REPLY_PNGAMEROOM, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_REPLY_PNGAMEROOM, sock) { }
 
 CA_REPLY_PNGAMEROOM::~CA_REPLY_PNGAMEROOM() { }
 
 void CA_REPLY_PNGAMEROOM::deliver()
 {
 }
-
 ByteBuffer &CA_REPLY_PNGAMEROOM::serialize()
 {
 	return buf();
 }
-
 void CA_REPLY_PNGAMEROOM::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_REPLY_PNGAMEROOM::deserialize(ByteBuffer &buf)
 {
 }

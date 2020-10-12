@@ -33,11 +33,13 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20101228
+#if PACKETVER >= 20101228
 	ID_AC_REALNAME_AUTH = 0x08b2
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_AC_REALNAME_AUTH = 0x08b2
 #endif
 };
@@ -54,15 +56,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_AC_REALNAME_AUTH_HPP */

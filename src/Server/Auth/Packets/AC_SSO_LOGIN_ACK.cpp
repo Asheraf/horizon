@@ -28,26 +28,24 @@
 #include "AC_SSO_LOGIN_ACK.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_SSO_LOGIN_ACK::AC_SSO_LOGIN_ACK(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_SSO_LOGIN_ACK, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_SSO_LOGIN_ACK, sock) { }
 
 AC_SSO_LOGIN_ACK::~AC_SSO_LOGIN_ACK() { }
 
 void AC_SSO_LOGIN_ACK::deliver()
 {
 }
-
 ByteBuffer &AC_SSO_LOGIN_ACK::serialize()
 {
 	return buf();
 }
-
 void AC_SSO_LOGIN_ACK::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_SSO_LOGIN_ACK::deserialize(ByteBuffer &buf)
 {
 }

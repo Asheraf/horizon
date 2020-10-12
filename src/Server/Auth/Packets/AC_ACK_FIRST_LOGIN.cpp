@@ -28,26 +28,24 @@
 #include "AC_ACK_FIRST_LOGIN.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACK_FIRST_LOGIN::AC_ACK_FIRST_LOGIN(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACK_FIRST_LOGIN, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACK_FIRST_LOGIN, sock) { }
 
 AC_ACK_FIRST_LOGIN::~AC_ACK_FIRST_LOGIN() { }
 
 void AC_ACK_FIRST_LOGIN::deliver()
 {
 }
-
 ByteBuffer &AC_ACK_FIRST_LOGIN::serialize()
 {
 	return buf();
 }
-
 void AC_ACK_FIRST_LOGIN::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACK_FIRST_LOGIN::deserialize(ByteBuffer &buf)
 {
 }

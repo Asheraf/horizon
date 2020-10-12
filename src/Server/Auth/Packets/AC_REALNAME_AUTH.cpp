@@ -28,26 +28,24 @@
 #include "AC_REALNAME_AUTH.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_REALNAME_AUTH::AC_REALNAME_AUTH(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_REALNAME_AUTH, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_REALNAME_AUTH, sock) { }
 
 AC_REALNAME_AUTH::~AC_REALNAME_AUTH() { }
 
 void AC_REALNAME_AUTH::deliver()
 {
 }
-
 ByteBuffer &AC_REALNAME_AUTH::serialize()
 {
 	return buf();
 }
-
 void AC_REALNAME_AUTH::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_REALNAME_AUTH::deserialize(ByteBuffer &buf)
 {
 }

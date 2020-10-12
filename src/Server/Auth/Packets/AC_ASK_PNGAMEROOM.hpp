@@ -33,6 +33,8 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
 	ID_AC_ASK_PNGAMEROOM = 0x01be
@@ -50,15 +52,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_AC_ASK_PNGAMEROOM_HPP */

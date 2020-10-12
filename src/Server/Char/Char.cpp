@@ -32,60 +32,54 @@
 #include "Core/Logging/Logger.hpp"
 #include "Server/Char/Session/CharSession.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
-#include "Server/Common/Configuration/CharServerConfiguration.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/make_shared.hpp>
 #include <iostream>
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
+
+using namespace Horizon::Char;
 
 using namespace std;
 
-using boost::asio::ip::udp;
-
 /**
- * CharMain Constructor
+ * Char Constructor
  */
-Horizon::Char::CharMain::CharMain() : Server("Char", "config/", "char-server.lua")
+CharServer::CharServer() : Server()
 {
 	//
 }
 
 /**
- * CharMain Destructor
+ * Char Destructor
  */
-Horizon::Char::CharMain::~CharMain()
+CharServer::~CharServer()
 {
 	//
 }
 
-#define char_config_error(setting_name, default) \
-	CoreLog(error) <<"No setting for '{}' in configuration file, defaulting to '{}'.", setting_name, default);
+#define char_config_error(s, d) \
+	HLog(error) << "No setting for '" << s << "' in configuration file, defaulting to '" << d << "'.";
 
 /**
  * Read /config/char-server.yaml
  * @return true on success false on failure.
  */
-bool Horizon::Char::CharMain::ReadConfig()
+bool CharServer::ReadConfig()
 {
 	sol::state lua;
-	std::string file_path = general_conf().get_config_file_path() + general_conf().get_config_file_name();
+	std::string file_path = general_conf().get_config_file_path().string();
 
 	// Read the file. If there is an error, report it and exit.
 	try {
 		lua.script_file(file_path);
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"CharMain::ReadConfig: {}.", e.what());
+		HLog(error) << "Char::ReadConfig: " << e.what();
 		return false;
 	}
 
-	sol::table tbl = lua["server_config"];
+	sol::table tbl = lua["horizon_config"];
 
 	sol::table chtbl = tbl.get<sol::table>("new_character");
 	get_char_config().set_start_map(chtbl.get_or("start_map", std::string("new_1-1")));
@@ -118,7 +112,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 	if (!parse_common_configs(tbl))
 		return false;
 
-	CoreLog(info) <<"Done reading server configurations from '{}'.", file_path);
+	HLog(info) << "Done reading server configurations from '" << file_path << "'.";
 
 	return true;
 }
@@ -126,7 +120,7 @@ bool Horizon::Char::CharMain::ReadConfig()
 #undef char_config_error
 
 /* Initialize Char-Server CLI Commands */
-void Horizon::Char::CharMain::initialize_cli_commands()
+void CharServer::initialize_cli_commands()
 {
 	Server::initialize_cli_commands();
 }
@@ -139,12 +133,12 @@ void Horizon::Char::CharMain::initialize_cli_commands()
 void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 {
 	if (!error) {
-		CharServer->set_shutdown_stage(SHUTDOWN_INITIATED);
-		CharServer->set_shutdown_signal(SIGINT);
+		sChar->set_shutdown_stage(SHUTDOWN_INITIATED);
+		sChar->set_shutdown_signal(SIGINT);
 	}
 }
 
-void Horizon::Char::CharMain::initialize_core()
+void CharServer::initialize_core()
 {
 	/* Core Signal Handler  */
 	boost::asio::signal_set signals(get_io_service(), SIGINT, SIGTERM);
@@ -152,19 +146,17 @@ void Horizon::Char::CharMain::initialize_core()
 
 	/* Start Character Network */
 	ClientSocktMgr->start(get_io_service(),
-						  network_conf().get_listen_ip(),
-						  network_conf().get_listen_port(),
-						  network_conf().get_network_thread_count());
+						  general_conf().get_listen_ip(),
+						  general_conf().get_listen_port(),
+						  MAX_NETWORK_THREADS);
 
 	Server::initialize_core();
-
-	uint32_t diff = general_conf().get_core_update_interval();
 
 	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
 		process_cli_commands();
 		_task_scheduler.Update();
-		ClientSocktMgr->update_socket_sessions(diff);
-		std::this_thread::sleep_for(std::chrono::microseconds(diff));
+		ClientSocktMgr->update_socket_sessions(MAX_CORE_UPDATE_INTERVAL);
+		std::this_thread::sleep_for(std::chrono::microseconds(MAX_CORE_UPDATE_INTERVAL));
 	}
 
 	/**
@@ -196,17 +188,17 @@ int main(int argc, const char * argv[])
 {
 	/* Parse Command Line Arguments */
 	if (argc > 1)
-		CharServer->parse_exec_args(argv, argc);
+		sChar->parse_exec_args(argv, argc);
 
 	/* Read Char Configuration */
-	if (!CharServer->ReadConfig())
+	if (!sChar->ReadConfig())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
 	/* Initialize the Common Core */
-	CharServer->initialize_core();
+	sChar->initialize_core();
 
 	/* Core Cleanup */
-	CoreLog(info) <<"Server shutting down...");
+	HLog(info) << "Server shutting down...";
 
-	return CharServer->general_conf().get_shutdown_signal();
+	return sChar->general_conf().get_shutdown_signal();
 }

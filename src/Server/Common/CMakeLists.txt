@@ -30,6 +30,7 @@ add_subdirectory(SQL)
 add_subdirectory(Definitions)
 add_subdirectory(Interfaces)
 add_subdirectory(Base)
+add_subdirectory(Configuration)
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -45,4 +46,5 @@ set(COMMON_SOURCES
 	${INTERFACE_SOURCES}
 	${DATABASE_SOURCES}
 	${CLI_SOURCES}
+	${CONFIGURATION_SOURCES}
 	PARENT_SCOPE)

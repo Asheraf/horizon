@@ -28,26 +28,24 @@
 #include "AC_LOGIN_OTP.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_LOGIN_OTP::AC_LOGIN_OTP(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_LOGIN_OTP, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_LOGIN_OTP, sock) { }
 
 AC_LOGIN_OTP::~AC_LOGIN_OTP() { }
 
 void AC_LOGIN_OTP::deliver()
 {
 }
-
 ByteBuffer &AC_LOGIN_OTP::serialize()
 {
 	return buf();
 }
-
 void AC_LOGIN_OTP::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_LOGIN_OTP::deserialize(ByteBuffer &buf)
 {
 }

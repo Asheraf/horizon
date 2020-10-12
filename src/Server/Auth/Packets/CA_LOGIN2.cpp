@@ -28,26 +28,24 @@
 #include "CA_LOGIN2.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_LOGIN2::CA_LOGIN2(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_LOGIN2, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_LOGIN2, sock) { }
 
 CA_LOGIN2::~CA_LOGIN2() { }
 
 void CA_LOGIN2::deliver()
 {
 }
-
 ByteBuffer &CA_LOGIN2::serialize()
 {
 	return buf();
 }
-
 void CA_LOGIN2::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_LOGIN2::deserialize(ByteBuffer &buf)
 {
 }

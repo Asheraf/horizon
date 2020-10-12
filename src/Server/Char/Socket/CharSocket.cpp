@@ -29,10 +29,11 @@
 
 #include "CharSocket.hpp"
 
-#include "Server/Char/Packets/PacketHandlerFactory.hpp"
-#include "Server/Char/Packets/PacketHandler.hpp"
 #include "Server/Char/Session/CharSession.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
+#include "Server/Char/Char.hpp"
+
+#include <memory>
 
 using namespace Horizon::Char;
 
@@ -48,9 +49,7 @@ CharSocket::~CharSocket()
 }
 
 /**
- * Session dependency.
- * @thread created by network thread and called from another thread for pings and re-connection.
- * @note requires atomic loading and storing of the reference count and pointer.
+ * @thread created by network thread and called from main thread / client-sockt-mgr for update().
  */
 std::shared_ptr<CharSession> CharSocket::get_session() { return std::atomic_load(&_session); }
 void CharSocket::set_session(std::shared_ptr<CharSession> session) { std::atomic_store(&_session, session); }
@@ -62,11 +61,13 @@ void CharSocket::start()
 {
 	auto session = std::make_shared<CharSession>(shared_from_this());
 
+	_pkt_tbl = std::make_unique<ClientPacketLengthTable>(shared_from_this());
+
 	set_session(session);
 
 	session->initialize();
 
-	CoreLog(info) <<"Established connection from {}.", remote_ip_address());
+	HLog(info) << "Established connection from " << remote_ip_address() << ".";
 
 	// Start async_read loop.
 	async_read();
@@ -77,7 +78,7 @@ void CharSocket::start()
  */
 void CharSocket::on_close()
 {
-	CoreLog(info) <<"Closed connection from {}.", remote_ip_address());
+	HLog(info) << "Closed connection from " << remote_ip_address() << ".";
 
 	/* Perform socket manager cleanup. */
 	ClientSocktMgr->set_socket_for_removal(shared_from_this());
@@ -94,7 +95,7 @@ void CharSocket::on_error()
  */
 bool CharSocket::update()
 {
-	if (CharServer->get_shutdown_stage() > SHUTDOWN_NOT_STARTED)
+	if (sChar->get_shutdown_stage() > SHUTDOWN_NOT_STARTED)
 		ClientSocktMgr->set_socket_for_removal(shared_from_this());
 
 	return BaseSocket::update();
@@ -105,28 +106,49 @@ bool CharSocket::update()
  */
 void CharSocket::read_handler()
 {
-	while (get_read_buffer().get_active_size()) {
+	while (get_read_buffer().active_length()) {
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
-
-		int16_t packet_length = GET_CHAR_PACKETLEN(packet_id);
-
+		
+		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		
+		int16_t packet_length = p.first;
+		
+		HLog(debug) << "Received packet 0x" << packet_id << " of length " << packet_length << " from client.";
+		HLog(debug) << "Data:" << get_read_buffer().to_string();
+		
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
+			if (get_read_buffer().active_length() < packet_length) {
+				HLog(debug) << "Received packet 0x" << packet_id << " has expected length " << packet_length << " but buffer only supplied " << get_read_buffer().active_length() << " from client.";
+				break;
+			}
 		} else if (packet_length == 0) {
-			CoreLog(warn) <<"Received non-existent packet id {0:x}, disconnecting session...", packet_id);
+			HLog(warning) << "Received non-existent packet id 0x" << std::hex << packet_id << ", disconnecting session..." << std::endl;
+			get_read_buffer().read_completed(get_read_buffer().active_length());
 			close_socket();
 			break;
 		}
-
-		PacketBuffer buf(get_read_buffer().get_read_pointer(), packet_length);
+		
+		ByteBuffer b;
+		b.append(get_read_buffer().get_read_pointer(), packet_length);
+		get_recv_queue().push(std::move(b));
 		get_read_buffer().read_completed(packet_length);
-
-		_packet_recv_queue.push(std::move(buf));
 	}
 }
 
 void CharSocket::update_session(uint32_t diff)
 {
+	std::shared_ptr<ByteBuffer> read_buf;
+	while ((read_buf = _buffer_recv_queue.try_pop())) {
+		uint16_t packet_id = 0x0;
+		memcpy(&packet_id, read_buf->get_read_pointer(), sizeof(uint16_t));
+		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		
+		HLog(debug) << "Handling packet 0x" << std::hex << packet_id << " - 0x" << p.first << std::endl;
+		
+		p.second->handle(std::move(*read_buf));
+	}
+	
 	get_session()->update(diff);
 }

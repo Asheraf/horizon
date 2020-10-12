@@ -28,26 +28,24 @@
 #include "CA_OTP_AUTH_REQ.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_OTP_AUTH_REQ::CA_OTP_AUTH_REQ(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_OTP_AUTH_REQ, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_OTP_AUTH_REQ, sock) { }
 
 CA_OTP_AUTH_REQ::~CA_OTP_AUTH_REQ() { }
 
 void CA_OTP_AUTH_REQ::deliver()
 {
 }
-
 ByteBuffer &CA_OTP_AUTH_REQ::serialize()
 {
 	return buf();
 }
-
 void CA_OTP_AUTH_REQ::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_OTP_AUTH_REQ::deserialize(ByteBuffer &buf)
 {
 }

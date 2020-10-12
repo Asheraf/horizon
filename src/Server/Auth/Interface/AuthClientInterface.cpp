@@ -36,7 +36,7 @@
 
 #include <memory>
 
-using namespace Horizon;
+using namespace Horizon::Auth;
 
 AuthClientInterface::AuthClientInterface(std::shared_ptr<AuthSocket> sock)
 : ClientInterface(sock)

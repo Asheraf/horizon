@@ -32,7 +32,7 @@
 
 #include <string.h>
 
-using namespace Horizon;
+using namespace Horizon::Auth;
 
 AC_ACCEPT_LOGIN::AC_ACCEPT_LOGIN(std::shared_ptr<AuthSocket> sock)
  : Base::NetworkPacket<AuthSocket>(ID_AC_ACCEPT_LOGIN, sock) { }

@@ -42,7 +42,7 @@
  * Zero = 'Z'
  * Sakray = 'S'
  */
-#define CLIENT_TYPE 'R'
+#define CLIENT_TYPE 'M'
 
 /* Packet Version */
 #define PACKET_VERSION 20180314

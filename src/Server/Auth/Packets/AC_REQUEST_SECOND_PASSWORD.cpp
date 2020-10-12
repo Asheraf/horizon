@@ -28,26 +28,24 @@
 #include "AC_REQUEST_SECOND_PASSWORD.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_REQUEST_SECOND_PASSWORD::AC_REQUEST_SECOND_PASSWORD(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_REQUEST_SECOND_PASSWORD, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_REQUEST_SECOND_PASSWORD, sock) { }
 
 AC_REQUEST_SECOND_PASSWORD::~AC_REQUEST_SECOND_PASSWORD() { }
 
 void AC_REQUEST_SECOND_PASSWORD::deliver()
 {
 }
-
 ByteBuffer &AC_REQUEST_SECOND_PASSWORD::serialize()
 {
 	return buf();
 }
-
 void AC_REQUEST_SECOND_PASSWORD::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_REQUEST_SECOND_PASSWORD::deserialize(ByteBuffer &buf)
 {
 }

@@ -28,26 +28,24 @@
 #include "AC_REQ_LOGIN_CARDPASS.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_REQ_LOGIN_CARDPASS::AC_REQ_LOGIN_CARDPASS(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_REQ_LOGIN_CARDPASS, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_REQ_LOGIN_CARDPASS, sock) { }
 
 AC_REQ_LOGIN_CARDPASS::~AC_REQ_LOGIN_CARDPASS() { }
 
 void AC_REQ_LOGIN_CARDPASS::deliver()
 {
 }
-
 ByteBuffer &AC_REQ_LOGIN_CARDPASS::serialize()
 {
 	return buf();
 }
-
 void AC_REQ_LOGIN_CARDPASS::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_REQ_LOGIN_CARDPASS::deserialize(ByteBuffer &buf)
 {
 }

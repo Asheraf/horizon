@@ -33,23 +33,25 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20171115
+#if PACKETVER >= 20171115
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKET_VERSION >= 20171113
+#elif PACKETVER >= 20171113
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKET_VERSION >= 20171018
+#elif PACKETVER >= 20171018
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKET_VERSION >= 20170705
+#elif PACKETVER >= 20170705
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKET_VERSION >= 20170621
+#elif PACKETVER >= 20170621
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKET_VERSION >= 20170614
+#elif PACKETVER >= 20170614
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKET_VERSION >= 20130605
+#elif PACKETVER >= 20130605
 	ID_CA_LOGIN_OTP = 0x09c8
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_CA_LOGIN_OTP = 0x0acf
 #endif
 };
@@ -66,15 +68,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_CA_LOGIN_OTP_HPP */

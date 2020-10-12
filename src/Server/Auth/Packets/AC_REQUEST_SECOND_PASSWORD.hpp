@@ -33,11 +33,13 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20070227
+#if PACKETVER >= 20070227
 	ID_AC_REQUEST_SECOND_PASSWORD = 0x02ad
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_AC_REQUEST_SECOND_PASSWORD = 0x02ad
 #endif
 };
@@ -54,15 +56,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_AC_REQUEST_SECOND_PASSWORD_HPP */

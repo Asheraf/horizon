@@ -28,26 +28,24 @@
 #include "AC_ACK_EKEY_FAIL_INPUTEKEY.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_ACK_EKEY_FAIL_INPUTEKEY::AC_ACK_EKEY_FAIL_INPUTEKEY(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_INPUTEKEY, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_INPUTEKEY, sock) { }
 
 AC_ACK_EKEY_FAIL_INPUTEKEY::~AC_ACK_EKEY_FAIL_INPUTEKEY() { }
 
 void AC_ACK_EKEY_FAIL_INPUTEKEY::deliver()
 {
 }
-
 ByteBuffer &AC_ACK_EKEY_FAIL_INPUTEKEY::serialize()
 {
 	return buf();
 }
-
 void AC_ACK_EKEY_FAIL_INPUTEKEY::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_ACK_EKEY_FAIL_INPUTEKEY::deserialize(ByteBuffer &buf)
 {
 }

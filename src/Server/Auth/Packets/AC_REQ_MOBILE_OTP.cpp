@@ -28,26 +28,24 @@
 #include "AC_REQ_MOBILE_OTP.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_REQ_MOBILE_OTP::AC_REQ_MOBILE_OTP(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_REQ_MOBILE_OTP, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_REQ_MOBILE_OTP, sock) { }
 
 AC_REQ_MOBILE_OTP::~AC_REQ_MOBILE_OTP() { }
 
 void AC_REQ_MOBILE_OTP::deliver()
 {
 }
-
 ByteBuffer &AC_REQ_MOBILE_OTP::serialize()
 {
 	return buf();
 }
-
 void AC_REQ_MOBILE_OTP::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_REQ_MOBILE_OTP::deserialize(ByteBuffer &buf)
 {
 }

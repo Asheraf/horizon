@@ -28,26 +28,24 @@
 #include "CA_REQ_GAME_GUARD_CHECK.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 CA_REQ_GAME_GUARD_CHECK::CA_REQ_GAME_GUARD_CHECK(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_REQ_GAME_GUARD_CHECK, sock) { }
+ : NetworkPacket<AuthSocket>(ID_CA_REQ_GAME_GUARD_CHECK, sock) { }
 
 CA_REQ_GAME_GUARD_CHECK::~CA_REQ_GAME_GUARD_CHECK() { }
 
 void CA_REQ_GAME_GUARD_CHECK::deliver()
 {
 }
-
 ByteBuffer &CA_REQ_GAME_GUARD_CHECK::serialize()
 {
 	return buf();
 }
-
 void CA_REQ_GAME_GUARD_CHECK::handle(ByteBuffer &&buf)
 {
 }
-
 void CA_REQ_GAME_GUARD_CHECK::deserialize(ByteBuffer &buf)
 {
 }

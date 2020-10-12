@@ -33,11 +33,13 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 class AuthSocket;
 enum {
-#if PACKET_VERSION >= 20100615
+#if PACKETVER >= 20100615
 	ID_AC_REFUSE_LOGIN2 = 0x083e
-#elif PACKET_VERSION >= 0
+#elif PACKETVER >= 0
 	ID_AC_REFUSE_LOGIN2 = 0x083e
 #endif
 };
@@ -54,15 +56,14 @@ public:
 
 
 	void deliver();
-
-    ByteBuffer &serialize();
-
+	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
-
-    void deserialize(ByteBuffer &buf);
+	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
 };
 }
+}
+
 #endif /* HORIZON_AC_REFUSE_LOGIN2_HPP */

@@ -28,26 +28,24 @@
 #include "AC_EVENT_RESULT.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_EVENT_RESULT::AC_EVENT_RESULT(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_EVENT_RESULT, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_EVENT_RESULT, sock) { }
 
 AC_EVENT_RESULT::~AC_EVENT_RESULT() { }
 
 void AC_EVENT_RESULT::deliver()
 {
 }
-
 ByteBuffer &AC_EVENT_RESULT::serialize()
 {
 	return buf();
 }
-
 void AC_EVENT_RESULT::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_EVENT_RESULT::deserialize(ByteBuffer &buf)
 {
 }

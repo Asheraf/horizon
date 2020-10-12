@@ -96,6 +96,8 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 	typedef std::shared_ptr<Base::NetworkPacket<AuthSocket>> PacketStructPtrType;
 	typedef std::pair<uint16_t, PacketStructPtrType> PacketTablePairType;
 
@@ -183,5 +185,6 @@ protected:
 	std::weak_ptr<AuthSocket> _socket;
 
 };
+}
 }
 #endif /* HORIZON_AUTH_PACKET_LENGTH_TABLE */

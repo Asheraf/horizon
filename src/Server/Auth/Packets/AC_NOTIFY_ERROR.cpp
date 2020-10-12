@@ -28,26 +28,24 @@
 #include "AC_NOTIFY_ERROR.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_NOTIFY_ERROR::AC_NOTIFY_ERROR(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_NOTIFY_ERROR, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_NOTIFY_ERROR, sock) { }
 
 AC_NOTIFY_ERROR::~AC_NOTIFY_ERROR() { }
 
 void AC_NOTIFY_ERROR::deliver()
 {
 }
-
 ByteBuffer &AC_NOTIFY_ERROR::serialize()
 {
 	return buf();
 }
-
 void AC_NOTIFY_ERROR::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_NOTIFY_ERROR::deserialize(ByteBuffer &buf)
 {
 }

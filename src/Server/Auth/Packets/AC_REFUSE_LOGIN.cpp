@@ -28,10 +28,11 @@
 #include "AC_REFUSE_LOGIN.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_REFUSE_LOGIN::AC_REFUSE_LOGIN(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_REFUSE_LOGIN, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_REFUSE_LOGIN, sock) { }
 
 AC_REFUSE_LOGIN::~AC_REFUSE_LOGIN() { }
 
@@ -64,4 +65,3 @@ void AC_REFUSE_LOGIN::handle(ByteBuffer &&buf)
 void AC_REFUSE_LOGIN::deserialize(ByteBuffer &buf)
 {
 }
-

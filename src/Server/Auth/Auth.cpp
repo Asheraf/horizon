@@ -42,13 +42,13 @@
 
 using boost::asio::ip::udp;
 using namespace std::chrono_literals;
-using namespace Horizon;
+using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
 /**
  * Horizon Constructor.
  */
-Auth::Auth()
+AuthServer::AuthServer()
 : Server()
 {
 	initialize_cli_commands();
@@ -57,7 +57,7 @@ Auth::Auth()
 /**
  * Horizon Destructor.
  */
-Auth::~Auth()
+AuthServer::~AuthServer()
 {
 }
 
@@ -68,7 +68,7 @@ Auth::~Auth()
  * Read /config/horizon-server.yaml
  * @return true on success, false on failure.
  */
-bool Auth::ReadConfig()
+bool AuthServer::ReadConfig()
 {
 	sol::state lua;
 
@@ -159,7 +159,7 @@ bool Auth::ReadConfig()
  * CLI Command: Reload Configuration
  * @return boolean value from AuthServer->ReadConfig()
  */
-bool Auth::clicmd_reload_config()
+bool AuthServer::clicmd_reload_config()
 {
 	HLog(info) << "Reloading configuration from '" << general_conf().get_config_file_path() << "'";
 
@@ -169,9 +169,9 @@ bool Auth::clicmd_reload_config()
 /**
  * Initialize CLI Comamnds
  */
-void Auth::initialize_cli_commands()
+void AuthServer::initialize_cli_commands()
 {
-	add_cli_command_func("reloadconf", std::bind(&Auth::clicmd_reload_config, this));
+	add_cli_command_func("reloadconf", std::bind(&AuthServer::clicmd_reload_config, this));
 
 	Server::initialize_cli_commands();
 }
@@ -189,7 +189,7 @@ void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 	}
 }
 
-void Auth::initialize_core()
+void AuthServer::initialize_core()
 {
 	/**
 	 * Core Signal Handler

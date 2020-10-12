@@ -28,26 +28,24 @@
 #include "AC_SHUTDOWN_NOTIFY.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 
-using namespace Horizon;
+using namespace Horizon::Auth;
+using namespace Horizon::Base;
 
 AC_SHUTDOWN_NOTIFY::AC_SHUTDOWN_NOTIFY(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_SHUTDOWN_NOTIFY, sock) { }
+ : NetworkPacket<AuthSocket>(ID_AC_SHUTDOWN_NOTIFY, sock) { }
 
 AC_SHUTDOWN_NOTIFY::~AC_SHUTDOWN_NOTIFY() { }
 
 void AC_SHUTDOWN_NOTIFY::deliver()
 {
 }
-
 ByteBuffer &AC_SHUTDOWN_NOTIFY::serialize()
 {
 	return buf();
 }
-
 void AC_SHUTDOWN_NOTIFY::handle(ByteBuffer &&buf)
 {
 }
-
 void AC_SHUTDOWN_NOTIFY::deserialize(ByteBuffer &buf)
 {
 }

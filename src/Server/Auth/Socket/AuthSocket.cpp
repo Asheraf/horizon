@@ -33,9 +33,7 @@
 #include "Server/Auth/Session/AuthSession.hpp"
 #include "Server/Auth/Auth.hpp"
 
-#include <random>
-
-using namespace Horizon;
+using namespace Horizon::Auth;
 
 AuthSocket::AuthSocket(std::shared_ptr<tcp::socket> socket)
 : Socket(socket)
@@ -61,7 +59,7 @@ void AuthSocket::start()
 {
 	auto session = std::make_shared<AuthSession>(shared_from_this());
     
-    _pkt_tbl = std::make_unique<ShufflePacketLengthTable>(shared_from_this());
+    _pkt_tbl = std::make_unique<ClientPacketLengthTable>(shared_from_this());
     
 	set_session(session);
 

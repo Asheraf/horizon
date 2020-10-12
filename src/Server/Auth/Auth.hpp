@@ -40,6 +40,8 @@
 
 namespace Horizon
 {
+namespace Auth
+{
 /**
  * Main Auth Server Singleton Class.
  */
@@ -58,15 +60,15 @@ struct auth_config_type {
     std::vector<char_server> _char_servers;
 };
 
-class Auth : public Server
+class AuthServer : public Server
 {
 public:
-	Auth();
-	~Auth();
+	AuthServer();
+	~AuthServer();
 
-	static Auth *getInstance()
+	static AuthServer *getInstance()
 	{
-		static Auth instance;
+		static AuthServer instance;
 		return &instance;
 	}
 
@@ -93,7 +95,8 @@ protected:
 
 };
 }
+}
 
-#define sAuth Horizon::Auth::getInstance()
+#define sAuth Horizon::Auth::AuthServer::getInstance()
 
 #endif /* HORIZON_AUTH_HPP */

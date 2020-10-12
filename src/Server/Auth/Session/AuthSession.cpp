@@ -34,8 +34,7 @@
 #include "Server/Common/SQL/SessionData.hpp"
 #include "Server/Auth/Auth.hpp"
 
-using namespace Horizon;
-using namespace Horizon::Models;
+using namespace Horizon::Auth;
 
 AuthSession::AuthSession(std::shared_ptr<AuthSocket> socket)
 : Networking::Session<AuthSocket>(socket), _clif(socket)
