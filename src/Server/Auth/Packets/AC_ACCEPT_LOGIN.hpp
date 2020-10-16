@@ -37,7 +37,7 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
 #if PACKET_VERSION >= 20170228
 	ID_AC_ACCEPT_LOGIN = 0x0ac4
@@ -50,7 +50,7 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class AC_ACCEPT_LOGIN : public Base::NetworkPacket<AuthSocket>
+class AC_ACCEPT_LOGIN : public Base::NetworkPacket<AuthSession>
 {
 /* Size: 47 + (32 * char server count) bytes */
 #pragma pack(push, 1)
@@ -83,7 +83,7 @@ struct s_ac_char_server_list
 #pragma pack(pop)
 	
 public:
-	AC_ACCEPT_LOGIN(std::shared_ptr<AuthSocket> sock);
+	AC_ACCEPT_LOGIN(std::shared_ptr<AuthSession> s);
 	virtual ~AC_ACCEPT_LOGIN();
 	
 	void deliver(int32_t auth_code, uint32_t aid, uint32_t user_level, uint8_t sex);

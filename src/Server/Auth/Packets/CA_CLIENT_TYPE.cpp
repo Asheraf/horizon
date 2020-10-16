@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CA_CLIENT_TYPE.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-CA_CLIENT_TYPE::CA_CLIENT_TYPE(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_CA_CLIENT_TYPE, sock) { }
+CA_CLIENT_TYPE::CA_CLIENT_TYPE(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_CA_CLIENT_TYPE, s) { }
 
 CA_CLIENT_TYPE::~CA_CLIENT_TYPE() { }
 

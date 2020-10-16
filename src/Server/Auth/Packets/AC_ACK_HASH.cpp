@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "AC_ACK_HASH.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-AC_ACK_HASH::AC_ACK_HASH(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_AC_ACK_HASH, sock) { }
+AC_ACK_HASH::AC_ACK_HASH(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_AC_ACK_HASH, s) { }
 
 AC_ACK_HASH::~AC_ACK_HASH() { }
 

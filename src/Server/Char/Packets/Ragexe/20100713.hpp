@@ -49,10 +49,10 @@ namespace Char
 class ClientPacketLengthTable : public PacketLengthTable
 {
 public:
-	ClientPacketLengthTable(std::shared_ptr<CharSocket> sock)
-	: PacketLengthTable(sock)
+	ClientPacketLengthTable(std::shared_ptr<CharSession> s)
+	: PacketLengthTable(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(sock)))
+#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
 		ADD_PKT(0x0829, 6, CH_DELETE_CHAR3);
 		ADD_PKT(0x082b, 6, CH_DELETE_CHAR3_CANCEL);
 		ADD_PKT(0x0827, 6, CH_DELETE_CHAR3_RESERVED);

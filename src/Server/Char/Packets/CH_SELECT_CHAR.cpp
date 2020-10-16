@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_SELECT_CHAR.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_SELECT_CHAR::CH_SELECT_CHAR(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_SELECT_CHAR, sock) { }
+CH_SELECT_CHAR::CH_SELECT_CHAR(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_SELECT_CHAR, s) { }
 
 CH_SELECT_CHAR::~CH_SELECT_CHAR() { }
 

@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20100713
+#if PACKET_VERSION >= 20100713
 	ID_CH_DELETE_CHAR3_CANCEL = 0x082b
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CH_DELETE_CHAR3_CANCEL = 0x082b
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 6 @ 0
  *
  */ 
-class CH_DELETE_CHAR3_CANCEL : public Base::NetworkPacket<CharSocket>
+class CH_DELETE_CHAR3_CANCEL : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_DELETE_CHAR3_CANCEL(std::shared_ptr<CharSocket> sock);
+	CH_DELETE_CHAR3_CANCEL(std::shared_ptr<CharSession> s);
 	virtual ~CH_DELETE_CHAR3_CANCEL();
 
 
@@ -62,6 +62,7 @@ public:
 
 protected:
 	/* Structure Goes Here */
+	uint32_t _character_id{0};
 };
 }
 }

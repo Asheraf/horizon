@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20121128
+#if PACKET_VERSION >= 20121128
 	ID_HC_QUEUE_ORDER = 0x099e
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_QUEUE_ORDER = 0x099e
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 12 @ 0
  *
  */ 
-class HC_QUEUE_ORDER : public Base::NetworkPacket<CharSocket>
+class HC_QUEUE_ORDER : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_QUEUE_ORDER(std::shared_ptr<CharSocket> sock);
+	HC_QUEUE_ORDER(std::shared_ptr<CharSession> s);
 	virtual ~HC_QUEUE_ORDER();
 
 

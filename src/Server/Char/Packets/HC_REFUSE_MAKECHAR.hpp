@@ -35,7 +35,17 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+
+enum hc_char_create_error_type : uint8_t
+{
+	HC_CREATE_ERROR_ALREADY_EXISTS = 0x00,
+	HC_CREATE_ERROR_DENIED         = 0xFF,
+	HC_CREATE_ERROR_UNDERAGE       = 0x01,
+	HC_CREATE_ERROR_SYMBOLS        = 0x02,
+	HC_CREATE_ERROR_CHAR_SLOT      = 0x03
+};
+
+class CharSession;
 enum {
 	ID_HC_REFUSE_MAKECHAR = 0x006e
 };
@@ -44,20 +54,21 @@ enum {
  * Size : 3 @ 0
  *
  */ 
-class HC_REFUSE_MAKECHAR : public Base::NetworkPacket<CharSocket>
+class HC_REFUSE_MAKECHAR : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_REFUSE_MAKECHAR(std::shared_ptr<CharSocket> sock);
+	HC_REFUSE_MAKECHAR(std::shared_ptr<CharSession> s);
 	virtual ~HC_REFUSE_MAKECHAR();
 
 
-	void deliver();
+	void deliver(hc_char_create_error_type error);
 	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
+	hc_char_create_error_type _error;
 };
 }
 }

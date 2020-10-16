@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_UPDATE_CHARINFO.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_UPDATE_CHARINFO::HC_UPDATE_CHARINFO(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_UPDATE_CHARINFO, sock) { }
+HC_UPDATE_CHARINFO::HC_UPDATE_CHARINFO(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_UPDATE_CHARINFO, s) { }
 
 HC_UPDATE_CHARINFO::~HC_UPDATE_CHARINFO() { }
 

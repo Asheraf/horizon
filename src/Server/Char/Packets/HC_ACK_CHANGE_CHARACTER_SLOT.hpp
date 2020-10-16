@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20110906
+#if PACKET_VERSION >= 20110906
 	ID_HC_ACK_CHANGE_CHARACTER_SLOT = 0x08d5
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_ACK_CHANGE_CHARACTER_SLOT = 0x08d5
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class HC_ACK_CHANGE_CHARACTER_SLOT : public Base::NetworkPacket<CharSocket>
+class HC_ACK_CHANGE_CHARACTER_SLOT : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_ACK_CHANGE_CHARACTER_SLOT(std::shared_ptr<CharSocket> sock);
+	HC_ACK_CHANGE_CHARACTER_SLOT(std::shared_ptr<CharSession> s);
 	virtual ~HC_ACK_CHANGE_CHARACTER_SLOT();
 
 

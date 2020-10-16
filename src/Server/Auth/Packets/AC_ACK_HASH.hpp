@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
 	ID_AC_ACK_HASH = 0x01dc
 };
@@ -44,10 +44,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class AC_ACK_HASH : public Base::NetworkPacket<AuthSocket>
+class AC_ACK_HASH : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_ACK_HASH(std::shared_ptr<AuthSocket> sock);
+	AC_ACK_HASH(std::shared_ptr<AuthSession> s);
 	virtual ~AC_ACK_HASH();
 
 

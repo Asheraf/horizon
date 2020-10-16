@@ -35,23 +35,23 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20171115
+#if PACKET_VERSION >= 20171115
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKETVER >= 20171113
+#elif PACKET_VERSION >= 20171113
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKETVER >= 20171018
+#elif PACKET_VERSION >= 20171018
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKETVER >= 20170705
+#elif PACKET_VERSION >= 20170705
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKETVER >= 20170621
+#elif PACKET_VERSION >= 20170621
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKETVER >= 20170614
+#elif PACKET_VERSION >= 20170614
 	ID_CA_LOGIN_OTP = 0x0acf
-#elif PACKETVER >= 20130605
+#elif PACKET_VERSION >= 20130605
 	ID_CA_LOGIN_OTP = 0x09c8
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_LOGIN_OTP = 0x0acf
 #endif
 };
@@ -60,10 +60,10 @@ enum {
  * Size : 68 @ 0
  *
  */ 
-class CA_LOGIN_OTP : public Base::NetworkPacket<AuthSocket>
+class CA_LOGIN_OTP : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_LOGIN_OTP(std::shared_ptr<AuthSocket> sock);
+	CA_LOGIN_OTP(std::shared_ptr<AuthSession> s);
 	virtual ~CA_LOGIN_OTP();
 
 

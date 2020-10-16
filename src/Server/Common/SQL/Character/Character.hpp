@@ -54,23 +54,23 @@ namespace SQL
 {
 namespace TableCharacters_
 {
-struct character_id
+struct id
 {
 	struct _alias_t
 	{
-		static constexpr const char _literal[] = "character_id";
+		static constexpr const char _literal[] = "id";
 		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
 		template <typename T>
 		struct _member_t
 		{
-			T character_id;
+			T id;
 			T& operator()()
 			{
-				return character_id;
+				return id;
 			}
 			const T& operator()() const
 			{
-				return character_id;
+				return id;
 			}
 		};
 	};
@@ -212,7 +212,7 @@ struct deleted_at
 			}
 		};
 	};
-	using _traits = sqlpp::make_traits<sqlpp::time_point>;
+	using _traits = sqlpp::make_traits<sqlpp::time_point, sqlpp::tag::can_be_null>;
 };
 
 struct unban_time

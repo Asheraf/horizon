@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_CHARLIST_NOTIFY.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_CHARLIST_NOTIFY::HC_CHARLIST_NOTIFY(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_CHARLIST_NOTIFY, sock) { }
+HC_CHARLIST_NOTIFY::HC_CHARLIST_NOTIFY(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_CHARLIST_NOTIFY, s) { }
 
 HC_CHARLIST_NOTIFY::~HC_CHARLIST_NOTIFY() { }
 

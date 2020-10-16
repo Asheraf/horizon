@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20130130
+#if PACKET_VERSION >= 20130130
 	ID_CA_ACK_MOBILE_OTP = 0x09a3
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_ACK_MOBILE_OTP = 0x09a3
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class CA_ACK_MOBILE_OTP : public Base::NetworkPacket<AuthSocket>
+class CA_ACK_MOBILE_OTP : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_ACK_MOBILE_OTP(std::shared_ptr<AuthSocket> sock);
+	CA_ACK_MOBILE_OTP(std::shared_ptr<AuthSession> s);
 	virtual ~CA_ACK_MOBILE_OTP();
 
 

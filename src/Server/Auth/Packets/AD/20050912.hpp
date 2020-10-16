@@ -49,10 +49,10 @@ namespace Auth
 class ClientPacketLengthTable : public PacketLengthTable
 {
 public:
-	ClientPacketLengthTable(std::shared_ptr<AuthSocket> sock)
-	: PacketLengthTable(sock)
+	ClientPacketLengthTable(std::shared_ptr<AuthSession> s)
+	: PacketLengthTable(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(sock)))
+#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
 		ADD_PKT(0x0259, 3, AC_ACK_GAME_GUARD);
 		ADD_PKT(0x0258, 2, CA_REQ_GAME_GUARD_CHECK);
 #undef ADD_PKT

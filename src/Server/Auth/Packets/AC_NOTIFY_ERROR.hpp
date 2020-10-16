@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20031223
+#if PACKET_VERSION >= 20031223
 	ID_AC_NOTIFY_ERROR = 0x01f1
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_NOTIFY_ERROR = 0x01f1
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class AC_NOTIFY_ERROR : public Base::NetworkPacket<AuthSocket>
+class AC_NOTIFY_ERROR : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_NOTIFY_ERROR(std::shared_ptr<AuthSocket> sock);
+	AC_NOTIFY_ERROR(std::shared_ptr<AuthSession> s);
 	virtual ~AC_NOTIFY_ERROR();
 
 

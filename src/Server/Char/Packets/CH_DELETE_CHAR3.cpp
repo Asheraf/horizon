@@ -26,27 +26,35 @@
  **************************************************/
 
 #include "CH_DELETE_CHAR3.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_DELETE_CHAR3::CH_DELETE_CHAR3(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_DELETE_CHAR3, sock) { }
+CH_DELETE_CHAR3::CH_DELETE_CHAR3(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_DELETE_CHAR3, s) { }
 
 CH_DELETE_CHAR3::~CH_DELETE_CHAR3() { }
 
 void CH_DELETE_CHAR3::deliver()
 {
 }
+
 ByteBuffer &CH_DELETE_CHAR3::serialize()
 {
 	return buf();
 }
+
 void CH_DELETE_CHAR3::handle(ByteBuffer &&buf)
 {
+	deserialize(buf);
+	get_session()->clif()->character_delete_birthdate(_character_id, _birthdate);
 }
+
 void CH_DELETE_CHAR3::deserialize(ByteBuffer &buf)
 {
+	buf >> _packet_id;
+	buf >> _character_id;
+	buf.read(_birthdate, CLIENT_BIRTHDATE_STRING_LENGTH);
 }
 

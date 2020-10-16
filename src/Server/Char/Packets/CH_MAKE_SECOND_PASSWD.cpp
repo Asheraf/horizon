@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_MAKE_SECOND_PASSWD.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_MAKE_SECOND_PASSWD::CH_MAKE_SECOND_PASSWD(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_MAKE_SECOND_PASSWD, sock) { }
+CH_MAKE_SECOND_PASSWD::CH_MAKE_SECOND_PASSWD(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_MAKE_SECOND_PASSWD, s) { }
 
 CH_MAKE_SECOND_PASSWD::~CH_MAKE_SECOND_PASSWD() { }
 
@@ -43,10 +43,19 @@ ByteBuffer &CH_MAKE_SECOND_PASSWD::serialize()
 {
 	return buf();
 }
+
 void CH_MAKE_SECOND_PASSWD::handle(ByteBuffer &&buf)
 {
+	deserialize(buf);
+	get_session()->clif()->pincode_create(_account_id, _new_pin);
 }
+
 void CH_MAKE_SECOND_PASSWD::deserialize(ByteBuffer &buf)
 {
+	memset(_new_pin, '\0', MAX_PINCODE_STRING_LENGTH);
+	
+	buf >> _packet_id;
+	buf >> _account_id;
+	buf.read(_new_pin, MAX_PINCODE_STRING_LENGTH - 1);
 }
 

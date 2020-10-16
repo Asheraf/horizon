@@ -29,15 +29,14 @@
 
 #include "Server/Auth/Auth.hpp"
 #include "Server/Auth/Interface/AuthClientInterface.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
 
 #include <string>
 
 using namespace Horizon::Auth;
 
-CA_LOGIN::CA_LOGIN(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_CA_LOGIN, sock) { }
+CA_LOGIN::CA_LOGIN(std::shared_ptr<AuthSession> s)
+ : Base::NetworkPacket<AuthSession>(ID_CA_LOGIN, s) { }
 
 CA_LOGIN::~CA_LOGIN() { }
 
@@ -54,7 +53,7 @@ void CA_LOGIN::handle(ByteBuffer &&buf)
 {
     deserialize(buf);
 	
-	get_socket()->get_session()->clif().process_login(_username, _password, _version, _client_type);
+	get_session()->clif()->process_login(_username, _password, _version, _client_type);
 }
 
 void CA_LOGIN::deserialize(ByteBuffer &buf)

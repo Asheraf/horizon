@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20060109
+#if PACKET_VERSION >= 20060109
 	ID_AC_ACK_EKEY_FAIL_INPUTEKEY = 0x026b
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_ACK_EKEY_FAIL_INPUTEKEY = 0x026b
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 4 @ 0
  *
  */ 
-class AC_ACK_EKEY_FAIL_INPUTEKEY : public Base::NetworkPacket<AuthSocket>
+class AC_ACK_EKEY_FAIL_INPUTEKEY : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_ACK_EKEY_FAIL_INPUTEKEY(std::shared_ptr<AuthSocket> sock);
+	AC_ACK_EKEY_FAIL_INPUTEKEY(std::shared_ptr<AuthSession> s);
 	virtual ~AC_ACK_EKEY_FAIL_INPUTEKEY();
 
 

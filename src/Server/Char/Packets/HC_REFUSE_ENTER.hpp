@@ -35,7 +35,13 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+
+enum hc_char_connect_error_type : uint8_t
+{
+	CHAR_ERR_REJECTED_FROM_SERVER = 0, // 0 = Rejected from server.
+};
+
+class CharSession;
 enum {
 	ID_HC_REFUSE_ENTER = 0x006c
 };
@@ -44,10 +50,10 @@ enum {
  * Size : 3 @ 0
  *
  */ 
-class HC_REFUSE_ENTER : public Base::NetworkPacket<CharSocket>
+class HC_REFUSE_ENTER : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_REFUSE_ENTER(std::shared_ptr<CharSocket> sock);
+	HC_REFUSE_ENTER(std::shared_ptr<CharSession> s);
 	virtual ~HC_REFUSE_ENTER();
 
 
@@ -56,8 +62,8 @@ public:
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
-protected:
 	/* Structure Goes Here */
+	hc_char_connect_error_type _error;
 };
 }
 }

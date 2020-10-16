@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_UNKNOWN_PING.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_UNKNOWN_PING::CH_UNKNOWN_PING(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_UNKNOWN_PING, sock) { }
+CH_UNKNOWN_PING::CH_UNKNOWN_PING(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_UNKNOWN_PING, s) { }
 
 CH_UNKNOWN_PING::~CH_UNKNOWN_PING() { }
 
@@ -48,5 +48,7 @@ void CH_UNKNOWN_PING::handle(ByteBuffer &&buf)
 }
 void CH_UNKNOWN_PING::deserialize(ByteBuffer &buf)
 {
+	buf >> _packet_id;
+	buf >> _account_id;
 }
 

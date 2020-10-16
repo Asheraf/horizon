@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_SECOND_PASSWD_REQ.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_SECOND_PASSWD_REQ::HC_SECOND_PASSWD_REQ(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_SECOND_PASSWD_REQ, sock) { }
+HC_SECOND_PASSWD_REQ::HC_SECOND_PASSWD_REQ(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_SECOND_PASSWD_REQ, s) { }
 
 HC_SECOND_PASSWD_REQ::~HC_SECOND_PASSWD_REQ() { }
 

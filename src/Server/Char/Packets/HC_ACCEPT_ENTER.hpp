@@ -35,29 +35,37 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
 	ID_HC_ACCEPT_ENTER = 0x006b
 };
+
 /**
  * @brief Main object for the aegis packet: HC_ACCEPT_ENTER
  * Size : -1 @ 0
  *
  */ 
-class HC_ACCEPT_ENTER : public Base::NetworkPacket<CharSocket>
+class HC_ACCEPT_ENTER : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_ACCEPT_ENTER(std::shared_ptr<CharSocket> sock);
+	HC_ACCEPT_ENTER(std::shared_ptr<CharSession> s);
 	virtual ~HC_ACCEPT_ENTER();
 
 
+	bool prepare_and_deliver(uint32_t account_id, uint8_t max_char_slots, uint8_t permitted_slots, uint8_t total_premium_slots);
 	void deliver();
-	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
-protected:
 	/* Structure Goes Here */
+	uint16_t _packet_length{24};
+#if PACKET_VERSION >= 20100413
+	uint8_t _max_char_slots{MAX_CHARACTER_SLOTS};
+	uint8_t _permitted_slots{MAX_CHARACTER_SLOTS};
+	// Total premium slots out of the max_char_slots which are premium. (if not permitted will show red)
+	uint8_t _total_premium_slots{MAX_CHARACTER_SLOTS};
+#endif
+	uint8_t _unknown_bytes[20]{0}; ///< 20 Unknown bytes.
 };
 }
 }

@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_CHARACTER_LIST.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_CHARACTER_LIST::HC_CHARACTER_LIST(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_CHARACTER_LIST, sock) { }
+HC_CHARACTER_LIST::HC_CHARACTER_LIST(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_CHARACTER_LIST, s) { }
 
 HC_CHARACTER_LIST::~HC_CHARACTER_LIST() { }
 

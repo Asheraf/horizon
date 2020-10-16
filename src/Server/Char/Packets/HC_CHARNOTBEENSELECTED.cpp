@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_CHARNOTBEENSELECTED.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_CHARNOTBEENSELECTED::HC_CHARNOTBEENSELECTED(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_CHARNOTBEENSELECTED, sock) { }
+HC_CHARNOTBEENSELECTED::HC_CHARNOTBEENSELECTED(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_CHARNOTBEENSELECTED, s) { }
 
 HC_CHARNOTBEENSELECTED::~HC_CHARNOTBEENSELECTED() { }
 

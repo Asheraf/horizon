@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_NOTIFY_ACCESSIBLE_MAPNAME.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_NOTIFY_ACCESSIBLE_MAPNAME::HC_NOTIFY_ACCESSIBLE_MAPNAME(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_NOTIFY_ACCESSIBLE_MAPNAME, sock) { }
+HC_NOTIFY_ACCESSIBLE_MAPNAME::HC_NOTIFY_ACCESSIBLE_MAPNAME(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_NOTIFY_ACCESSIBLE_MAPNAME, s) { }
 
 HC_NOTIFY_ACCESSIBLE_MAPNAME::~HC_NOTIFY_ACCESSIBLE_MAPNAME() { }
 

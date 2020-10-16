@@ -35,13 +35,13 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20061030
+#if PACKET_VERSION >= 20061030
 	ID_HC_ACK_IS_VALID_CHARNAME = 0x028e
-#elif PACKETVER >= 20061023
+#elif PACKET_VERSION >= 20061023
 	ID_HC_ACK_IS_VALID_CHARNAME = 0x028e
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_ACK_IS_VALID_CHARNAME = 0x028e
 #endif
 };
@@ -50,10 +50,10 @@ enum {
  * Size : 4 @ 0
  *
  */ 
-class HC_ACK_IS_VALID_CHARNAME : public Base::NetworkPacket<CharSocket>
+class HC_ACK_IS_VALID_CHARNAME : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_ACK_IS_VALID_CHARNAME(std::shared_ptr<CharSocket> sock);
+	HC_ACK_IS_VALID_CHARNAME(std::shared_ptr<CharSession> s);
 	virtual ~HC_ACK_IS_VALID_CHARNAME();
 
 

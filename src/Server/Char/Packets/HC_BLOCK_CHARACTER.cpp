@@ -26,26 +26,34 @@
  **************************************************/
 
 #include "HC_BLOCK_CHARACTER.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_BLOCK_CHARACTER::HC_BLOCK_CHARACTER(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_BLOCK_CHARACTER, sock) { }
+HC_BLOCK_CHARACTER::HC_BLOCK_CHARACTER(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_BLOCK_CHARACTER, s) { }
 
 HC_BLOCK_CHARACTER::~HC_BLOCK_CHARACTER() { }
 
 void HC_BLOCK_CHARACTER::deliver()
 {
+	serialize();
+	transmit();
 }
+
 ByteBuffer &HC_BLOCK_CHARACTER::serialize()
 {
+	buf() << _packet_id;
+	buf() << _packet_length;
+	
 	return buf();
 }
+
 void HC_BLOCK_CHARACTER::handle(ByteBuffer &&buf)
 {
 }
+
 void HC_BLOCK_CHARACTER::deserialize(ByteBuffer &buf)
 {
 }

@@ -26,26 +26,35 @@
  **************************************************/
 
 #include "HC_REFUSE_MAKECHAR.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_REFUSE_MAKECHAR::HC_REFUSE_MAKECHAR(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_REFUSE_MAKECHAR, sock) { }
+HC_REFUSE_MAKECHAR::HC_REFUSE_MAKECHAR(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_REFUSE_MAKECHAR, s) { }
 
 HC_REFUSE_MAKECHAR::~HC_REFUSE_MAKECHAR() { }
 
-void HC_REFUSE_MAKECHAR::deliver()
+void HC_REFUSE_MAKECHAR::deliver(hc_char_create_error_type error)
 {
+	_error = error;
+	
+	serialize();
+	transmit();
 }
+
 ByteBuffer &HC_REFUSE_MAKECHAR::serialize()
 {
+	buf() << _packet_id;
+	buf() << (uint8_t) _error;
 	return buf();
 }
+
 void HC_REFUSE_MAKECHAR::handle(ByteBuffer &&buf)
 {
 }
+
 void HC_REFUSE_MAKECHAR::deserialize(ByteBuffer &buf)
 {
 }

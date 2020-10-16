@@ -63,7 +63,7 @@ enum class login_error_codes
 	ERR_DELETING_SPOUSE                 = 104, // This character is being deleted. Login is temporarily unavailable for the time being
 };
 
-class AuthSocket;
+class AuthSession;
 enum {
 	ID_AC_REFUSE_LOGIN = 0x006a
 };
@@ -72,10 +72,10 @@ enum {
  * Size : 23 @ 0
  *
  */ 
-class AC_REFUSE_LOGIN : public Base::NetworkPacket<AuthSocket>
+class AC_REFUSE_LOGIN : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_REFUSE_LOGIN(std::shared_ptr<AuthSocket> sock);
+	AC_REFUSE_LOGIN(std::shared_ptr<AuthSession> s);
 	virtual ~AC_REFUSE_LOGIN();
 
 	void deliver(login_error_codes error_code, char *block_date, std::size_t bd_size);

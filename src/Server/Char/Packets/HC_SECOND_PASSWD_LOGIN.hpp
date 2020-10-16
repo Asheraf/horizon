@@ -35,39 +35,73 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+
+enum hc_pincode_state_type : uint16_t
+{
+	PINCODE_CORRECT        = 0,
+	PINCODE_REQUEST_PIN    = 1,
+	PINCODE_REQUEST_NEW    = 2,
+	PINCODE_REQUEST_CHANGE = 3,
+	PINCODE_REQUEST_NEW_2  = 4,
+	PINCODE_LOGIN_RESTRICT = 5,
+	PINCODE_LOGIN_UNUSED   = 6,
+	PINCODE_SHOW_BUTTON    = 7,
+	PINCODE_INCORRECT      = 8
+};
+
+#if CLIENT_TYPE == 'M' && PACKET_VERSION >= 20180124 \
+|| CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180124 \
+|| CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20180131
+enum hc_pincode_login_response2 {
+	PINCODE_LOGIN_FLAG_LOCKED = 0,
+	PINCODE_LOGIN_FLAG_CORRECT = 1,
+	PINCODE_LOGIN_FLAG_WRONG  = 2,
+};
+#endif
+
 enum {
-#if PACKETVER >= 20180117
+#if PACKET_VERSION >= 20180117
 	ID_HC_SECOND_PASSWD_LOGIN = 0x0ae9
-#elif PACKETVER >= 20180103
+#elif PACKET_VERSION >= 20180103
 	ID_HC_SECOND_PASSWD_LOGIN = 0x0ae9
-#elif PACKETVER >= 20171220
+#elif PACKET_VERSION >= 20171220
 	ID_HC_SECOND_PASSWD_LOGIN = 0x0ae9
-#elif PACKETVER >= 20110222
+#elif PACKET_VERSION >= 20110222
 	ID_HC_SECOND_PASSWD_LOGIN = 0x08b9
-#elif PACKETVER >= 0
+#else
 	ID_HC_SECOND_PASSWD_LOGIN = 0x0ae9
 #endif
 };
+
+class CharSession;
+
 /**
  * @brief Main object for the aegis packet: HC_SECOND_PASSWD_LOGIN
  * Size : 13 @ 0
  *
  */ 
-class HC_SECOND_PASSWD_LOGIN : public Base::NetworkPacket<CharSocket>
+class HC_SECOND_PASSWD_LOGIN : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_SECOND_PASSWD_LOGIN(std::shared_ptr<CharSocket> sock);
+	HC_SECOND_PASSWD_LOGIN(std::shared_ptr<CharSession> s);
 	virtual ~HC_SECOND_PASSWD_LOGIN();
 
 
-	void deliver();
+	void deliver(hc_pincode_state_type state);
+	void deliver(hc_pincode_state_type state, hc_pincode_login_response2 state2);
 	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
-protected:
 	/* Structure Goes Here */
+	uint32_t _pincode_seed{0};
+	uint32_t _account_id{0};
+	hc_pincode_state_type _state{PINCODE_CORRECT};
+#if CLIENT_TYPE == 'M' && PACKET_VERSION >= 20180124 \
+|| CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180124 \
+|| CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20180131
+	hc_pincode_login_response2 _state2{PINCODE_LOGIN_FLAG_WRONG};
+#endif
 };
 }
 }

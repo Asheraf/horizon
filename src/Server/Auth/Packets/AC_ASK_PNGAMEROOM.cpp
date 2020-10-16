@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "AC_ASK_PNGAMEROOM.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-AC_ASK_PNGAMEROOM::AC_ASK_PNGAMEROOM(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_AC_ASK_PNGAMEROOM, sock) { }
+AC_ASK_PNGAMEROOM::AC_ASK_PNGAMEROOM(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_AC_ASK_PNGAMEROOM, s) { }
 
 AC_ASK_PNGAMEROOM::~AC_ASK_PNGAMEROOM() { }
 

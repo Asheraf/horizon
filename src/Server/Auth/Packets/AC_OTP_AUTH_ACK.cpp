@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "AC_OTP_AUTH_ACK.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-AC_OTP_AUTH_ACK::AC_OTP_AUTH_ACK(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_AC_OTP_AUTH_ACK, sock) { }
+AC_OTP_AUTH_ACK::AC_OTP_AUTH_ACK(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_AC_OTP_AUTH_ACK, s) { }
 
 AC_OTP_AUTH_ACK::~AC_OTP_AUTH_ACK() { }
 

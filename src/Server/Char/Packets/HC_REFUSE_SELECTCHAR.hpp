@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20070821
+#if PACKET_VERSION >= 20070821
 	ID_HC_REFUSE_SELECTCHAR = 0x02ca
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_REFUSE_SELECTCHAR = 0x02ca
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 3 @ 0
  *
  */ 
-class HC_REFUSE_SELECTCHAR : public Base::NetworkPacket<CharSocket>
+class HC_REFUSE_SELECTCHAR : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_REFUSE_SELECTCHAR(std::shared_ptr<CharSocket> sock);
+	HC_REFUSE_SELECTCHAR(std::shared_ptr<CharSession> s);
 	virtual ~HC_REFUSE_SELECTCHAR();
 
 

@@ -805,7 +805,7 @@ struct robe_view_id
 struct TableCharacterStatus : sqlpp::table_t<TableCharacterStatus,
 TableCharacterStatus_::id, TableCharacterStatus_::job_id, TableCharacterStatus_::base_level, TableCharacterStatus_::job_level, TableCharacterStatus_::base_experience, TableCharacterStatus_::job_experience,
 TableCharacterStatus_::zeny, TableCharacterStatus_::strength, TableCharacterStatus_::agility, TableCharacterStatus_::vitality, TableCharacterStatus_::intelligence, TableCharacterStatus_::dexterity,
-TableCharacterStatus_::luck, TableCharacterStatus_::maximum_hp, TableCharacterStatus_::hp, TableCharacterStatus_::maximum_sp, TableCharacterStatus_::sp, TableCharacterStatus_::status_point,
+TableCharacterStatus_::luck, TableCharacterStatus_::maximum_hp, TableCharacterStatus_::hp, TableCharacterStatus_::maximum_sp, TableCharacterStatus_::sp, TableCharacterStatus_::status_points,
 TableCharacterStatus_::skill_points, TableCharacterStatus_::body_state, TableCharacterStatus_::virtue, TableCharacterStatus_::honor, TableCharacterStatus_::manner, TableCharacterStatus_::hair_style_id,
 TableCharacterStatus_::hair_color_id, TableCharacterStatus_::cloth_color_id, TableCharacterStatus_::body_id, TableCharacterStatus_::weapon_id, TableCharacterStatus_::shield_id,
 TableCharacterStatus_::head_top_view_id, TableCharacterStatus_::head_mid_view_id, TableCharacterStatus_::head_bottom_view_id, TableCharacterStatus_::robe_view_id>

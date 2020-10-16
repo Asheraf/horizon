@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20100601
+#if PACKET_VERSION >= 20100601
 	ID_CA_SSO_LOGIN_REQ = 0x0825
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_SSO_LOGIN_REQ = 0x0825
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class CA_SSO_LOGIN_REQ : public Base::NetworkPacket<AuthSocket>
+class CA_SSO_LOGIN_REQ : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_SSO_LOGIN_REQ(std::shared_ptr<AuthSocket> sock);
+	CA_SSO_LOGIN_REQ(std::shared_ptr<AuthSession> s);
 	virtual ~CA_SSO_LOGIN_REQ();
 
 

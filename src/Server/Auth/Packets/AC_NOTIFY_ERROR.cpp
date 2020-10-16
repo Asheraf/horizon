@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "AC_NOTIFY_ERROR.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-AC_NOTIFY_ERROR::AC_NOTIFY_ERROR(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_AC_NOTIFY_ERROR, sock) { }
+AC_NOTIFY_ERROR::AC_NOTIFY_ERROR(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_AC_NOTIFY_ERROR, s) { }
 
 AC_NOTIFY_ERROR::~AC_NOTIFY_ERROR() { }
 

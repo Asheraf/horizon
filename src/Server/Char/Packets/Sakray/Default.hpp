@@ -63,7 +63,7 @@ namespace Horizon
 {
 namespace Char
 {
-	typedef std::shared_ptr<Base::NetworkPacket<CharSocket>> PacketStructPtrType;
+	typedef std::shared_ptr<Base::NetworkPacket<CharSession>> PacketStructPtrType;
 	typedef std::pair<uint16_t, PacketStructPtrType> PacketTablePairType;
 
 /**
@@ -75,10 +75,10 @@ namespace Char
 class PacketLengthTable
 {
 public:
-	PacketLengthTable(std::shared_ptr<CharSocket> sock)
-	: _socket(sock)
+	PacketLengthTable(std::shared_ptr<CharSession> s)
+	: _session(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(sock)))
+#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
 		ADD_PKT(0x0068, 46, CH_DELETE_CHAR);
 		ADD_PKT(0x01fb, 56, CH_DELETE_CHAR2);
 		ADD_PKT(0x0065, 17, CH_ENTER);
@@ -106,13 +106,13 @@ public:
 
 	~PacketLengthTable() { }
 
-	std::shared_ptr<CharSocket> get_socket() { return _socket.lock(); }
+	std::shared_ptr<CharSession> get_session() { return _session.lock(); }
 
 	PacketTablePairType get_packet_info(uint16_t packet_id) { return _packet_length_table.at(packet_id); }
 
 protected:
 	LockedLookupTable<uint16_t, PacketTablePairType> _packet_length_table;
-	std::weak_ptr<CharSocket> _socket;
+	std::weak_ptr<CharSession> _session;
 
 };
 }

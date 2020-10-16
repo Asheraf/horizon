@@ -204,7 +204,7 @@ struct connect_time
 			}
 		};
 	};
-	using _traits = sqlpp::make_traits<sqlpp::integer>;
+	using _traits = sqlpp::make_traits<sqlpp::time_point>;
 };
 
 struct current_server
@@ -227,7 +227,7 @@ struct current_server
 			}
 		};
 	};
-	using _traits = sqlpp::make_traits<sqlpp::integer>;
+	using _traits = sqlpp::make_traits<sqlpp::char_>;
 };
 }
 

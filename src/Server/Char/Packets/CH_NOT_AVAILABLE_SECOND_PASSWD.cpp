@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_NOT_AVAILABLE_SECOND_PASSWD.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_NOT_AVAILABLE_SECOND_PASSWD::CH_NOT_AVAILABLE_SECOND_PASSWD(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_NOT_AVAILABLE_SECOND_PASSWD, sock) { }
+CH_NOT_AVAILABLE_SECOND_PASSWD::CH_NOT_AVAILABLE_SECOND_PASSWD(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_NOT_AVAILABLE_SECOND_PASSWD, s) { }
 
 CH_NOT_AVAILABLE_SECOND_PASSWD::~CH_NOT_AVAILABLE_SECOND_PASSWD() { }
 

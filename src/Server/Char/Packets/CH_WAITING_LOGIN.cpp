@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_WAITING_LOGIN.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_WAITING_LOGIN::CH_WAITING_LOGIN(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_WAITING_LOGIN, sock) { }
+CH_WAITING_LOGIN::CH_WAITING_LOGIN(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_WAITING_LOGIN, s) { }
 
 CH_WAITING_LOGIN::~CH_WAITING_LOGIN() { }
 

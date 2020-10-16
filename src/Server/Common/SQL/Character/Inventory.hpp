@@ -668,9 +668,9 @@ struct unique_id
 
 struct TableCharacterInventory : sqlpp::table_t<TableCharacterInventory,
 TableCharacterInventory_::id, TableCharacterInventory_::char_id, TableCharacterInventory_::inventory_index, TableCharacterInventory_::item_id, TableCharacterInventory_::amount,
-TableCharacterInventory_::equip_location_mask, TableCharacterInventory_::item_id, TableCharacterInventory_::amount, TableCharacterInventory_::equip_location_mask, TableCharacterInventory_::is_identified,
-TableCharacterInventory_::refine_level, TableCharacterInventory_::element_type, TableCharacterInventory_::slot_item_id_0, TableCharacterInventory_::slot_item_id_1, TableCharacterInventory_::slot_item_id_2,
-TableCharacterInventory_::slot_item_id_3, TableCharacterInventory_::opt_idx0, TableCharacterInventory_::opt_val0, TableCharacterInventory_::opt_idx1, TableCharacterInventory_::opt_val1,
+TableCharacterInventory_::equip_location_mask, TableCharacterInventory_::is_identified, TableCharacterInventory_::refine_level, TableCharacterInventory_::element_type,
+TableCharacterInventory_::slot_item_id_0, TableCharacterInventory_::slot_item_id_1, TableCharacterInventory_::slot_item_id_2, TableCharacterInventory_::slot_item_id_3,
+TableCharacterInventory_::opt_idx0, TableCharacterInventory_::opt_val0, TableCharacterInventory_::opt_idx1, TableCharacterInventory_::opt_val1,
 TableCharacterInventory_::opt_idx2, TableCharacterInventory_::opt_val2, TableCharacterInventory_::opt_idx3, TableCharacterInventory_::opt_val3, TableCharacterInventory_::opt_idx4, TableCharacterInventory_::opt_val4,
 TableCharacterInventory_::hire_expire_date, TableCharacterInventory_::is_favorite, TableCharacterInventory_::bind_type, TableCharacterInventory_::unique_id>
 {

@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
 	ID_CH_ENTER = 0x0065
 };
@@ -44,20 +44,23 @@ enum {
  * Size : 17 @ 0
  *
  */ 
-class CH_ENTER : public Base::NetworkPacket<CharSocket>
+class CH_ENTER : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_ENTER(std::shared_ptr<CharSocket> sock);
+	CH_ENTER(std::shared_ptr<CharSession> s);
 	virtual ~CH_ENTER();
-
 
 	void deliver();
 	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
-protected:
-	/* Structure Goes Here */
+	// 0065 <account id>.L <login id1>.L <login id2>.L <???>.W <sex>.B
+	uint32_t _account_id{0};
+	uint32_t _auth_code{0};
+	uint32_t _account_level{0};
+	uint16_t _unknown{0};
+	uint8_t _gender{0};
 };
 }
 }

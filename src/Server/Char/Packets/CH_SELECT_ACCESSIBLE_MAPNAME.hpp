@@ -35,13 +35,13 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20100714
+#if PACKET_VERSION >= 20100714
 	ID_CH_SELECT_ACCESSIBLE_MAPNAME = 0x0841
-#elif PACKETVER >= 20100713
+#elif PACKET_VERSION >= 20100713
 	ID_CH_SELECT_ACCESSIBLE_MAPNAME = 0x0841
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CH_SELECT_ACCESSIBLE_MAPNAME = 0x0841
 #endif
 };
@@ -50,10 +50,10 @@ enum {
  * Size : 4 @ 0
  *
  */ 
-class CH_SELECT_ACCESSIBLE_MAPNAME : public Base::NetworkPacket<CharSocket>
+class CH_SELECT_ACCESSIBLE_MAPNAME : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_SELECT_ACCESSIBLE_MAPNAME(std::shared_ptr<CharSocket> sock);
+	CH_SELECT_ACCESSIBLE_MAPNAME(std::shared_ptr<CharSession> s);
 	virtual ~CH_SELECT_ACCESSIBLE_MAPNAME();
 
 

@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CA_CONNECT_INFO_CHANGED.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-CA_CONNECT_INFO_CHANGED::CA_CONNECT_INFO_CHANGED(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_CA_CONNECT_INFO_CHANGED, sock) { }
+CA_CONNECT_INFO_CHANGED::CA_CONNECT_INFO_CHANGED(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_CA_CONNECT_INFO_CHANGED, s) { }
 
 CA_CONNECT_INFO_CHANGED::~CA_CONNECT_INFO_CHANGED() { }
 

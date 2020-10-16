@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_DELETE_SECOND_PASSWD.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_DELETE_SECOND_PASSWD::HC_DELETE_SECOND_PASSWD(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_DELETE_SECOND_PASSWD, sock) { }
+HC_DELETE_SECOND_PASSWD::HC_DELETE_SECOND_PASSWD(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_DELETE_SECOND_PASSWD, s) { }
 
 HC_DELETE_SECOND_PASSWD::~HC_DELETE_SECOND_PASSWD() { }
 

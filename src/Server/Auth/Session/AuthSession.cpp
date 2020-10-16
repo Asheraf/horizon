@@ -29,6 +29,7 @@
 
 #include "AuthSession.hpp"
 
+#include "Server/Auth/Interface/AuthClientInterface.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 #include "Server/Common/SQL/GameAccount.hpp"
 #include "Server/Common/SQL/SessionData.hpp"
@@ -37,7 +38,7 @@
 using namespace Horizon::Auth;
 
 AuthSession::AuthSession(std::shared_ptr<AuthSocket> socket)
-: Networking::Session<AuthSocket>(socket), _clif(socket)
+: Networking::Session<AuthSocket, AuthSession>(socket)
 {
 }
 
@@ -48,18 +49,32 @@ AuthSession::~AuthSession()
 
 void AuthSession::initialize()
 {
+	_pkt_tbl = std::make_unique<ClientPacketLengthTable>(shared_from_this());
+	_clif = std::make_unique<AuthClientInterface>(shared_from_this());
+}
+
+void AuthSession::transmit_buffer(ByteBuffer _buffer, std::size_t size)
+{
+	if (get_socket() == nullptr || !get_socket()->is_open())
+		return;
+	
+	if (!_buffer.is_empty()) {
+		get_socket()->queue_buffer(std::move(_buffer));
+	}
 }
 
 void AuthSession::update(uint32_t /*diff*/)
 {
 	std::shared_ptr<PacketBuffer> buf;
 
-//	while ((buf = get_socket()->get_packet_recv_queue().try_pop())) {
-//		if (_packet_handler == nullptr) {
-//			HLog(error) <<"Packet handler was null!");
-//			return;
-//		}
-
-//		_packet_handler->handle_received_packet(*buf);
-//	}
+	std::shared_ptr<ByteBuffer> read_buf;
+	while ((read_buf = get_socket()->_buffer_recv_queue.try_pop())) {
+		uint16_t packet_id = 0x0;
+		memcpy(&packet_id, read_buf->get_read_pointer(), sizeof(uint16_t));
+		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		
+		HLog(debug) << "Handling packet 0x" << std::hex << packet_id << " - 0x" << p.first << std::endl;
+		
+		p.second->handle(std::move(*read_buf));
+	}
 }

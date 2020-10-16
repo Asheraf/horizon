@@ -137,7 +137,7 @@ public:
 								 boost::bind(&Socket<SocketType>::read_handler_internal, this, boost::placeholders::_1, boost::placeholders::_2));
 	}
 
-	void queue_packet(ByteBuffer &&buffer) { _write_queue.push(std::move(buffer)); }
+	void queue_buffer(ByteBuffer &&buffer) { _write_queue.push(std::move(buffer)); }
 
 	bool is_open() { return !_closed && !_closing; }
 
@@ -309,7 +309,7 @@ private:
 	std::atomic<bool> _closing;
 	bool _is_writing_async;
 
-protected:
+public:
 	ThreadSafeQueue<ByteBuffer> _buffer_recv_queue;
 };
 }

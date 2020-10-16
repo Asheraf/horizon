@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20170228
+#if PACKET_VERSION >= 20170228
 	ID_HC_NOTIFY_ZONESVR = 0x0ac5
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_NOTIFY_ZONESVR = 0x0071
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 28 @ 0
  *
  */ 
-class HC_NOTIFY_ZONESVR : public Base::NetworkPacket<CharSocket>
+class HC_NOTIFY_ZONESVR : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_NOTIFY_ZONESVR(std::shared_ptr<CharSocket> sock);
+	HC_NOTIFY_ZONESVR(std::shared_ptr<CharSession> s);
 	virtual ~HC_NOTIFY_ZONESVR();
 
 

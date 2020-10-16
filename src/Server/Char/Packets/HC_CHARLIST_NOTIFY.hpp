@@ -35,15 +35,15 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20130327
+#if PACKET_VERSION >= 20130327
 	ID_HC_CHARLIST_NOTIFY = 0x09a0
-#elif PACKETVER >= 20130103
+#elif PACKET_VERSION >= 20130103
 	ID_HC_CHARLIST_NOTIFY = 0x09a0
-#elif PACKETVER >= 20121212
+#elif PACKET_VERSION >= 20121212
 	ID_HC_CHARLIST_NOTIFY = 0x09a0
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_CHARLIST_NOTIFY = 0x09a0
 #endif
 };
@@ -52,10 +52,10 @@ enum {
  * Size : 6 @ 0
  *
  */ 
-class HC_CHARLIST_NOTIFY : public Base::NetworkPacket<CharSocket>
+class HC_CHARLIST_NOTIFY : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_CHARLIST_NOTIFY(std::shared_ptr<CharSocket> sock);
+	HC_CHARLIST_NOTIFY(std::shared_ptr<CharSession> s);
 	virtual ~HC_CHARLIST_NOTIFY();
 
 

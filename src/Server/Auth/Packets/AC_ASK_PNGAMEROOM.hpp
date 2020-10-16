@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
 	ID_AC_ASK_PNGAMEROOM = 0x01be
 };
@@ -44,10 +44,10 @@ enum {
  * Size : 2 @ 0
  *
  */ 
-class AC_ASK_PNGAMEROOM : public Base::NetworkPacket<AuthSocket>
+class AC_ASK_PNGAMEROOM : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_ASK_PNGAMEROOM(std::shared_ptr<AuthSocket> sock);
+	AC_ASK_PNGAMEROOM(std::shared_ptr<AuthSession> s);
 	virtual ~AC_ASK_PNGAMEROOM();
 
 

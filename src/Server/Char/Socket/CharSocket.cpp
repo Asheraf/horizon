@@ -61,8 +61,6 @@ void CharSocket::start()
 {
 	auto session = std::make_shared<CharSession>(shared_from_this());
 
-	_pkt_tbl = std::make_unique<ClientPacketLengthTable>(shared_from_this());
-
 	set_session(session);
 
 	session->initialize();
@@ -110,7 +108,7 @@ void CharSocket::read_handler()
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
 		
-		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		PacketTablePairType p = get_session()->pkt_tbl()->get_packet_info(packet_id);
 		
 		int16_t packet_length = p.first;
 		
@@ -139,16 +137,5 @@ void CharSocket::read_handler()
 
 void CharSocket::update_session(uint32_t diff)
 {
-	std::shared_ptr<ByteBuffer> read_buf;
-	while ((read_buf = _buffer_recv_queue.try_pop())) {
-		uint16_t packet_id = 0x0;
-		memcpy(&packet_id, read_buf->get_read_pointer(), sizeof(uint16_t));
-		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
-		
-		HLog(debug) << "Handling packet 0x" << std::hex << packet_id << " - 0x" << p.first << std::endl;
-		
-		p.second->handle(std::move(*read_buf));
-	}
-	
 	get_session()->update(diff);
 }

@@ -115,7 +115,7 @@ public:
 		return true;
 	}
     
-    std::shared_ptr<sqlpp::mysql::connection> get_mysql_connection() { return _mysql_connection; }
+    std::shared_ptr<sqlpp::mysql::connection> get_db_connection() { return _mysql_connection; }
     
 protected:
 	/* General Configuration */

@@ -35,7 +35,7 @@
 using namespace Horizon::Char;
 
 CharSession::CharSession(std::shared_ptr<CharSocket> socket)
-: Horizon::Networking::Session<CharSocket>(socket)
+: Horizon::Networking::Session<CharSocket, CharSession>(socket)
 {
 }
 
@@ -46,10 +46,31 @@ CharSession::~CharSession()
 
 void CharSession::initialize()
 {
+	_pkt_tbl = std::make_unique<ClientPacketLengthTable>(shared_from_this());
+	_clif = std::make_unique<CharClientInterface>(shared_from_this());
+}
+
+void CharSession::transmit_buffer(ByteBuffer _buffer, std::size_t size)
+{
+	if (get_socket() == nullptr || !get_socket()->is_open())
+		return;
 	
+	if (!_buffer.is_empty()) {
+		get_socket()->queue_buffer(std::move(_buffer));
+	}
 }
 
 void CharSession::update(uint32_t /*diff*/)
 {
+	std::shared_ptr<ByteBuffer> read_buf;
+	while ((read_buf = get_socket()->_buffer_recv_queue.try_pop())) {
+		uint16_t packet_id = 0x0;
+		memcpy(&packet_id, read_buf->get_read_pointer(), sizeof(uint16_t));
+		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		
+		HLog(debug) << "Handling packet 0x" << std::hex << packet_id << " - 0x" << p.first << std::endl;
+		
+		p.second->handle(std::move(*read_buf));
+	}
 }
 

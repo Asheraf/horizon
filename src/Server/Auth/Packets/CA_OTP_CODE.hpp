@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20170614
+#if PACKET_VERSION >= 20170614
 	ID_CA_OTP_CODE = 0x0ad0
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_OTP_CODE = 0x0ad0
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 11 @ 0
  *
  */ 
-class CA_OTP_CODE : public Base::NetworkPacket<AuthSocket>
+class CA_OTP_CODE : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_OTP_CODE(std::shared_ptr<AuthSocket> sock);
+	CA_OTP_CODE(std::shared_ptr<AuthSession> s);
 	virtual ~CA_OTP_CODE();
 
 

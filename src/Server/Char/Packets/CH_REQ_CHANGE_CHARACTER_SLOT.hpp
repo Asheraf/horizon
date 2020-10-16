@@ -35,17 +35,17 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20111101
+#if PACKET_VERSION >= 20111101
 	ID_CH_REQ_CHANGE_CHARACTER_SLOT = 0x08d4
-#elif PACKETVER >= 20110928
+#elif PACKET_VERSION >= 20110928
 	ID_CH_REQ_CHANGE_CHARACTER_SLOT = 0x08d4
-#elif PACKETVER >= 20110920
+#elif PACKET_VERSION >= 20110920
 	ID_CH_REQ_CHANGE_CHARACTER_SLOT = 0x08d4
-#elif PACKETVER >= 20110906
+#elif PACKET_VERSION >= 20110906
 	ID_CH_REQ_CHANGE_CHARACTER_SLOT = 0x08d4
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CH_REQ_CHANGE_CHARACTER_SLOT = 0x08d4
 #endif
 };
@@ -54,10 +54,10 @@ enum {
  * Size : 8 @ 0
  *
  */ 
-class CH_REQ_CHANGE_CHARACTER_SLOT : public Base::NetworkPacket<CharSocket>
+class CH_REQ_CHANGE_CHARACTER_SLOT : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_REQ_CHANGE_CHARACTER_SLOT(std::shared_ptr<CharSocket> sock);
+	CH_REQ_CHANGE_CHARACTER_SLOT(std::shared_ptr<CharSession> s);
 	virtual ~CH_REQ_CHANGE_CHARACTER_SLOT();
 
 

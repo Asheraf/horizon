@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20040517
+#if PACKET_VERSION >= 20040517
 	ID_CA_CONNECT_INFO_CHANGED = 0x0200
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_CONNECT_INFO_CHANGED = 0x0200
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 26 @ 0
  *
  */ 
-class CA_CONNECT_INFO_CHANGED : public Base::NetworkPacket<AuthSocket>
+class CA_CONNECT_INFO_CHANGED : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_CONNECT_INFO_CHANGED(std::shared_ptr<AuthSocket> sock);
+	CA_CONNECT_INFO_CHANGED(std::shared_ptr<AuthSession> s);
 	virtual ~CA_CONNECT_INFO_CHANGED();
 
 

@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
 	ID_HC_REFUSE_DELETECHAR = 0x0070
 };
@@ -44,10 +44,10 @@ enum {
  * Size : 3 @ 0
  *
  */ 
-class HC_REFUSE_DELETECHAR : public Base::NetworkPacket<CharSocket>
+class HC_REFUSE_DELETECHAR : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_REFUSE_DELETECHAR(std::shared_ptr<CharSocket> sock);
+	HC_REFUSE_DELETECHAR(std::shared_ptr<CharSession> s);
 	virtual ~HC_REFUSE_DELETECHAR();
 
 
@@ -57,7 +57,7 @@ public:
 	void deserialize(ByteBuffer &buf);
 
 protected:
-	/* Structure Goes Here */
+	uint8_t _error{0};
 };
 }
 }

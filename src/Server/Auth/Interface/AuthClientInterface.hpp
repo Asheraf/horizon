@@ -29,16 +29,16 @@
 #define HORIZON_AUTHCLIENTINTERFACE_HPP
 
 #include "Server/Common/Interfaces/ClientInterface.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
 
 namespace Horizon
 {
 namespace Auth
 {
-class AuthClientInterface : public ClientInterface<AuthSocket>
+class AuthSession;
+class AuthClientInterface : public ClientInterface<AuthSession>
 {
 public:
-	AuthClientInterface(std::shared_ptr<AuthSocket> sock);
+	AuthClientInterface(std::shared_ptr<AuthSession> session);
 	~AuthClientInterface();
 	
 	bool process_login(std::string username, std::string hash, uint16_t version, uint16_t client_type);

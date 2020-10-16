@@ -33,18 +33,18 @@
 namespace Horizon
 {
 
-template <typename SocketType>
+template <typename SessionType>
 class ClientInterface
 {
 public:
-	ClientInterface(std::shared_ptr<SocketType> sock) : _sock(sock) { }
+	ClientInterface(std::shared_ptr<SessionType> s) : _session(s) { }
 	~ClientInterface() { }
 
-	std::shared_ptr<SocketType> get_socket() { return _sock.lock(); }
-	void set_socket(std::shared_ptr<SocketType> sock) { _sock = sock; }
+	std::shared_ptr<SessionType> get_session() { return _session.lock(); }
+	void set_session(std::shared_ptr<SessionType> s) { _session = s; }
 
 private:
-	std::weak_ptr<SocketType> _sock;
+	std::weak_ptr<SessionType> _session;
 };
 
 }

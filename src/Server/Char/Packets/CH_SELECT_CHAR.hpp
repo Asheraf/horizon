@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
 	ID_CH_SELECT_CHAR = 0x0066
 };
@@ -44,10 +44,10 @@ enum {
  * Size : 3 @ 0
  *
  */ 
-class CH_SELECT_CHAR : public Base::NetworkPacket<CharSocket>
+class CH_SELECT_CHAR : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_SELECT_CHAR(std::shared_ptr<CharSocket> sock);
+	CH_SELECT_CHAR(std::shared_ptr<CharSession> s);
 	virtual ~CH_SELECT_CHAR();
 
 

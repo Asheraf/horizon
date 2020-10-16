@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_REQ_CHANGE_CHARNAME.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_REQ_CHANGE_CHARNAME::CH_REQ_CHANGE_CHARNAME(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_REQ_CHANGE_CHARNAME, sock) { }
+CH_REQ_CHANGE_CHARNAME::CH_REQ_CHANGE_CHARNAME(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_REQ_CHANGE_CHARNAME, s) { }
 
 CH_REQ_CHANGE_CHARNAME::~CH_REQ_CHANGE_CHARNAME() { }
 

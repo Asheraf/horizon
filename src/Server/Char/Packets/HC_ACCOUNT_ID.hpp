@@ -37,11 +37,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
-class HC_ACCOUNT_ID : public Base::NetworkPacket<CharSocket>
+class CharSession;
+class HC_ACCOUNT_ID : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_ACCOUNT_ID(uint32_t account_id, std::shared_ptr<CharSocket> sock);
+	HC_ACCOUNT_ID(uint32_t account_id, std::shared_ptr<CharSession> sock);
 	virtual ~HC_ACCOUNT_ID();
 
 	void deliver();

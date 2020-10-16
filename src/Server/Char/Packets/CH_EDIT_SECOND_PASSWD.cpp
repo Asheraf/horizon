@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_EDIT_SECOND_PASSWD.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_EDIT_SECOND_PASSWD::CH_EDIT_SECOND_PASSWD(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_EDIT_SECOND_PASSWD, sock) { }
+CH_EDIT_SECOND_PASSWD::CH_EDIT_SECOND_PASSWD(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_EDIT_SECOND_PASSWD, s) { }
 
 CH_EDIT_SECOND_PASSWD::~CH_EDIT_SECOND_PASSWD() { }
 
@@ -43,10 +43,18 @@ ByteBuffer &CH_EDIT_SECOND_PASSWD::serialize()
 {
 	return buf();
 }
+
 void CH_EDIT_SECOND_PASSWD::handle(ByteBuffer &&buf)
 {
+	deserialize(buf);
+	get_session()->clif()->pincode_change(_account_id, _old_pin, _new_pin);
 }
+
 void CH_EDIT_SECOND_PASSWD::deserialize(ByteBuffer &buf)
 {
+	buf >> _packet_id;
+	buf >> _account_id;
+	buf.read(_old_pin, MAX_PINCODE_STRING_LENGTH - 1);
+	buf.read(_new_pin, MAX_PINCODE_STRING_LENGTH - 1);
 }
 

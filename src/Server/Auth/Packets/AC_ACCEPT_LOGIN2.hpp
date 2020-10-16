@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20090701
+#if PACKET_VERSION >= 20090701
 	ID_AC_ACCEPT_LOGIN2 = 0x0276
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_ACCEPT_LOGIN2 = 0x0276
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class AC_ACCEPT_LOGIN2 : public Base::NetworkPacket<AuthSocket>
+class AC_ACCEPT_LOGIN2 : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_ACCEPT_LOGIN2(std::shared_ptr<AuthSocket> sock);
+	AC_ACCEPT_LOGIN2(std::shared_ptr<AuthSession> s);
 	virtual ~AC_ACCEPT_LOGIN2();
 
 

@@ -30,7 +30,6 @@
 #include "Char.hpp"
 
 #include "Core/Logging/Logger.hpp"
-#include "Server/Char/Session/CharSession.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
 
 #include <boost/asio.hpp>
@@ -101,11 +100,15 @@ bool CharServer::ReadConfig()
 	}
 
 	get_char_config().set_character_deletion_time(tbl.get_or("character_deletion_time", 86400));
+	get_char_config().set_char_hard_delete(tbl.get_or("character_hard_delete", false));
 
 	sol::table zone_tbl = tbl.get<sol::table>("zone_server");
 	get_char_config().set_zone_server_ip(zone_tbl.get_or("ip_address", std::string("127.0.0.1")));
 	get_char_config().set_zone_server_port(zone_tbl.get_or("port", 5121));
 
+	get_char_config().set_pincode_expiry(tbl.get<uint32_t>("pincode_expiry"));
+	
+	get_char_config().set_pincode_retry(tbl.get<uint8_t>("pincode_max_retry"));
 	/**
 	 * Process Configuration that is common between servers.
 	 */

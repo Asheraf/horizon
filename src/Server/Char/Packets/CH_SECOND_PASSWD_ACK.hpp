@@ -35,13 +35,13 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20110308
+#if PACKET_VERSION >= 20110308
 	ID_CH_SECOND_PASSWD_ACK = 0x08b8
-#elif PACKETVER >= 20110215
+#elif PACKET_VERSION >= 20110215
 	ID_CH_SECOND_PASSWD_ACK = 0x08b8
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CH_SECOND_PASSWD_ACK = 0x08b8
 #endif
 };
@@ -50,10 +50,10 @@ enum {
  * Size : 10 @ 0
  *
  */ 
-class CH_SECOND_PASSWD_ACK : public Base::NetworkPacket<CharSocket>
+class CH_SECOND_PASSWD_ACK : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_SECOND_PASSWD_ACK(std::shared_ptr<CharSocket> sock);
+	CH_SECOND_PASSWD_ACK(std::shared_ptr<CharSession> s);
 	virtual ~CH_SECOND_PASSWD_ACK();
 
 
@@ -63,7 +63,8 @@ public:
 	void deserialize(ByteBuffer &buf);
 
 protected:
-	/* Structure Goes Here */
+	uint32_t _account_id;
+	char _pincode[MAX_PINCODE_STRING_LENGTH];
 };
 }
 }

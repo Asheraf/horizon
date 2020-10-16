@@ -78,7 +78,7 @@ namespace Horizon
 {
 namespace Auth
 {
-	typedef std::shared_ptr<Base::NetworkPacket<AuthSocket>> PacketStructPtrType;
+	typedef std::shared_ptr<Base::NetworkPacket<AuthSession>> PacketStructPtrType;
 	typedef std::pair<uint16_t, PacketStructPtrType> PacketTablePairType;
 
 /**
@@ -90,10 +90,10 @@ namespace Auth
 class PacketLengthTable
 {
 public:
-	PacketLengthTable(std::shared_ptr<AuthSocket> sock)
-	: _socket(sock)
+	PacketLengthTable(std::shared_ptr<AuthSession> s)
+	: _session(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(sock)))
+#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
 		ADD_PKT(0x0069, -1, AC_ACCEPT_LOGIN);
 		ADD_PKT(0x026a, 4, AC_ACK_EKEY_FAIL_AUTHREFUSE);
 		ADD_PKT(0x026b, 4, AC_ACK_EKEY_FAIL_INPUTEKEY);
@@ -136,13 +136,13 @@ public:
 
 	~PacketLengthTable() { }
 
-	std::shared_ptr<AuthSocket> get_socket() { return _socket.lock(); }
+	std::shared_ptr<AuthSession> get_session() { return _session.lock(); }
 
 	PacketTablePairType get_packet_info(uint16_t packet_id) { return _packet_length_table.at(packet_id); }
 
 protected:
 	LockedLookupTable<uint16_t, PacketTablePairType> _packet_length_table;
-	std::weak_ptr<AuthSocket> _socket;
+	std::weak_ptr<AuthSession> _session;
 
 };
 }

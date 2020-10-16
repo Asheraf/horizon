@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "AC_ACK_FIRST_LOGIN.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-AC_ACK_FIRST_LOGIN::AC_ACK_FIRST_LOGIN(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_AC_ACK_FIRST_LOGIN, sock) { }
+AC_ACK_FIRST_LOGIN::AC_ACK_FIRST_LOGIN(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_AC_ACK_FIRST_LOGIN, s) { }
 
 AC_ACK_FIRST_LOGIN::~AC_ACK_FIRST_LOGIN() { }
 

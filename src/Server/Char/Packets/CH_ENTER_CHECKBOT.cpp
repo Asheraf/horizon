@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_ENTER_CHECKBOT.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_ENTER_CHECKBOT::CH_ENTER_CHECKBOT(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_ENTER_CHECKBOT, sock) { }
+CH_ENTER_CHECKBOT::CH_ENTER_CHECKBOT(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_ENTER_CHECKBOT, s) { }
 
 CH_ENTER_CHECKBOT::~CH_ENTER_CHECKBOT() { }
 

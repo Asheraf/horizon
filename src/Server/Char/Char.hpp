@@ -80,6 +80,15 @@ struct character_server_configuration
 	uint16_t get_zone_server_port() const { return _zone_server_port; }
 	void set_zone_server_port(uint16_t port) { _zone_server_port = port; }
 	
+	bool get_char_hard_delete() { return _char_hard_delete; }
+	void set_char_hard_delete(bool d) { _char_hard_delete = d; }
+	
+	uint32_t get_pincode_expiry() { return _pincode_expiry; }
+	void set_pincode_expiry(uint32_t pincode_expiry) { _pincode_expiry = pincode_expiry; }
+	
+	int8_t get_pincode_retry() { return _pincode_retry; }
+	void set_pincode_retry(uint8_t retry) { _pincode_retry = retry; }
+	
 private:
 	std::string _start_map{"new_1-1"};
 	uint16_t _start_x{53}, _start_y{111};
@@ -88,6 +97,9 @@ private:
 	time_t _character_deletion_time;
 	std::string _zone_server_ip;
 	uint16_t _zone_server_port;
+	bool _char_hard_delete;
+	uint32_t _pincode_expiry;
+	uint8_t _pincode_retry;
 };
 	
 public:

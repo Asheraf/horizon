@@ -26,27 +26,34 @@
  **************************************************/
 
 #include "CH_DELETE_CHAR3_CANCEL.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_DELETE_CHAR3_CANCEL::CH_DELETE_CHAR3_CANCEL(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_DELETE_CHAR3_CANCEL, sock) { }
+CH_DELETE_CHAR3_CANCEL::CH_DELETE_CHAR3_CANCEL(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_DELETE_CHAR3_CANCEL, s) { }
 
 CH_DELETE_CHAR3_CANCEL::~CH_DELETE_CHAR3_CANCEL() { }
 
 void CH_DELETE_CHAR3_CANCEL::deliver()
 {
 }
+
 ByteBuffer &CH_DELETE_CHAR3_CANCEL::serialize()
 {
 	return buf();
 }
+
 void CH_DELETE_CHAR3_CANCEL::handle(ByteBuffer &&buf)
 {
+	deserialize(buf);
+	get_session()->clif()->character_delete_cancel(_character_id);
 }
+
 void CH_DELETE_CHAR3_CANCEL::deserialize(ByteBuffer &buf)
 {
+	buf >> _packet_id;
+	buf >> _character_id;
 }
 

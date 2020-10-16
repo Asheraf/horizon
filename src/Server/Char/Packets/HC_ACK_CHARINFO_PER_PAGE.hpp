@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20121024
+#if PACKET_VERSION >= 20121024
 	ID_HC_ACK_CHARINFO_PER_PAGE = 0x099d
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_ACK_CHARINFO_PER_PAGE = 0x099d
 #endif
 };
@@ -48,13 +48,13 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class HC_ACK_CHARINFO_PER_PAGE : public Base::NetworkPacket<CharSocket>
+class HC_ACK_CHARINFO_PER_PAGE : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_ACK_CHARINFO_PER_PAGE(std::shared_ptr<CharSocket> sock);
+	HC_ACK_CHARINFO_PER_PAGE(std::shared_ptr<CharSession> s);
 	virtual ~HC_ACK_CHARINFO_PER_PAGE();
 
-
+	void prepare_and_deliver();
 	void deliver();
 	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
@@ -62,6 +62,7 @@ public:
 
 protected:
 	/* Structure Goes Here */
+	uint16_t _packet_length{24};
 };
 }
 }

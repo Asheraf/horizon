@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20101228
+#if PACKET_VERSION >= 20101228
 	ID_HC_WAITING_LOGIN = 0x08af
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_WAITING_LOGIN = 0x08af
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 10 @ 0
  *
  */ 
-class HC_WAITING_LOGIN : public Base::NetworkPacket<CharSocket>
+class HC_WAITING_LOGIN : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_WAITING_LOGIN(std::shared_ptr<CharSocket> sock);
+	HC_WAITING_LOGIN(std::shared_ptr<CharSession> s);
 	virtual ~HC_WAITING_LOGIN();
 
 

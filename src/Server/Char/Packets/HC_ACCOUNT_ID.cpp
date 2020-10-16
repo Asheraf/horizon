@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_ACCOUNT_ID.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_ACCOUNT_ID::HC_ACCOUNT_ID(uint32_t account_id, std::shared_ptr<CharSocket> sock)
-: NetworkPacket<CharSocket>(account_id, sock), _account_id(account_id) { }
+HC_ACCOUNT_ID::HC_ACCOUNT_ID(uint32_t account_id, std::shared_ptr<CharSession> s)
+: NetworkPacket<CharSession>(account_id, s), _account_id(account_id) { }
 
 HC_ACCOUNT_ID::~HC_ACCOUNT_ID() { }
 

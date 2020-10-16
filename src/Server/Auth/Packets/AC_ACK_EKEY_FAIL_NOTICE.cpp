@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "AC_ACK_EKEY_FAIL_NOTICE.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-AC_ACK_EKEY_FAIL_NOTICE::AC_ACK_EKEY_FAIL_NOTICE(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_AC_ACK_EKEY_FAIL_NOTICE, sock) { }
+AC_ACK_EKEY_FAIL_NOTICE::AC_ACK_EKEY_FAIL_NOTICE(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_AC_ACK_EKEY_FAIL_NOTICE, s) { }
 
 AC_ACK_EKEY_FAIL_NOTICE::~AC_ACK_EKEY_FAIL_NOTICE() { }
 

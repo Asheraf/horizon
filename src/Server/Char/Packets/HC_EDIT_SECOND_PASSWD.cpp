@@ -26,26 +26,41 @@
  **************************************************/
 
 #include "HC_EDIT_SECOND_PASSWD.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_EDIT_SECOND_PASSWD::HC_EDIT_SECOND_PASSWD(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_EDIT_SECOND_PASSWD, sock) { }
+HC_EDIT_SECOND_PASSWD::HC_EDIT_SECOND_PASSWD(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_EDIT_SECOND_PASSWD, s) { }
 
 HC_EDIT_SECOND_PASSWD::~HC_EDIT_SECOND_PASSWD() { }
 
-void HC_EDIT_SECOND_PASSWD::deliver()
+void HC_EDIT_SECOND_PASSWD::deliver(pincode_edit_response state)
 {
+	std::srand(std::time(0));
+	_seed = rand() % 0xFFFF;
+	
+	_state = state;
+	
+	get_session()->get_session_data()._pincode_seed = _seed;
+	
+	serialize();
+	transmit();
 }
+
 ByteBuffer &HC_EDIT_SECOND_PASSWD::serialize()
 {
+	buf() << _packet_id;
+	buf() << (short) _state;
+	buf() << _seed;
 	return buf();
 }
+
 void HC_EDIT_SECOND_PASSWD::handle(ByteBuffer &&buf)
 {
 }
+
 void HC_EDIT_SECOND_PASSWD::deserialize(ByteBuffer &buf)
 {
 }

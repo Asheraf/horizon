@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
 	ID_CA_REQ_HASH = 0x01db
 };
@@ -44,10 +44,10 @@ enum {
  * Size : 2 @ 0
  *
  */ 
-class CA_REQ_HASH : public Base::NetworkPacket<AuthSocket>
+class CA_REQ_HASH : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_REQ_HASH(std::shared_ptr<AuthSocket> sock);
+	CA_REQ_HASH(std::shared_ptr<AuthSession> s);
 	virtual ~CA_REQ_HASH();
 
 

@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20070227
+#if PACKET_VERSION >= 20070227
 	ID_AC_REQUEST_SECOND_PASSWORD = 0x02ad
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_REQUEST_SECOND_PASSWORD = 0x02ad
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 8 @ 0
  *
  */ 
-class AC_REQUEST_SECOND_PASSWORD : public Base::NetworkPacket<AuthSocket>
+class AC_REQUEST_SECOND_PASSWORD : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_REQUEST_SECOND_PASSWORD(std::shared_ptr<AuthSocket> sock);
+	AC_REQUEST_SECOND_PASSWORD(std::shared_ptr<AuthSession> s);
 	virtual ~AC_REQUEST_SECOND_PASSWORD();
 
 

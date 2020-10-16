@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20050912
+#if PACKET_VERSION >= 20050912
 	ID_CA_REQ_GAME_GUARD_CHECK = 0x0258
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_REQ_GAME_GUARD_CHECK = 0x0258
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 2 @ 0
  *
  */ 
-class CA_REQ_GAME_GUARD_CHECK : public Base::NetworkPacket<AuthSocket>
+class CA_REQ_GAME_GUARD_CHECK : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_REQ_GAME_GUARD_CHECK(std::shared_ptr<AuthSocket> sock);
+	CA_REQ_GAME_GUARD_CHECK(std::shared_ptr<AuthSession> s);
 	virtual ~CA_REQ_GAME_GUARD_CHECK();
 
 

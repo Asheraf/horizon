@@ -29,17 +29,20 @@
 
 #include "Libraries/Argon2/Argon2.hpp"
 #include "Server/Common/SQL/GameAccount.hpp"
+#include "Server/Common/SQL/SessionData.hpp"
 
 #include "Server/Auth/Auth.hpp"
 #include "Server/Auth/Packets/AC_ACCEPT_LOGIN.hpp"
 #include "Server/Auth/Packets/AC_REFUSE_LOGIN.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
+#include "Server/Auth/Socket/AuthSocket.hpp"
 
 #include <memory>
 
 using namespace Horizon::Auth;
 
-AuthClientInterface::AuthClientInterface(std::shared_ptr<AuthSocket> sock)
-: ClientInterface(sock)
+AuthClientInterface::AuthClientInterface(std::shared_ptr<AuthSession> s)
+: ClientInterface(s)
 {
 	
 }
@@ -54,11 +57,11 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 {
 	Argon2 argon2;
 	SQL::TableGameAccounts tga;
-	AC_ACCEPT_LOGIN acal(get_socket());
-	AC_REFUSE_LOGIN acrl(get_socket());
+	AC_ACCEPT_LOGIN acal(get_session());
+	AC_REFUSE_LOGIN acrl(get_session());
 	int pos = 0;
 	char block_date[20]{0};
-	std::shared_ptr<sqlpp::mysql::connection> conn = sAuth->get_mysql_connection();
+	std::shared_ptr<sqlpp::mysql::connection> conn = sAuth->get_db_connection();
 	
 	if (((pos = username.find("_m")) || (pos = username.find("_f"))) && pos != std::string::npos) {
 		enum game_account_gender_type gender = ACCOUNT_GENDER_NONE;
@@ -74,7 +77,7 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 		std::string salt = sAuth->get_auth_config()._password_salt_mix.c_str();
 		std::string hash = argon2.gen_hash(password, salt);
 		
-		std::shared_ptr<sqlpp::mysql::connection> conn = sAuth->get_mysql_connection();
+		std::shared_ptr<sqlpp::mysql::connection> conn = sAuth->get_db_connection();
 		
 		auto res = (*conn)(select(all_of(tga)).from(tga).where(tga.username == username));
 		
@@ -93,9 +96,16 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 			try {
 				auto last_insert_id = (*conn)(insert_into(tga).set(tga.username = username, tga.hash = hash, tga.salt = salt, tga.gender = (gender == (int) ACCOUNT_GENDER_FEMALE ? "F" : "M"),
 											 tga.group_id = 0, tga.state = (int) ACCOUNT_STATE_NONE, tga.login_count = 1, tga.last_login = std::chrono::system_clock::now(),
-											 tga.last_ip = get_socket()->remote_ip_address(), tga.character_slots = 3));
+											 tga.last_ip = get_session()->get_socket()->remote_ip_address(), tga.character_slots = 3));
 				uint32_t aid = last_insert_id;
 				acal.deliver(aid, aid, 0, gender);
+				
+				SQL::TableSessionData tsd;
+				auto res = (*conn)(select(all_of(tsd)).from(tsd).where(tsd.game_account_id == aid));
+				if (!res.empty())
+					(*conn)(update(tsd).set(tsd.connect_time = std::chrono::system_clock::now(), tsd.current_server = "A").where(tsd.auth_code == aid));
+				else
+					(*conn)(insert_into(tsd).set(tsd.auth_code = last_insert_id, tsd.game_account_id = aid, tsd.client_version = PACKET_VERSION, tsd.client_type = client_type, tsd.character_slots = 3, tsd.group_id = 0, tsd.connect_time = std::chrono::system_clock::now(), tsd.current_server = "A"));
 				HLog(info) << "Request for authorization of account '" << username << "' has been granted.";
 			} catch (std::exception &error) {
 				HLog(error) << error.what();
@@ -133,6 +143,13 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 	}
 	
 	acal.deliver(aid, aid, group_id, gender);
+	
+	SQL::TableSessionData tsd;
+	auto res2 = (*conn)(select(all_of(tsd)).from(tsd).where(tsd.game_account_id == aid));
+	if (!res2.empty())
+		(*conn)(update(tsd).set(tsd.connect_time = std::chrono::system_clock::now(), tsd.current_server = "A").where(tsd.auth_code == aid));
+	else
+		(*conn)(insert_into(tsd).set(tsd.auth_code = aid, tsd.game_account_id = aid, tsd.client_version = PACKET_VERSION, tsd.client_type = client_type, tsd.character_slots = 3, tsd.group_id = 0, tsd.connect_time = std::chrono::system_clock::now(), tsd.current_server = "A"));
 	
 	HLog(info) << "Request for authorization of account '" << username << "' has been granted.";
 	return true;

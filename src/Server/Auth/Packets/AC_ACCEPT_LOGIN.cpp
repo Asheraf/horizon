@@ -28,14 +28,14 @@
 #include "AC_ACCEPT_LOGIN.hpp"
 
 #include "Server/Auth/Auth.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 #include <string.h>
 
 using namespace Horizon::Auth;
 
-AC_ACCEPT_LOGIN::AC_ACCEPT_LOGIN(std::shared_ptr<AuthSocket> sock)
- : Base::NetworkPacket<AuthSocket>(ID_AC_ACCEPT_LOGIN, sock) { }
+AC_ACCEPT_LOGIN::AC_ACCEPT_LOGIN(std::shared_ptr<AuthSession> s)
+ : Base::NetworkPacket<AuthSession>(ID_AC_ACCEPT_LOGIN, s) { }
 
 AC_ACCEPT_LOGIN::~AC_ACCEPT_LOGIN() { }
 

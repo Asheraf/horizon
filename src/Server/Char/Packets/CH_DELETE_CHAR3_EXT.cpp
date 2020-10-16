@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_DELETE_CHAR3_EXT.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_DELETE_CHAR3_EXT::CH_DELETE_CHAR3_EXT(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_DELETE_CHAR3_EXT, sock) { }
+CH_DELETE_CHAR3_EXT::CH_DELETE_CHAR3_EXT(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_DELETE_CHAR3_EXT, s) { }
 
 CH_DELETE_CHAR3_EXT::~CH_DELETE_CHAR3_EXT() { }
 

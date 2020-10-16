@@ -35,13 +35,13 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20060821
+#if PACKET_VERSION >= 20060821
 	ID_CA_CLIENT_TYPE = 0x027f
-#elif PACKETVER >= 20060731
+#elif PACKET_VERSION >= 20060731
 	ID_CA_CLIENT_TYPE = 0x027f
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_CLIENT_TYPE = 0x027f
 #endif
 };
@@ -50,10 +50,10 @@ enum {
  * Size : 8 @ 0
  *
  */ 
-class CA_CLIENT_TYPE : public Base::NetworkPacket<AuthSocket>
+class CA_CLIENT_TYPE : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_CLIENT_TYPE(std::shared_ptr<AuthSocket> sock);
+	CA_CLIENT_TYPE(std::shared_ptr<AuthSession> s);
 	virtual ~CA_CLIENT_TYPE();
 
 

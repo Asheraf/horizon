@@ -29,19 +29,38 @@
 #define HORIZON_CHARCLIENTINTERFACE_HPP
 
 #include "Server/Common/Interfaces/ClientInterface.hpp"
+#include "Server/Common/Base/NetworkPacket.hpp"
 
 namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
-class CharClientInterface : public ClientInterface<CharSocket>
+class CharSession;
+class CharClientInterface : public ClientInterface<CharSession>
 {
 public:
-	CharClientInterface(std::shared_ptr<CharSocket> sock);
+	CharClientInterface(std::shared_ptr<CharSession> s);
 	~CharClientInterface();
 	
-	bool handle_new_connection(uint32_t account_id, uint32_t auth_code, uint32_t account_level, uint8_t gender);
+	std::string ip_addr();
+	bool authorize_new_connection(uint32_t account_id, uint32_t auth_code, uint32_t account_level, uint8_t gender);
+	
+	bool make_new_character(std::string name, uint8_t slot, uint32_t hair_color, uint32_t hair_style, uint32_t job_class, uint8_t gender);
+	bool make_new_character(std::string name, uint8_t slot, uint8_t hair_color, uint8_t hair_style);
+	
+	character_delete_result character_delete_soft(uint32_t character_id);
+	bool character_delete_reserve(uint32_t character_id);
+	bool character_delete_email(uint32_t character_id, std::string email);
+	bool character_delete_birthdate(uint32_t character_id, std::string birthdate);
+	bool character_delete_cancel(uint32_t character_id);
+	
+	bool pincode_create(uint32_t account_id, char *new_pin);
+	bool pincode_change(uint32_t account_id, char *old_pin, char *new_pin);
+	bool pincode_verify(uint32_t account_id, char *pincode);
+	void pincode_decrypt(uint32_t seed, char *input, char *output);
+	
+protected:
+	char _pincode_confirm[MAX_PINCODE_STRING_LENGTH];
 };
 }
 }

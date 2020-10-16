@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20090922
+#if PACKET_VERSION >= 20090922
 	ID_HC_CHECKBOT_RESULT = 0x07e9
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_CHECKBOT_RESULT = 0x07e9
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 5 @ 0
  *
  */ 
-class HC_CHECKBOT_RESULT : public Base::NetworkPacket<CharSocket>
+class HC_CHECKBOT_RESULT : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_CHECKBOT_RESULT(std::shared_ptr<CharSocket> sock);
+	HC_CHECKBOT_RESULT(std::shared_ptr<CharSession> s);
 	virtual ~HC_CHECKBOT_RESULT();
 
 

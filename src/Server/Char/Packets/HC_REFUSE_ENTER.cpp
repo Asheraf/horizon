@@ -26,21 +26,26 @@
  **************************************************/
 
 #include "HC_REFUSE_ENTER.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_REFUSE_ENTER::HC_REFUSE_ENTER(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_REFUSE_ENTER, sock) { }
+HC_REFUSE_ENTER::HC_REFUSE_ENTER(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_REFUSE_ENTER, s) { }
 
 HC_REFUSE_ENTER::~HC_REFUSE_ENTER() { }
 
 void HC_REFUSE_ENTER::deliver()
 {
+	serialize();
+	transmit();
 }
+
 ByteBuffer &HC_REFUSE_ENTER::serialize()
 {
+	buf() << _packet_id;
+	buf() << ((uint8_t) _error);
 	return buf();
 }
 void HC_REFUSE_ENTER::handle(ByteBuffer &&buf)

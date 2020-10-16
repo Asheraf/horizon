@@ -31,7 +31,6 @@
 #define HORIZON_HORIZON_HPP
 
 #include "Definitions/Definitions.hpp"
-#include "Client.hpp"
 
 #define RENEWAL
 
@@ -45,7 +44,7 @@
 #define CLIENT_TYPE 'M'
 
 /* Packet Version */
-#define PACKET_VERSION 20180314
+#define PACKET_VERSION 20180131
 
 #define MAX_LEVEL 175
 #define MAX_STATUS_POINTS 130
@@ -103,5 +102,7 @@ static_assert(MAX_CORE_UPDATE_INTERVAL >= 500 && MAX_CORE_UPDATE_INTERVAL <= 200
 
 static_assert(MAX_MAP_CONTAINER_THREADS > 0,
             "MAX_MAP_CONTAINER_THREADS cannot be less than or equal to 0");
+
+#include "Client.hpp"
 
 #endif //HORIZON_HORIZON_HPP

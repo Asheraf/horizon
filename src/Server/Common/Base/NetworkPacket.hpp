@@ -39,12 +39,12 @@ namespace Horizon
 {
 namespace Base
 {
-template <class SocketType>
+template <class SessionType>
 class NetworkPacket
 {
 public:
-	NetworkPacket(uint16_t packet_id, std::shared_ptr<SocketType> socket)
-	: _packet_id(packet_id), _socket(socket)
+	NetworkPacket(uint16_t packet_id, std::shared_ptr<SessionType> s)
+	: _packet_id(packet_id), _session(s)
 	{
 		//
 	}
@@ -73,20 +73,23 @@ public:
 	 */
 	void transmit(std::size_t size)
 	{
-		if (get_socket() == nullptr || !get_socket()->is_open())
+		std::shared_ptr<SessionType> s = get_session();
+		if (s == nullptr) {
+			HLog(debug) << "NetworkPacket::transmit: Session was null.";
 			return;
-
-		if (!_buffer.is_empty()) {
-			HLog(debug) << "Transmitting packet of size : " << _buffer.active_length() << ".";
-			get_socket()->queue_packet(std::move(_buffer));
 		}
+
+		if (!_buffer.is_empty())
+			s->transmit_buffer(std::move(_buffer), size);
+		else
+			HLog(debug) << "Attempted to transmit empty buffer.";
 	}
 
 	/**
 	 * @brief Retrieves the session from this handler instance.
 	 * @return shared_ptr to an object of the session type.
 	 */
-	std::shared_ptr<SocketType> get_socket() { return _socket.lock(); }
+	std::shared_ptr<SessionType> get_session() { return _session.lock(); }
 
     void set_packet_id(uint16_t id) { _packet_id = id; }
     uint16_t get_packet_id() { return _packet_id; }
@@ -100,7 +103,7 @@ protected:
     uint16_t _packet_id;                   ///< ID of the network packet.
     
 private:
-	std::weak_ptr<SocketType> _socket;     ///< Pointer to the instantiated session object.
+	std::weak_ptr<SessionType> _session;   ///< Pointer to the instantiated session object.
 };
 }
 }

@@ -26,26 +26,29 @@
  **************************************************/
 
 #include "HC_REFUSE_SELECTCHAR.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_REFUSE_SELECTCHAR::HC_REFUSE_SELECTCHAR(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_REFUSE_SELECTCHAR, sock) { }
+HC_REFUSE_SELECTCHAR::HC_REFUSE_SELECTCHAR(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_REFUSE_SELECTCHAR, s) { }
 
 HC_REFUSE_SELECTCHAR::~HC_REFUSE_SELECTCHAR() { }
 
 void HC_REFUSE_SELECTCHAR::deliver()
 {
 }
+
 ByteBuffer &HC_REFUSE_SELECTCHAR::serialize()
 {
 	return buf();
 }
+
 void HC_REFUSE_SELECTCHAR::handle(ByteBuffer &&buf)
 {
 }
+
 void HC_REFUSE_SELECTCHAR::deserialize(ByteBuffer &buf)
 {
 }

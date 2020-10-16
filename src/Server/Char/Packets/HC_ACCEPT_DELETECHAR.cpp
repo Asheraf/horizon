@@ -26,21 +26,24 @@
  **************************************************/
 
 #include "HC_ACCEPT_DELETECHAR.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_ACCEPT_DELETECHAR::HC_ACCEPT_DELETECHAR(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_ACCEPT_DELETECHAR, sock) { }
+HC_ACCEPT_DELETECHAR::HC_ACCEPT_DELETECHAR(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_ACCEPT_DELETECHAR, s) { }
 
 HC_ACCEPT_DELETECHAR::~HC_ACCEPT_DELETECHAR() { }
 
 void HC_ACCEPT_DELETECHAR::deliver()
 {
+	serialize();
+	transmit();
 }
 ByteBuffer &HC_ACCEPT_DELETECHAR::serialize()
 {
+	buf() << _packet_id;
 	return buf();
 }
 void HC_ACCEPT_DELETECHAR::handle(ByteBuffer &&buf)

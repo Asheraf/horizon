@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20050912
+#if PACKET_VERSION >= 20050912
 	ID_AC_ACK_GAME_GUARD = 0x0259
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_ACK_GAME_GUARD = 0x0259
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 3 @ 0
  *
  */ 
-class AC_ACK_GAME_GUARD : public Base::NetworkPacket<AuthSocket>
+class AC_ACK_GAME_GUARD : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_ACK_GAME_GUARD(std::shared_ptr<AuthSocket> sock);
+	AC_ACK_GAME_GUARD(std::shared_ptr<AuthSession> s);
 	virtual ~AC_ACK_GAME_GUARD();
 
 

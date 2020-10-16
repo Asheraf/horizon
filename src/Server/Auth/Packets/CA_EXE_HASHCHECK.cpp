@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CA_EXE_HASHCHECK.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-CA_EXE_HASHCHECK::CA_EXE_HASHCHECK(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_CA_EXE_HASHCHECK, sock) { }
+CA_EXE_HASHCHECK::CA_EXE_HASHCHECK(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_CA_EXE_HASHCHECK, s) { }
 
 CA_EXE_HASHCHECK::~CA_EXE_HASHCHECK() { }
 

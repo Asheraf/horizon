@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20050628
+#if PACKET_VERSION >= 20050628
 	ID_AC_EVENT_RESULT = 0x023d
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_EVENT_RESULT = 0x023d
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 6 @ 0
  *
  */ 
-class AC_EVENT_RESULT : public Base::NetworkPacket<AuthSocket>
+class AC_EVENT_RESULT : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_EVENT_RESULT(std::shared_ptr<AuthSocket> sock);
+	AC_EVENT_RESULT(std::shared_ptr<AuthSession> s);
 	virtual ~AC_EVENT_RESULT();
 
 

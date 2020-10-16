@@ -35,13 +35,13 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20110308
+#if PACKET_VERSION >= 20110308
 	ID_HC_NOT_AVAILABLE_SECOND_PASSWD = 0x08c4
-#elif PACKETVER >= 20110228
+#elif PACKET_VERSION >= 20110228
 	ID_HC_NOT_AVAILABLE_SECOND_PASSWD = 0x08c4
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_NOT_AVAILABLE_SECOND_PASSWD = 0x08c4
 #endif
 };
@@ -50,10 +50,10 @@ enum {
  * Size : 8 @ 0
  *
  */ 
-class HC_NOT_AVAILABLE_SECOND_PASSWD : public Base::NetworkPacket<CharSocket>
+class HC_NOT_AVAILABLE_SECOND_PASSWD : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_NOT_AVAILABLE_SECOND_PASSWD(std::shared_ptr<CharSocket> sock);
+	HC_NOT_AVAILABLE_SECOND_PASSWD(std::shared_ptr<CharSession> s);
 	virtual ~HC_NOT_AVAILABLE_SECOND_PASSWD();
 
 

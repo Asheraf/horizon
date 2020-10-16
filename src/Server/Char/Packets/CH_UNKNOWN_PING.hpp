@@ -35,7 +35,7 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
 	ID_CH_UNKNOWN_PING = 0x0187
 };
@@ -44,10 +44,10 @@ enum {
  * Size : 6 @ 0
  *
  */ 
-class CH_UNKNOWN_PING : public Base::NetworkPacket<CharSocket>
+class CH_UNKNOWN_PING : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_UNKNOWN_PING(std::shared_ptr<CharSocket> sock);
+	CH_UNKNOWN_PING(std::shared_ptr<CharSession> s);
 	virtual ~CH_UNKNOWN_PING();
 
 
@@ -57,7 +57,7 @@ public:
 	void deserialize(ByteBuffer &buf);
 
 protected:
-	/* Structure Goes Here */
+	uint32_t _account_id{0};
 };
 }
 }

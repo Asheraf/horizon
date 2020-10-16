@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_REQUEST_CHARACTER_PASSWORD.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_REQUEST_CHARACTER_PASSWORD::HC_REQUEST_CHARACTER_PASSWORD(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_REQUEST_CHARACTER_PASSWORD, sock) { }
+HC_REQUEST_CHARACTER_PASSWORD::HC_REQUEST_CHARACTER_PASSWORD(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_REQUEST_CHARACTER_PASSWORD, s) { }
 
 HC_REQUEST_CHARACTER_PASSWORD::~HC_REQUEST_CHARACTER_PASSWORD() { }
 

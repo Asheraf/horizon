@@ -35,13 +35,13 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20171213
+#if PACKET_VERSION >= 20171213
 	ID_AC_LOGIN_OTP = 0x0ae3
-#elif PACKETVER >= 20171123
+#elif PACKET_VERSION >= 20171123
 	ID_AC_LOGIN_OTP = 0x0ae3
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_LOGIN_OTP = 0x0ae3
 #endif
 };
@@ -50,10 +50,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class AC_LOGIN_OTP : public Base::NetworkPacket<AuthSocket>
+class AC_LOGIN_OTP : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_LOGIN_OTP(std::shared_ptr<AuthSocket> sock);
+	AC_LOGIN_OTP(std::shared_ptr<AuthSession> s);
 	virtual ~AC_LOGIN_OTP();
 
 

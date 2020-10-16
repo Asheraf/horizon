@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_DELETE_CHAR2.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_DELETE_CHAR2::CH_DELETE_CHAR2(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_DELETE_CHAR2, sock) { }
+CH_DELETE_CHAR2::CH_DELETE_CHAR2(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_DELETE_CHAR2, s) { }
 
 CH_DELETE_CHAR2::~CH_DELETE_CHAR2() { }
 

@@ -26,26 +26,43 @@
  **************************************************/
 
 #include "HC_ACCEPT_ENTER2.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_ACCEPT_ENTER2::HC_ACCEPT_ENTER2(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_ACCEPT_ENTER2, sock) { }
+HC_ACCEPT_ENTER2::HC_ACCEPT_ENTER2(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_ACCEPT_ENTER2, s) { }
 
 HC_ACCEPT_ENTER2::~HC_ACCEPT_ENTER2() { }
 
-void HC_ACCEPT_ENTER2::deliver()
+void HC_ACCEPT_ENTER2::deliver(uint8_t total_slots, uint8_t premium_slots)
 {
+	serialize(total_slots, premium_slots);
+	transmit();
 }
-ByteBuffer &HC_ACCEPT_ENTER2::serialize()
+
+ByteBuffer &HC_ACCEPT_ENTER2::serialize(uint8_t total_slots, uint8_t premium_slots)
 {
+	_total_slots = total_slots;
+	_premium_slots = premium_slots;
+	
+	buf() << _packet_id;
+	buf() << _packet_length;
+	buf() << _total_slots;
+	buf() << _premium_slots;
+	buf() << _unknown_byte;
+	buf() << _char_slots_1;
+	buf() << _char_slots_2;
+	buf().append(_unknown_bytes, sizeof(_unknown_bytes));
+	
 	return buf();
 }
+
 void HC_ACCEPT_ENTER2::handle(ByteBuffer &&buf)
 {
 }
+
 void HC_ACCEPT_ENTER2::deserialize(ByteBuffer &buf)
 {
 }

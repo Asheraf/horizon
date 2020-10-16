@@ -113,6 +113,32 @@ bool Server::parse_common_configs(sol::table &tbl)
 		HLog(error) << "Invalid or non-existent configuration for 'bind_port', Halting...";
 		return false;
 	}
+	
+	sol::table db_tbl = tbl.get<sol::table>("database_config");
+	
+	try {
+		general_conf().set_db_host(db_tbl.get_or<std::string>("host", "127.0.0.1"));
+		general_conf().set_db_user(db_tbl.get_or<std::string>("user", "horizon"));
+		general_conf().set_db_database(db_tbl.get_or<std::string>("db", "horizon"));
+		general_conf().set_db_pass(db_tbl.get_or<std::string>("pass", "horizon"));
+		general_conf().set_db_port(db_tbl.get_or<uint16_t>("port", 3306));
+		
+		_mysql_config->database = general_conf().get_db_database();
+		_mysql_config->user = general_conf().get_db_user();
+		_mysql_config->password = general_conf().get_db_pass();
+		_mysql_config->port = general_conf().get_db_port();
+		_mysql_config->host = general_conf().get_db_host();
+		_mysql_connection = std::make_shared<sqlpp::mysql::connection>(_mysql_config);
+		
+		HLog(info) << "Database tcp://" << general_conf().get_db_user()
+		<< ":" << general_conf().get_db_pass()
+		<< "@" << general_conf().get_db_host()
+		<< ":" << general_conf().get_db_port()
+		<< "/" << general_conf().get_db_database();
+	} catch (const std::exception &error) {
+		HLog(error) << "Database configuration error:" << error.what() << ".";
+		return false;
+	}
 
 	return true;
 }

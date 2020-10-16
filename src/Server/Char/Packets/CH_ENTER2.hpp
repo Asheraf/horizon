@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20090701
+#if PACKET_VERSION >= 20090701
 	ID_CH_ENTER2 = 0x0275
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CH_ENTER2 = 0x0275
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 37 @ 0
  *
  */ 
-class CH_ENTER2 : public Base::NetworkPacket<CharSocket>
+class CH_ENTER2 : public Base::NetworkPacket<CharSession>
 {
 public:
-	CH_ENTER2(std::shared_ptr<CharSocket> sock);
+	CH_ENTER2(std::shared_ptr<CharSession> s);
 	virtual ~CH_ENTER2();
 
 

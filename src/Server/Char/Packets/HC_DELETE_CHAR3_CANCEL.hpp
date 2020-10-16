@@ -35,13 +35,19 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+
+enum hc_delete_cancel_result : uint32_t {
+	CHAR3_DEL_CANCEL_SUCCESS = 1,
+	CHAR3_DEL_CANCEL_FAILURE = 2
+};
+
+class CharSession;
 enum {
-#if PACKETVER >= 20100720
+#if PACKET_VERSION >= 20100720
 	ID_HC_DELETE_CHAR3_CANCEL = 0x082c
-#elif PACKETVER >= 20100713
+#elif PACKET_VERSION >= 20100713
 	ID_HC_DELETE_CHAR3_CANCEL = 0x082c
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_DELETE_CHAR3_CANCEL = 0x082c
 #endif
 };
@@ -50,20 +56,20 @@ enum {
  * Size : 10 @ 0
  *
  */ 
-class HC_DELETE_CHAR3_CANCEL : public Base::NetworkPacket<CharSocket>
+class HC_DELETE_CHAR3_CANCEL : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_DELETE_CHAR3_CANCEL(std::shared_ptr<CharSocket> sock);
+	HC_DELETE_CHAR3_CANCEL(std::shared_ptr<CharSession> s);
 	virtual ~HC_DELETE_CHAR3_CANCEL();
 
-
-	void deliver();
+	void deliver(uint32_t char_id, hc_delete_cancel_result result);
 	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
 protected:
-	/* Structure Goes Here */
+	uint32_t _character_id{0};
+	hc_delete_cancel_result _result{0}; // either 1 or 2.
 };
 }
 }

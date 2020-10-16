@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20101221
+#if PACKET_VERSION >= 20101221
 	ID_HC_ACCEPT_ENTER2 = 0x082d
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_ACCEPT_ENTER2 = 0x082d
 #endif
 };
@@ -48,20 +48,26 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class HC_ACCEPT_ENTER2 : public Base::NetworkPacket<CharSocket>
+class HC_ACCEPT_ENTER2 : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_ACCEPT_ENTER2(std::shared_ptr<CharSocket> sock);
+	HC_ACCEPT_ENTER2(std::shared_ptr<CharSession> sock);
 	virtual ~HC_ACCEPT_ENTER2();
 
 
-	void deliver();
-	ByteBuffer &serialize();
+	void deliver(uint8_t total_slots, uint8_t premium_slots);
+	ByteBuffer &serialize(uint8_t total_slots, uint8_t premium_slots);
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
-protected:
 	/* Structure Goes Here */
+	uint16_t _packet_length{29};
+	uint8_t _total_slots{MAX_CHARACTER_SLOTS};
+	uint8_t _premium_slots{MAX_CHARACTER_SLOTS};
+	uint8_t _unknown_byte{0};
+	uint8_t _char_slots_1{MAX_CHARACTER_SLOTS};
+	uint8_t _char_slots_2{MAX_CHARACTER_SLOTS};
+	uint8_t _unknown_bytes[20]{0};
 };
 }
 }

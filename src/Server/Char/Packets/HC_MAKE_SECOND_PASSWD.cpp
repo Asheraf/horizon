@@ -26,26 +26,38 @@
  **************************************************/
 
 #include "HC_MAKE_SECOND_PASSWD.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_MAKE_SECOND_PASSWD::HC_MAKE_SECOND_PASSWD(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_MAKE_SECOND_PASSWD, sock) { }
+HC_MAKE_SECOND_PASSWD::HC_MAKE_SECOND_PASSWD(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_MAKE_SECOND_PASSWD, s) { }
 
 HC_MAKE_SECOND_PASSWD::~HC_MAKE_SECOND_PASSWD() { }
 
-void HC_MAKE_SECOND_PASSWD::deliver()
+void HC_MAKE_SECOND_PASSWD::deliver(pincode_make_response state)
 {
+	_state = state;
+	_seed = get_session()->get_session_data()._pincode_seed;
+	
+	serialize();
+	transmit();
 }
+
 ByteBuffer &HC_MAKE_SECOND_PASSWD::serialize()
 {
+	buf() << _packet_id;
+	buf() << (short) _state;
+	buf() << _seed;
+	
 	return buf();
 }
+
 void HC_MAKE_SECOND_PASSWD::handle(ByteBuffer &&buf)
 {
 }
+
 void HC_MAKE_SECOND_PASSWD::deserialize(ByteBuffer &buf)
 {
 }

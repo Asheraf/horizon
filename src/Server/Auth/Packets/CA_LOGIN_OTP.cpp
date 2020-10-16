@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CA_LOGIN_OTP.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-CA_LOGIN_OTP::CA_LOGIN_OTP(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_CA_LOGIN_OTP, sock) { }
+CA_LOGIN_OTP::CA_LOGIN_OTP(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_CA_LOGIN_OTP, s) { }
 
 CA_LOGIN_OTP::~CA_LOGIN_OTP() { }
 

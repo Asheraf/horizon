@@ -26,27 +26,39 @@
  **************************************************/
 
 #include "CH_ENTER.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
+#include "Server/Char/Interface/CharClientInterface.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_ENTER::CH_ENTER(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_ENTER, sock) { }
+CH_ENTER::CH_ENTER(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_ENTER, s) { }
 
 CH_ENTER::~CH_ENTER() { }
 
 void CH_ENTER::deliver()
 {
 }
+
 ByteBuffer &CH_ENTER::serialize()
 {
 	return buf();
 }
+
 void CH_ENTER::handle(ByteBuffer &&buf)
 {
+	deserialize(buf);
+	get_session()->clif()->authorize_new_connection(_account_id, _auth_code, _account_level, _gender);
 }
+
 void CH_ENTER::deserialize(ByteBuffer &buf)
 {
+	buf >> _packet_id;
+	buf >> _account_id;
+	buf >> _auth_code;
+	buf >> _account_level;
+	buf >> _unknown;
+	buf >> _gender;
 }
 

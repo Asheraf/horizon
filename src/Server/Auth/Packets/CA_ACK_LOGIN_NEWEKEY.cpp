@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CA_ACK_LOGIN_NEWEKEY.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
+#include "Server/Auth/Session/AuthSession.hpp"
 
 using namespace Horizon::Auth;
 using namespace Horizon::Base;
 
-CA_ACK_LOGIN_NEWEKEY::CA_ACK_LOGIN_NEWEKEY(std::shared_ptr<AuthSocket> sock)
- : NetworkPacket<AuthSocket>(ID_CA_ACK_LOGIN_NEWEKEY, sock) { }
+CA_ACK_LOGIN_NEWEKEY::CA_ACK_LOGIN_NEWEKEY(std::shared_ptr<AuthSession> s)
+ : NetworkPacket<AuthSession>(ID_CA_ACK_LOGIN_NEWEKEY, s) { }
 
 CA_ACK_LOGIN_NEWEKEY::~CA_ACK_LOGIN_NEWEKEY() { }
 

@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "HC_ACK_CHANGE_CHARACTER_SLOT.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-HC_ACK_CHANGE_CHARACTER_SLOT::HC_ACK_CHANGE_CHARACTER_SLOT(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_HC_ACK_CHANGE_CHARACTER_SLOT, sock) { }
+HC_ACK_CHANGE_CHARACTER_SLOT::HC_ACK_CHANGE_CHARACTER_SLOT(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_HC_ACK_CHANGE_CHARACTER_SLOT, s) { }
 
 HC_ACK_CHANGE_CHARACTER_SLOT::~HC_ACK_CHANGE_CHARACTER_SLOT() { }
 

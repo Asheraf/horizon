@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20040621
+#if PACKET_VERSION >= 20040621
 	ID_HC_BLOCK_CHARACTER = 0x020d
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_BLOCK_CHARACTER = 0x020d
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class HC_BLOCK_CHARACTER : public Base::NetworkPacket<CharSocket>
+class HC_BLOCK_CHARACTER : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_BLOCK_CHARACTER(std::shared_ptr<CharSocket> sock);
+	HC_BLOCK_CHARACTER(std::shared_ptr<CharSession> s);
 	virtual ~HC_BLOCK_CHARACTER();
 
 
@@ -60,8 +60,8 @@ public:
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
-protected:
 	/* Structure Goes Here */
+	uint16_t _packet_length{4};
 };
 }
 }

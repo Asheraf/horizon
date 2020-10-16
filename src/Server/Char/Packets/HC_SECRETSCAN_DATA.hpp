@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20130522
+#if PACKET_VERSION >= 20130522
 	ID_HC_SECRETSCAN_DATA = 0x09c2
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_SECRETSCAN_DATA = 0x09c2
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : -1 @ 0
  *
  */ 
-class HC_SECRETSCAN_DATA : public Base::NetworkPacket<CharSocket>
+class HC_SECRETSCAN_DATA : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_SECRETSCAN_DATA(std::shared_ptr<CharSocket> sock);
+	HC_SECRETSCAN_DATA(std::shared_ptr<CharSession> s);
 	virtual ~HC_SECRETSCAN_DATA();
 
 

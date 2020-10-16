@@ -26,13 +26,13 @@
  **************************************************/
 
 #include "CH_MAKE_CHAR_NOT_STATS.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_MAKE_CHAR_NOT_STATS::CH_MAKE_CHAR_NOT_STATS(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_MAKE_CHAR_NOT_STATS, sock) { }
+CH_MAKE_CHAR_NOT_STATS::CH_MAKE_CHAR_NOT_STATS(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_MAKE_CHAR_NOT_STATS, s) { }
 
 CH_MAKE_CHAR_NOT_STATS::~CH_MAKE_CHAR_NOT_STATS() { }
 

@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20111025
+#if PACKET_VERSION >= 20111025
 	ID_AC_SHUTDOWN_INFO = 0x08e4
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_AC_SHUTDOWN_INFO = 0x08e4
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 6 @ 0
  *
  */ 
-class AC_SHUTDOWN_INFO : public Base::NetworkPacket<AuthSocket>
+class AC_SHUTDOWN_INFO : public Base::NetworkPacket<AuthSession>
 {
 public:
-	AC_SHUTDOWN_INFO(std::shared_ptr<AuthSocket> sock);
+	AC_SHUTDOWN_INFO(std::shared_ptr<AuthSession> s);
 	virtual ~AC_SHUTDOWN_INFO();
 
 

@@ -35,11 +35,11 @@ namespace Horizon
 {
 namespace Auth
 {
-class AuthSocket;
+class AuthSession;
 enum {
-#if PACKETVER >= 20040531
+#if PACKET_VERSION >= 20040531
 	ID_CA_EXE_HASHCHECK = 0x0204
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_CA_EXE_HASHCHECK = 0x0204
 #endif
 };
@@ -48,10 +48,10 @@ enum {
  * Size : 18 @ 0
  *
  */ 
-class CA_EXE_HASHCHECK : public Base::NetworkPacket<AuthSocket>
+class CA_EXE_HASHCHECK : public Base::NetworkPacket<AuthSession>
 {
 public:
-	CA_EXE_HASHCHECK(std::shared_ptr<AuthSocket> sock);
+	CA_EXE_HASHCHECK(std::shared_ptr<AuthSession> s);
 	virtual ~CA_EXE_HASHCHECK();
 
 

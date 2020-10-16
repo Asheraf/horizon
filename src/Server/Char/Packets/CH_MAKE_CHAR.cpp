@@ -26,27 +26,48 @@
  **************************************************/
 
 #include "CH_MAKE_CHAR.hpp"
-#include "Server/Char/Socket/CharSocket.hpp"
+#include "Server/Char/Session/CharSession.hpp"
 
 using namespace Horizon::Char;
 using namespace Horizon::Base;
 
-CH_MAKE_CHAR::CH_MAKE_CHAR(std::shared_ptr<CharSocket> sock)
- : NetworkPacket<CharSocket>(ID_CH_MAKE_CHAR, sock) { }
+CH_MAKE_CHAR::CH_MAKE_CHAR(std::shared_ptr<CharSession> s)
+ : NetworkPacket<CharSession>(ID_CH_MAKE_CHAR, s) { }
 
 CH_MAKE_CHAR::~CH_MAKE_CHAR() { }
 
 void CH_MAKE_CHAR::deliver()
 {
+
 }
+
 ByteBuffer &CH_MAKE_CHAR::serialize()
 {
 	return buf();
 }
+
 void CH_MAKE_CHAR::handle(ByteBuffer &&buf)
 {
+	deserialize(buf);
+	
+#if PACKET_VERSION >= 20151001
+	get_session()->clif()->make_new_character(_name, _slot, _hair_color, _hair_style, _job_id, _gender);
+#elif PACKET_VERSION >= 20120307
+	get_session()->clif()->make_new_character(_name, _slot, _hair_color, _hair_style);
+#endif
 }
+
 void CH_MAKE_CHAR::deserialize(ByteBuffer &buf)
 {
+	buf >> _packet_id;
+	buf.read(_name, MAX_UNIT_NAME_LENGTH);
+	buf >> _slot;
+	buf >> _hair_color;
+	buf >> _hair_style;
+#if PACKET_VERSION >= 20151001
+	buf >> _job_id;
+	buf.read(_unknown_bytes, sizeof(short));
+	buf >> _gender;
+#endif
 }
 

@@ -35,55 +35,55 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+class CharSession;
 enum {
-#if PACKETVER >= 20170906
+#if PACKET_VERSION >= 20170906
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20170830
+#elif PACKET_VERSION >= 20170830
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20170104
+#elif PACKET_VERSION >= 20170104
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20140820
+#elif PACKET_VERSION >= 20140820
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20140625
+#elif PACKET_VERSION >= 20140625
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20140108
+#elif PACKET_VERSION >= 20140108
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20111101
+#elif PACKET_VERSION >= 20111101
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20111025
+#elif PACKET_VERSION >= 20111025
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20110928
+#elif PACKET_VERSION >= 20110928
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20110111
+#elif PACKET_VERSION >= 20110111
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20110104
+#elif PACKET_VERSION >= 20110104
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20100803
+#elif PACKET_VERSION >= 20100803
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20100728
+#elif PACKET_VERSION >= 20100728
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20100727
+#elif PACKET_VERSION >= 20100727
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20100720
+#elif PACKET_VERSION >= 20100720
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20100105
+#elif PACKET_VERSION >= 20100105
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20090617
+#elif PACKET_VERSION >= 20090617
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20090107
+#elif PACKET_VERSION >= 20090107
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20081217
+#elif PACKET_VERSION >= 20081217
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20080827
+#elif PACKET_VERSION >= 20080827
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20061030
+#elif PACKET_VERSION >= 20061030
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20061023
+#elif PACKET_VERSION >= 20061023
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 20060102
+#elif PACKET_VERSION >= 20060102
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_ACCEPT_MAKECHAR = 0x006d
 #endif
 };
@@ -92,20 +92,21 @@ enum {
  * Size : 110 @ 0
  *
  */ 
-class HC_ACCEPT_MAKECHAR : public Base::NetworkPacket<CharSocket>
+class HC_ACCEPT_MAKECHAR : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_ACCEPT_MAKECHAR(std::shared_ptr<CharSocket> sock);
+	HC_ACCEPT_MAKECHAR(std::shared_ptr<CharSession> s);
 	virtual ~HC_ACCEPT_MAKECHAR();
 
 
-	void deliver();
+	void deliver(uint32_t char_id, uint32_t start_zeny, std::string map_name, std::string name, uint8_t slot, uint32_t hair_color, uint32_t hair_style, uint32_t job_class, uint8_t gender);
 	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
 protected:
 	/* Structure Goes Here */
+	s_hc_character_list_data _c;
 };
 }
 }

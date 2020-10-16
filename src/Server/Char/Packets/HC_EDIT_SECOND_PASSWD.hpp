@@ -35,13 +35,21 @@ namespace Horizon
 {
 namespace Char
 {
-class CharSocket;
+
+enum pincode_edit_response : short {
+	PINCODE_EDIT_SUCCESS        = 0x0,
+	PINCODE_EDIT_FAILED         = 0x1,
+	PINCODE_EDIT_RESTRICT_PW    = 0x2,
+	PINCODE_EDIT_PERSONALNUM_PW = 0x3,
+};
+
+class CharSession;
 enum {
-#if PACKETVER >= 20110308
+#if PACKET_VERSION >= 20110308
 	ID_HC_EDIT_SECOND_PASSWD = 0x08bf
-#elif PACKETVER >= 20110222
+#elif PACKET_VERSION >= 20110222
 	ID_HC_EDIT_SECOND_PASSWD = 0x08bf
-#elif PACKETVER >= 0
+#elif PACKET_VERSION >= 0
 	ID_HC_EDIT_SECOND_PASSWD = 0x08bf
 #endif
 };
@@ -50,20 +58,20 @@ enum {
  * Size : 8 @ 0
  *
  */ 
-class HC_EDIT_SECOND_PASSWD : public Base::NetworkPacket<CharSocket>
+class HC_EDIT_SECOND_PASSWD : public Base::NetworkPacket<CharSession>
 {
 public:
-	HC_EDIT_SECOND_PASSWD(std::shared_ptr<CharSocket> sock);
+	HC_EDIT_SECOND_PASSWD(std::shared_ptr<CharSession> s);
 	virtual ~HC_EDIT_SECOND_PASSWD();
 
-
-	void deliver();
+	void deliver(pincode_edit_response state);
 	ByteBuffer &serialize();
 	virtual void handle(ByteBuffer &&buf) override;
 	void deserialize(ByteBuffer &buf);
 
 protected:
-	/* Structure Goes Here */
+	pincode_edit_response _state;
+	uint32_t _seed;
 };
 }
 }
