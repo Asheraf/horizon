@@ -29,10 +29,10 @@ Before installing Horizon, you will need to install certain tools and applicatio
   - [CMake 3.7+](https://cmake.org/)
   - [Boost v1.60+](https://www.boost.org/)
   - [Readline](https://tiswww.case.edu/php/chet/readline/rltop.html)
-  - [LuaJit 5.1](http://luajit.org)
   - [Sol2](https://github.com/ThePhD/sol2)
-  - [Argon2] (https://github.com/P-H-C/phc-winner-argon2)
-  - [SQLPP11] (https://github.com/rbock/sqlpp11) + [SQLPP11-MYSQL] (https://github.com/rbock/sqlpp11-connector-mysql)
+  - [Argon2](https://github.com/P-H-C/phc-winner-argon2)
+  - [SQLPP11](https://github.com/rbock/sqlpp11) 
+  - [SQLPP11-MYSQL](https://github.com/rbock/sqlpp11-connector-mysql)
 
 #### Optional, useful tools
   - MySQL GUI clients
