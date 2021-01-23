@@ -30,10 +30,10 @@
 #include "NPC.hpp"
 #include "Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
-#include "Server/Zone/Game/Status/Status.hpp"
+#include "Server/Zone/Game/Entities/Traits/Status.hpp"
 
 
-using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Zone::Entities;
 
 static std::atomic<uint32_t> last_npc_guid{NPC_START_GUID};
 
@@ -46,7 +46,7 @@ NPC::NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t
 
 	_npc_data.npc_name = name;
 	_npc_data.map_name = map->get_name();
-	_npc_data.coords = get_map_coords();
+	_npc_data.coords = map_coords();
 	_npc_data.direction = dir;
 }
 
@@ -59,7 +59,7 @@ NPC::NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t
 
 	_npc_data.npc_name = name;
 	_npc_data.map_name = map->get_name();
-	_npc_data.coords = get_map_coords();
+	_npc_data.coords = map_coords();
 	_npc_data.direction = dir;
 	_npc_data.script = script_file;
 	_npc_data.script_is_file = true;
@@ -74,7 +74,7 @@ NPC::NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t
 
 	_npc_data.npc_name = name;
 	_npc_data.map_name = map->get_name();
-	_npc_data.coords = get_map_coords();
+	_npc_data.coords = map_coords();
 	_npc_data.direction = dir;
 	_npc_data.script = duplicate->_npc_data.script;
 	_npc_data.script_is_file = true;
@@ -89,7 +89,7 @@ NPC::NPC(std::string const &name, std::shared_ptr<Map> map, uint16_t x, uint16_t
 
 	_npc_data.npc_name = name;
 	_npc_data.map_name = map->get_name();
-	_npc_data.coords = get_map_coords();
+	_npc_data.coords = map_coords();
 	_npc_data.direction = DIR_NORTH;
 	_npc_data.script = script;
 	_npc_data.script_is_file = false;
@@ -106,10 +106,10 @@ void NPC::initialize()
 	Entity::initialize();
 
 	_npc_data._npc = downcast<NPC>();
-	get_script_manager()->add_npc_to_db(get_guid(), _npc_data);
+	script_manager()->add_npc_to_db(guid(), _npc_data);
 
-	get_status()->initialize();
-	get_map()->ensure_grid_for_entity(this, get_map_coords());
+	status()->initialize();
+	map()->ensure_grid_for_entity(this, map_coords());
 }
 
 void NPC::stop_movement()
@@ -124,7 +124,7 @@ void NPC::on_movement_begin()
 
 void NPC::on_movement_step()
 {
-	get_map()->ensure_grid_for_entity(this, get_map_coords());
+	map()->ensure_grid_for_entity(this, map_coords());
 }
 
 void NPC::on_movement_end()

@@ -29,7 +29,6 @@
 #include "Auth.hpp"
 #include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Common/Server.hpp"
-#include "Server/Common/Base/NetworkPacket.hpp"
 
 #include <boost/asio.hpp>
 #include <iostream>
@@ -43,13 +42,12 @@
 using boost::asio::ip::udp;
 using namespace std::chrono_literals;
 using namespace Horizon::Auth;
-using namespace Horizon::Base;
 
 /**
  * Horizon Constructor.
  */
 AuthServer::AuthServer()
-: Server()
+: Server(), _update_timer(_io_service)
 {
 	initialize_cli_commands();
 }
@@ -68,7 +66,7 @@ AuthServer::~AuthServer()
  * Read /config/horizon-server.yaml
  * @return true on success, false on failure.
  */
-bool AuthServer::ReadConfig()
+bool AuthServer::read_config()
 {
 	sol::state lua;
 
@@ -137,7 +135,7 @@ bool AuthServer::clicmd_reload_config()
 {
 	HLog(info) << "Reloading configuration from '" << general_conf().get_config_file_path() << "'";
 
-	return sAuth->ReadConfig();
+	return sAuth->read_config();
 }
 
 /**
@@ -163,6 +161,16 @@ void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 	}
 }
 
+void AuthServer::update(uint64_t diff)
+{
+	process_cli_commands();
+	_task_scheduler.Update();
+	ClientSocktMgr->update_socket_sessions(diff);
+	
+	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
+	_update_timer.async_wait(std::bind(&AuthServer::update, this, MAX_CORE_UPDATE_INTERVAL));
+}
+
 void AuthServer::initialize_core()
 {
 	/**
@@ -182,17 +190,12 @@ void AuthServer::initialize_core()
 
 	// Initialize core.
 	Server::initialize_core();
-    
-	uint32_t diff = MAX_CORE_UPDATE_INTERVAL;
-    
-	/* Server Update Loop */
-	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
-		process_cli_commands();
-		_task_scheduler.Update();
-		ClientSocktMgr->update_socket_sessions(diff);
-		std::this_thread::sleep_for(std::chrono::microseconds(diff));
-	}
+	
+	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
+	_update_timer.async_wait(std::bind(&AuthServer::update, this, MAX_CORE_UPDATE_INTERVAL));
 
+	get_io_service().run();
+	
 	/**
 	 * Server shutdown routine begins here...
 	 */
@@ -221,7 +224,7 @@ int main(int argc, const char * argv[])
 	 * Read Configuration Settings for
 	 * the Horizon Server.
 	 */
-	if (!sAuth->ReadConfig())
+	if (!sAuth->read_config())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
 	/**

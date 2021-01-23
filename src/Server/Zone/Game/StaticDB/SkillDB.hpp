@@ -35,19 +35,11 @@
 
 #include <cstdlib>
 
-
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
 
 namespace Horizon
 {
 namespace Zone
-{
-namespace Game
 {
 struct skill_config_data
 {
@@ -67,7 +59,6 @@ protected:
 private:
 	LockedLookupTable<uint32_t, std::shared_ptr<skill_config_data>> _skill_db;
 };
-}
 }
 }
 

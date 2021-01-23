@@ -30,7 +30,7 @@
 #include "SkillDB.hpp"
 #include "Server/Zone/Zone.hpp"
 
-using namespace Horizon::Zone::Game;
+using namespace Horizon::Zone;
 
 SkillDatabase::SkillDatabase()
 {
@@ -48,7 +48,7 @@ bool SkillDatabase::load()
 
 	int total_entries = 0;
 	std::string tmp_string;
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "skill_db.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "skill_db.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {
@@ -57,9 +57,9 @@ bool SkillDatabase::load()
 		skill_tbl.for_each([this, &total_entries] (sol::object const &key, sol::object const &value) {
 			total_entries = load_internal(key, value);
 		});
-		CoreLog(info) <<"Loaded {} entries from '{}'", total_entries, file_path);
+		HLog(info) << "Loaded " << total_entries << " entries from '" << file_path << "'.";
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"JobDB::load: {}.", e.what());
+		HLog(error) << "JobDB::load: " << e.what();
 		return false;
 	}
 

@@ -30,7 +30,7 @@
 #include "Mercenary.hpp"
 #include "Common/Definitions/EntityDefinitions.hpp"
 
-using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Zone::Entities;
 
 Mercenary::Mercenary(uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords)
 : Creature(guid, ENTITY_MERCENARY, map, mcoords)

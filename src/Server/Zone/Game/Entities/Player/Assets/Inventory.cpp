@@ -28,24 +28,21 @@
  **************************************************/
 
 #include "Inventory.hpp"
-#include "Server/Common/Models/Character/Character.hpp"
-#include "Server/Common/Models/Character/Inventory.hpp"
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Game/StaticDB/ItemDB.hpp"
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
-#include "Server/Zone/Packets/PacketHandler.hpp"
-#include "Server/Zone/Game/Status/Status.hpp"
-#include "Server/Zone/Game/Status/Attributes.hpp"
+#include "Server/Zone/Game/Entities/Traits/Status.hpp"
+#include "Server/Zone/Game/Entities/Traits/Attributes.hpp"
 
-using namespace Horizon::Zone::Game::Status;
-using namespace Horizon::Zone::Game::Entities;
-using namespace Horizon::Zone::Game::Assets;
+using namespace Horizon::Zone::Entities;
+using namespace Horizon::Zone::Entities::Traits;
+using namespace Horizon::Zone::Assets;
 
 Inventory::Inventory(std::weak_ptr<Player> player, uint32_t max_storage)
-: ItemStore(player, max_storage), _packet_handler(player.lock()->get_packet_handler())
+: ItemStore(player, max_storage)
 {
 	_equipments[IT_EQPI_ACC_L].first = IT_EQPM_ACC_L;
 	_equipments[IT_EQPI_ACC_R].first = IT_EQPM_ACC_R;
@@ -85,17 +82,17 @@ bool Inventory::use_item(uint32_t inventory_index, uint32_t guid)
 	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(inv_item->item_id);
 
 	if (itemd == nullptr) {
-		get_packet_handler()->Send_ZC_USE_ITEM_ACK(inv_item, false);
+//		get_packet_handler()->Send_ZC_USE_ITEM_ACK(inv_item, false);
 		return false;
 	}
 
-	get_packet_handler()->Send_ZC_USE_ITEM_ACK(inv_item, true);
+//	get_packet_handler()->Send_ZC_USE_ITEM_ACK(inv_item, true);
 	return true;
 }
 
 item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t equip_location_mask)
 {
-	uint32_t job_id = get_player()->get_job_id();
+	uint32_t job_id = get_player()->job_id();
 	std::shared_ptr<item_entry_data> inv_item = get_item_at_index(inventory_index);
 
 	if (inv_item == nullptr)
@@ -104,12 +101,12 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(inv_item->item_id);
 
 	if (itemd == nullptr) {
-		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
+//		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
 		return IT_EQUIP_FAIL;
 	}
 
 	if (inv_item->current_equip_location_mask != 0 || itemd->equip_location_mask != equip_location_mask) {
-		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
+//		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
 		return IT_EQUIP_FAIL;
 	}
 
@@ -118,25 +115,25 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 			return job_id == id;
 		});
 	if (req_job_it == itemd->requirements.job_ids.end()) {
-		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
+//		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_FAIL);
 		return IT_EQUIP_FAIL;
 	}
 
 	if (itemd->config.bind_on_equip != 0 && inv_item->bind_type == IT_BIND_NONE) {
 		inv_item->bind_type = IT_BIND_CHARACTER;
-		get_packet_handler()->Send_ZC_NOTIFY_BIND_ON_EQUIP(inv_item);
+//		get_packet_handler()->Send_ZC_NOTIFY_BIND_ON_EQUIP(inv_item);
 	}
 
 	inv_item->current_equip_location_mask = calculate_current_equip_location_mask(itemd);
 
 	add_to_equipment_list(inv_item);
 
-	if (inv_item->type == IT_TYPE_AMMO) {
-		get_packet_handler()->Send_ZC_EQUIP_ARROW(inv_item);
-		get_packet_handler()->Send_ZC_ACTION_MESSAGE(3);
-	} else {
-		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_SUCCESS);
-	}
+//	if (inv_item->type == IT_TYPE_AMMO) {
+//		get_packet_handler()->Send_ZC_EQUIP_ARROW(inv_item);
+//		get_packet_handler()->Send_ZC_ACTION_MESSAGE(3);
+//	} else {
+//		get_packet_handler()->Send_ZC_REQ_WEAR_EQUIP_ACK(inv_item, IT_EQUIP_SUCCESS);
+//	}
 
 	return IT_EQUIP_SUCCESS;
 }
@@ -146,18 +143,18 @@ item_unequip_result_type Inventory::unequip_item(uint32_t inventory_index)
 	std::shared_ptr<item_entry_data> inv_item = get_item_at_index(inventory_index);
 
 	if (inv_item == nullptr) {
-		get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_FAIL);
+//		get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_FAIL);
 		return IT_UNEQUIP_FAIL;
 	}
 
 	std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(inv_item->item_id);
 
 	if (itemd == nullptr) {
-		get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_FAIL);
+//		get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_FAIL);
 		return IT_UNEQUIP_FAIL;
 	}
 
-	get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_SUCCESS);
+//	get_packet_handler()->Send_ZC_REQ_TAKEOFF_EQUIP_ACK(inv_item, IT_UNEQUIP_SUCCESS);
 
 	remove_from_equipment_list(inv_item);
 	return IT_UNEQUIP_SUCCESS;
@@ -196,8 +193,8 @@ itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 {
 	item_entry_data data;
 	std::shared_ptr<const item_config_data> item = ItemDB->get_item_by_id(item_id);
-	std::shared_ptr<const job_db_data> job = JobDB->get(get_player()->get_job_id());
-	std::shared_ptr<CurrentWeight> current_weight = get_player()->get_status()->get_current_weight();
+	std::shared_ptr<const job_db_data> job = JobDB->get(get_player()->job_id());
+	std::shared_ptr<CurrentWeight> current_weight = get_player()->status()->get_current_weight();
 
 	if (item == nullptr)
 		return ITEMSTORE_ADD_INVALID;
@@ -230,7 +227,7 @@ itemstore_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 
 uint32_t Inventory::calculate_current_equip_location_mask(std::shared_ptr<const item_config_data> item)
 {
-	job_class_mask job_mask = JobDB->job_id_to_mask((job_class_type) get_player()->get_job_id());
+	job_class_mask job_mask = JobDB->job_id_to_mask((job_class_type) get_player()->job_id());
 	uint32_t current_equip_location_mask = item->equip_location_mask;
 
 	if (item->type == IT_TYPE_WEAPON) {
@@ -275,7 +272,7 @@ void Inventory::notify_without_equipments()
 			normal_items.push_back((*nit));
 	}
 
-	get_packet_handler()->Send_ZC_NORMAL_ITEMLIST(normal_items);
+//	get_packet_handler()->Send_ZC_NORMAL_ITEMLIST(normal_items);
 }
 
 void Inventory::notify_only_equipments()
@@ -287,7 +284,7 @@ void Inventory::notify_only_equipments()
 			equipments.push_back(*eit);
 	}
 
-	get_packet_handler()->Send_ZC_EQUIPMENT_ITEMLIST(equipments);
+//	get_packet_handler()->Send_ZC_EQUIPMENT_ITEMLIST(equipments);
 }
 
 void Inventory::notify_add(item_entry_data const &data, uint16_t amount, itemstore_addition_result_type result)
@@ -304,7 +301,7 @@ void Inventory::notify_add(item_entry_data const &data, uint16_t amount, itemsto
 	case ITEMSTORE_ADD_OVER_STACK_LIMIT: notif_type = ITEM_INV_ADD_OVER_STACK_LIMIT; break;
 	}
 
-	get_packet_handler()->Send_ZC_ITEM_PICKUP_ACK(data, amount, notif_type);
+//	get_packet_handler()->Send_ZC_ITEM_PICKUP_ACK(data, amount, notif_type);
 }
 
 void Inventory::notify_deletion(uint16_t idx, uint16_t amount, itemstore_deletion_reason_type reason)
@@ -324,71 +321,71 @@ void Inventory::notify_move_fail(uint16_t idx, bool silent)
 
 uint32_t Inventory::sync_to_model()
 {
-	std::vector<item_entry_data> &model_items = get_player()->get_char_model()->get_inventory_model()->get_model_items();
+//	std::vector<item_entry_data> &model_items = get_player()->get_char_model()->get_inventory_model()->get_model_items();
 	uint32_t changes = 0;
 
-	// Add / Subtract existing or new items.
-	for (auto &state_it : _item_store) {
-		auto model_it = std::find_if(model_items.begin(), model_items.end(), [&state_it](item_entry_data &model_item) {
-			return model_item == *state_it;
-		});
-
-		if (model_it != model_items.end()) {
-			bool changed = false;
-			if (model_it->amount != state_it->amount) {
-				model_it->amount = state_it->amount;
-				changed = true;
-			}
-			if (model_it->current_equip_location_mask != state_it->current_equip_location_mask) {
-				model_it->current_equip_location_mask = state_it->current_equip_location_mask;
-				changed = true;
-			}
-			if (changed)
-				changes++;
-		} else {
-			model_items.push_back(*state_it);
-			changes++;
-		}
-	}
-
-	// Delete non-existing items.
-	for (auto model_it = model_items.begin(); model_it != model_items.end(); model_it++) {
-		auto state_it = std::find_if(_item_store.begin(), _item_store.end(), [&model_it](std::shared_ptr<item_entry_data> state_it) {
-			return *state_it == *model_it;
-		});
-
-		if (state_it == _item_store.end()) {
-			model_it = model_items.erase(model_it);
-			changes++;
-		}
-	}
+//	// Add / Subtract existing or new items.
+//	for (auto &state_it : _item_store) {
+//		auto model_it = std::find_if(model_items.begin(), model_items.end(), [&state_it](item_entry_data &model_item) {
+//			return model_item == *state_it;
+//		});
+//
+//		if (model_it != model_items.end()) {
+//			bool changed = false;
+//			if (model_it->amount != state_it->amount) {
+//				model_it->amount = state_it->amount;
+//				changed = true;
+//			}
+//			if (model_it->current_equip_location_mask != state_it->current_equip_location_mask) {
+//				model_it->current_equip_location_mask = state_it->current_equip_location_mask;
+//				changed = true;
+//			}
+//			if (changed)
+//				changes++;
+//		} else {
+//			model_items.push_back(*state_it);
+//			changes++;
+//		}
+//	}
+//
+//	// Delete non-existing items.
+//	for (auto model_it = model_items.begin(); model_it != model_items.end(); model_it++) {
+//		auto state_it = std::find_if(_item_store.begin(), _item_store.end(), [&model_it](std::shared_ptr<item_entry_data> state_it) {
+//			return *state_it == *model_it;
+//		});
+//
+//		if (state_it == _item_store.end()) {
+//			model_it = model_items.erase(model_it);
+//			changes++;
+//		}
+//	}
 
 	return changes;
 }
 
 uint32_t Inventory::sync_from_model()
 {
-	if (_item_store.size() > 0) {
-		CoreLog(warn) <<"Horizon::Zone::Game::Assets::Inventory::sync_from_model:\n"
-			"Attempt to sync when item store is not empty. Current size: {}.", _item_store.size());
-		return 0;
-	}
-
-	std::vector<item_entry_data> &model_items = get_player()->get_char_model()->get_inventory_model()->get_model_items();
-
-	for (auto &mitem : model_items) {
-		std::shared_ptr<item_entry_data> item = std::make_shared<item_entry_data>(mitem);
-		std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(item->item_id);
-		item->type = mitem.type = itemd->type;
-		item->sprite_id = mitem.sprite_id = itemd->sprite_id;
-		item->actual_equip_location_mask = mitem.actual_equip_location_mask = itemd->equip_location_mask;
-		_item_store.push_back(item);
-		if (item->current_equip_location_mask > 0)
-			add_to_equipment_list(item);
-		// set without notifying client of weight, @see Player::on_map_enter is to be called after this
-		// method to ensure client notifications.
-		get_player()->get_status()->get_current_weight()->add_base(itemd->weight * item->amount, false);
-	}
+//	if (_item_store.size() > 0) {
+//		HLog(warning) << "Horizon::Zone::Assets::Inventory::sync_from_model:\n"
+//			"Attempt to sync when item store is not empty. Current size: " << _item_store.size();
+//		return 0;
+//	}
+//
+//	std::vector<item_entry_data> &model_items = get_player()->get_char_model()->get_inventory_model()->get_model_items();
+//
+//	for (auto &mitem : model_items) {
+//		std::shared_ptr<item_entry_data> item = std::make_shared<item_entry_data>(mitem);
+//		std::shared_ptr<const item_config_data> itemd = ItemDB->get_item_by_id(item->item_id);
+//		item->type = mitem.type = itemd->type;
+//		item->sprite_id = mitem.sprite_id = itemd->sprite_id;
+//		item->actual_equip_location_mask = mitem.actual_equip_location_mask = itemd->equip_location_mask;
+//		_item_store.push_back(item);
+//		if (item->current_equip_location_mask > 0)
+//			add_to_equipment_list(item);
+//		// set without notifying client of weight, @see Player::on_map_enter is to be called after this
+//		// method to ensure client notifications.
+//		get_player()->get_status()->get_current_weight()->add_base(itemd->weight * item->amount, false);
+//	}
 
 	return _item_store.size();
 }

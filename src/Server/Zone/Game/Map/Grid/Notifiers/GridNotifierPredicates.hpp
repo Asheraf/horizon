@@ -37,9 +37,9 @@ class GUIDCheckPredicate
 public:
 	GUIDCheckPredicate(uint32_t guid) : _guid(guid) { }
 
-	bool operator()(std::weak_ptr<Horizon::Zone::Game::Entity> entity)
+	bool operator()(std::weak_ptr<Horizon::Zone::Entity> entity)
 	{
-		return !entity.expired() && (entity.lock()->get_guid() == _guid);
+		return !entity.expired() && (entity.lock()->guid() == _guid);
 	}
 
 private:
@@ -49,16 +49,16 @@ private:
 class RangeCheckPredicate
 {
 public:
-	RangeCheckPredicate(std::weak_ptr<Horizon::Zone::Game::Entity> source)
+	RangeCheckPredicate(std::weak_ptr<Horizon::Zone::Entity> source)
 	: _source(source){ }
 
-	bool operator()(std::weak_ptr<Horizon::Zone::Game::Entity> target, uint16_t range = MAX_VIEW_RANGE)
+	bool operator()(std::weak_ptr<Horizon::Zone::Entity> target, uint16_t range = MAX_VIEW_RANGE)
 	{
 		return !_source.expired() && !target.expired() && _source.lock()->is_in_range_of(target.lock(), range);
 	}
 
 private:
-	std::weak_ptr<Horizon::Zone::Game::Entity> _source;
+	std::weak_ptr<Horizon::Zone::Entity> _source;
 };
 
 #endif /* GRIDNOTIFIERPREDICATES_HPP */

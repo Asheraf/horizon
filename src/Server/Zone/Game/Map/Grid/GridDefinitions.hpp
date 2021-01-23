@@ -38,19 +38,16 @@ namespace Horizon
 {
 	namespace Zone
 	{
-		namespace Game
+		namespace Entities
 		{
-			namespace Entities
-			{
-				class Player;
-				class NPC;
-				class Elemental;
-				class Homunculus;
-				class Mercenary;
-				class Pet;
-				class Monster;
-				class Skill;
-			}
+			class Player;
+			class NPC;
+			class Elemental;
+			class Homunculus;
+			class Mercenary;
+			class Pet;
+			class Monster;
+			class Skill;
 		}
 	}
 }
@@ -64,21 +61,20 @@ class Coordinates;
 template<class OBJECT_TYPES>
 class GridReferenceContainer;
 
+// Max Cells in a map are 416.
 #define MAX_CELLS_PER_GRID 32
-// Max Cells in a map are 416 and so 26 * 16.
 #define MAX_GRIDS_PER_MAP 13
 #define MAX_CELLS_PER_MAP MAX_CELLS_PER_GRID * MAX_GRIDS_PER_MAP
 
-#define entity_ns(e) Horizon::Zone::Game::Entities::e
+#define entity_ns(e) Horizon::Zone::Entities::e
 typedef TYPELIST_8(entity_ns(Player),
-entity_ns(NPC),
-entity_ns(Elemental),
-entity_ns(Homunculus),
-entity_ns(Mercenary),
-entity_ns(Pet),
-entity_ns(Monster),
-entity_ns(Skill))
-AllEntityTypes;
+	entity_ns(NPC),
+	entity_ns(Elemental),
+	entity_ns(Homunculus),
+	entity_ns(Mercenary),
+	entity_ns(Pet),
+	entity_ns(Monster),
+	entity_ns(Skill)) AllEntityTypes;
 typedef GridHolder<entity_ns(Player), AllEntityTypes> GridHolderType;
 #undef entity_ns
 

@@ -34,35 +34,35 @@
 #include "Server/Zone/Zone.hpp"
 #include <chrono>
 
-using namespace Horizon::Zone::Game;
+using namespace Horizon::Zone;
 
 ItemDatabase::ItemDatabase()
 : _item_db(2500), _weapon_target_size_modifiers_db(50)
 {
-	_weapontype2name_db[IT_WT_FIST] = "Fist";
-	_weapontype2name_db[IT_WT_DAGGER] = "Dagger";
-	_weapontype2name_db[IT_WT_1HSWORD] = "OneHandedSword";
-	_weapontype2name_db[IT_WT_2HSWORD] = "TwoHandedSword";
-	_weapontype2name_db[IT_WT_1HSPEAR] = "OneHandedSpear";
-	_weapontype2name_db[IT_WT_2HSPEAR] = "TwoHandedSpear";
-	_weapontype2name_db[IT_WT_1HAXE] = "OneHandedAxe";
-	_weapontype2name_db[IT_WT_2HAXE] = "TwoHandedAxe";
-	_weapontype2name_db[IT_WT_1HMACE] = "OneHandedMace";
-	_weapontype2name_db[IT_WT_2HMACE] = "TwoHandedMace";
-	_weapontype2name_db[IT_WT_STAFF] = "OneHandedStaff";
-	_weapontype2name_db[IT_WT_BOW] = "Bow";
-	_weapontype2name_db[IT_WT_KNUCKLE] = "Knuckle";
-	_weapontype2name_db[IT_WT_MUSICAL] = "MusicalInstrument";
-	_weapontype2name_db[IT_WT_WHIP] = "Whip";
-	_weapontype2name_db[IT_WT_BOOK] = "Book";
-	_weapontype2name_db[IT_WT_KATAR] = "Katar";
+	_weapontype2name_db[IT_WT_FIST]     = "Fist";
+	_weapontype2name_db[IT_WT_DAGGER]   = "Dagger";
+	_weapontype2name_db[IT_WT_1HSWORD]  = "OneHandedSword";
+	_weapontype2name_db[IT_WT_2HSWORD]  = "TwoHandedSword";
+	_weapontype2name_db[IT_WT_1HSPEAR]  = "OneHandedSpear";
+	_weapontype2name_db[IT_WT_2HSPEAR]  = "TwoHandedSpear";
+	_weapontype2name_db[IT_WT_1HAXE]    = "OneHandedAxe";
+	_weapontype2name_db[IT_WT_2HAXE]    = "TwoHandedAxe";
+	_weapontype2name_db[IT_WT_1HMACE]   = "OneHandedMace";
+	_weapontype2name_db[IT_WT_2HMACE]   = "TwoHandedMace";
+	_weapontype2name_db[IT_WT_STAFF]    = "OneHandedStaff";
+	_weapontype2name_db[IT_WT_BOW]      = "Bow";
+	_weapontype2name_db[IT_WT_KNUCKLE]  = "Knuckle";
+	_weapontype2name_db[IT_WT_MUSICAL]  = "MusicalInstrument";
+	_weapontype2name_db[IT_WT_WHIP]     = "Whip";
+	_weapontype2name_db[IT_WT_BOOK]     = "Book";
+	_weapontype2name_db[IT_WT_KATAR]    = "Katar";
 	_weapontype2name_db[IT_WT_REVOLVER] = "Revolver";
-	_weapontype2name_db[IT_WT_RIFLE] = "Rifle";
-	_weapontype2name_db[IT_WT_GATLING] = "GatlingGun";
-	_weapontype2name_db[IT_WT_SHOTGUN] = "Shotgun";
-	_weapontype2name_db[IT_WT_GRENADE] = "GrenadeLauncher";
-	_weapontype2name_db[IT_WT_HUUMA] = "FuumaShuriken";
-	_weapontype2name_db[IT_WT_2HSTAFF] = "TwoHandedStaff";
+	_weapontype2name_db[IT_WT_RIFLE]    = "Rifle";
+	_weapontype2name_db[IT_WT_GATLING]  = "GatlingGun";
+	_weapontype2name_db[IT_WT_SHOTGUN]  = "Shotgun";
+	_weapontype2name_db[IT_WT_GRENADE]  = "GrenadeLauncher";
+	_weapontype2name_db[IT_WT_HUUMA]    = "FuumaShuriken";
+	_weapontype2name_db[IT_WT_2HSTAFF]  = "TwoHandedStaff";
 }
 
 bool ItemDatabase::load()
@@ -78,18 +78,20 @@ bool ItemDatabase::load()
 
 	int total_entries = 0;
 
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "item_db.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "item_db.lua";
 
-	try {
-		lua.script_file(file_path);
-		sol::table item_tbl = lua.get<sol::table>("item_db");
-		total_entries = load_items(item_tbl, file_path);
-		auto stop = std::chrono::high_resolution_clock::now();
-		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs, Max Collisions: {}).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count(), _item_db.max_collisions());
-	} catch(const std::exception &e) {
-		CoreLog(error) <<"ItemDB::load: {}", e.what());
+	sol::protected_function_result safe_res = lua.safe_script_file(file_path);
+	
+	if (!safe_res.valid()) {
+		sol::error err = safe_res;
+		HLog(error) << err.what();
 		return false;
 	}
+	
+	sol::table item_tbl = lua.get<sol::table>("item_db");
+	total_entries = load_items(item_tbl, file_path);
+	auto stop = std::chrono::high_resolution_clock::now();
+	HLog(info) << "Loaded " << total_entries << " entries from '" << file_path << "' (" << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << "µs, Max Collisions: " << _item_db.max_collisions() << ").";
 
 	return true;
 }
@@ -251,7 +253,7 @@ bool ItemDatabase::add_job_group_to_item(std::string const &group, item_config_d
 			   });
 		}
 	} else {
-		CoreLog(error) <<"Invalid Job Range '{}' specified for entry in file '{}', skipping...", group, file_path);
+		HLog(error) << "Invalid Job Range '" << group << "' specified for entry in file '" << file_path << "', skipping...";
 		return false;
 	}
 
@@ -270,7 +272,7 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 		entry++;
 
 		if (key.get_type() != sol::type::string) {
-			CoreLog(error) <<"Invalid key type for entry {} in '{}'.", entry, file_path);
+			HLog(error) << "Invalid key type for entry " << entry << " in '" << file_path << "'.";
 			return;
 		}
 
@@ -278,13 +280,13 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 
 		id.item_id = tbl.get_or("Id", 0);
 		if (id.item_id == 0) {
-			CoreLog(error) <<"ItemDB::load_items: Invalid or non-existent mandatory field 'Id' for item '{}' in '{}'. Skipping...", id.key_name, file_path);
+			HLog(error) << "ItemDB::load_items: Invalid or non-existent mandatory field 'Id' for item '" << id.key_name << "' in '" << file_path << "'. Skipping...";
 			return;
 		}
 
 		id.name = tbl.get_or("Name", std::string(""));
 		if (id.name.empty()) {
-			CoreLog(error) <<"ItemDB::load_items: Invalid or non-existent mandatory field 'Name' for entry {} in '{}'. Skipping...", id.item_id, file_path);
+			HLog(error) << "ItemDB::load_items: Invalid or non-existent mandatory field 'Name' for entry " << id.item_id << " in '" << file_path << "'. Skipping...";
 			return;
 		}
 
@@ -307,9 +309,8 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 
 		// Discount / Overcharge zeny exploit check.
 		if (id.value_buy / 124.0 < id.value_sell / 75.0) {
-			CoreLog(warn) <<"Buying/Selling [{}/{}] price of item {} ({}) "
-						"allows Zeny making exploit through buying/selling at discounted/overcharged prices! File '{}'.\n",
-						id.value_buy, id.value_sell, id.item_id, id.name, file_path);
+			HLog(warning) << "Buying/Selling [" << id.value_buy << "/" << id.value_sell << "] price of item " << id.item_id << " (" << id.name << ") "
+						"allows Zeny making exploit through buying/selling at discounted/overcharged prices! File '" << file_path << "'.\n";
 		}
 
 		id.weight = tbl.get_or("Weight", 0);
@@ -364,7 +365,7 @@ int ItemDatabase::load_items(sol::table const &item_tbl, std::string file_path)
 			if (loc.get_type() == sol::type::table) {
 				loc.as<sol::table>().for_each([&id, &file_path] (sol::object const &key, sol::object const &value) {
 					if (value.get_type() != sol::type::number) {
-						CoreLog(warn) <<"Invalid type for 'Loc' in entry '{}' in file '{}'", id.key_name, file_path);
+						HLog(warning) <<"Invalid type for 'Loc' in entry '" << id.key_name << "' in file '" << file_path << "'";
 						return;
 					}
 
@@ -416,7 +417,7 @@ bool ItemDatabase::load_refine_db()
 
 	int total_entries = 0;
 
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "refine_db.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "refine_db.lua";
 
 	try {
 		lua.script_file(file_path);
@@ -435,9 +436,9 @@ bool ItemDatabase::load_refine_db()
 				total_entries++;
 		}
 		auto stop = std::chrono::high_resolution_clock::now();
-		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
+		HLog(info) << "Loaded " << total_entries << " entries from '" << file_path << "' (" << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << "µs).";
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"{} in file '{}'", e.what(), file_path);
+		HLog(error) << e.what() << " in file '" << file_path << "'";
 		return false;
 	}
 
@@ -457,7 +458,7 @@ bool ItemDatabase::load_refine_table(refine_type type, sol::table const &refine_
 
 	if (maybe_rates) {
 		if (maybe_rates.value().get_type() != sol::type::table) {
-			CoreLog(error) <<"Invalid type for entry 'Rates' table '{}' in file '{}'. Skipping...", table_name, file_path);
+			HLog(error) << "Invalid type for entry 'Rates' table '" << table_name << "' in file '" << file_path << "'. Skipping...";
 			return false;
 		}
 
@@ -482,7 +483,7 @@ bool ItemDatabase::load_refine_table(refine_type type, sol::table const &refine_
 			}
 		}
 	} else {
-		CoreLog(error) <<"Non-existent configuration for entry 'Rates' table '{}' in file '{}'. Skipping...", table_name, file_path);
+		HLog(error) << "Non-existent configuration for entry 'Rates' table '" << table_name << "' in file '" << file_path << "'. Skipping...";
 		return false;
 	}
 
@@ -502,7 +503,7 @@ bool ItemDatabase::load_weapon_target_size_modifiers_db()
 
 	int total_entries = 0;
 
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "weapon_target_size_modifiers.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "weapon_target_size_modifiers.lua";
 
 	try {
 		lua.script_file(file_path);
@@ -516,7 +517,7 @@ bool ItemDatabase::load_weapon_target_size_modifiers_db()
 				try {
 					(*arr)[j] = size_mod_tbl[i][size];
 				} catch (std::exception &err) {
-					CoreLog(error) <<"Weapon target size modifier was not found for weapon type {} size {}, defaulting to 100%...", get_weapon_type_name((item_weapon_type) i), size);
+					HLog(error) << "Weapon target size modifier was not found for weapon type " << get_weapon_type_name((item_weapon_type) i) << " size " << size << ", defaulting to 100%...";
 					(*arr)[j] = 100;
 				}
 			}
@@ -524,9 +525,9 @@ bool ItemDatabase::load_weapon_target_size_modifiers_db()
 			total_entries++;
 		}
 		auto stop = std::chrono::high_resolution_clock::now();
-		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
+		HLog(info) << "Loaded " << total_entries << " entries from '" << file_path << "' (" << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << "µs.";
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"{} in file '{}'", e.what(), file_path);
+		HLog(error) << e.what() << " in file '" << file_path << "'";
 		return false;
 	}
 
@@ -544,7 +545,7 @@ bool ItemDatabase::load_weapon_attribute_modifiers_db()
 	
 	int total_entries = 0;
 
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "weapon_attribute_modifiers.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "weapon_attribute_modifiers.lua";
 
 	try {
 		lua.script_file(file_path);
@@ -574,7 +575,7 @@ bool ItemDatabase::load_weapon_attribute_modifiers_db()
 					try {
 						(*arr)[j][k] = attr_mod_tbl[i][j][k + 1];
 					} catch (std::exception &err) {
-						CoreLog(error) <<"Weapon target attribute modifier was not found for weapon type {} attribute [{}][{}], defaulting to 100%...", get_weapon_type_name((item_weapon_type) i), attr_s[j].ele_name, attr_s[k].ele_name);
+						HLog(error) << "Weapon target attribute modifier was not found for weapon type " << get_weapon_type_name((item_weapon_type) i) << " attribute [" << attr_s[j].ele_name << "][" << attr_s[k].ele_name << "], defaulting to 100%...";
 						(*arr)[j][k] = 100;
 					}
 					total_entries++;
@@ -583,9 +584,9 @@ bool ItemDatabase::load_weapon_attribute_modifiers_db()
 			_weapon_attribute_modifiers_db.insert((item_level_type) i, arr);
 		}
 		auto stop = std::chrono::high_resolution_clock::now();
-		CoreLog(info) <<"Loaded {} entries from '{}' ({}µs).", total_entries, file_path, std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count());
+		HLog(info) << "Loaded " << total_entries << " entries from '" << file_path << "' (" << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << "µs).";
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"{} in file '{}'", e.what(), file_path);
+		HLog(error) << e.what() << " in file '" << file_path << "'.";
 		return false;
 	}
 

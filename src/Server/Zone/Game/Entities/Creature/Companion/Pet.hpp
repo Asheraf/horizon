@@ -39,8 +39,6 @@ namespace Horizon
 {
 namespace Zone
 {
-namespace Game
-{
 class Map;
 namespace Entities
 {
@@ -53,7 +51,6 @@ public:
 
 private:
 };
-}
 }
 }
 }

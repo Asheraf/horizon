@@ -40,13 +40,10 @@ namespace Horizon
 {
 namespace Zone
 {
-class PacketHandler;
-namespace Game
+namespace Entities
 {
-	namespace Entities
-	{
-		class Player;
-	}
+	class Player;
+}
 namespace Assets
 {
 class Inventory : public ItemStore
@@ -55,7 +52,7 @@ public:
 	Inventory(std::weak_ptr<Entities::Player> player, uint32_t max_storage);
 	virtual ~Inventory();
 
-	std::shared_ptr<PacketHandler> get_packet_handler() { return _packet_handler.lock(); }
+//	std::shared_ptr<PacketHandler> get_packet_handler() { return _packet_handler.lock(); }
 
 	itemstore_addition_result_type add_item(uint32_t item_id, uint16_t amount, bool is_identified = false);
 
@@ -80,10 +77,9 @@ public:
 protected:
 	uint32_t calculate_current_equip_location_mask(std::shared_ptr<const item_config_data> item);
 private:
-	std::weak_ptr<PacketHandler> _packet_handler;
+//	std::weak_ptr<PacketHandler> _packet_handler;
 	EquippedItemsArray _equipments;
 };
-}
 }
 }
 }

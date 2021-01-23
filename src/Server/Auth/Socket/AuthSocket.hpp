@@ -31,7 +31,6 @@
 #define HORIZON_SOCKET_AUTHSOCKET_HPP
 
 #include "Core/Networking/Socket.hpp"
-#include "Server/Common/PacketBuffer.hpp"
 
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>

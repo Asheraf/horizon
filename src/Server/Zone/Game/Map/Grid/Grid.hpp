@@ -42,7 +42,7 @@ template
 >
 class Grid
 {
-friend class Horizon::Zone::Game::MapManager;
+friend class Horizon::Zone::MapManager;
 public:
 	template <class SPECIFIC_OBJECT>
 	void add_object(SPECIFIC_OBJECT *obj)

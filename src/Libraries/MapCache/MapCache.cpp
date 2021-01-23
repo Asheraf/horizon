@@ -29,7 +29,7 @@
 
 #include "MapCache.hpp"
 
-#include "Server/Common/Configuration/Client.hpp"
+#include "Server/Common/Configuration/Horizon.hpp"
 #include "Utility/Utility.hpp"
 
 #include <iostream>
@@ -39,10 +39,6 @@
 #include <boost/crc.hpp>
 #include <zlib.h>
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-	#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
 #include <sol.hpp>
 
 #define NO_WATER 1000000

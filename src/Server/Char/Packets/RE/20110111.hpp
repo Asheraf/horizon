@@ -28,7 +28,6 @@
 #ifndef HORIZON_CHAR_CLIENT_PACKET_LENGTH_TABLE_20110111
 #define HORIZON_CHAR_CLIENT_PACKET_LENGTH_TABLE_20110111
 
-#include "Server/Common/Base/NetworkPacket.hpp"
 #include "Core/Multithreading/LockedLookupTable.hpp"
 
 #include "Default.hpp"
@@ -52,10 +51,12 @@ public:
 	ClientPacketLengthTable(std::shared_ptr<CharSession> s)
 	: PacketLengthTable(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
-		ADD_PKT(0x08b0, 17, CH_WAITING_LOGIN);
-		ADD_PKT(0x006d, 138, HC_ACCEPT_MAKECHAR);
-#undef ADD_PKT
+#define ADD_HPKT(i, j, k) _hpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+#define ADD_TPKT(i, j, k) _tpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+		ADD_HPKT(0x08b0, 17, CH_WAITING_LOGIN);
+		ADD_TPKT(0x006d, 138, HC_ACCEPT_MAKECHAR);
+#undef ADD_TPKT
+#undef ADD_HPKT
 	}
 
 	~ClientPacketLengthTable() { }

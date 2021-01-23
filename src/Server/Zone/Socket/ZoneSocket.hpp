@@ -31,15 +31,12 @@
 #define HORIZON_ZONE_ZONESOCKET_HPP
 
 #include "Core/Networking/Socket.hpp"
-#include "Server/Common/PacketBuffer.hpp"
 
 #include <memory>
 #include <cstdio>
 #include <boost/asio/ip/tcp.hpp>
 
 using boost::asio::ip::tcp;
-
-class PacketBuffer;
 
 namespace Horizon
 {
@@ -60,17 +57,12 @@ public:
 	std::shared_ptr<ZoneSession> get_session();
 	void set_session(std::shared_ptr<ZoneSession> session);
 
-	/* */
-	PacketQueueType &get_packet_recv_queue() { return _packet_recv_queue; }
-
 	void update_session(uint32_t diff);
 protected:
 	void read_handler() override;
 	void on_close() override;
 	void on_error() override;
 
-private:
-	PacketQueueType _packet_recv_queue;
 	std::shared_ptr<ZoneSession> _session;
 };
 }

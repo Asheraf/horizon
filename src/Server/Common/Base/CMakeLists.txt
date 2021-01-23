@@ -27,7 +27,6 @@
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(BASE_SOURCES
+set(BASE_HEADERS
 	${DIR}/NetworkPacket.hpp
-	${DIR}/PacketHandler.hpp
 	PARENT_SCOPE)

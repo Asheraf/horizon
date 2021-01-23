@@ -27,8 +27,8 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
-#ifndef HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
-#define HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
+#ifndef HORIZON_COMMON_SQL_CHARACTERS_HPP
+#define HORIZON_COMMON_SQL_CHARACTERS_HPP
 
 #include <sqlpp11/table.h>
 #include <sqlpp11/data_types.h>
@@ -775,4 +775,4 @@ TableCharacters_::saved_map, TableCharacters_::saved_x, TableCharacters_::saved_
 }
 }
 
-#endif // HORIZON_MODELS_CHARACTERS_CHARACTER_HPP
+#endif // HORIZON_COMMON_SQL_CHARACTERS_HPP

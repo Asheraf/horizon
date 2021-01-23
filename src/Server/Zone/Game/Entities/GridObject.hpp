@@ -37,8 +37,6 @@ namespace Horizon
 {
 namespace Zone
 {
-namespace Game
-{
 template<class T>
 class GridObject
 {
@@ -54,7 +52,6 @@ public:
 private:
 	GridReference<T> _ref;
 };
-}
 }
 }
 

@@ -31,7 +31,6 @@
 
 #include "Core/Logging/Logger.hpp"
 #include "Core/Networking/Buffer/ByteBuffer.hpp"
-#include "Server/Common/Configuration/Horizon.hpp"
 
 #include <memory>
 
@@ -43,60 +42,27 @@ template <class SessionType>
 class NetworkPacket
 {
 public:
-	NetworkPacket(uint16_t packet_id, std::shared_ptr<SessionType> s)
+	explicit NetworkPacket(uint16_t packet_id, std::shared_ptr<SessionType> s)
 	: _packet_id(packet_id), _session(s)
 	{
 		//
 	}
 
-	~NetworkPacket()
+	virtual ~NetworkPacket()
 	{
 		//
 	}
-
-	/**
-	 * @brief Send an Asynchronous packet by queueing
-	 *        a buffer of a particular size to the
-	 *        connected session.
-	 * @param[in|out] buf    packet buffer to be queued.
-	 */
-	void transmit()
-	{
-		transmit(_buffer.active_length());
-	}
-
-	/**
-	 * @brief Send an Asynchronous packet by queueing
-	 *        a buffer of a particular size to the
-	 *        connected session.
-	 * @param[in]     size   size of the buffer to be queued (default sizeof type T)
-	 */
-	void transmit(std::size_t size)
-	{
-		std::shared_ptr<SessionType> s = get_session();
-		if (s == nullptr) {
-			HLog(debug) << "NetworkPacket::transmit: Session was null.";
-			return;
-		}
-
-		if (!_buffer.is_empty())
-			s->transmit_buffer(std::move(_buffer), size);
-		else
-			HLog(debug) << "Attempted to transmit empty buffer.";
-	}
-
-	/**
-	 * @brief Retrieves the session from this handler instance.
-	 * @return shared_ptr to an object of the session type.
-	 */
-	std::shared_ptr<SessionType> get_session() { return _session.lock(); }
 
     void set_packet_id(uint16_t id) { _packet_id = id; }
     uint16_t get_packet_id() { return _packet_id; }
     
     ByteBuffer &buf() { return _buffer; }
-
-    virtual void handle(ByteBuffer &&buf) = 0;
+	
+	/**
+	 * @brief Retrieves the session from this handler instance.
+	 * @return shared_ptr to an object of the session type.
+	 */
+	std::shared_ptr<SessionType> get_session() { return _session.lock(); }
     
 protected:
     ByteBuffer _buffer;                    ///< Buffer storage facility for the packet stream.
@@ -105,6 +71,70 @@ protected:
 private:
 	std::weak_ptr<SessionType> _session;   ///< Pointer to the instantiated session object.
 };
+
+template<class SessionType>
+class NetworkPacketHandler : public NetworkPacket<SessionType>
+{
+public:
+	explicit NetworkPacketHandler(uint32_t pid, std::shared_ptr<SessionType> s) : NetworkPacket<SessionType>(pid, s) { }
+	virtual ~NetworkPacketHandler() { }
+	
+	virtual void handle(ByteBuffer &&buf) = 0;
+};
+
+template<class SessionType>
+class NetworkPacketTransmitter : public NetworkPacket<SessionType>
+{
+public:
+	explicit NetworkPacketTransmitter(uint32_t pid, std::shared_ptr<SessionType> s) : NetworkPacket<SessionType>(pid, s) { }
+	virtual ~NetworkPacketTransmitter() { }
+	
+	/**
+	 * @brief Send an Asynchronous packet by queueing
+	 *        a buffer of a particular size to the
+	 *        connected session.
+	 * @param[in|out] buf    packet buffer to be queued.
+	 */
+	void transmit();
+	
+	/**
+	 * @brief Send an Asynchronous packet by queueing
+	 *        a buffer of a particular size to the
+	 *        connected session.
+	 * @param[in]     size   size of the buffer to be queued (default sizeof type T)
+	 */
+	void transmit(std::size_t size);
+};
+
+template <class SessionType>
+void NetworkPacketTransmitter<SessionType>::transmit()
+{
+	transmit(this->_buffer.active_length());
+}
+
+/**
+ * @brief Send an Asynchronous packet by queueing
+ *        a buffer of a particular size to the
+ *        connected session.
+ * @param[in]     size   size of the buffer to be queued (default sizeof type T)
+ */
+template <class SessionType>
+void NetworkPacketTransmitter<SessionType>::transmit(std::size_t size)
+{
+	std::shared_ptr<SessionType> s = this->get_session();
+	if (s == nullptr) {
+		HLog(debug) << "NetworkPacket::transmit: Session was null.";
+		return;
+	}
+	
+	if (this->_buffer.is_empty()) {
+		HLog(debug) << "Attempted to transmit empty buffer.";
+		return;
+	}
+	
+	s->transmit_buffer(std::move(this->_buffer), size);
+}
+
 }
 }
 

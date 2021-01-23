@@ -34,18 +34,11 @@
 #include "Common/Definitions/NPCDefinitions.hpp"
 #include "Server/Zone/Game/Entities/GridObject.hpp"
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
 
 namespace Horizon
 {
 namespace Zone
-{
-namespace Game
 {
 namespace Entities
 {
@@ -71,7 +64,6 @@ private:
 	sol::protected_function _fn;
 	npc_db_data _npc_data;
 };
-}
 }
 }
 }

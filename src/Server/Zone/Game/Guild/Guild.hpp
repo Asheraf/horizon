@@ -101,7 +101,7 @@ private:
 
 	/* Relations */
 	std::unordered_map<uint32_t, Affiliation> _affiliations;
-	std::unordered_map<std::string, CoreLog> _expulsion_log;
+	std::unordered_map<std::string, HLog> _expulsion_log;
 	std::unordered_map<uint32_t, Member> _members;
 	std::unordered_map<uint8_t, Position> _positions;
 	std::unordered_map<uint32_t, Skill> _skills;

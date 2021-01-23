@@ -51,16 +51,14 @@ namespace Horizon
 {
 namespace Zone
 {
-namespace Game
-{
 class Map
 {
 friend class MapManager;
 public:
-	Map(std::weak_ptr<MapThreadContainer>, std::string const &, uint16_t, uint16_t, std::vector<uint8_t> const &);
+	Map(std::weak_ptr<MapContainerThread>, std::string const &, uint16_t, uint16_t, std::vector<uint8_t> const &);
 	~Map();
 
-	std::shared_ptr<MapThreadContainer> get_map_container() { return _container.lock(); }
+	std::shared_ptr<MapContainerThread> container() { return _container.lock(); }
 
 	std::string const &get_name() { return _name; }
 
@@ -101,7 +99,7 @@ public:
 	AStar::Generator &get_pathfinder() { return _pathfinder; }
 
 private:
-	std::weak_ptr<MapThreadContainer> _container;
+	std::weak_ptr<MapContainerThread> _container;
 	std::string _name{""};
 	uint16_t _width{0}, _height{0};
 	GridCoords _max_grids;
@@ -111,15 +109,14 @@ private:
 };
 }
 }
-}
 
 template <class T>
-bool Horizon::Zone::Game::Map::ensure_grid_for_entity(T *entity, MapCoords mcoords)
+bool Horizon::Zone::Map::ensure_grid_for_entity(T *entity, MapCoords mcoords)
 {
-	std::string const &new_map_name = entity->get_map()->get_name();
+	std::string const &new_map_name = entity->map()->get_name();
 	GridCoords new_gcoords = mcoords.scale<MAX_CELLS_PER_GRID, MAX_GRIDS_PER_MAP>();
 
-	if (new_map_name.compare(get_name()) == 0 && entity->get_grid_coords() == new_gcoords)
+	if (new_map_name.compare(get_name()) == 0 && entity->grid_coords() == new_gcoords)
 		return false;
 
 	if (entity->has_valid_grid_reference())
@@ -133,13 +130,13 @@ bool Horizon::Zone::Game::Map::ensure_grid_for_entity(T *entity, MapCoords mcoor
 }
 
 template<class T, class CONTAINER>
-inline void Horizon::Zone::Game::Map::visit(GridCoords const &grid, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
+inline void Horizon::Zone::Map::visit(GridCoords const &grid, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
 {
 	_gridholder.get_grid(grid).visit(visitor);
 }
 
 template<class T, class CONTAINER>
-inline void Horizon::Zone::Game::Map::visit_in_range(MapCoords const &map_coords, GridReferenceContainerVisitor<T, CONTAINER> &visitor, uint16_t range)
+inline void Horizon::Zone::Map::visit_in_range(MapCoords const &map_coords, GridReferenceContainerVisitor<T, CONTAINER> &visitor, uint16_t range)
 {
 	MapCoords lower_bounds = map_coords.at_range<MAX_CELLS_PER_MAP>(-range);
 	MapCoords upper_bounds = map_coords.at_range<MAX_CELLS_PER_MAP>(range);
@@ -148,7 +145,7 @@ inline void Horizon::Zone::Game::Map::visit_in_range(MapCoords const &map_coords
 }
 
 template<class T, class CONTAINER>
-inline void Horizon::Zone::Game::Map::visit(GridCoords const &lower_bound, GridCoords const &upper_bound, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
+inline void Horizon::Zone::Map::visit(GridCoords const &lower_bound, GridCoords const &upper_bound, GridReferenceContainerVisitor<T, CONTAINER> &visitor)
 {
 	for (int y = upper_bound.y(); y >= lower_bound.y(); --y) {
 		for (int x = lower_bound.x(); x <= upper_bound.x(); ++x) {

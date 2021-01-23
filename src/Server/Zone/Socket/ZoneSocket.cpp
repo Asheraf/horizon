@@ -29,17 +29,10 @@
 
 #include "ZoneSocket.hpp"
 
-#include "Server/Common/Models/Character/Character.hpp"
-#include "Server/Zone/Game/Entities/Player/Player.hpp"
-#include "Server/Zone/Game/Map/MapManager.hpp"
-#include "Server/Zone/Game/Map/Map.hpp"
-#include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
+
 #include "Server/Zone/Session/ZoneSession.hpp"
-#include "Server/Zone/Zone.hpp"
 
 using namespace Horizon::Zone;
-using namespace Horizon::Zone::Game::Entities;
-using namespace Horizon::Models::Character;
 
 ZoneSocket::ZoneSocket(std::shared_ptr<tcp::socket> socket)
 : Socket(socket)
@@ -66,7 +59,7 @@ void ZoneSocket::start()
 
 	session->initialize();
 
-	CoreLog(info) <<"Established connection from {}.", remote_ip_address());
+	HLog(info) << "Established connection from '" << remote_ip_address() << "'.";
 
 	// Start async_read loop.
 	async_read();
@@ -77,7 +70,7 @@ void ZoneSocket::start()
  */
 void ZoneSocket::on_close()
 {
-	CoreLog(info) <<"Closed connection from {}.", remote_ip_address());
+	HLog(info) << "Closed connection from '" << remote_ip_address() << "'.";
 
 	get_session()->perform_cleanup();
 }
@@ -102,24 +95,34 @@ bool ZoneSocket::update()
  */
 void ZoneSocket::read_handler()
 {
-	while (get_read_buffer().get_active_size()) {
+	while (get_read_buffer().active_length()) {
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
-
-		int16_t packet_length = GET_ZONE_PACKETLEN(packet_id);
-
+		
+		HPacketTablePairType p = get_session()->pkt_tbl()->get_hpacket_info(packet_id);
+		
+		int16_t packet_length = p.first;
+		
+		HLog(debug) << "Received packet 0x" << packet_id << " of length " << packet_length << " from client.";
+		HLog(debug) << "Data:" << get_read_buffer().to_string();
+		
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));
+			if (get_read_buffer().active_length() < packet_length) {
+				HLog(debug) << "Received packet 0x" << packet_id << " has expected length " << packet_length << " but buffer only supplied " << get_read_buffer().active_length() << " from client.";
+				break;
+			}
 		} else if (packet_length == 0) {
-			CoreLog(warn) <<"Received non-existent packet id {0:x}, disconnecting session...", packet_id);
+			HLog(warning) << "Received non-existent packet id 0x" << std::hex << packet_id << ", disconnecting session..." << std::endl;
+			get_read_buffer().read_completed(get_read_buffer().active_length());
 			close_socket();
 			break;
 		}
-
-		PacketBuffer buf(get_read_buffer().get_read_pointer(), packet_length);
+		
+		ByteBuffer b;
+		b.append(get_read_buffer().get_read_pointer(), packet_length);
+		get_recv_queue().push(std::move(b));
 		get_read_buffer().read_completed(packet_length);
-
-		_packet_recv_queue.push(std::move(buf));
 	}
 }
 

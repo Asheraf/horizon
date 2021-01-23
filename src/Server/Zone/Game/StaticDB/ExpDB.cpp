@@ -32,14 +32,14 @@
 #include "Core/Logging/Logger.hpp"
 #include "Server/Zone/Zone.hpp"
 
-using namespace Horizon::Zone::Game;
+using namespace Horizon::Zone;
 
 bool ExpDatabase::load()
 {
 	sol::state lua;
 	int total_entries[2] = { 0, 0 };
 	std::string tmp_string;
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "exp_group_db.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "exp_group_db.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {
@@ -49,11 +49,11 @@ bool ExpDatabase::load()
 		total_entries[0] = load_group(base_exp_tbl, EXP_GROUP_TYPE_BASE);
 		total_entries[1] = load_group(job_exp_tbl, EXP_GROUP_TYPE_JOB);
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"ExpDB::error: {}.", e.what());
+		HLog(error) << "ExpDB::error: " << e.what();
 		return false;
 	}
 
-	CoreLog(info) <<"Read {} Base and {} Job EXP groups from '{}'", total_entries[0], total_entries[1], file_path);
+	HLog(info) << "Read " << total_entries[0] << " Base and " << total_entries[1] << " Job EXP groups from '" << file_path << "'";
 
 	return true;
 }
@@ -70,26 +70,26 @@ int ExpDatabase::load_group(sol::table &group_tbl, exp_group_type type)
 
 		std::shared_ptr<const exp_group_data> dup;
 		if ((dup = group_db->at(group_name)) != nullptr) {
-			CoreLog(warn) <<"ExpDB::load: Found duplicate {} Exp group for '{}', overwriting...", type == EXP_GROUP_TYPE_BASE ? "base" : "job", group_name);
+			HLog(warning) << "ExpDB::load: Found duplicate " << (type == EXP_GROUP_TYPE_BASE ? "base" : "job") << " Exp group for '" << group_name << "', overwriting...";
 			group_db->erase(group_name);
 		}
 
 		expd.max_level = tbl.get_or("MaxLevel", 0);
 		if (expd.max_level == 0) {
-			CoreLog(error) <<"ExpDB::load: Max Level not given for group '{}', skipping...", group_name);
+			HLog(error) << "ExpDB::load: Max Level not given for group '" << group_name << "', skipping...";
 			return;
 		}
 
 		sol::optional<sol::table> maybe_exp_tbl = tbl.get<sol::optional<sol::table>>("Exp");
 		if (!maybe_exp_tbl) {
-			CoreLog(error) <<"ExpDB::load: Missing Exp data for group '()', skipping...", group_name);
+			HLog(error) << "ExpDB::load: Missing Exp data for group '" << group_name << "', skipping...";
 			return;
 		}
 
 		sol::table &exp_tbl = maybe_exp_tbl.value();
 		exp_tbl.for_each([&expd, &group_name](sol::object const &key, sol::object const &value) {
 			if (key.get_type() != sol::type::number) {
-				CoreLog(error) <<"ExpDB::load: Invalid Exp data found in array of group '{}', aborting with '{}' entries...", group_name, key.as<int>());
+				HLog(error) << "ExpDB::load: Invalid Exp data found in array of group '" << group_name << "', aborting with '" << key.as<int>() << "' entries...";
 				return;
 			}
 			expd.exp.push_back(value.as<int>());
@@ -107,7 +107,7 @@ bool ExpDatabase::load_status_point_table()
 	sol::state lua;
 	int total_entries = 0;
 	std::string tmp_string;
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "status_points.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "status_points.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {
@@ -115,18 +115,18 @@ bool ExpDatabase::load_status_point_table()
 		sol::table status_points_tbl = lua["status_points"];
 		status_points_tbl.for_each([this, &file_path, &total_entries](sol::object const &key, sol::object const &value) {
 			if (key.get_type() != sol::type::number || value.get_type() != sol::type::number) {
-				CoreLog(error) <<"Non-numeric key/value pair was found in '{}'. Skipping...", file_path);
+				HLog(error) << "Non-numeric key/value pair was found in '" << file_path << "'. Skipping...";
 				return;
 			}
 			_stat_point_db.insert(key.as<uint32_t>(), value.as<uint32_t>());
 			total_entries++;
 		});
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"ExpDatabase::load_status_point_table: {}.", e.what());
+		HLog(error) << "ExpDatabase::load_status_point_table: " << e.what() << ".";
 		return false;
 	}
 
-	CoreLog(info) <<"Read status points for {} levels from '{}'", total_entries, file_path);
+	HLog(info) << "Read status points for " << total_entries << " levels from '" << file_path << "'";
 
 	return true;
 }

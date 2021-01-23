@@ -36,7 +36,7 @@
 template <class T>
 void GridViewPortUpdater::update(GridRefManager<T> &m)
 {
-	using namespace Horizon::Zone::Game::Entities;
+	using namespace Horizon::Zone::Entities;
 
 	if (_entity.expired())
 		return;
@@ -44,7 +44,7 @@ void GridViewPortUpdater::update(GridRefManager<T> &m)
 	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
 		std::shared_ptr<Player> pl = _entity.lock()->template downcast<Player>();
 
-		if (iter->source() == nullptr || iter->source()->get_guid() == pl->get_guid())
+		if (iter->source() == nullptr || iter->source()->guid() == pl->guid())
 			continue;
 
 		pl->add_entity_to_viewport(iter->source()->shared_from_this());
@@ -55,14 +55,14 @@ void GridViewPortUpdater::update(GridRefManager<T> &m)
 template <class T>
 void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 {
-	using namespace Horizon::Zone::Game::Entities;
+	using namespace Horizon::Zone::Entities;
 
-	std::shared_ptr<Horizon::Zone::Game::Entity> src_entity = _entity.lock();
+	std::shared_ptr<Horizon::Zone::Entity> src_entity = _entity.lock();
 
 	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
 		std::shared_ptr<Player> tpl = iter->source()->template downcast<Player>();
 
-		if (src_entity == nullptr || src_entity->get_guid() == tpl->get_guid())
+		if (src_entity == nullptr || src_entity->guid() == tpl->guid())
 			continue;
 
 		bool is_in_range = tpl->is_in_range_of(src_entity);
@@ -90,7 +90,7 @@ void GridEntitySearcher::search(GridRefManager<T> &m)
 	if (!_result.expired())
 		return;
 
-	using namespace Horizon::Zone::Game;
+	using namespace Horizon::Zone;
 	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
 		std::weak_ptr<Entity> entity = iter->source()->shared_from_this();
 		if (!entity.expired() && _predicate(entity)) {
@@ -107,7 +107,7 @@ void GridNPCTrigger::check_and_trigger(GridRefManager<T> &m)
 	if (_source.expired())
 		return;
 
-	using namespace Horizon::Zone::Game::Entities;
+	using namespace Horizon::Zone::Entities;
 	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
 		std::shared_ptr<NPC> npc = iter->source()->template downcast<NPC>();
 		if (npc == nullptr)
@@ -116,7 +116,7 @@ void GridNPCTrigger::check_and_trigger(GridRefManager<T> &m)
 		npc_db_data const &nd = npc->get_db_data();
 		if (nd.trigger_range && _predicate(npc, nd.trigger_range)) {
 			std::shared_ptr<Player> player = _source.lock()->downcast<Player>();
-			_source.lock()->get_script_manager()->contact_npc_for_player(player, npc->get_guid());
+			_source.lock()->script_manager()->contact_npc_for_player(player, npc->guid());
 		}
 	}
 }
@@ -124,7 +124,7 @@ void GridNPCTrigger::check_and_trigger(GridRefManager<T> &m)
 template <typename ZC_PACKET_T> template <typename T>
 void GridPlayerNotifier<ZC_PACKET_T>::notify(GridRefManager<T> &m)
 {
-	using namespace Horizon::Zone::Game::Entities;
+	using namespace Horizon::Zone::Entities;
 
 	std::shared_ptr<Player> pl = _entity.lock()->template downcast<Player>();
 
@@ -138,12 +138,12 @@ void GridPlayerNotifier<ZC_PACKET_T>::notify(GridRefManager<T> &m)
 		switch (_type)
 		{
 			case GRID_NOTIFY_AREA_WOS:
-				if (iter->source()->get_guid() == pl->get_guid())
+				if (iter->source()->get_guid() == pl->guid())
 					continue;
 			default:
 				break;
 		}
-		iter->source()->get_packet_handler()->send_packet(_pkt);
+//		iter->source()->get_packet_handler()->send_packet(_pkt);
 	}
 }
 

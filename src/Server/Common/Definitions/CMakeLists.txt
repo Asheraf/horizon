@@ -27,7 +27,7 @@
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(COMMON_DEFINITION_SOURCES
+set(COMMON_DEFINITION_HEADERS
 	${DIR}/BattleDefinitions.hpp
 	${DIR}/Definitions.hpp
 	${DIR}/EntityDefinitions.hpp

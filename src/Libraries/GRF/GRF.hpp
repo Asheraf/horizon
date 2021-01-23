@@ -32,7 +32,7 @@
 #include "DES.hpp"
 
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <unordered_map>
 #include <boost/filesystem/path.hpp>
 

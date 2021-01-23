@@ -30,7 +30,7 @@
 #include "Pet.hpp"
 #include "Common/Definitions/EntityDefinitions.hpp"
 
-using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Zone::Entities;
 
 Pet::Pet(uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords)
 : Creature(guid, ENTITY_PET, map, mcoords)

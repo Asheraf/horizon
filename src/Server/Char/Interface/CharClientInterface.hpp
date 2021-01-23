@@ -28,6 +28,7 @@
 #ifndef HORIZON_CHARCLIENTINTERFACE_HPP
 #define HORIZON_CHARCLIENTINTERFACE_HPP
 
+#include "Server/Common/Configuration/Horizon.hpp"
 #include "Server/Common/Interfaces/ClientInterface.hpp"
 #include "Server/Common/Base/NetworkPacket.hpp"
 
@@ -58,6 +59,8 @@ public:
 	bool pincode_change(uint32_t account_id, char *old_pin, char *new_pin);
 	bool pincode_verify(uint32_t account_id, char *pincode);
 	void pincode_decrypt(uint32_t seed, char *input, char *output);
+	
+	bool select_character(uint8_t slot);
 	
 protected:
 	char _pincode_confirm[MAX_PINCODE_STRING_LENGTH];

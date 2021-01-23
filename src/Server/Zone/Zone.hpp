@@ -30,13 +30,13 @@
 #ifndef HORIZON_ZONE_ZONEMAIN_HPP
 #define HORIZON_ZONE_ZONEMAIN_HPP
 
-#include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Core/Logging/Logger.hpp"
-#include "Server/Common/Configuration/ZoneServerConfiguration.hpp"
+#include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Server/Common/Server.hpp"
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 
 #include <string>
+#include <boost/asio/deadline_timer.hpp>
 
 namespace Horizon
 {
@@ -56,34 +56,47 @@ namespace Horizon
 {
 namespace Zone
 {
-class ZoneMain : public Server
+struct s_zone_server_configuration
+{
+	boost::filesystem::path &get_mapcache_path() { return _mapcache_path; }
+	void set_mapcache_path(boost::filesystem::path p) { _mapcache_path = p; }
+	
+	boost::filesystem::path &get_static_db_path() { return _static_db_path; }
+	void set_static_db_path(boost::filesystem::path p) { _static_db_path = p; }
+	
+	boost::filesystem::path _static_db_path;
+	boost::filesystem::path _mapcache_path;
+};
+
+class ZoneServer : public Server
 {
 public:
-	ZoneMain();
-	~ZoneMain();
+	ZoneServer();
+	~ZoneServer();
 
-	static ZoneMain *getInstance()
+	static ZoneServer *getInstance()
 	{
-		static ZoneMain instance;
+		static ZoneServer instance;
 		return &instance;
 	}
 
-	bool ReadConfig();
+	bool read_config();
 	void initialize_core();
 	void initialize_cli_commands();
-	void update(uint32_t diff);
+	void update(uint64_t diff);
 
-	zone_server_configuration &get_zone_config() { return _zone_server_config; }
+	s_zone_server_configuration &zone_config() { return _zone_server_config; }
 
 	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
 
 private:
-	zone_server_configuration _zone_server_config;
+	s_zone_server_configuration _zone_server_config;
 	TaskScheduler _task_scheduler;
+	boost::asio::deadline_timer _update_timer;
 };
 }
 }
 
-#define ZoneServer Horizon::Zone::ZoneMain::getInstance()
+#define sZone Horizon::Zone::ZoneServer::getInstance()
 
 #endif // HORIZON_ZONE_ZONEMAIN_HPP

@@ -35,29 +35,12 @@
 #include "Server/Zone/Game/Entities/GridObject.hpp"
 #include "Server/Common/Definitions/ItemDefinitions.hpp"
 #include "Server/Common/Definitions/NPCDefinitions.hpp"
+#include "Server/Common/SQL/Character/Character.hpp"
 
 #include <memory>
 #include <atomic>
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
-
-namespace Horizon
-{
-	namespace Models
-	{
-		class GameAccount;
-
-		namespace Character
-		{
-			class Character;
-		}
-	}
-}
 
 namespace Horizon
 {
@@ -65,37 +48,32 @@ namespace Zone
 {
 class ZoneSession;
 class ZoneSocket;
-class PacketHandler;
-namespace Game
+namespace Assets
 {
-	namespace Assets
-	{
-		class Inventory;
-	}
+	class Inventory;
+}
 namespace Entities
 {
 class Player : public Entity, public GridObject<Player>
 {
+	struct s_char_data {
+		uint32_t _character_id{0};
+		uint32_t _account_id{0};
+		uint16_t _slot{0};
+		bool _online{false};
+		character_gender_type _gender{CHARACTER_GENDER_MALE};
+		uint32_t _max_inventory_size{MAX_INVENTORY_SIZE};
+		uint64_t _last_unique_id{0};
+	};
+	
 public:
-	Player(uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords, std::shared_ptr<ZoneSession> session);
+	Player(std::shared_ptr<ZoneSession> session, uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords);
 	~Player();
 
 	/**
 	 * Relations
 	 */
 	std::shared_ptr<ZoneSession> get_session() { return _session; }
-	std::shared_ptr<ZoneSocket> get_socket() { return _socket.lock(); }
-	std::shared_ptr<Models::GameAccount> get_game_account() { return _game_account.lock(); }
-	std::shared_ptr<Models::Character::Character> get_char_model() { return _character_model.lock(); }
-	std::shared_ptr<PacketHandler> get_packet_handler() { return _packet_handler.lock(); }
-
-	/**
-	 * Item Stores
-	 */
-	std::shared_ptr<Assets::Inventory> get_inventory() { return _inventory; }
-
-	uint32_t get_max_inventory_size() const { return _max_inventory_size; }
-	void set_max_inventory_size(uint32_t size) { _max_inventory_size = size; }
 
 	virtual void initialize() override;
 
@@ -129,12 +107,6 @@ public:
 	 * NPC / Script applications
 	 */
 	sol::state &get_lua_state() { return _lua_state; }
-	uint32_t get_npc_contact_guid() { return _npc_contact_guid; }
-	void set_npc_contact_guid(uint32_t guid) { _npc_contact_guid = guid; }
-	void send_npc_CoreLog(uint32_t npc_guid, std::string CoreLog);
-	void send_npc_next_CoreLog(uint32_t npc_guid);
-	void send_npc_close_CoreLog(uint32_t npc_guid);
-	void send_npc_menu_list(uint32_t npc_guid, std::string const &menu);
 
 	/**
 	 * Player applications.
@@ -149,20 +121,27 @@ public:
 	bool is_logged_in() { return _is_logged_in; }
 	bool set_logged_in(bool logged_in) { return _is_logged_in.exchange(logged_in); }
 
+	s_char_data &character() { return _char; }
+	
+	/**
+	 * Item Stores
+	 */
+	void set_last_unique_id(uint64_t last_unique_id) { character()._last_unique_id = last_unique_id; }
+	uint64_t last_unique_id() { return character()._last_unique_id; }
+	
+	std::shared_ptr<Assets::Inventory> get_inventory() { return _inventory; }
+	
+	uint32_t get_max_inventory_size() { return character()._max_inventory_size; }
+	void set_max_inventory_size(uint32_t size) { character()._max_inventory_size = size; }
+
 private:
 	std::shared_ptr<ZoneSession> _session;
-	std::shared_ptr<Assets::Inventory> _inventory;
-	std::weak_ptr<Models::GameAccount> _game_account;
-	std::weak_ptr<Models::Character::Character> _character_model;
-	std::weak_ptr<PacketHandler> _packet_handler;
-	std::weak_ptr<ZoneSocket> _socket;
-	uint32_t _npc_contact_guid{0};
 	sol::state _lua_state;
-	uint32_t _max_inventory_size{MAX_INVENTORY_SIZE};
-	uint64_t _last_unique_id{0};
+	std::shared_ptr<Assets::Inventory> _inventory;
 	std::atomic<bool> _is_logged_in{false};
+	
+	s_char_data _char;
 };
-}
 }
 }
 }

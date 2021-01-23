@@ -41,18 +41,11 @@
 #include <array>
 #include <string>
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
 
 namespace Horizon
 {
 namespace Zone
-{
-namespace Game
 {
 struct job_db_data
 {
@@ -89,8 +82,7 @@ private:
 };
 }
 }
-}
 
-#define JobDB Horizon::Zone::Game::JobDatabase::get_instance()
+#define JobDB Horizon::Zone::JobDatabase::get_instance()
 
 #endif /* HORIZON_ZONE_GAME_JOBDB */

@@ -30,7 +30,7 @@
 #include "Elemental.hpp"
 #include "Common/Definitions/EntityDefinitions.hpp"
 
-using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Zone::Entities;
 
 Elemental::Elemental(uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords)
 : Creature(guid, ENTITY_ELEMENTAL, map, mcoords)

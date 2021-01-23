@@ -40,9 +40,9 @@
 #include <functional>
 #include <fstream>
 
-using namespace Horizon::Zone::Game;
+using namespace Horizon::Zone;
 
-Map::Map(std::weak_ptr<MapThreadContainer> container, std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
+Map::Map(std::weak_ptr<MapContainerThread> container, std::string const &name, uint16_t width, uint16_t height, std::vector<uint8_t> const &cells)
 : _container(container), _name(name), _width(width), _height(height),
   _max_grids((width / MAX_CELLS_PER_GRID), (height / MAX_CELLS_PER_GRID)),
   _gridholder(GridCoords(width, height)),

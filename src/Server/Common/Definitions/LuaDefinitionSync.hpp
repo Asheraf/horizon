@@ -38,11 +38,6 @@
 #include "NPCDefinitions.hpp"
 #include "SkillDefinitions.hpp"
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
 
 void sync_battle_definitions(sol::state &state)
@@ -112,7 +107,7 @@ void sync_entity_definitions(sol::state &state)
 	state.create_named_table("Job",
 		"Novice", (int) JOB_NOVICE,
 		"Swordman", (int) JOB_SWORDMAN,
-		"Mage", (int) JOB_MAGE,
+		"Magician", (int) JOB_MAGE,
 		"Archer", (int) JOB_ARCHER,
 		"Acolyte", (int) JOB_ACOLYTE,
 		"Merchant", (int) JOB_MERCHANT,
@@ -140,7 +135,7 @@ void sync_entity_definitions(sol::state &state)
 		//4000-
 		"HighNovice", (int) JOB_NOVICE_HIGH,
 		"HighSwordman", (int) JOB_SWORDMAN_HIGH,
-		"HighMage", (int) JOB_MAGE_HIGH,
+		"HighMagician", (int) JOB_MAGE_HIGH,
 		"HighArcher", (int) JOB_ARCHER_HIGH,
 		"HighAcolyte", (int) JOB_ACOLYTE_HIGH,
 		"HighMerchant", (int) JOB_MERCHANT_HIGH,
@@ -160,7 +155,7 @@ void sync_entity_definitions(sol::state &state)
 		"Gypsy", (int) JOB_GYPSY,
 		"BabyNovice", (int) JOB_BABY_NOVICE,
 		"BabySwordman", (int) JOB_BABY_SWORDMAN,
-		"BabyMage", (int) JOB_BABY_MAGE,
+		"BabyMagician", (int) JOB_BABY_MAGE,
 		"BabyArcher", (int) JOB_BABY_ARCHER,
 		"BabyAcolyte", (int) JOB_BABY_ACOLYTE,
 		"BabyMerchant", (int) JOB_BABY_MERCHANT,
@@ -226,8 +221,8 @@ void sync_entity_definitions(sol::state &state)
 		"BabySura", (int) JOB_BABY_SURA,
 		"BabyGenetic", (int) JOB_BABY_GENETIC,
 		"BabyShadowChaser", (int) JOB_BABY_SHADOW_CHASER,
-		"SuperNoviceExtended", (int) JOB_SUPER_NOVICE_E,
-		"SuperBabyExtended", (int) JOB_SUPER_BABY_E,
+		"SuperNoviceExpanded", (int) JOB_SUPER_NOVICE_E,
+		"SuperBabyExpanded", (int) JOB_SUPER_BABY_E,
 		"Kagerou", (int) JOB_KAGEROU,
 		"Oboro", (int) JOB_OBORO,
 		"Rebellion", (int) JOB_REBELLION,
@@ -268,7 +263,7 @@ void sync_entity_definitions(sol::state &state)
 		"Invalid", (int) JMASK_INVALID,
 		"Novice", (int) JMASK_NOVICE,
 		"Swordman", (int) JMASK_SWORDMAN,
-		"Mage", (int) JMASK_MAGE,
+		"Magician", (int) JMASK_MAGE,
 		"Archer", (int) JMASK_ARCHER,
 		"Acolyte", (int) JMASK_ACOLYTE,
 		"Merchant", (int) JMASK_MERCHANT,
@@ -278,11 +273,8 @@ void sync_entity_definitions(sol::state &state)
 		"Taekwon", (int) JMASK_TAEKWON_BASE,
 		"Gunslinger", (int) JMASK_GUNSLINGER_BASE,
 		"Ninja", (int) JMASK_NINJA_BASE,
-
 		"BaseClass", (int) JMASK_BASE,
-
 		"Wedding", (int) JMASK_WEDDING,
-
 		"2_1_Class", (int) JMASK_2_1,
 		"2_2_Class", (int) JMASK_2_2,
 		"BabyBaseClass", (int) JMASK_BABY_BASE,
@@ -334,7 +326,7 @@ void sync_entity_definitions(sol::state &state)
 		//Trans Novice And Trans 1-1 J
 		"HighNovice", (int) JMASK_NOVICE_HIGH,
 		"HighSwordman", (int) JMASK_SWORDMAN_HIGH,
-		"HighMage", (int) JMASK_MAGE_HIGH,
+		"HighMagician", (int) JMASK_MAGE_HIGH,
 		"HighArcher", (int) JMASK_ARCHER_HIGH,
 		"HighAcolyte", (int) JMASK_ACOLYTE_HIGH,
 		"HighMerchant", (int) JMASK_MERCHANT_HIGH,
@@ -435,10 +427,10 @@ void sync_entity_definitions(sol::state &state)
 		"SoulLinker", (int) JMASK_SOUL_LINKER,
 
 		"SuperNovice", (int) JMASK_SUPER_NOVICE,
-		"SuperNoviceExtended", (int) JMASK_SUPER_NOVICE_E,
+		"SuperNoviceExpanded", (int) JMASK_SUPER_NOVICE_E,
 
 		"SuperBaby", (int) JMASK_SUPER_BABY,
-		"SuperBabyExtended", (int) JMASK_SUPER_BABY_E,
+		"SuperBabyExpanded", (int) JMASK_SUPER_BABY_E,
 
 		"Gunslinger", (int) JMASK_GUNSLINGER,
 		"Rebellion", (int) JMASK_REBELLION,

@@ -30,12 +30,12 @@
 #include "JobDB.hpp"
 #include "Server/Zone/Zone.hpp"
 
-using namespace Horizon::Zone::Game;
+using namespace Horizon::Zone;
 
 JobDatabase::JobDatabase()
 {
 	_name2id_list.emplace("Novice", JOB_NOVICE);
-	_name2id_list.emplace("Swordman", JOB_SWORDMAN);
+	_name2id_list.emplace("Swordsman", JOB_SWORDMAN);
 	_name2id_list.emplace("Magician", JOB_MAGE);
 	_name2id_list.emplace("Archer", JOB_ARCHER);
 	_name2id_list.emplace("Acolyte", JOB_ACOLYTE);
@@ -133,18 +133,18 @@ JobDatabase::JobDatabase()
 	_name2id_list.emplace("BabyRuneKnight", JOB_BABY_RUNE_KNIGHT);
 	_name2id_list.emplace("BabyWarlock", JOB_BABY_WARLOCK);
 	_name2id_list.emplace("BabyRanger", JOB_BABY_RANGER);
-	_name2id_list.emplace("BabyArch_Bishop", JOB_BABY_ARCH_BISHOP);
+	_name2id_list.emplace("BabyArchBishop", JOB_BABY_ARCH_BISHOP);
 	_name2id_list.emplace("BabyMechanic", JOB_BABY_MECHANIC);
-	_name2id_list.emplace("BabyGuillotine_Cross", JOB_BABY_GUILLOTINE_CROSS);
-	_name2id_list.emplace("BabyRoyal_Guard", JOB_BABY_ROYAL_GUARD);
+	_name2id_list.emplace("BabyGuillotineCross", JOB_BABY_GUILLOTINE_CROSS);
+	_name2id_list.emplace("BabyRoyalGuard", JOB_BABY_ROYAL_GUARD);
 	_name2id_list.emplace("BabySorcerer", JOB_BABY_SORCERER);
 	_name2id_list.emplace("BabyMinstrel", JOB_BABY_MINSTREL);
 	_name2id_list.emplace("BabyWanderer", JOB_BABY_WANDERER);
 	_name2id_list.emplace("BabySura", JOB_BABY_SURA);
 	_name2id_list.emplace("BabyGenetic", JOB_BABY_GENETIC);
-	_name2id_list.emplace("BabyShadow_Chaser", JOB_BABY_SHADOW_CHASER);
-	_name2id_list.emplace("SuperNoviceExtended", JOB_SUPER_NOVICE_E);
-	_name2id_list.emplace("SuperBabyExtended", JOB_SUPER_BABY_E);
+	_name2id_list.emplace("BabyShadowChaser", JOB_BABY_SHADOW_CHASER);
+	_name2id_list.emplace("ExpandedSuperNovice", JOB_SUPER_NOVICE_E);
+	_name2id_list.emplace("ExpandedSuperBaby", JOB_SUPER_BABY_E);
 	_name2id_list.emplace("Kagerou", JOB_KAGEROU);
 	_name2id_list.emplace("Oboro", JOB_OBORO);
 	_name2id_list.emplace("Rebellion", JOB_REBELLION);
@@ -167,16 +167,16 @@ bool JobDatabase::load()
 
 	int total_entries = 0;
 	std::string tmp_string;
-	std::string file_path = ZoneServer->get_zone_config().get_database_path() + "job_db.lua";
+	std::string file_path = sZone->zone_config().get_static_db_path().string() + "job_db.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {
 		lua.script_file(file_path);
 		sol::table job_tbl = lua.get<sol::table>("job_db");
 		total_entries = load_job(job_tbl);
-		CoreLog(info) <<"Loaded {} entries from '{}'", total_entries, file_path);
+		HLog(info) << "Loaded " << total_entries << " entries from '" << file_path << "'";
 	} catch(const std::exception &e) {
-		CoreLog(error) <<"JobDB::load: {}.", e.what());
+		HLog(error) << "JobDB::load: " << e.what();
 		return false;
 	}
 
@@ -206,7 +206,7 @@ int JobDatabase::load_job(sol::table &job_tbls, std::string name)
 			if (load_job_internal(maybe_job.value(), data, name) == true)
 				_job_db.insert(jc, std::make_shared<job_db_data>(data));
 		} else {
-			CoreLog(warn) <<"JobDB::load_job: Job named '{}' was not found.", name);
+			HLog(warning) << "JobDB::load_job: Job named '" << name << "' was not found.";
 		}
 	}
 
@@ -219,14 +219,14 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 
 	t_str = job_tbl.get_or("BaseExpGroup", std::string(""));
 	if (t_str.empty()) {
-		CoreLog(warn) <<"JobDB::load_job_internal: Invalid or non-existant BaseExpGroup for job '{}', skipping...", job_name);
+		HLog(warning) << "JobDB::load_job_internal: Invalid or non-existant BaseExpGroup for job '" << job_name << "', skipping...";
 		return false;
 	}
 	data.base_exp_group = t_str;
 
 	t_str = job_tbl.get_or("JobExpGroup", std::string(""));
 	if (t_str.empty()) {
-		CoreLog(warn) <<"JobDB::load_job_internal: Invalid or non-existant JobExpGroup for job '{}', skipping...", job_name);
+		HLog(warning) << "JobDB::load_job_internal: Invalid or non-existant JobExpGroup for job '" << job_name << "', skipping...";
 		return false;
 	}
 	data.job_exp_group = t_str;
@@ -242,7 +242,7 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 				std::string w_name = key.as<std::string>();
 
 				if (value.get_type() != sol::type::number) {
-					CoreLog(warn) <<"JobDB::load_job_internal: Invalid entry in BaseASPD setting weapon {} for job '{}'.", w_name, job_name);
+					HLog(warning) << "JobDB::load_job_internal: Invalid entry in BaseASPD setting weapon " << w_name << " for job '" << job_name << "'.";
 					return;
 				}
 
@@ -303,13 +303,13 @@ bool JobDatabase::load_job_internal(sol::table &job_tbl, job_db_data &data, std:
 		job_class_type jc = get_job_class_by_name(t_str);
 
 		if (jc == JOB_INVALID) {
-			CoreLog(warn) <<"JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
+			HLog(warning) << "JobDB::load_job_internal:1: Unable to inherit from non-existent job '" << t_str << "' for '" << job_name << "', make sure the job is read before being inherited. Skipping...";
 			return false;
 		}
 
 		auto jobi = _job_db.at(jc);
 		if (!jobi) {
-			CoreLog(warn) <<"JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
+			HLog(warning) << "JobDB::load_job_internal:2: Unable to inherit from non-existent job '" << t_str << "' for '" << job_name << "', make sure the job is read before being inherited. Skipping...";
 			return false;
 		}
 
@@ -337,12 +337,12 @@ bool JobDatabase::load_hp_sp_table(sol::table &job_tbl, job_db_data &data, std::
 	if (!t_str.empty()) {
 		job_class_type jc = get_job_class_by_name(t_str);
 		if (jc == JOB_INVALID) {
-			CoreLog(warn) <<"JobDB::load_job_internal: Unable to inherit from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", t_str, job_name);
+			HLog(warning) <<"JobDB::load_hp_sp_table:1: Unable to inherit from non-existent job '" << t_str << "' for '" << job_name << "', make sure the job is read before being inherited. Skipping...";
 			return false;
 		}
 		auto jobi = _job_db.at(jc);
 		if (!jobi) {
-			CoreLog(warn) <<"JobDB::load_hp_sp_table: Unable to inherit {} from non-existent job '{}' for '{}', make sure the job is read before being inherited. Skipping...", table_name, t_str, job_name);
+			HLog(warning) <<"JobDB::load_hp_sp_table:2: Unable to inherit " << table_name << " from non-existent job '" << t_str << "' for '" << job_name << "', make sure the job is read before being inherited. Skipping...";
 			return false;
 		}
 		std::shared_ptr<const job_db_data> inherited_data = jobi;
@@ -355,13 +355,13 @@ bool JobDatabase::load_hp_sp_table(sol::table &job_tbl, job_db_data &data, std::
 	sol::optional<sol::table> tbl = job_tbl.get<sol::optional<sol::table>>(table_name);
 
 	if (!tbl) {
-		CoreLog(warn) <<"JobDB::load_hp_sp_table: Job '{}' does not have a {}, skipping...", job_name, table_name);
+		HLog(warning) << "JobDB::load_hp_sp_table: Job '" << job_name << "' does not have a " << table_name << ", skipping...";
 		return false;
 	}
 
 	tbl.value().for_each([&data, &job_name, &table_name](sol::object const &key, sol::object const &val) {
 		if (key.get_type() != sol::type::number) {
-			CoreLog(warn) <<"JobDB::load_hp_sp_table: Invalid index {} for entry {} in job '{}', skipping...", key.as<int>(), job_name, table_name);
+			HLog(warning) << "JobDB::load_hp_sp_table: Invalid index " << key.as<int>() << " for entry " << job_name << " in job '" << table_name << "', skipping...";
 			return;
 		}
 

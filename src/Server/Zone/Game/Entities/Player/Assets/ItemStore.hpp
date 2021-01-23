@@ -41,12 +41,10 @@ namespace Horizon
 {
 namespace Zone
 {
-namespace Game
+namespace Entities
 {
-	namespace Entities
-	{
-		class Player;
-	}
+	class Player;
+}
 namespace Assets
 {
 enum itemstore_addition_result_type
@@ -106,7 +104,6 @@ protected:
 private:
 	std::weak_ptr<Entities::Player> _player;
 };
-}
 }
 }
 }

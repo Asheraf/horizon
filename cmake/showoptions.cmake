@@ -82,5 +82,7 @@ if (WITHOUT_SERVERS)
 	message(" *** WITHOUT_SERVERS - WARNING! ***")
 	message(" *** Servers will not be built! This option is for test suites only!")
 else()
+
+message("* Client Information : ${CLIENT_TYPE} ${PACKET_VERSION}")
 endif()
 message("")

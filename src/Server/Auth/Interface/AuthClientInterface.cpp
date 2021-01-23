@@ -32,8 +32,7 @@
 #include "Server/Common/SQL/SessionData.hpp"
 
 #include "Server/Auth/Auth.hpp"
-#include "Server/Auth/Packets/AC_ACCEPT_LOGIN.hpp"
-#include "Server/Auth/Packets/AC_REFUSE_LOGIN.hpp"
+#include "Server/Auth/Packets/TransmittedPackets.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
 

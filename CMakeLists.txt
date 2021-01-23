@@ -49,6 +49,13 @@ message(STATUS "Project ${PROJECT_NAME} initiated configuring in ${CMAKE_BUILD_T
 #################################
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache) # Less useful to do it for linking, see edit2
+    message(STATUS "CCache was found.")
+endif(CCACHE_FOUND)
+
 #################################
 # Find revision ID and hash of the sourcetree
 #################################
@@ -104,10 +111,8 @@ check_cxx_source_compiles("
 # Boost Library
 #################################
 set(BOOST_REQUIRED_VERSION 1.66)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_SHARED_LIBS ON)
 
-set(BOOST_COMPONENTS system filesystem thread locale log log_setup)
+set(BOOST_COMPONENTS locale filesystem log log_setup)
 
 if (WITH_TESTS)
 		set(BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework)
@@ -167,6 +172,7 @@ find_package(sqlpp11-mysql REQUIRED)
 if (WITH_TESTS AND NOT WITHOUT_SERVERS)
 	find_package(Argon2 REQUIRED)
 endif()
+
 #################
 # Horizon Project Source
 #################

@@ -31,8 +31,6 @@
 
 #include "Server/Auth/Interface/AuthClientInterface.hpp"
 #include "Server/Auth/Socket/AuthSocket.hpp"
-#include "Server/Common/SQL/GameAccount.hpp"
-#include "Server/Common/SQL/SessionData.hpp"
 #include "Server/Auth/Auth.hpp"
 
 using namespace Horizon::Auth;
@@ -65,13 +63,11 @@ void AuthSession::transmit_buffer(ByteBuffer _buffer, std::size_t size)
 
 void AuthSession::update(uint32_t /*diff*/)
 {
-	std::shared_ptr<PacketBuffer> buf;
-
 	std::shared_ptr<ByteBuffer> read_buf;
 	while ((read_buf = get_socket()->_buffer_recv_queue.try_pop())) {
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, read_buf->get_read_pointer(), sizeof(uint16_t));
-		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		HPacketTablePairType p = _pkt_tbl->get_hpacket_info(packet_id);
 		
 		HLog(debug) << "Handling packet 0x" << std::hex << packet_id << " - 0x" << p.first << std::endl;
 		

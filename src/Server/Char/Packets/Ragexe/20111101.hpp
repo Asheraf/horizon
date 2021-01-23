@@ -28,7 +28,6 @@
 #ifndef HORIZON_CHAR_CLIENT_PACKET_LENGTH_TABLE_20111101
 #define HORIZON_CHAR_CLIENT_PACKET_LENGTH_TABLE_20111101
 
-#include "Server/Common/Base/NetworkPacket.hpp"
 #include "Core/Multithreading/LockedLookupTable.hpp"
 
 #include "Default.hpp"
@@ -52,13 +51,15 @@ public:
 	ClientPacketLengthTable(std::shared_ptr<CharSession> s)
 	: PacketLengthTable(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
-		ADD_PKT(0x08fd, 6, CH_ACK_CHANGE_CHARACTERNAME);
-		ADD_PKT(0x08fc, 30, CH_REQ_CHANGE_CHARACTERNAME);
-		ADD_PKT(0x08d4, 8, CH_REQ_CHANGE_CHARACTER_SLOT);
-		ADD_PKT(0x006d, 146, HC_ACCEPT_MAKECHAR);
-		ADD_PKT(0x08e3, 146, HC_UPDATE_CHARINFO);
-#undef ADD_PKT
+#define ADD_HPKT(i, j, k) _hpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+#define ADD_TPKT(i, j, k) _tpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+		ADD_HPKT(0x08fd, 6, CH_ACK_CHANGE_CHARACTERNAME);
+		ADD_HPKT(0x08fc, 30, CH_REQ_CHANGE_CHARACTERNAME);
+		ADD_HPKT(0x08d4, 8, CH_REQ_CHANGE_CHARACTER_SLOT);
+		ADD_TPKT(0x006d, 146, HC_ACCEPT_MAKECHAR);
+		ADD_TPKT(0x08e3, 146, HC_UPDATE_CHARINFO);
+#undef ADD_TPKT
+#undef ADD_HPKT
 	}
 
 	~ClientPacketLengthTable() { }

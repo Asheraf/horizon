@@ -29,8 +29,8 @@
 
 #include "AuthSocket.hpp"
 
-#include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Auth/Session/AuthSession.hpp"
+#include "Server/Auth/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Auth/Auth.hpp"
 
 using namespace Horizon::Auth;
@@ -114,12 +114,11 @@ void AuthSocket::read_handler()
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
 		
-		PacketTablePairType p = get_session()->pkt_tbl()->get_packet_info(packet_id);
+		HPacketTablePairType p = get_session()->pkt_tbl()->get_hpacket_info(packet_id);
 		
 		int16_t packet_length = p.first;
 		
 		HLog(debug) << "Received packet 0x" << packet_id << " of length " << packet_length << " from client.";
-		HLog(debug) << "Data:" << get_read_buffer().to_string();
 		
 		if (packet_length == -1) {
 			memcpy(&packet_length, get_read_buffer().get_read_pointer() + 2, sizeof(int16_t));

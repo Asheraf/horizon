@@ -26,8 +26,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this library.  If not, see <http://www.gnu.org/licenses/>.
 **************************************************/
-#ifndef HORIZON_AUTHSESSION_HPP
-#define HORIZON_AUTHSESSION_HPP
+#ifndef HORIZON_AUTH_AUTHSESSION_HPP
+#define HORIZON_AUTH_AUTHSESSION_HPP
 
 #include "Server/Common/Configuration/Horizon.hpp"
 #include "Core/Networking/Session.hpp"

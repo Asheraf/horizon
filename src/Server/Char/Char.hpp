@@ -34,6 +34,7 @@
 #include "Server/Common/Server.hpp"
 
 #include <string>
+#include <boost/asio/deadline_timer.hpp>
 
 namespace Horizon
 {
@@ -112,18 +113,21 @@ public:
 		return &instance;
 	}
 
-	bool ReadConfig();
+	bool read_config();
 	void initialize_cli_commands();
 
 	void initialize_core();
 
-	character_server_configuration &get_char_config() { return _char_server_config; }
+	character_server_configuration &config() { return _char_server_config; }
 
 	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
 
+	void update(uint64_t diff);
+	
 private:
 	character_server_configuration _char_server_config;
 	TaskScheduler _task_scheduler;
+	boost::asio::deadline_timer _update_timer;
 };
 }
 }

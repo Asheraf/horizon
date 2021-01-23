@@ -32,7 +32,7 @@
 
 #include "Core/Multithreading/LockedLookupTable.hpp"
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
-#include "MapThreadContainer.hpp"
+#include "MapContainerThread.hpp"
 
 #include <vector>
 
@@ -44,8 +44,6 @@ enum mapmgr_task_schedule_group
 namespace Horizon
 {
 namespace Zone
-{
-namespace Game
 {
 
 namespace Entities
@@ -74,8 +72,10 @@ public:
 	std::shared_ptr<Map> add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p);
 	bool remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p);
 
-	std::shared_ptr<Map> get_map(std::string map_name) const
+	std::shared_ptr<Map> get_map(std::string map_name)
 	{
+		std::lock_guard<std::mutex> lock(_map_lookup_mtx);
+		
 		for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
 			if (*i == nullptr)
 				return std::shared_ptr<Map>();
@@ -89,13 +89,13 @@ public:
 	TaskScheduler &getScheduler() { return _scheduler; }
 
 private:
+	std::mutex _map_lookup_mtx;
 	TaskScheduler _scheduler;
-	std::vector<std::shared_ptr<MapThreadContainer>> _map_containers;
+	std::vector<std::shared_ptr<MapContainerThread>> _map_containers;
 };
 }
 }
-}
 
-#define MapMgr Horizon::Zone::Game::MapManager::getInstance()
+#define MapMgr Horizon::Zone::MapManager::getInstance()
 
 #endif /* HORIZON_GAME_MAP_MAPMGR_HPP */

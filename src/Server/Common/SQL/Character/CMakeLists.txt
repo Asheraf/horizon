@@ -29,7 +29,7 @@
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(CHARACTER_MODEL_SOURCES
+set(CHARACTER_MODEL_HEADERS
 	${DIR}/Character.hpp
 	${DIR}/Status.hpp
 	${DIR}/Inventory.hpp

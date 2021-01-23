@@ -30,7 +30,7 @@
 #include "Skill.hpp"
 #include "Common/Definitions/EntityDefinitions.hpp"
 
-using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Zone::Entities;
 
 Skill::Skill(uint32_t guid, std::shared_ptr<Map> map, MapCoords mcoords)
 : Entity(guid, ENTITY_SKILL, map, mcoords)

@@ -27,9 +27,21 @@
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ###################################################
 
-CollectSourceFiles(
-	${CMAKE_CURRENT_SOURCE_DIR}
-	PRIVATE_SOURCES
+add_subdirectory(Game)
+add_subdirectory(Packets)
+
+set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PRIVATE_SOURCES
+	${DIR}/Zone.hpp
+	${DIR}/Zone.cpp
+	${DIR}/Interface/ZoneClientInterface.cpp
+	${DIR}/Interface/ZoneClientInterface.hpp
+	${DIR}/Session/ZoneSession.cpp
+	${DIR}/Session/ZoneSession.hpp
+	${DIR}/Socket/ZoneSocket.cpp
+	${DIR}/Socket/ZoneSocket.hpp
+	${DIR}/SocketMgr/ClientSocketMgr.cpp
+	${DIR}/SocketMgr/ClientSocketMgr.hpp
 )
 
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
@@ -37,8 +49,20 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(zone
 	${PRIVATE_SOURCES}
 	${COMMON_SOURCES}
+	${COMMON_HEADERS}
 	${CORE_SOURCES}
-	${UTILITY_SOURCES})
+	${UTILITY_SOURCES}
+	${PACKET_SOURCES}
+	${PACKET_HEADERS}
+	${GAME_SOURCES}
+)
+
+target_precompile_headers(zone
+	PRIVATE
+		<string>
+		<vector>
+		<memory>
+)
 
 target_link_libraries(zone
 	PUBLIC
@@ -46,15 +70,14 @@ target_link_libraries(zone
 		networking
 		-lpthread
 		mcache
-		${CRYPTOPP_LIBRARIES}
-		${CONCPP_LIB}
 		${Readline_LIBRARY}
 		${LUA_LIBRARIES}
-		${CoreLog_LIBRARIES}
+		${SQLPP11_MYSQL_LIBRARIES}
+		${MYSQL_LIBRARY}
 )
 
 set(INCLUDE_DIRS
-		${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/src
 )
 
 CollectIncludeDirectories(
@@ -65,11 +88,12 @@ CollectIncludeDirectories(
 target_include_directories(zone
 	PUBLIC
 		${PUBLIC_INCLUDES}
-		${CRYPTOPP_INCLUDE_DIR}
-		${CONCPP_INCLUDE_DIR}
 		${Readline_INCLUDE_DIR}
 		${LUA_INCLUDE_DIR}
 		${SOL2_INCLUDE_DIR}
+		${SQLPP11_INCLUDE_DIR}
+		${SQLPP11_MYSQL_INCLUDE_DIR}
+		${MYSQL_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

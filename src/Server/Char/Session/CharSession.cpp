@@ -66,7 +66,7 @@ void CharSession::update(uint32_t /*diff*/)
 	while ((read_buf = get_socket()->_buffer_recv_queue.try_pop())) {
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, read_buf->get_read_pointer(), sizeof(uint16_t));
-		PacketTablePairType p = _pkt_tbl->get_packet_info(packet_id);
+		HPacketTablePairType p = _pkt_tbl->get_hpacket_info(packet_id);
 		
 		HLog(debug) << "Handling packet 0x" << std::hex << packet_id << " - 0x" << p.first << std::endl;
 		

@@ -26,8 +26,10 @@
 ###################################################
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CLI_SOURCES
+set(CLI_HEADERS
 	${DIR}/CLICommand.hpp
-	${DIR}/CommandLineInterface.cpp
 	${DIR}/CommandLineInterface.hpp
+	PARENT_SCOPE)
+set(CLI_SOURCES
+	${DIR}/CommandLineInterface.cpp
 	PARENT_SCOPE)

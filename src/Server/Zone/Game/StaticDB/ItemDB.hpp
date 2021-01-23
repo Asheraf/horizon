@@ -42,19 +42,11 @@
 #include <iostream>
 #include <array>
 
-
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
 
 namespace Horizon
 {
 namespace Zone
-{
-namespace Game
 {
 class ItemDatabase
 {
@@ -114,8 +106,7 @@ private:
 };
 }
 }
-}
 
-#define ItemDB Horizon::Zone::Game::ItemDatabase::get_instance()
+#define ItemDB Horizon::Zone::ItemDatabase::get_instance()
 
 #endif /* HORIZON_ZONE_GAME_ITEMDB */

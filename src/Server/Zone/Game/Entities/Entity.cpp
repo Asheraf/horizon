@@ -35,10 +35,10 @@
 #include "Server/Zone/Game/Entities/NPC/NPC.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
-#include "Server/Zone/Game/Status/Status.hpp"
+#include "Server/Zone/Game/Entities/Traits/Status.hpp"
 #include "Server/Zone/Zone.hpp"
 
-using namespace Horizon::Zone::Game;
+using namespace Horizon::Zone;
 
 Entity::Entity(uint32_t guid, entity_type type, std::shared_ptr<Map> map, MapCoords map_coords)
 : _guid(guid), _type(type), _map_coords(map_coords)
@@ -57,32 +57,32 @@ void Entity::initialize()
 
 	_is_initialized = true;
 
-	_status = std::make_shared<Status::Status>(shared_from_this());
+	_status = std::make_shared<Entities::Traits::Status>(shared_from_this());
 
-	if (get_type() == ENTITY_PLAYER)
-		getScheduler().Schedule(Milliseconds(ZoneServer->get_zone_config().get_entity_save_interval()), ENTITY_SCHEDULE_SAVE,
-			[this] (TaskContext context) {
-				sync_with_models();
-				context.Repeat();
-			});
+//	if (get_type() == ENTITY_PLAYER)
+//		getScheduler().Schedule(Milliseconds(sZone->zone_config().get_entity_save_interval()), ENTITY_SCHEDULE_SAVE,
+//			[this] (TaskContext context) {
+//				sync_with_models();
+//				context.Repeat();
+//			});
 }
 
 
 bool Entity::schedule_movement(MapCoords coords)
 {
-	AStar::Vec2i source_coords = { get_map_coords().x(), get_map_coords().y() };
+	AStar::Vec2i source_coords = { map_coords().x(), map_coords().y() };
 	AStar::Vec2i dest_coords = { coords.x(), coords.y() };
 
 	if (_walk_path.size())
 		_walk_path.clear();
 
-	if (!get_map()) {
-		CoreLog(error) <<"Reference to map object has been lost for entity {:p}.", (void *) this);
+	if (!map()) {
+		HLog(error) << "Reference to map object has been lost for entity " << (void *) this << ".";
 		return false;
 	}
 
 	// This method returns vector of coordinates from target to source.
-	auto path = get_map()->get_pathfinder().findPath(source_coords, dest_coords);
+	auto path = map()->get_pathfinder().findPath(source_coords, dest_coords);
 
 	if (path.size() == 0)
 		return false;
@@ -106,10 +106,10 @@ bool Entity::schedule_movement(MapCoords coords)
 
 void Entity::move()
 {
-	MapCoords my_coords = get_map_coords();
+	MapCoords my_coords = map_coords();
 	AStar::Vec2i c = _walk_path.at(0);
 
-	getScheduler().Schedule(Milliseconds(get_status()->get_movement_speed()->get_with_cost(c.move_cost)), ENTITY_SCHEDULE_WALK,
+	getScheduler().Schedule(Milliseconds(status()->get_movement_speed()->get_with_cost(c.move_cost)), ENTITY_SCHEDULE_WALK,
 		[this, c, my_coords] (TaskContext /*movement*/)
 		{
 			if (_instep_movement_stop)
@@ -141,7 +141,7 @@ void Entity::move()
 		});
 }
 
-bool Entity::move_to_pos(uint16_t x, uint16_t y)
+bool Entity::move_to_coordinates(uint16_t x, uint16_t y)
 {
 	if (getScheduler().Count(ENTITY_SCHEDULE_WALK)) {
 		_changed_dest_pos = { x, y };
@@ -162,10 +162,10 @@ void Entity::update(uint64_t /*diff*/)
 
 bool Entity::is_in_range_of(std::shared_ptr<Entity> e, uint8_t range)
 {
-	if (e->get_map()->get_name().compare(get_map()->get_name()))
+	if (e->map()->get_name().compare(map()->get_name()))
 		return false;
 
-	return get_map_coords().is_within_range(e->get_map_coords(), range);
+	return map_coords().is_within_range(e->map_coords(), range);
 }
 
 std::shared_ptr<Entity> Entity::get_nearby_entity(uint32_t guid)
@@ -173,7 +173,7 @@ std::shared_ptr<Entity> Entity::get_nearby_entity(uint32_t guid)
 	GridEntitySearcher searcher(guid);
 	GridReferenceContainerVisitor<GridEntitySearcher, GridReferenceContainer<AllEntityTypes>> search_visitor(searcher);
 
-	get_map()->visit_in_range(get_map_coords(), search_visitor);
+	map()->visit_in_range(map_coords(), search_visitor);
 
 	return searcher.get_result().lock();
 }
@@ -183,5 +183,5 @@ void Entity::notify_nearby_players_of_self(entity_viewport_notification_type not
 	GridEntityExistenceNotifier existence_notify(shared_from_this(), notif_type);
 	GridReferenceContainerVisitor<GridEntityExistenceNotifier, GridReferenceContainer<AllEntityTypes>> entity_visitor(existence_notify);
 
-	get_map()->visit_in_range(get_map_coords(), entity_visitor);
+	map()->visit_in_range(map_coords(), entity_visitor);
 }

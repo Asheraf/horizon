@@ -46,7 +46,7 @@ template
 >
 class GridHolder
 {
-friend class Horizon::Zone::Game::MapManager;
+friend class Horizon::Zone::MapManager;
 public:
 	typedef Grid<ACTIVE_OBJECT, ZONE_OBJECT_TYPES> GridType;
 

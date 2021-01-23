@@ -28,7 +28,7 @@
 ###################################################
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CONFIGURATION_SOURCES
+set(CONFIGURATION_HEADERS
 	${DIR}/ServerConfiguration.hpp
 	${DIR}/Horizon.hpp
 	${DIR}/Client.hpp

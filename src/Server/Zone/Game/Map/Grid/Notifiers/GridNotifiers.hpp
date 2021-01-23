@@ -42,12 +42,12 @@
 #include "Server/Zone/Game/Entities/Creature/Hostile/Monster.hpp"
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifierPredicates.hpp"
 
-#define entity_ns(class) Horizon::Zone::Game::Entities::class
+#define entity_ns(class) Horizon::Zone::Entities::class
 struct GridViewPortUpdater
 {
-	std::weak_ptr<Horizon::Zone::Game::Entity> _entity;
+	std::weak_ptr<Horizon::Zone::Entity> _entity;
 
-	GridViewPortUpdater(std::weak_ptr<Horizon::Zone::Game::Entity> entity) : _entity(entity) { }
+	GridViewPortUpdater(std::weak_ptr<Horizon::Zone::Entity> entity) : _entity(entity) { }
 
 	template <class T>
 	void update(GridRefManager<T> &m);
@@ -67,10 +67,10 @@ struct GridViewPortUpdater
 
 struct GridEntityExistenceNotifier
 {
-	std::weak_ptr<Horizon::Zone::Game::Entity> _entity;
+	std::weak_ptr<Horizon::Zone::Entity> _entity;
 	entity_viewport_notification_type _notif_type;
 
-	GridEntityExistenceNotifier(std::weak_ptr<Horizon::Zone::Game::Entity> entity, entity_viewport_notification_type notif_type)
+	GridEntityExistenceNotifier(std::weak_ptr<Horizon::Zone::Entity> entity, entity_viewport_notification_type notif_type)
 	: _entity(entity), _notif_type(notif_type)
 	{ }
 
@@ -85,14 +85,14 @@ struct GridEntityExistenceNotifier
 
 struct GridEntitySearcher
 {
-	std::weak_ptr<Horizon::Zone::Game::Entity> _result;
+	std::weak_ptr<Horizon::Zone::Entity> _result;
 	GUIDCheckPredicate _predicate;
 
 	GridEntitySearcher(uint32_t guid)
 	: _predicate(guid)
 	{ }
 
-	std::weak_ptr<Horizon::Zone::Game::Entity> get_result() { return _result; }
+	std::weak_ptr<Horizon::Zone::Entity> get_result() { return _result; }
 
 	template <class T>
 	void search(GridRefManager<T> &m);
@@ -112,10 +112,10 @@ struct GridEntitySearcher
 
 struct GridNPCTrigger
 {
-	std::weak_ptr<Horizon::Zone::Game::Entity> _source;
+	std::weak_ptr<Horizon::Zone::Entity> _source;
 	RangeCheckPredicate _predicate;
 
-	GridNPCTrigger(std::weak_ptr<Horizon::Zone::Game::Entity> entity)
+	GridNPCTrigger(std::weak_ptr<Horizon::Zone::Entity> entity)
 	: _source(entity), _predicate(entity)
 	{ }
 
@@ -131,11 +131,11 @@ struct GridNPCTrigger
 template <typename ZC_PACKET_T>
 struct GridPlayerNotifier
 {
-	std::weak_ptr<Horizon::Zone::Game::Entity> _entity;
+	std::weak_ptr<Horizon::Zone::Entity> _entity;
 	ZC_PACKET_T _pkt;
 	player_notifier_type _type;
 
-	GridPlayerNotifier(ZC_PACKET_T &pkt, std::weak_ptr<Horizon::Zone::Game::Entity> entity, player_notifier_type type = GRID_NOTIFY_AREA)
+	GridPlayerNotifier(ZC_PACKET_T &pkt, std::weak_ptr<Horizon::Zone::Entity> entity, player_notifier_type type = GRID_NOTIFY_AREA)
 	: _entity(entity), _pkt(pkt), _type(type)
 	{ }
 

@@ -29,13 +29,13 @@
 
 #include "Creature.hpp"
 
-Horizon::Zone::Game::Entities::Creature::Creature(uint32_t guid, entity_type type, std::shared_ptr<Map> map, MapCoords mcoords)
-: Horizon::Zone::Game::Entity(guid, type, map, mcoords)
+Horizon::Zone::Entities::Creature::Creature(uint32_t guid, entity_type type, std::shared_ptr<Map> map, MapCoords mcoords)
+: Horizon::Zone::Entity(guid, type, map, mcoords)
 {
 	//
 }
 
-Horizon::Zone::Game::Entities::Creature::~Creature()
+Horizon::Zone::Entities::Creature::~Creature()
 {
 	//
 }

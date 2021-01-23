@@ -67,7 +67,7 @@ public:
 		try {
 			_acceptor = std::make_unique<AsyncAcceptor>(io_service, listen_ip, port);
 		} catch (boost::system::system_error const &error) {
-//			HLog(error) << "Exception caught in AcceptSocketMgr::Start (" << listen_ip.c_str() << ", " << port ") " << error.what();
+			HLog(error) << "Exception caught in AcceptSocketMgr::Start (" << listen_ip.c_str() << ", " << port << ") " << error.what();
 			return false;
 		}
 
@@ -79,7 +79,7 @@ public:
 		_acceptor->set_socket_factory(std::bind(&BaseSocketMgr::get_new_socket, this));
 		_acceptor->async_accept_with_callback(std::bind(&AcceptSocketMgr<SocketType>::on_socket_open, this, std::placeholders::_1, std::placeholders::_2));
 
-//		HLog(info) << "Networking initialized, listening on " << listen_ip << "@" port << "Maximum Threads: " << threads;
+		HLog(info) << "Networking initialized, listening on " << listen_ip << "@" << port << "Maximum Threads: " << threads;
 
 		return true;
 	}
@@ -139,16 +139,14 @@ public:
 		while ((sock_buf = _socket_management_queue.try_pop())) {
 			bool add = (*sock_buf).first;
 			std::shared_ptr<SocketType> socket = (*sock_buf).second;
-
 			auto socket_iter = _socket_map.find(socket->get_socket_id());
 
-			if (socket_iter != _socket_map.end())
-                continue; // Socket already in socket map.
-
-			if (add)
+			if (socket_iter != _socket_map.end()) {
+				if (!add)
+					_socket_map.erase(socket_iter);
+			} else if (add) {
 				_socket_map.emplace(socket->get_socket_id(), socket);
-            else
-                _socket_map.erase(socket_iter);
+			}
 		}
 
 		for (auto sock : _socket_map) {

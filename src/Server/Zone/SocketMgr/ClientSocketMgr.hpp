@@ -61,18 +61,10 @@ public:
 		if (!BaseSocketMgr::start(io_service, listen_ip, port, threads))
 			return false;
 
-		client_type type = ZoneServer->general_conf().get_client_type();
-		uint32_t packet_version = ZoneServer->general_conf().get_packet_version();
-
-		/**
-		 * Load base packet versions before overriding them with the configured version.
-		 */
-
 		return true;
 	}
 };
 }
 }
 #define ClientSocktMgr Horizon::Zone::ClientSocketMgr::getInstance()
-#define GET_ZONE_PACKETLEN(id) ClientSocktMgr->get_packet_length(id)
 #endif /* HORIZON_ZONE_CLIENTSOCKETMGR_HPP */

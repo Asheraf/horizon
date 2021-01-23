@@ -30,7 +30,6 @@
 #ifndef HORIZON_LIBRARIES_MAPCACHE_HPP
 #define HORIZON_LIBRARIES_MAPCACHE_HPP
 
-#include "Server/Common/Configuration/Client.hpp"
 #include "Libraries/GRF/GRF.hpp"
 
 #include <cstdint>
@@ -62,7 +61,7 @@ private:
 
 struct map_info
 {
-	char name[MAP_NAME_LENGTH];
+	char name[12];
 	int16_t total_x{0};
 	int16_t total_y{0};
 	uint32_t length{0};

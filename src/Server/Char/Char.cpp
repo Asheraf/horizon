@@ -45,7 +45,8 @@ using namespace std;
 /**
  * Char Constructor
  */
-CharServer::CharServer() : Server()
+CharServer::CharServer()
+: Server(), _update_timer(_io_service)
 {
 	//
 }
@@ -65,7 +66,7 @@ CharServer::~CharServer()
  * Read /config/char-server.yaml
  * @return true on success false on failure.
  */
-bool CharServer::ReadConfig()
+bool CharServer::read_config()
 {
 	sol::state lua;
 	std::string file_path = general_conf().get_config_file_path().string();
@@ -81,34 +82,34 @@ bool CharServer::ReadConfig()
 	sol::table tbl = lua["horizon_config"];
 
 	sol::table chtbl = tbl.get<sol::table>("new_character");
-	get_char_config().set_start_map(chtbl.get_or("start_map", std::string("new_1-1")));
-	get_char_config().set_start_x(chtbl.get_or("start_x", 53));
-	get_char_config().set_start_y(chtbl.get_or("start_y", 111));
-	get_char_config().set_start_zeny(chtbl.get_or("start_zeny", 0));
+	config().set_start_map(chtbl.get_or("start_map", std::string("new_1-1")));
+	config().set_start_x(chtbl.get_or("start_x", 53));
+	config().set_start_y(chtbl.get_or("start_y", 111));
+	config().set_start_zeny(chtbl.get_or("start_zeny", 0));
 
 	sol::optional<sol::table> maybe_chitbl = chtbl.get<sol::optional<sol::table>>("start_items");
 
 	if (maybe_chitbl) {
 		sol::table chitbl = maybe_chitbl.value();
 		chitbl.for_each([this](sol::object const &key, sol::object const &value) {
-			get_char_config().add_start_item(std::make_pair(key.as<int>(), value.as<int>()));
+			config().add_start_item(std::make_pair(key.as<int>(), value.as<int>()));
 		});
 		if (chitbl.size() < 1) {
-			get_char_config().add_start_item(std::make_pair(1201, 1));
-			get_char_config().add_start_item(std::make_pair(2301, 1));
+			config().add_start_item(std::make_pair(1201, 1));
+			config().add_start_item(std::make_pair(2301, 1));
 		}
 	}
 
-	get_char_config().set_character_deletion_time(tbl.get_or("character_deletion_time", 86400));
-	get_char_config().set_char_hard_delete(tbl.get_or("character_hard_delete", false));
+	config().set_character_deletion_time(tbl.get_or("character_deletion_time", 86400));
+	config().set_char_hard_delete(tbl.get_or("character_hard_delete", false));
 
 	sol::table zone_tbl = tbl.get<sol::table>("zone_server");
-	get_char_config().set_zone_server_ip(zone_tbl.get_or("ip_address", std::string("127.0.0.1")));
-	get_char_config().set_zone_server_port(zone_tbl.get_or("port", 5121));
+	config().set_zone_server_ip(zone_tbl.get_or("ip_address", std::string("127.0.0.1")));
+	config().set_zone_server_port(zone_tbl.get_or("port", 5121));
 
-	get_char_config().set_pincode_expiry(tbl.get<uint32_t>("pincode_expiry"));
+	config().set_pincode_expiry(tbl.get<uint32_t>("pincode_expiry"));
 	
-	get_char_config().set_pincode_retry(tbl.get<uint8_t>("pincode_max_retry"));
+	config().set_pincode_retry(tbl.get<uint8_t>("pincode_max_retry"));
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -141,6 +142,16 @@ void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 	}
 }
 
+void CharServer::update(uint64_t diff)
+{
+	process_cli_commands();
+	_task_scheduler.Update();
+	ClientSocktMgr->update_socket_sessions(MAX_CORE_UPDATE_INTERVAL);
+	
+	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
+	_update_timer.async_wait(std::bind(&CharServer::update, this, MAX_CORE_UPDATE_INTERVAL));
+}
+
 void CharServer::initialize_core()
 {
 	/* Core Signal Handler  */
@@ -155,13 +166,14 @@ void CharServer::initialize_core()
 
 	Server::initialize_core();
 
-	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
-		process_cli_commands();
-		_task_scheduler.Update();
-		ClientSocktMgr->update_socket_sessions(MAX_CORE_UPDATE_INTERVAL);
-		std::this_thread::sleep_for(std::chrono::microseconds(MAX_CORE_UPDATE_INTERVAL));
-	}
+//	while (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
+//		std::this_thread::sleep_for(std::chrono::microseconds(MAX_CORE_UPDATE_INTERVAL));
+//	}
 
+	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
+	_update_timer.async_wait(std::bind(&CharServer::update, this, MAX_CORE_UPDATE_INTERVAL));
+	
+	get_io_service().run();
 	/**
 	 * Cancel all pending tasks.
 	 */
@@ -194,7 +206,7 @@ int main(int argc, const char * argv[])
 		sChar->parse_exec_args(argv, argc);
 
 	/* Read Char Configuration */
-	if (!sChar->ReadConfig())
+	if (!sChar->read_config())
 		exit(SIGTERM); // Stop process if the file can't be read.
 
 	/* Initialize the Common Core */

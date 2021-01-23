@@ -28,7 +28,6 @@
 #ifndef HORIZON_CHAR_CLIENT_PACKET_LENGTH_TABLE_20110308
 #define HORIZON_CHAR_CLIENT_PACKET_LENGTH_TABLE_20110308
 
-#include "Server/Common/Base/NetworkPacket.hpp"
 #include "Core/Multithreading/LockedLookupTable.hpp"
 
 #include "Default.hpp"
@@ -52,17 +51,19 @@ public:
 	ClientPacketLengthTable(std::shared_ptr<CharSession> s)
 	: PacketLengthTable(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
-		ADD_PKT(0x08c5, 6, CH_AVAILABLE_SECOND_PASSWD);
-		ADD_PKT(0x08bc, 10, CH_DELETE_SECOND_PASSWD);
-		ADD_PKT(0x08be, 14, CH_EDIT_SECOND_PASSWD);
-		ADD_PKT(0x08ba, 10, CH_MAKE_SECOND_PASSWD);
-		ADD_PKT(0x08c3, 10, CH_NOT_AVAILABLE_SECOND_PASSWD);
-		ADD_PKT(0x08b8, 10, CH_SECOND_PASSWD_ACK);
-		ADD_PKT(0x08bf, 8, HC_EDIT_SECOND_PASSWD);
-		ADD_PKT(0x08bb, 8, HC_MAKE_SECOND_PASSWD);
-		ADD_PKT(0x08c4, 8, HC_NOT_AVAILABLE_SECOND_PASSWD);
-#undef ADD_PKT
+#define ADD_HPKT(i, j, k) _hpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+#define ADD_TPKT(i, j, k) _tpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+		ADD_HPKT(0x08c5, 6, CH_AVAILABLE_SECOND_PASSWD);
+		ADD_HPKT(0x08bc, 10, CH_DELETE_SECOND_PASSWD);
+		ADD_HPKT(0x08be, 14, CH_EDIT_SECOND_PASSWD);
+		ADD_HPKT(0x08ba, 10, CH_MAKE_SECOND_PASSWD);
+		ADD_HPKT(0x08c3, 10, CH_NOT_AVAILABLE_SECOND_PASSWD);
+		ADD_HPKT(0x08b8, 10, CH_SECOND_PASSWD_ACK);
+		ADD_TPKT(0x08bf, 8, HC_EDIT_SECOND_PASSWD);
+		ADD_TPKT(0x08bb, 8, HC_MAKE_SECOND_PASSWD);
+		ADD_TPKT(0x08c4, 8, HC_NOT_AVAILABLE_SECOND_PASSWD);
+#undef ADD_TPKT
+#undef ADD_HPKT
 	}
 
 	~ClientPacketLengthTable() { }

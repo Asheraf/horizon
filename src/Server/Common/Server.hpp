@@ -123,7 +123,6 @@ protected:
 	// CLI command holder to be thread safe
 	ThreadSafeQueue<CLICommand> _cli_cmd_queue;
 	std::thread _cli_thread;
-	boost::thread_group _global_thread_group;
 	std::atomic<shutdown_stages> _shutdown_stage;
 	std::atomic<int> _shutdown_signal;
 	std::unordered_map<std::string, std::function<bool(void)>> _cli_function_map;

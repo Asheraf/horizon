@@ -38,15 +38,14 @@
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/Game/Map/Coordinates.hpp"
 #include "Server/Zone/Game/StaticDB/ItemDB.hpp"
-#include "Server/Zone/Game/Status/Status.hpp"
-#include "Server/Zone/Game/Status/Attributes.hpp"
-#include "Server/Zone/Game/Status/Appearance.hpp"
-#include "Server/Zone/Packets/PacketHandler.hpp"
+#include "Server/Zone/Game/Entities/Traits/Status.hpp"
+#include "Server/Zone/Game/Entities/Traits/Attributes.hpp"
+#include "Server/Zone/Game/Entities/Traits/Appearance.hpp"
 
-using namespace Horizon::Zone::Game;
-using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Zone;
+using namespace Horizon::Zone::Entities;
 
-ScriptManager::ScriptManager(std::weak_ptr<MapThreadContainer> container)
+ScriptManager::ScriptManager(std::weak_ptr<MapContainerThread> container)
 : _container(container)
 {
 
@@ -103,7 +102,7 @@ void ScriptManager::initialize_state(sol::state &st)
 			std::shared_ptr<Map> map = MapMgr->get_map(name);
 
 			if (map == nullptr
-				|| ((void *) map->get_map_container().get() != ((_container.lock()).get())))
+				|| ((void *) map->container().get() != ((_container.lock()).get())))
 				return std::shared_ptr<Map>();
 
 			return map;
@@ -117,7 +116,7 @@ void ScriptManager::initialize_state(sol::state &st)
 			std::shared_ptr<Map> map = MapMgr->get_map(map_name);
 
 			if (map == nullptr
-				|| ((void *) map->get_map_container().get() != ((_container.lock()).get())))
+				|| ((void *) map->container().get() != ((_container.lock()).get())))
 				return std::shared_ptr<NPC>();
 
 			std::shared_ptr<NPC> npc = std::make_shared<NPC>(name, map, x, y, job_id, dir, script_file);
@@ -131,7 +130,7 @@ void ScriptManager::initialize_state(sol::state &st)
 			std::shared_ptr<Map> map = MapMgr->get_map(map_name);
 
 			if (map == nullptr
-				|| ((void *) map->get_map_container().get() != ((_container.lock()).get())))
+				|| ((void *) map->container().get() != ((_container.lock()).get())))
 				return std::shared_ptr<NPC>();
 
 			std::shared_ptr<NPC> npc = std::make_shared<NPC>(name, map, x, y, job_id, dir, duplicate);
@@ -144,7 +143,7 @@ void ScriptManager::initialize_state(sol::state &st)
 			std::shared_ptr<Map> map = MapMgr->get_map(map_name);
 
 			if (map == nullptr
-				|| ((void *) map->get_map_container().get() != ((_container.lock()).get())))
+				|| ((void *) map->container().get() != ((_container.lock()).get())))
 				return std::shared_ptr<NPC>();
 
 			std::shared_ptr<NPC> npc = std::make_shared<NPC>(name, map, x, y, job_id, dir);
@@ -158,7 +157,7 @@ void ScriptManager::initialize_state(sol::state &st)
 			std::shared_ptr<Map> map = MapMgr->get_map(map_name);
 
 			if (map == nullptr
-				|| ((void *) map->get_map_container().get() != ((_container.lock()).get())))
+				|| ((void *) map->container().get() != ((_container.lock()).get())))
 				return std::shared_ptr<NPC>();
 
 			std::shared_ptr<NPC> npc = std::make_shared<NPC>(name, map, x, y, script, trigger_range);
@@ -268,9 +267,9 @@ void ScriptManager::initialize_state(sol::state &st)
 		);
 
 	st.new_usertype<NPC>("NPC",
-		"get_guid", &NPC::get_guid,
-		"get_name", &NPC::get_name,
-		"map_coords", &NPC::get_map_coords,
+		"get_guid", &NPC::guid,
+		"get_name", &NPC::name,
+		"map_coords", &NPC::map_coords,
 		"get_nearby_entity", &NPC::get_nearby_entity,
 		"init", &NPC::initialize,
 		"set_map", &NPC::set_map
@@ -288,173 +287,173 @@ void ScriptManager::initialize_state(sol::state &st)
 		{
 			initialize_state(player->get_lua_state());
 		},
-		"get_guid", &Player::get_guid,
-		"get_map", &Player::get_map,
-		"map_coords", &Player::get_map_coords,
+		"get_guid", &Player::guid,
+		"get_map", &Player::map,
+		"map_coords", &Player::map_coords,
 		"get_nearby_entity", &Player::get_nearby_entity,
-		"send_npc_CoreLog", &Player::send_npc_CoreLog,
-		"send_npc_next_CoreLog", &Player::send_npc_next_CoreLog,
-		"send_npc_close_CoreLog", &Player::send_npc_close_CoreLog,
-		"send_npc_menu_list", &Player::send_npc_menu_list,
+//		"send_npc_dialog", &Player::send_npc_dialog,
+//		"send_npc_next_dialog", &Player::send_npc_next_dialog,
+//		"send_npc_close_dialog", &Player::send_npc_close_dialog,
+//		"send_npc_menu_list", &Player::send_npc_menu_list,
 		"move_to_map", &Player::move_to_map,
 		"get_inventory", &Player::get_inventory,
 		"message", [] (std::shared_ptr<Player> player, std::string const &message)
 		{
-			player->get_packet_handler()->Send_ZC_NOTIFY_PLAYERCHAT(message);
+//			player->get_packet_handler()->Send_ZC_NOTIFY_PLAYERCHAT(message);
 		},
-		"get_status", &Player::get_status
+		"get_status", &Player::status
 		);
 
-	st.new_usertype<Status::Status>("Status",
-		"get_strength", &Status::Status::get_strength,
-		"get_agility", &Status::Status::get_agility,
-		"get_vitality", &Status::Status::get_vitality,
-		"get_dexterity", &Status::Status::get_dexterity,
-		"get_intelligence", &Status::Status::get_intelligence,
-		"get_luck", &Status::Status::get_luck,
-		"get_max_hp", &Status::Status::get_max_hp,
-		"get_max_sp", &Status::Status::get_max_sp,
-		"get_current_hp", &Status::Status::get_current_hp,
-		"get_current_sp", &Status::Status::get_current_sp,
-		"get_base_level", &Status::Status::get_base_level,
-		"get_job_level", &Status::Status::get_job_level,
-		"get_base_experience", &Status::Status::get_base_experience,
-		"get_job_experience", &Status::Status::get_job_experience,
-		"get_next_base_experience", &Status::Status::get_next_base_experience,
-		"get_next_job_experience", &Status::Status::get_next_job_experience,
-		"get_movement_speed", &Status::Status::get_movement_speed,
-		"get_max_weight", &Status::Status::get_max_weight,
-		"get_current_weight", &Status::Status::get_current_weight,
-		"get_hair_color", &Status::Status::get_hair_color,
-		"get_cloth_color", &Status::Status::get_cloth_color,
-		"get_weapon_sprite", &Status::Status::get_weapon_sprite,
-		"get_shield_sprite", &Status::Status::get_shield_sprite,
-		"get_robe_sprite", &Status::Status::get_robe_sprite,
-		"get_head_top_sprite", &Status::Status::get_head_top_sprite,
-		"get_head_mid_sprite", &Status::Status::get_head_mid_sprite,
-		"get_head_bottom_sprite", &Status::Status::get_head_bottom_sprite,
-		"get_hair_style", &Status::Status::get_hair_style,
-		"get_body_style", &Status::Status::get_body_style
+	st.new_usertype<Entities::Traits::Status>("Status",
+		"get_strength", &Entities::Traits::Status::get_strength,
+		"get_agility", &Entities::Traits::Status::get_agility,
+		"get_vitality", &Entities::Traits::Status::get_vitality,
+		"get_dexterity", &Entities::Traits::Status::get_dexterity,
+		"get_intelligence", &Entities::Traits::Status::get_intelligence,
+		"get_luck", &Entities::Traits::Status::get_luck,
+		"get_max_hp", &Entities::Traits::Status::get_max_hp,
+		"get_max_sp", &Entities::Traits::Status::get_max_sp,
+		"get_current_hp", &Entities::Traits::Status::get_current_hp,
+		"get_current_sp", &Entities::Traits::Status::get_current_sp,
+		"get_base_level", &Entities::Traits::Status::get_base_level,
+		"get_job_level", &Entities::Traits::Status::get_job_level,
+		"get_base_experience", &Entities::Traits::Status::get_base_experience,
+		"get_job_experience", &Entities::Traits::Status::get_job_experience,
+		"get_next_base_experience", &Entities::Traits::Status::get_next_base_experience,
+		"get_next_job_experience", &Entities::Traits::Status::get_next_job_experience,
+		"get_movement_speed", &Entities::Traits::Status::get_movement_speed,
+		"get_max_weight", &Entities::Traits::Status::get_max_weight,
+		"get_current_weight", &Entities::Traits::Status::get_current_weight,
+		"get_hair_color", &Entities::Traits::Status::get_hair_color,
+		"get_cloth_color", &Entities::Traits::Status::get_cloth_color,
+		"get_weapon_sprite", &Entities::Traits::Status::get_weapon_sprite,
+		"get_shield_sprite", &Entities::Traits::Status::get_shield_sprite,
+		"get_robe_sprite", &Entities::Traits::Status::get_robe_sprite,
+		"get_head_top_sprite", &Entities::Traits::Status::get_head_top_sprite,
+		"get_head_mid_sprite", &Entities::Traits::Status::get_head_mid_sprite,
+		"get_head_bottom_sprite", &Entities::Traits::Status::get_head_bottom_sprite,
+		"get_hair_style", &Entities::Traits::Status::get_hair_style,
+		"get_body_style", &Entities::Traits::Status::get_body_style
 		);
 
-	st.new_usertype<Status::BaseLevel>("BaseLevel",
-		"add", &Status::BaseLevel::add_base,
-		"sub", &Status::BaseLevel::sub_base,
-		"get", &Status::BaseLevel::get_base,
-		"set", &Status::BaseLevel::set_base
+	st.new_usertype<Entities::Traits::BaseLevel>("BaseLevel",
+		"add", &Entities::Traits::BaseLevel::add_base,
+		"sub", &Entities::Traits::BaseLevel::sub_base,
+		"get", &Entities::Traits::BaseLevel::get_base,
+		"set", &Entities::Traits::BaseLevel::set_base
 		);
-	st.new_usertype<Status::JobLevel>("JobLevel",
-		"add", &Status::JobLevel::add_base,
-		"sub", &Status::JobLevel::sub_base,
-		"get", &Status::JobLevel::get_base,
-		"set", &Status::JobLevel::set_base
+	st.new_usertype<Entities::Traits::JobLevel>("JobLevel",
+		"add", &Entities::Traits::JobLevel::add_base,
+		"sub", &Entities::Traits::JobLevel::sub_base,
+		"get", &Entities::Traits::JobLevel::get_base,
+		"set", &Entities::Traits::JobLevel::set_base
 		);
-	st.new_usertype<Status::MaxHP>("MaxHP",
-		"add_base", &Status::MaxHP::add_base,
-		"sub_base", &Status::MaxHP::sub_base,
-		"get_base", &Status::MaxHP::get_base,
-		"set_base", &Status::MaxHP::set_base
+	st.new_usertype<Entities::Traits::MaxHP>("MaxHP",
+		"add_base", &Entities::Traits::MaxHP::add_base,
+		"sub_base", &Entities::Traits::MaxHP::sub_base,
+		"get_base", &Entities::Traits::MaxHP::get_base,
+		"set_base", &Entities::Traits::MaxHP::set_base
 		);
-	st.new_usertype<Status::MaxSP>("MaxSP",
-		"add_base", &Status::MaxSP::add_base,
-		"sub_base", &Status::MaxSP::sub_base,
-		"get_base", &Status::MaxSP::get_base,
-		"set_base", &Status::MaxSP::set_base
+	st.new_usertype<Entities::Traits::MaxSP>("MaxSP",
+		"add_base", &Entities::Traits::MaxSP::add_base,
+		"sub_base", &Entities::Traits::MaxSP::sub_base,
+		"get_base", &Entities::Traits::MaxSP::get_base,
+		"set_base", &Entities::Traits::MaxSP::set_base
 	   );
-	st.new_usertype<Status::CurrentHP>("CurrentHP",
-		"add", &Status::CurrentHP::add_base,
-		"sub", &Status::CurrentHP::sub_base,
-		"get", &Status::CurrentHP::get_base,
-		"set", &Status::CurrentHP::set_base
+	st.new_usertype<Entities::Traits::CurrentHP>("CurrentHP",
+		"add", &Entities::Traits::CurrentHP::add_base,
+		"sub", &Entities::Traits::CurrentHP::sub_base,
+		"get", &Entities::Traits::CurrentHP::get_base,
+		"set", &Entities::Traits::CurrentHP::set_base
 		);
-	st.new_usertype<Status::CurrentSP>("CurrentSP",
-		"add", &Status::CurrentSP::add_base,
-		"sub", &Status::CurrentSP::sub_base,
-		"get", &Status::CurrentSP::get_base,
-		"set", &Status::CurrentSP::set_base
+	st.new_usertype<Entities::Traits::CurrentSP>("CurrentSP",
+		"add", &Entities::Traits::CurrentSP::add_base,
+		"sub", &Entities::Traits::CurrentSP::sub_base,
+		"get", &Entities::Traits::CurrentSP::get_base,
+		"set", &Entities::Traits::CurrentSP::set_base
 		);
-	st.new_usertype<Status::MovementSpeed>("MovementSpeed",
-		"add_base", &Status::MovementSpeed::add_base,
-		"sub_base", &Status::MovementSpeed::sub_base,
-		"get_base", &Status::MovementSpeed::get_base,
-		"set_base", &Status::MovementSpeed::set_base
+	st.new_usertype<Entities::Traits::MovementSpeed>("MovementSpeed",
+		"add_base", &Entities::Traits::MovementSpeed::add_base,
+		"sub_base", &Entities::Traits::MovementSpeed::sub_base,
+		"get_base", &Entities::Traits::MovementSpeed::get_base,
+		"set_base", &Entities::Traits::MovementSpeed::set_base
 		);
-	st.new_usertype<Status::MaxWeight>("MaxWeight",
-		"add_base", &Status::MaxWeight::add_base,
-		"sub_base", &Status::MaxWeight::sub_base,
-		"get_base", &Status::MaxWeight::get_base,
-		"set_base", &Status::MaxWeight::set_base
+	st.new_usertype<Entities::Traits::MaxWeight>("MaxWeight",
+		"add_base", &Entities::Traits::MaxWeight::add_base,
+		"sub_base", &Entities::Traits::MaxWeight::sub_base,
+		"get_base", &Entities::Traits::MaxWeight::get_base,
+		"set_base", &Entities::Traits::MaxWeight::set_base
 		);
-	st.new_usertype<Status::CurrentWeight>("CurrentWeight",
-		"add", &Status::CurrentWeight::add_base,
-		"sub", &Status::CurrentWeight::sub_base,
-		"get", &Status::CurrentWeight::get_base,
-		"set", &Status::CurrentWeight::set_base
+	st.new_usertype<Entities::Traits::CurrentWeight>("CurrentWeight",
+		"add", &Entities::Traits::CurrentWeight::add_base,
+		"sub", &Entities::Traits::CurrentWeight::sub_base,
+		"get", &Entities::Traits::CurrentWeight::get_base,
+		"set", &Entities::Traits::CurrentWeight::set_base
 		);
-	st.new_usertype<Status::Strength>("Strength",
-		"add_base", &Status::Strength::add_base,
-		"sub_base", &Status::Strength::sub_base,
-		"get_base", &Status::Strength::get_base,
-		"set_base", &Status::Strength::set_base
+	st.new_usertype<Entities::Traits::Strength>("Strength",
+		"add_base", &Entities::Traits::Strength::add_base,
+		"sub_base", &Entities::Traits::Strength::sub_base,
+		"get_base", &Entities::Traits::Strength::get_base,
+		"set_base", &Entities::Traits::Strength::set_base
 		);
-	st.new_usertype<Status::Agility>("Agility",
-		"add_base", &Status::Agility::add_base,
-		"sub_base", &Status::Agility::sub_base,
-		"get_base", &Status::Agility::get_base,
-		"set_base", &Status::Agility::set_base
+	st.new_usertype<Entities::Traits::Agility>("Agility",
+		"add_base", &Entities::Traits::Agility::add_base,
+		"sub_base", &Entities::Traits::Agility::sub_base,
+		"get_base", &Entities::Traits::Agility::get_base,
+		"set_base", &Entities::Traits::Agility::set_base
 		);
-	st.new_usertype<Status::Vitality>("Vitality",
-		"add_base", &Status::Vitality::add_base,
-		"sub_base", &Status::Vitality::sub_base,
-		"get_base", &Status::Vitality::get_base,
-		"set_base", &Status::Vitality::set_base
+	st.new_usertype<Entities::Traits::Vitality>("Vitality",
+		"add_base", &Entities::Traits::Vitality::add_base,
+		"sub_base", &Entities::Traits::Vitality::sub_base,
+		"get_base", &Entities::Traits::Vitality::get_base,
+		"set_base", &Entities::Traits::Vitality::set_base
 		);
-	st.new_usertype<Status::Intelligence>("Intelligence",
-		"add_base", &Status::Intelligence::add_base,
-		"sub_base", &Status::Intelligence::sub_base,
-		"get_base", &Status::Intelligence::get_base,
-		"set_base", &Status::Intelligence::set_base
+	st.new_usertype<Entities::Traits::Intelligence>("Intelligence",
+		"add_base", &Entities::Traits::Intelligence::add_base,
+		"sub_base", &Entities::Traits::Intelligence::sub_base,
+		"get_base", &Entities::Traits::Intelligence::get_base,
+		"set_base", &Entities::Traits::Intelligence::set_base
 		);
-	st.new_usertype<Status::Dexterity>("Dexterity",
-		"add_base", &Status::Dexterity::add_base,
-		"sub_base", &Status::Dexterity::sub_base,
-		"get_base", &Status::Dexterity::get_base,
-		"set_base", &Status::Dexterity::set_base
+	st.new_usertype<Entities::Traits::Dexterity>("Dexterity",
+		"add_base", &Entities::Traits::Dexterity::add_base,
+		"sub_base", &Entities::Traits::Dexterity::sub_base,
+		"get_base", &Entities::Traits::Dexterity::get_base,
+		"set_base", &Entities::Traits::Dexterity::set_base
 		);
-	st.new_usertype<Status::Luck>("Luck",
-		"add_base", &Status::Luck::add_base,
-		"sub_base", &Status::Luck::sub_base,
-		"get_base", &Status::Luck::get_base,
-		"set_base", &Status::Luck::set_base
+	st.new_usertype<Entities::Traits::Luck>("Luck",
+		"add_base", &Entities::Traits::Luck::add_base,
+		"sub_base", &Entities::Traits::Luck::sub_base,
+		"get_base", &Entities::Traits::Luck::get_base,
+		"set_base", &Entities::Traits::Luck::set_base
 		);
-	st.new_usertype<Status::BaseExperience>("BaseExperience",
-		"add", &Status::BaseExperience::add_base,
-		"sub", &Status::BaseExperience::sub_base,
-		"get", &Status::BaseExperience::get_base,
-		"set", &Status::BaseExperience::set_base
+	st.new_usertype<Entities::Traits::BaseExperience>("BaseExperience",
+		"add", &Entities::Traits::BaseExperience::add_base,
+		"sub", &Entities::Traits::BaseExperience::sub_base,
+		"get", &Entities::Traits::BaseExperience::get_base,
+		"set", &Entities::Traits::BaseExperience::set_base
 		);
-	st.new_usertype<Status::JobExperience>("JobExperience",
-		"add", &Status::JobExperience::add_base,
-		"sub", &Status::JobExperience::sub_base,
-		"get", &Status::JobExperience::get_base,
-		"set", &Status::JobExperience::set_base
+	st.new_usertype<Entities::Traits::JobExperience>("JobExperience",
+		"add", &Entities::Traits::JobExperience::add_base,
+		"sub", &Entities::Traits::JobExperience::sub_base,
+		"get", &Entities::Traits::JobExperience::get_base,
+		"set", &Entities::Traits::JobExperience::set_base
 		);
-	st.new_usertype<Status::NextBaseExperience>("NextBaseExperience",
-		"add", &Status::NextBaseExperience::add_base,
-		"sub", &Status::NextBaseExperience::sub_base,
-		"get", &Status::NextBaseExperience::get_base,
-		"set", &Status::NextBaseExperience::set_base
+	st.new_usertype<Entities::Traits::NextBaseExperience>("NextBaseExperience",
+		"add", &Entities::Traits::NextBaseExperience::add_base,
+		"sub", &Entities::Traits::NextBaseExperience::sub_base,
+		"get", &Entities::Traits::NextBaseExperience::get_base,
+		"set", &Entities::Traits::NextBaseExperience::set_base
 		);
-	st.new_usertype<Status::NextJobExperience>("NextJobExperience",
-		"add", &Status::NextJobExperience::add_base,
-		"sub", &Status::NextJobExperience::sub_base,
-		"get", &Status::NextJobExperience::get_base,
-		"set", &Status::NextJobExperience::set_base
+	st.new_usertype<Entities::Traits::NextJobExperience>("NextJobExperience",
+		"add", &Entities::Traits::NextJobExperience::add_base,
+		"sub", &Entities::Traits::NextJobExperience::sub_base,
+		"get", &Entities::Traits::NextJobExperience::get_base,
+		"set", &Entities::Traits::NextJobExperience::set_base
 		);
 
 	std::vector<std::string> _loadable_files = {
 		"scripts/utils/strutils.lua",
-		"scripts/definitions/constants.lua"
+		"db/definitions/constants.lua"
 	};
 
 	for (auto &file : _loadable_files) {
@@ -463,10 +462,10 @@ void ScriptManager::initialize_state(sol::state &st)
 
 			if (!res.valid()) {
 				sol::error error = res;
-				CoreLog(error) <<"ScriptManager::initialize_state: {}", error.what());
+				HLog(error) << "ScriptManager::initialize_state: " << error.what();
 			}
 		} catch (sol::error &error) {
-			CoreLog(error) <<"ScriptManager::initialize_state: {}", error.what());
+			HLog(error) << "ScriptManager::initialize_state: " << error.what();
 		}
 	}
 
@@ -508,11 +507,11 @@ void ScriptManager::load_scripts()
 			sol::protected_function_result result = fn();
 			if (!result.valid()) {
 				sol::error error = result;
-				CoreLog(warn) <<"Failed to load file '{}' from '{}', reason: {}", script_file, file_path, error.what());
+				HLog(warning) << "Failed to load file '" << script_file << "' from '" << file_path << "', reason: " << error.what();
 			}
 		});
 	} catch (sol::error &e) {
-		CoreLog(warn) <<"Failed to load included script files from '{}', reason: {}", file_path, e.what());
+		HLog(warning) << "Failed to load included script files from '" << file_path << "', reason: " << e.what();
 	}
 }
 void ScriptManager::load_constants()
@@ -522,9 +521,9 @@ void ScriptManager::load_constants()
 	try {
 		_lua_state.script_file(file_path);
 		sol::table const_table = _lua_state.get<sol::table>("constants");
-		CoreLog(info) <<"Read constants from '{}' for map container {:p}.", file_path, (void *)_container.lock().get());
+		HLog(info) << "Read constants from '" << file_path << "' for map container " << (void *)_container.lock().get() << ".";
 	} catch (sol::error &e) {
-		CoreLog(error) <<"Failed to read constants from '{}', reason: {}", file_path, e.what());
+		HLog(error) << "Failed to read constants from '" << file_path << "', reason: " << e.what();
 	}
 }
 
@@ -532,8 +531,8 @@ void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint3
 {
 	npc_db_data const &nd = _npc_db.at(npc_guid);
 
-	if (nd.script_is_file)
-		player->set_npc_contact_guid(npc_guid);
+//	if (nd.script_is_file)
+//		player->set_npc_contact_guid(npc_guid);
 
 	try {
 		sol::state &pl_lua = player->get_lua_state();
@@ -541,10 +540,10 @@ void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint3
 		sol::protected_function_result result = fx(std::move(player), std::move(nd._npc), nd.script, nd.script_is_file);
 		if (!result.valid()) {
 			sol::error err = result;
-			CoreLog(error) <<"ScriptManager::contact_npc_for_player: {}", err.what());
+			HLog(error) << "ScriptManager::contact_npc_for_player: " << err.what();
 		}
 	} catch (sol::error &e) {
-		CoreLog(error) <<"{}", e.what());
+		HLog(error) << e.what();
 	}
 }
 
@@ -561,7 +560,7 @@ void ScriptManager::continue_npc_script_for_player(std::shared_ptr<Entities::Pla
 	sol::protected_function_result result = cr(cr_state["script_commands"]);
 	if (!result.valid()) {
 		sol::error err = result;
-		CoreLog(error) <<"ScriptManager::continue_npc_script_for_player: {}", err.what());
+		HLog(error) << "ScriptManager::continue_npc_script_for_player: " << err.what();
 	}
 }
 
@@ -573,9 +572,9 @@ void ScriptManager::perform_command_from_player(std::shared_ptr<Entities::Player
 		sol::protected_function_result result = fx(std::move(player), cmd);
 		if (!result.valid()) {
 			sol::error err = result;
-			CoreLog(error) <<"ScriptManager::perform_command_from_player: {}", err.what());
+			HLog(error) << "ScriptManager::perform_command_from_player: " << err.what();
 		}
 	} catch (sol::error &e) {
-		CoreLog(error) <<"ScriptManager::perform_command_from_player: {}", e.what());
+		HLog(error) << "ScriptManager::perform_command_from_player: " << e.what();
 	}
 }

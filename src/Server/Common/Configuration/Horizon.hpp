@@ -41,10 +41,10 @@
  * Zero = 'Z'
  * Sakray = 'S'
  */
-#define CLIENT_TYPE 'M'
+#define CLIENT_TYPE 'R'
 
 /* Packet Version */
-#define PACKET_VERSION 20180131
+#define PACKET_VERSION 20180620
 
 #define MAX_LEVEL 175
 #define MAX_STATUS_POINTS 130
@@ -60,7 +60,6 @@
 #define MIN_STORAGE_SIZE 600
 #define MAX_STORAGE_SIZE 600
 #define MAX_ITEM_STACK_SIZE 30000
-
 
 static_assert(MAX_LEVEL > 0,
               "MAX_LEVEL should be greater than 0.");
@@ -80,15 +79,15 @@ static_assert(MIN_STORAGE_SIZE > 0 && MAX_STORAGE_SIZE >= MIN_STORAGE_SIZE,
               "Max storage should be greater than minimum storage size of 1.");
 
 // Network Threads
-#define MAX_NETWORK_THREADS 2
+#define MAX_NETWORK_THREADS 1
 
-#define MAX_GLOBAL_IO_THREADS 2
+#define MAX_GLOBAL_IO_THREADS 1
 
 // Time in Microseconds (µs)
 #define MAX_CORE_UPDATE_INTERVAL 500
 
 // Map Thread Containers
-#define MAX_MAP_CONTAINER_THREADS 6
+#define MAX_MAP_CONTAINER_THREADS 2
 
 
 static_assert(MAX_NETWORK_THREADS > 0,
@@ -97,8 +96,8 @@ static_assert(MAX_NETWORK_THREADS > 0,
 static_assert(MAX_GLOBAL_IO_THREADS > 0,
             "MAX_GLOBAL_IO_THREADS cannot be less than or equal to 0");
 
-static_assert(MAX_CORE_UPDATE_INTERVAL >= 500 && MAX_CORE_UPDATE_INTERVAL <= 2000,
-            "MAX_CORE_UPDATE_INTERVAL recommended setting is 500µs.");
+static_assert(MAX_CORE_UPDATE_INTERVAL >= 500 && MAX_CORE_UPDATE_INTERVAL <= 4000,
+            "MAX_CORE_UPDATE_INTERVAL recommended setting is 4000µs.");
 
 static_assert(MAX_MAP_CONTAINER_THREADS > 0,
             "MAX_MAP_CONTAINER_THREADS cannot be less than or equal to 0");

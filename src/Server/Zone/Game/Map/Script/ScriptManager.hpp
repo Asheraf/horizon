@@ -32,40 +32,33 @@
 
 #include "Common/Definitions/NPCDefinitions.hpp"
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
 
 namespace Horizon
 {
 namespace Zone
 {
-namespace Game
-{
 namespace Entities
 {
 	class NPC;
 	class Player;
 }
-class MapThreadContainer;
+class MapContainerThread;
 class ScriptManager
 {
-friend class MapThreadContainer;
+friend class MapContainerThread;
 public:
-	ScriptManager(std::weak_ptr<MapThreadContainer> container);
+	ScriptManager(std::weak_ptr<MapContainerThread> container);
 	~ScriptManager();
 
-	std::shared_ptr<MapThreadContainer> get_map_container() { return _container.lock(); }
+	std::shared_ptr<MapContainerThread> get_map_container() { return _container.lock(); }
 
 	void contact_npc_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void continue_npc_script_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx = 0);
 
-	void send_CoreLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string const &CoreLog);
-	void send_next_CoreLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
-	void send_close_CoreLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_HLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string const &HLog);
+	void send_next_HLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_close_HLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void perform_command_from_player(std::shared_ptr<Entities::Player> player, std::string const &cmd);
 	void initialize_state(sol::state &st);
 
@@ -84,9 +77,8 @@ private:
 	std::vector<std::string> _script_files;
 	std::unordered_map<uint32_t, npc_db_data> _npc_db;
 	sol::state _lua_state;
-	std::weak_ptr<MapThreadContainer> _container;
+	std::weak_ptr<MapContainerThread> _container;
 };
-}
 }
 }
 

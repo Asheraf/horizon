@@ -27,6 +27,8 @@
 --- Item Database File.
 ---------------------------------------------------------------------------
 
+assert(require("db/definitions/constants"))
+
 item_db = {
 --[[
  **************************************************************************
@@ -75,7 +77,7 @@ item_db = {
 		[ Job.Ninja ] = true
 		[ Job.Gangsi ] = true
 		[ Job.DeathKnight ] = true
-		[ Job.Dark ] = true_Collector
+		[ Job.DarkCollector ] = true
 		[ Job.Kagerou ] = true
 		[ Job.Rebllion ] = true
 	},
@@ -121,8 +123,6 @@ item_db = {
 },
 **************************************************************************/
 --]]
-
-assert(require("db/definitions/constants.lua"))
 
 ---- Healing Items -----------------------------------------
 [ "Red_Potion" ] = {
@@ -1487,9 +1487,9 @@ assert(require("db/definitions/constants.lua"))
 		[ Job.Ninja ] = true,
 		[ Job.Gangsi ] = true,
 		[ Job.DeathKnight ] = true,
-		[ Job.Dark ] = true_Collector,
+		[ Job.DarkCollector ] = true,
 		[ Job.Kagerou ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 		[ Job.Summoner ] = true,
 	},
 	EquipLv = 40,
@@ -77466,7 +77466,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 10,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Bullet,
@@ -77480,7 +77480,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 10,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Grenade,
@@ -77494,7 +77494,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 10,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Grenade,
@@ -91366,9 +91366,9 @@ assert(require("db/definitions/constants.lua"))
 		[ Job.Ninja ] = true,
 		[ Job.Gangsi ] = true,
 		[ Job.DeathKnight ] = true,
-		[ Job.Dark ] = true_Collector,
+		[ Job.DarkCollector ] = true,
 		[ Job.Kagerou ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 		[ Job.Summoner ] = true,
 	},
 	EquipLv = 40,
@@ -96405,7 +96405,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 7,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -96437,7 +96437,7 @@ assert(require("db/definitions/constants.lua"))
 	Slots = 1,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -96457,7 +96457,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 200,
 	Range = 9,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -96479,7 +96479,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Slots = 1,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97330,7 +97330,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97359,7 +97359,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97388,7 +97388,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97417,7 +97417,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97448,7 +97448,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Slots = 2,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97469,7 +97469,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Slots = 1,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97491,7 +97491,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Slots = 1,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97513,7 +97513,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Slots = 1,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97535,7 +97535,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97555,7 +97555,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 260,
 	Range = 9,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97578,7 +97578,7 @@ assert(require("db/definitions/constants.lua"))
 	Slots = 1,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -97600,7 +97600,7 @@ assert(require("db/definitions/constants.lua"))
 	Slots = 2,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 2,
@@ -97617,7 +97617,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 2,
@@ -97640,7 +97640,7 @@ assert(require("db/definitions/constants.lua"))
 	Slots = 1,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 2,
@@ -97807,7 +97807,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 30,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Bullet,
@@ -97822,7 +97822,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 30,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Bullet,
@@ -97837,7 +97837,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 30,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Bullet,
@@ -97852,7 +97852,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 30,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Bullet,
@@ -97867,7 +97867,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 30,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	Subtype = AmmoType.Bullet,
@@ -97882,7 +97882,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 50,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	EquipLv = 100,
@@ -97898,7 +97898,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 40,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	EquipLv = 100,
@@ -97914,7 +97914,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 40,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	EquipLv = 100,
@@ -97930,7 +97930,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 40,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	EquipLv = 100,
@@ -97946,7 +97946,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 40,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	EquipLv = 100,
@@ -97962,7 +97962,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 40,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Ammunition,
 	EquipLv = 100,
@@ -115593,9 +115593,9 @@ assert(require("db/definitions/constants.lua"))
 		[ Job.Ninja ] = true,
 		[ Job.Gangsi ] = true,
 		[ Job.DeathKnight ] = true,
-		[ Job.Dark ] = true_Collector,
+		[ Job.DarkCollector ] = true,
 		[ Job.Kagerou ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 		[ Job.Summoner ] = true,
 	},
 	NoTrade = {
@@ -139493,9 +139493,9 @@ assert(require("db/definitions/constants.lua"))
 		[ Job.SoulLinker ] = true,
 		[ Job.Gangsi ] = true,
 		[ Job.DeathKnight ] = true,
-		[ Job.Dark ] = true_Collector,
+		[ Job.DarkCollector ] = true,
 		[ Job.Kagerou ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.Shoes,
 	EquipLv = 85,
@@ -143267,7 +143267,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Slots = 1,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 4,
@@ -143283,7 +143283,7 @@ assert(require("db/definitions/constants.lua"))
 	Atk = 480,
 	Range = 9,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 4,
@@ -143301,7 +143301,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Slots = 1,
 	Job = {
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 4,
@@ -143317,7 +143317,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -143341,7 +143341,7 @@ assert(require("db/definitions/constants.lua"))
 	Range = 9,
 	Job = {
 		[ Job.Gunslinger ] = true,
-		[ Job.Rebllion ] = true,
+		[ Job.Rebellion ] = true,
 	},
 	Loc = EquipLocationMask.BothArms,
 	WeaponLv = 3,
@@ -144436,3 +144436,5 @@ assert(require("db/definitions/constants.lua"))
 	Script = [[ bonus2 bExpAddRace, RC_All, 2; ]]
 },
 }
+
+return item_db

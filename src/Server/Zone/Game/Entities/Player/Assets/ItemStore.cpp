@@ -29,13 +29,12 @@
 
 #include "ItemStore.hpp"
 #include "Common/Definitions/EntityDefinitions.hpp"
-#include "Server/Common/Models/Character/Character.hpp"
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Game/StaticDB/ItemDB.hpp"
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
 
-using namespace Horizon::Zone::Game::Assets;
-using namespace Horizon::Zone::Game::Entities;
+using namespace Horizon::Zone::Assets;
+using namespace Horizon::Zone::Entities;
 
 itemstore_addition_result_type ItemStore::add_to_itemstore(item_entry_data &item, uint16_t amount)
 {

@@ -75,4 +75,4 @@ uint32_t GetULong(const unsigned char* buf);
 int32_t GetLong(const unsigned char *buf);
 
 uint32_t Concatenate(uint32_t a, uint32_t b);
-#endif // HORIZON_UTILITY_UTILITY_HPP
+#endif // HORIZON_UTILITIES_UTILITY_HPP

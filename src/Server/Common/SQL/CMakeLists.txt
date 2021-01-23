@@ -31,9 +31,8 @@ add_subdirectory(Character)
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(SQL_SOURCES
-	${CHARACTER_MODEL_SOURCES}
+set(SQL_HEADERS
+	${CHARACTER_MODEL_HEADERS}
 	${DIR}/GameAccount.hpp
 	${DIR}/SessionData.hpp
-	${DIR}/ServerData.hpp
 	PARENT_SCOPE)

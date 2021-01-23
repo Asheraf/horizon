@@ -72,7 +72,7 @@ struct npc_db_data
 	directions direction{DIR_SOUTH};
 	uint16_t sprite_id{0};
 	std::string script{""};
-	std::shared_ptr<Horizon::Zone::Game::Entities::NPC> _npc;
+	std::shared_ptr<Horizon::Zone::Entities::NPC> _npc;
 	bool script_is_file;
 	uint16_t trigger_range;
 };

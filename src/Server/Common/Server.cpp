@@ -182,11 +182,6 @@ void Server::process_cli_commands()
 
 void Server::initialize_core()
 {
-	for (int i = 0; i < MAX_GLOBAL_IO_THREADS; ++i)
-		_global_thread_group.create_thread([this] () {
-			get_io_service().run();
-		});
-    
 	HLog(info) << "A global I/O thread pool of " << MAX_GLOBAL_IO_THREADS << " threads have been created.";
 
 	/**
@@ -201,8 +196,6 @@ void Server::finalize_core()
 		_cli_thread.join();
 
 	get_io_service().stop();
-
-	_global_thread_group.join_all();
 
 	HLog(info) << "Shutdown global I/O thread pool of " << MAX_GLOBAL_IO_THREADS << " threads.";
 }

@@ -43,6 +43,7 @@ set(SQLPP11_MYSQL_NOT_FOUND_MESSAGE "Could NOT find sqlpp11-connector-mysql. You
 find_file(SQLPP11_MYSQL_MAIN_HEADER
     sqlpp11/mysql/mysql.h
     HINTS
+        /usr/local/include
       ${SQLPP11_MYSQL_INCLUDE_DIR}
 )
 mark_as_advanced(SQLPP11_MYSQL_MAIN_HEADER)
@@ -68,6 +69,7 @@ endif()
 find_file(SQLPP11_MYSQL_LIB_FILE
     libsqlpp-mysql.a
     HINTS
+        /usr/local/lib
       ${SQLPP11_MYSQL_LIB_DIR}
       ${SQLPP11_MYSQL_LIB_DIR}/src
 )

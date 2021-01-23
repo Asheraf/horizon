@@ -29,7 +29,6 @@
 #ifndef HORIZON_INTERFACES_INTERSERVERAPI_HPP
 #define HORIZON_INTERFACES_INTERSERVERAPI_HPP
 
-#include "Server/Common/Base/PacketHandler/InterPackets.hpp"
 #include "Server/Common/Models/GameAccount.hpp"
 #include "Server/Common/Models/SessionData.hpp"
 

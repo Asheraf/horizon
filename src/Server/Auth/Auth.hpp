@@ -32,11 +32,11 @@
 
 #include "Core/Multithreading/TaskScheduler/TaskScheduler.hpp"
 #include "Common/Server.hpp"
-#include "Server/Auth/Socket/AuthSocket.hpp"
 
 #include <string>
 #include <mutex>
 #include <vector>
+#include <boost/asio/deadline_timer.hpp>
 
 namespace Horizon
 {
@@ -72,7 +72,7 @@ public:
 		return &instance;
 	}
 
-	bool ReadConfig();
+	bool read_config();
 
 	void initialize_core();
 	/* CLI */
@@ -88,10 +88,13 @@ public:
 		return _auth_config;
 	}
 	
+	void update(uint64_t diff);
+	
 protected:
 	TaskScheduler _task_scheduler;
 	std::mutex _conf_lock;
 	auth_config_type _auth_config;
+	boost::asio::deadline_timer _update_timer;
 
 };
 }

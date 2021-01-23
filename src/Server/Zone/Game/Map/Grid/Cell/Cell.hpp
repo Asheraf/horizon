@@ -36,8 +36,6 @@ namespace Horizon
 {
 namespace Zone
 {
-namespace Game
-{
 #pragma pack(push, 1)
 struct Cell
 {
@@ -100,7 +98,6 @@ private:
 	unsigned _is_water : 1;
 };
 #pragma pack(pop)
-}
 }
 }
 

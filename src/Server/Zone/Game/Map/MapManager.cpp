@@ -28,8 +28,9 @@
  **************************************************/
 
 #include "MapManager.hpp"
-#include "MapThreadContainer.hpp"
+#include "MapContainerThread.hpp"
 
+#include "Server/Common/Configuration/Horizon.hpp"
 #include "Libraries/MapCache/MapCache.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
@@ -37,7 +38,7 @@
 
 #include <algorithm>
 
-using namespace Horizon::Zone::Game;
+using namespace Horizon::Zone;
 
 MapManager::~MapManager()
 {
@@ -61,13 +62,13 @@ bool MapManager::finalize()
 bool MapManager::LoadMapCache()
 {
 	Horizon::Libraries::MapCache m;
-	std::string db_path = ZoneServer->get_zone_config().get_database_path();
+	std::string db_path = sZone->zone_config().get_static_db_path().string();
 
 	m.setMapListPath(db_path + "map_list.lua");
-	m.setMapCachePath(db_path + ZoneServer->get_zone_config().get_mapcache_file_name());
+	m.setMapCachePath(sZone->zone_config().get_mapcache_path().string());
 
 	if (m.ReadMapListConfig() != MCACHE_CONFIG_OK) {
-		CoreLog(error) <<"Could not read map config file '{}'.", m.getMapListPath().string());
+		HLog(error) <<"Could not read map config file '" << m.getMapListPath().string() << "'.";
 		return false;
 	}
 
@@ -76,34 +77,33 @@ bool MapManager::LoadMapCache()
 		default:
 			break;
 		case MCACHE_IMPORT_NONEXISTENT_FILE:
-			CoreLog(error) <<"Could not open file '{}'.", m.getMapCachePath().string());
+			HLog(error) << "Could not open file '" << m.getMapCachePath().string() << "'.";
 			return false;
 		case MCACHE_IMPORT_READ_ERROR:
-			CoreLog(error) <<"Could not read file '{}', rebuilding...", m.getMapCachePath().string());
+			HLog(error) << "Could not read file '" << m.getMapCachePath().string() << "', rebuilding...";
 			return false;
 		case MCACHE_IMPORT_INVALID_CHECKSUM:
-			CoreLog(error) <<"File cache file '{}' is corrupted (invalid checksum), rebuilding...", m.getMapCachePath().string());
+			HLog(error) << "File cache file '" << m.getMapCachePath().string() << "' is corrupted (invalid checksum), rebuilding...";
 			return false;
 		case MCACHE_IMPORT_DECOMPRESS_ERROR:
-			CoreLog(error) <<"File cache file '{}' could not be decompressed, rebuilding...", m.getMapCachePath().string());
+			HLog(error) << "File cache file '" << m.getMapCachePath().string() << "' could not be decompressed, rebuilding...";
 			return false;
 		case MCACHE_IMPORT_MAPINFO_ERROR:
-			CoreLog(error) <<"Could not read map information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
+			HLog(error) << "Could not read map information for a map while importing file '" << m.getMapCachePath().string() << "', rebuilding...";
 			return false;
 		case MCACHE_IMPORT_CELLINFO_ERROR:
-			CoreLog(error) <<"Could not read cell information for a map while importing file '{}', rebuilding...", m.getMapCachePath().string());
+			HLog(error) << "Could not read cell information for a map while importing file '" << m.getMapCachePath().string() << "', rebuilding...";
 			return false;
 	}
-
-	int map_container_count = ZoneServer->get_zone_config().get_map_container_count();
+;
 	int container_idx = 0, map_counter = 0, total_maps = 0;
 	int mcache_size = m.getMCache()->maps.size();
-	int container_max = std::ceil((double) mcache_size / map_container_count);
+	int container_max = std::ceil((double) mcache_size / MAX_MAP_CONTAINER_THREADS);
 
-	CoreLog(info) <<"Initializing {} map containers with {} maps per container for a total of {} maps...", map_container_count, container_max, mcache_size);
+	HLog(info) << "Initializing " << MAX_MAP_CONTAINER_THREADS << " map containers with " << container_max << " maps per container for a total of " << mcache_size << " maps...";
 
-	for (int i = 0; i < map_container_count; i++)
-		_map_containers.push_back(std::make_shared<MapThreadContainer>());
+	for (int i = 0; i < MAX_MAP_CONTAINER_THREADS; i++)
+		_map_containers.push_back(std::make_shared<MapContainerThread>());
 
 	for (auto &i : m.getMCache()->maps) {
 		std::shared_ptr<Map> map = std::make_shared<Map>(_map_containers[container_idx], i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
@@ -112,14 +112,14 @@ bool MapManager::LoadMapCache()
 		total_maps++;
 
 		if (container_max == map_counter || total_maps == mcache_size) {
-			CoreLog(info) <<"Initializing {} maps in map container {:p}...", map_counter, (void *) _map_containers[container_idx].get());
+			HLog(info) << "Initializing " << map_counter << " maps in map container " << (void *) _map_containers[container_idx].get() << "...";
 			_map_containers[container_idx]->initialize();
 			_map_containers[container_idx++]->start();
 			map_counter = 0;
 		}
 	}
 
-	CoreLog(info) <<"Done initializing {} maps in {} containers.", total_maps, map_container_count);
+	HLog(info) << "Done initializing " << total_maps << " maps in " << MAX_MAP_CONTAINER_THREADS << " containers.";
 
 	return true;
 }

@@ -108,7 +108,7 @@ void CharSocket::read_handler()
 		uint16_t packet_id = 0x0;
 		memcpy(&packet_id, get_read_buffer().get_read_pointer(), sizeof(uint16_t));
 		
-		PacketTablePairType p = get_session()->pkt_tbl()->get_packet_info(packet_id);
+		HPacketTablePairType p = get_session()->pkt_tbl()->get_hpacket_info(packet_id);
 		
 		int16_t packet_length = p.first;
 		

@@ -28,7 +28,6 @@
 #ifndef HORIZON_AUTH_CLIENT_PACKET_LENGTH_TABLE_20100413
 #define HORIZON_AUTH_CLIENT_PACKET_LENGTH_TABLE_20100413
 
-#include "Server/Common/Base/NetworkPacket.hpp"
 #include "Core/Multithreading/LockedLookupTable.hpp"
 
 #include "Default.hpp"
@@ -52,11 +51,13 @@ public:
 	ClientPacketLengthTable(std::shared_ptr<AuthSession> s)
 	: PacketLengthTable(s)
 	{
-#define ADD_PKT(i, j, k) _packet_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
-		ADD_PKT(0x0823, -1, AC_OTP_AUTH_ACK);
-		ADD_PKT(0x0821, 2, AC_OTP_USER);
-		ADD_PKT(0x0822, 9, CA_OTP_AUTH_REQ);
-#undef ADD_PKT
+#define ADD_HPKT(i, j, k) _hpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+#define ADD_TPKT(i, j, k) _tpacket_length_table.insert(i, std::make_pair(j, std::make_shared<k>(s)))
+		ADD_TPKT(0x0823, -1, AC_OTP_AUTH_ACK);
+		ADD_TPKT(0x0821, 2, AC_OTP_USER);
+		ADD_HPKT(0x0822, 9, CA_OTP_AUTH_REQ);
+#undef ADD_TPKT
+#undef ADD_HPKT
 	}
 
 	~ClientPacketLengthTable() { }

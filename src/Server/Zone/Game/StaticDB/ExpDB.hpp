@@ -37,19 +37,11 @@
 #include <string>
 #include <vector>
 #include <cassert>
-
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-	#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
 #include <sol.hpp>
 
 namespace Horizon
 {
 namespace Zone
-{
-namespace Game
 {
 
 struct exp_group_data
@@ -101,8 +93,7 @@ protected:
 
 }
 }
-}
 
-#define ExpDB Horizon::Zone::Game::ExpDatabase::get_instance()
+#define ExpDB Horizon::Zone::ExpDatabase::get_instance()
 
 #endif /* HORIZON_ZONE_GAME_CONFIGURATION_EXPDB */
