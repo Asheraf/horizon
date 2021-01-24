@@ -28,8 +28,10 @@
 #ifndef HORIZON_ZONECLIENTINTERFACE_HPP
 #define HORIZON_ZONECLIENTINTERFACE_HPP
 
-#include "Server/Common/Interfaces/ClientInterface.hpp"
 #include "Server/Common/Base/NetworkPacket.hpp"
+#include "Server/Common/Definitions/EntityDefinitions.hpp"
+#include "Server/Common/Interfaces/ClientInterface.hpp"
+#include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
 
 namespace Horizon
 {
@@ -42,6 +44,7 @@ namespace Traits
 	class Status;
 }
 }
+class Entity;
 class ZoneSession;
 class ZoneClientInterface : public ClientInterface<ZoneSession>
 {
@@ -61,6 +64,16 @@ public:
 	/* NPC */
 	uint32_t get_npc_contact_guid() { return _npc_contact_guid; }
 	void set_npc_contact_guid(uint32_t guid) { _npc_contact_guid = guid; }
+	
+	/* Movement */
+	bool notify_player_movement(MapCoords from, MapCoords to);
+	bool notify_stop_movement(int32_t guid, int16_t x, int16_t y);
+	
+	entity_viewport_entry create_viewport_entry(std::shared_ptr<Entity> entity);
+	bool notify_viewport_add_entity(entity_viewport_entry entry);
+	bool notify_viewport_remove_entity(std::shared_ptr<Entity> entity, entity_viewport_notification_type type);
+	bool notify_movement_stop(int32_t guid, int16_t x, int16_t y);
+	bool notify_viewport_moving_entity(entity_viewport_entry entry);
 	
 	void notify_npc_dialog(uint32_t npc_guid, std::string dialog);
 	void notify_npc_next_dialog(uint32_t npc_guid);

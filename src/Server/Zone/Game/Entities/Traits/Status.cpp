@@ -71,7 +71,7 @@ void Status::initialize()
 	set_body_style(std::make_shared<BodyStyle>(_entity, 0));
 }
 
-void Status::initialize(std::shared_ptr<Entity> entity)
+void Status::initialize_player(std::shared_ptr<Entity> entity)
 {
 	std::shared_ptr<Player> pl = entity->template downcast<Player>();
 	SQL::TableCharacterStatus tcs;

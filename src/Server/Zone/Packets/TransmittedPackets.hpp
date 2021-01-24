@@ -8187,6 +8187,7 @@ enum {
 	ID_ZC_NOTIFY_VANISH = 0x0080
 #endif
 };
+
 /**
  * @brief Main object for the aegis packet: ZC_NOTIFY_VANISH
  *
@@ -8199,7 +8200,7 @@ public:
 	{}
 	virtual ~ZC_NOTIFY_VANISH() {}
 
-	void deliver(int32_t guid, int8_t type);
+	void deliver(int32_t guid, entity_viewport_notification_type type);
 	ByteBuffer &serialize();
 
 /* Structure */
@@ -8484,10 +8485,11 @@ public:
 	{}
 	virtual ~ZC_NOTIFY_STANDENTRY11() {}
 
-	void deliver();
+	void deliver(entity_viewport_entry entry);
 	ByteBuffer &serialize();
 
 /* Structure */
+	entity_viewport_entry _entry;
 };
 
 enum {
@@ -20059,10 +20061,11 @@ public:
 	{}
 	virtual ~ZC_NOTIFY_MOVEENTRY11() {}
 
-	void deliver();
+	void deliver(entity_viewport_entry entry);
 	ByteBuffer &serialize();
 
 /* Structure */
+	entity_viewport_entry _entry;
 };
 
 enum {

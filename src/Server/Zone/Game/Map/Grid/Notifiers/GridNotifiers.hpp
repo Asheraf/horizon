@@ -128,25 +128,6 @@ struct GridNPCTrigger
 	void Visit(GridRefManager<NOT_INTERESTED> &) { }
 };
 
-template <typename ZC_PACKET_T>
-struct GridPlayerNotifier
-{
-	std::weak_ptr<Horizon::Zone::Entity> _entity;
-	ZC_PACKET_T _pkt;
-	player_notifier_type _type;
-
-	GridPlayerNotifier(ZC_PACKET_T &pkt, std::weak_ptr<Horizon::Zone::Entity> entity, player_notifier_type type = GRID_NOTIFY_AREA)
-	: _entity(entity), _pkt(pkt), _type(type)
-	{ }
-
-	template <class T>
-	void notify(GridRefManager<T> &m);
-
-	void Visit(GridRefManager<entity_ns(Player)> &m) { notify(m); }
-
-	template<class NOT_INTERESTED>
-	void Visit(GridRefManager<NOT_INTERESTED> &) { }
-};
 #undef entity_ns
 
 #include "GridNotifiersImpl.hpp"

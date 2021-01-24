@@ -41,7 +41,7 @@ Horizon::Zone::Entities::Traits::BasicAttributeNotifier<NOTIFIABLE_TYPE, NOTIFIA
 	using namespace Horizon::Zone::Entities;
 	std::shared_ptr<Entity> entity = get_entity();
 
-	if (!entity || entity->get_type() != ENTITY_PLAYER)
+	if (!entity || entity->type() != ENTITY_PLAYER)
 		return;
 
 //	entity->downcast<Player>()->get_packet_handler()->Send_ZC_PAR_CHANGE(NOTIFIABLE_TYPE, std::get<I>(t).lock()->total());
@@ -53,7 +53,7 @@ void Horizon::Zone::Entities::Traits::BasicAttributeNotifier<NOTIFIABLE_TYPE, NO
 	using namespace Horizon::Zone::Entities;
 	std::shared_ptr<Entity> entity = get_entity();
 
-	if (!entity || entity->get_type() != ENTITY_PLAYER)
+	if (!entity || entity->type() != ENTITY_PLAYER)
 		return;
 
 //	entity->downcast<Player>()->get_packet_handler()->Send_ZC_PAR_CHANGE(NOTIFIABLE_TYPE, get_sum(_notifiables));
@@ -66,7 +66,7 @@ void Horizon::Zone::Entities::Traits::ExperienceNotifier<NOTIFIABLE_TYPE, NOTIFI
 	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
 	std::shared_ptr<Entity> entity = get_entity();
 
-	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
+	if (!entity || entity->type() != ENTITY_PLAYER || !notifiable)
 		return;
 
 //	entity->downcast<Player>()->get_packet_handler()->Send_ZC_LONGPAR_CHANGE(NOTIFIABLE_TYPE, notifiable->get_base());
@@ -80,7 +80,7 @@ void Horizon::Zone::Entities::Traits::StatusPointRequirementNotifier<NOTIFIABLE_
 	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
 	std::shared_ptr<Entity> entity = get_entity();
 
-	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
+	if (!entity || entity->type() != ENTITY_PLAYER || !notifiable)
 		return;
 
 //	entity->downcast<Player>()->get_packet_handler()->Send_ZC_STATUS_CHANGE(NOTIFIABLE_TYPE, notifiable->get_base());
@@ -93,7 +93,7 @@ void Horizon::Zone::Entities::Traits::StatusPointNotifier<NOTIFIABLE_TYPE, NOTIF
 	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
 	std::shared_ptr<Entity> entity = get_entity();
 
-	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
+	if (!entity || entity->type() != ENTITY_PLAYER || !notifiable)
 		return;
 
 //	entity->downcast<Player>()->get_packet_handler()->Send_ZC_COUPLESTATUS(NOTIFIABLE_TYPE, notifiable->get_base(), notifiable->get_equip() + notifiable->get_status());
@@ -106,7 +106,7 @@ void Horizon::Zone::Entities::Traits::AttackRangeNotifier<NOTIFIABLE_TYPE, NOTIF
 	std::shared_ptr<typename NOTIFIABLE::element_type> notifiable = _notifiable.lock();
 	std::shared_ptr<Entity> entity = get_entity();
 
-	if (!entity || entity->get_type() != ENTITY_PLAYER || !notifiable)
+	if (!entity || entity->type() != ENTITY_PLAYER || !notifiable)
 		return;
 
 //	entity->downcast<Player>()->get_packet_handler()->Send_ZC_ATTACK_RANGE(notifiable->total());

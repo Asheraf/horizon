@@ -53,10 +53,6 @@ Entity::~Entity()
 void Entity::initialize()
 {
 
-	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
-
-	_is_initialized = true;
-
 	_status = std::make_shared<Entities::Traits::Status>(shared_from_this());
 
 //	if (get_type() == ENTITY_PLAYER)
@@ -65,6 +61,7 @@ void Entity::initialize()
 //				sync_with_models();
 //				context.Repeat();
 //			});
+	_is_initialized = true;
 }
 
 
@@ -94,7 +91,7 @@ bool Entity::schedule_movement(MapCoords coords)
 	_changed_dest_pos = {0, 0};
 
 	if (_walk_path.size() > 14) {
-		if (this->get_type() == ENTITY_PLAYER)
+		if (this->type() == ENTITY_PLAYER)
 			static_cast<Entities::Player *>(this)->stop_movement();
 	} else if (_walk_path.size() > 0) {
 		on_movement_begin();

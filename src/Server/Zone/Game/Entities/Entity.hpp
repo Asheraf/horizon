@@ -74,9 +74,9 @@ public:
 	/**
 	 * Movement
 	 */
-	MapCoords const &destination_coordinates() const { return _dest_pos; }
+	MapCoords const &dest_coords() const { return _dest_pos; }
 	virtual bool move_to_coordinates(uint16_t x, uint16_t y);
-	bool is_walking() { return (destination_coordinates() != MapCoords(0, 0)); }
+	bool is_walking() { return (dest_coords() != MapCoords(0, 0)); }
 
 protected:
 	bool schedule_movement(MapCoords mcoords);
@@ -121,7 +121,7 @@ public:
 		_script_manager = map->container()->get_script_manager();
 	}
 
-	std::shared_ptr<MapContainerThread> container() { return _map_container_thread.lock(); }
+	std::shared_ptr<MapContainerThread> map_container() { return _map_container_thread.lock(); }
 	std::shared_ptr<ScriptManager> script_manager() { return _script_manager.lock(); }
 
 	/**
@@ -130,7 +130,7 @@ public:
 	virtual void update(uint64_t diff);
 	TaskScheduler &getScheduler() { return _scheduler; }
 
-	entity_type get_type() const { return _type; }
+	entity_type type() const { return _type; }
 
 	template <class T>
 	std::shared_ptr<T> downcast()

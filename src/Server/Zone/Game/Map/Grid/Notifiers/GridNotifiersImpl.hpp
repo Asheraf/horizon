@@ -74,7 +74,7 @@ void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 				tpl->add_entity_to_viewport(src_entity);
 			}
 		} else if (_notif_type > EVP_NOTIFY_OUT_OF_SIGHT || (_notif_type == EVP_NOTIFY_OUT_OF_SIGHT && !is_in_range)) {
-			if (src_entity->get_type() == ENTITY_PLAYER) {
+			if (src_entity->type() == ENTITY_PLAYER) {
 				src_entity->template downcast<Player>()->remove_entity_from_viewport(tpl, _notif_type);
 			}
 
@@ -118,32 +118,6 @@ void GridNPCTrigger::check_and_trigger(GridRefManager<T> &m)
 			std::shared_ptr<Player> player = _source.lock()->downcast<Player>();
 			_source.lock()->script_manager()->contact_npc_for_player(player, npc->guid());
 		}
-	}
-}
-
-template <typename ZC_PACKET_T> template <typename T>
-void GridPlayerNotifier<ZC_PACKET_T>::notify(GridRefManager<T> &m)
-{
-	using namespace Horizon::Zone::Entities;
-
-	std::shared_ptr<Player> pl = _entity.lock()->template downcast<Player>();
-
-	if (pl == nullptr)
-		return;
-
-	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != typename GridRefManager<T>::iterator(nullptr); ++iter) {
-		if (iter->source() == nullptr)
-			continue;
-
-		switch (_type)
-		{
-			case GRID_NOTIFY_AREA_WOS:
-				if (iter->source()->get_guid() == pl->guid())
-					continue;
-			default:
-				break;
-		}
-//		iter->source()->get_packet_handler()->send_packet(_pkt);
 	}
 }
 

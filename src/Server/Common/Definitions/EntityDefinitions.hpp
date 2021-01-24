@@ -636,41 +636,46 @@ struct entity_viewport_entry
 	}
 
 	entity_type unit_type{ENTITY_PLAYER};
-	uint32_t guid{0};
-	uint32_t character_id{0};
+	int32_t guid{0};
+	int32_t character_id{0};
 	int16_t speed{150};
 	int16_t body_state{0};
 	int16_t health_state{0};
 	int32_t effect_state{0};
 	int16_t job_id{0};
-	uint16_t hair_style_id{0};
-	uint32_t weapon_id{0};
-	uint16_t headgear_bottom_id{0};
-	uint16_t headgear_top_id{0};
-	uint16_t headgear_mid_id{0};
+	int16_t hair_style_id{0};
+	int32_t weapon_id{0};
+	int16_t headgear_bottom_id{0};
+#if (CLIENT_TYPE == 'M' && PACKET_VERSION >= 20181121) \
+|| (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180704) \
+|| (CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20181114)
+	int32_t shield{0};
+#endif
+	int16_t headgear_top_id{0};
+	int16_t headgear_mid_id{0};
 	int16_t hair_color_id{0};
 	int16_t cloth_color_id{0};
 	directions head_direction{DIR_SOUTH};
-	uint16_t robe_id{0};
-	uint32_t guild_id{0};
+	int16_t robe_id{0};
+	int32_t guild_id{0};
 	int16_t guild_emblem_version{0};
 	int16_t honor{0};
 	int32_t virtue{0};
-	uint8_t in_pk_mode{0};
-	uint8_t gender{0};
-	uint16_t current_x{0}, current_y{0}, current_dir{0};
-	uint16_t to_x{0}, to_y{0};
-	uint8_t x_size{0};
-	uint8_t y_size{0};
+	int8_t in_pk_mode{0};
+	int8_t gender{0};
+	int16_t current_x{0}, current_y{0}, current_dir{0};
+	int16_t to_x{0}, to_y{0};
+	int8_t x_size{0};
+	int8_t y_size{0};
 	entity_posture_type posture{POSTURE_STANDING};
 	int16_t base_level{0};
 	int16_t font{0};
 	int32_t max_hp{-1};
 	int32_t hp{-1};
-	uint8_t is_boss{0};
-	uint16_t body_style_id{0};
+	int8_t is_boss{0};
+	int16_t body_style_id{0};
 	char name[MAX_UNIT_NAME_LENGTH]{0};
-	uint32_t move_start_time;
+	int32_t move_start_time;
 };
 
 

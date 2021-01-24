@@ -187,7 +187,11 @@ void MapContainerThread::update(uint64_t diff)
 	for (auto pi = _managed_players.begin(); pi != _managed_players.end();) {
 		std::shared_ptr<Entities::Player> player = pi->second;
 
-		if (!player || !player->get_session() || !player->get_session()->get_socket()) {
+		if (!player
+			|| !player->get_session()
+			|| !player->get_session()->get_socket()
+			|| !player->character()._online
+			) {
 			pi = _managed_players.erase(pi);
 			continue;
 		}

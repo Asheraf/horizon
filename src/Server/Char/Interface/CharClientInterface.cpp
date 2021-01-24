@@ -147,7 +147,7 @@ bool CharClientInterface::make_new_character(std::string name, uint8_t slot, uin
 		return false;
 	}
 	
-	if (slot >= get_session()->get_session_data()._character_slots) {
+	if (slot > get_session()->get_session_data()._character_slots) {
 		hcref.deliver(HC_CREATE_ERROR_CHAR_SLOT);
 		return false;
 	}
@@ -157,7 +157,7 @@ bool CharClientInterface::make_new_character(std::string name, uint8_t slot, uin
 	
 	int c_last_insert_id = (*conn)(insert_into(tch).set(tch.account_id = get_session()->get_session_data()._account_id, tch.slot = slot, tch.name = name,
 														 tch.current_map = new_map, tch.current_x = x, tch.current_y = y,
-														 tch.saved_map = new_map, tch.saved_x = x, tch.saved_y = y));
+														 tch.saved_map = new_map, tch.saved_x = x, tch.saved_y = y, tch.gender = gender ? "M" : "F"));
 	
 	(*conn)(insert_into(tcs).set(tcs.id = c_last_insert_id, tcs.job_id = job_class, tcs.hair_color_id = hair_color, tcs.hair_style_id = hair_style));
 	

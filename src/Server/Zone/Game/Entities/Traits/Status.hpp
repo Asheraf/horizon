@@ -52,10 +52,8 @@ public:
 	Status(std::weak_ptr<Entity> entity) : _entity(entity) { }
 	~Status() { }
 
-	// For all other entities
 	void initialize();
-	// For players
-	void initialize(std::shared_ptr<Entity> entity);
+	void initialize_player(std::shared_ptr<Entity> entity);
 	void initialize_sub_attributes(std::shared_ptr<const job_db_data> job);
 	void initialize_observable_statuses();
 	void initialize_notifiable_statuses();

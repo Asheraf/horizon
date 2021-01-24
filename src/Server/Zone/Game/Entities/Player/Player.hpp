@@ -98,7 +98,6 @@ public:
 	void add_entity_to_viewport(std::weak_ptr<Entity> entity);
 	void realize_entity_movement(std::weak_ptr<Entity> entity);
 	void remove_entity_from_viewport(std::shared_ptr<Entity> entity, entity_viewport_notification_type type);
-	entity_viewport_entry create_viewport_entry(std::shared_ptr<Entity> entity);
 
 	template<typename ZC_PACKET_T>
 	void notify_in_area(ZC_PACKET_T &pkt, player_notifier_type type, uint16_t range = MAX_VIEW_RANGE);

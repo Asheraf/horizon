@@ -37,6 +37,9 @@
 
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Game/Entities/Traits/Status.hpp"
+#include "Server/Zone/Game/Map/Map.hpp"
+#include "Server/Zone/Game/Map/MapManager.hpp"
+#include "Server/Zone/Game/Map/MapContainerThread.hpp"
 #include "Server/Zone/Packets/TransmittedPackets.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
@@ -174,6 +177,10 @@ bool ZoneClientInterface::restart(uint8_t type)
 		default:
 			rpkt.deliver(type);
 			HLog(info) << "Character has moved to the character server.";
+			std::shared_ptr<Entities::Player> pl = get_session()->player();
+			pl->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
+			pl->character()._online = false;
+			pl->map_container()->remove_player(pl);
 			break;
 	}
 	
@@ -186,13 +193,14 @@ bool ZoneClientInterface::disconnect(uint8_t type)
 	
 	ard.deliver(0); // 0 => Quit, 1 => Wait for 10 seconds
 	
+	std::shared_ptr<Entities::Player> pl = get_session()->player();
+	pl->map_container()->remove_player(pl);
 	return true;
 }
 
 bool ZoneClientInterface::walk_to_coordinates(uint16_t x, uint16_t y, uint8_t dir)
 {
-	HLog(debug) << "x: " << x << " y: " << y << " dir: " << dir << ".";
-	
+	get_session()->player()->move_to_coordinates(x, y);
 	return true;
 }
 
@@ -200,7 +208,6 @@ bool ZoneClientInterface::notify_time()
 {
 	ZC_NOTIFY_TIME pkt(get_session());
 	pkt.deliver();
-	
 	return true;
 }
 
@@ -219,6 +226,104 @@ bool ZoneClientInterface::notify_entity_name(uint32_t guid)
 	req.deliver(guid, entity->name(), "", "", "");
 #endif
 	
+	return true;
+}
+
+entity_viewport_entry ZoneClientInterface::create_viewport_entry(std::shared_ptr<Entity> entity)
+{
+	entity_viewport_entry entry;
+	std::shared_ptr<Entities::Traits::Status> status = entity->status();
+	
+	entry.guid = entity->guid();
+	entry.unit_type = entity->type();
+	entry.speed = status->get_movement_speed()->total();
+	entry.body_state = 0;
+	entry.health_state = 0;
+	entry.effect_state = 0;
+	entry.job_id = entity->job_id();
+	entry.hair_style_id = status->get_hair_style()->get();
+	entry.hair_color_id = status->get_hair_color()->get();
+	entry.robe_id = status->get_robe_sprite()->get();
+	entry.guild_id = 0;
+	entry.guild_emblem_version = 0;
+	entry.honor = 0;
+	entry.virtue = 0;
+	entry.in_pk_mode = 0;
+	entry.current_x = entity->map_coords().x();
+	entry.current_y = entity->map_coords().y();
+	entry.current_dir = entity->direction();
+	
+	if (entity->is_walking()) {
+		entry.to_x = entity->dest_coords().x();
+		entry.to_y = entity->dest_coords().y();
+	}
+	
+	entry.posture = entity->posture();
+	entry.base_level = status->get_base_level()->total();
+	entry.font = 1;
+	
+	if (status->get_max_hp()->total() > 0)
+		entry.max_hp = status->get_max_hp()->total();
+	
+	if (status->get_current_hp()->total() > 0)
+		entry.hp = status->get_current_hp()->total();
+	
+	entry.is_boss = 0;
+	entry.body_style_id = 0;
+	std::strncpy(entry.name, entity->name().c_str(), entity->name().size());
+	
+	switch (entry.unit_type)
+	{
+		case ENTITY_PLAYER:
+			entry.character_id = entity->downcast<Entities::Player>()->character()._character_id;
+			entry.x_size = entry.y_size = 0;
+			entry.gender = entity->downcast<Entities::Player>()->character()._gender;
+			break;
+		case ENTITY_NPC:
+		default:
+			entry.x_size = entry.y_size = 0;
+			break;
+	}
+	
+	return entry;
+}
+
+bool ZoneClientInterface::notify_player_movement(MapCoords from, MapCoords to)
+{
+	ZC_NOTIFY_PLAYERMOVE pkt(get_session());
+	pkt.deliver(from.x(), from.y(), to.x(), to.y());
+	return true;
+}
+
+bool ZoneClientInterface::notify_movement_stop(int32_t guid, int16_t x, int16_t y)
+{
+	ZC_STOPMOVE pkt(get_session());
+	pkt.deliver(guid, x, y);
+	return true;
+}
+
+bool ZoneClientInterface::notify_viewport_add_entity(entity_viewport_entry entry)
+{
+#if PACKET_VERSION >= 20150513
+	ZC_NOTIFY_STANDENTRY11 pkt(get_session());
+	pkt.deliver(entry);
+#endif
+	return true;
+}
+
+bool ZoneClientInterface::notify_viewport_moving_entity(entity_viewport_entry entry)
+{
+#if PACKET_VERSION >= 20150513
+	ZC_NOTIFY_MOVEENTRY11 pkt(get_session());
+	pkt.deliver(entry);
+#endif
+	return true;
+}
+
+bool ZoneClientInterface::notify_viewport_remove_entity(std::shared_ptr<Entity> entity, entity_viewport_notification_type type)
+{
+	ZC_NOTIFY_VANISH pkt(get_session());
+	pkt.deliver(entity->guid(), type);
 	return true;
 }
 

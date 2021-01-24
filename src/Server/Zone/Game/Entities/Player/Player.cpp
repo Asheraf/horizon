@@ -75,7 +75,7 @@ void Player::initialize()
 	script_manager()->initialize_state(get_lua_state());
 
 	// Initialize Status.
-	status()->initialize(shared_from_this());
+	status()->initialize_player(shared_from_this());
 
 	// Inventory.
 	_inventory = std::make_shared<Assets::Inventory>(downcast<Player>(), get_max_inventory_size());
@@ -90,12 +90,14 @@ void Player::initialize()
 	update_viewport();
 	// On map entry processing.
 	on_map_enter();
+	
+	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 }
 
 void Player::stop_movement()
 {
 	MapCoords const &coords = map_coords();
-//	get_packet_handler()->Send_ZC_STOPMOVE(get_guid(), coords.x(), coords.y());
+	get_session()->clif()->notify_movement_stop(guid(), coords.x(), coords.y());
 }
 
 void Player::update(uint64_t diff)
@@ -172,7 +174,7 @@ void Player::sync_with_models()
 
 void Player::on_movement_begin()
 {
-//	get_packet_handler()->Send_ZC_NOTIFY_PLAYERMOVE(get_dest_pos().x(), get_dest_pos().y());
+	get_session()->clif()->notify_player_movement(map_coords(), dest_coords());
 }
 
 void Player::on_movement_end()
@@ -200,78 +202,23 @@ void Player::update_viewport()
 
 void Player::add_entity_to_viewport(std::weak_ptr<Entity> entity)
 {
-//	if (!entity.expired())
-//		get_packet_handler()->Send_ZC_NOTIFY_STANDENTRY(create_viewport_entry(entity.lock()));
+	if (!entity.expired()) {
+		entity_viewport_entry entry = get_session()->clif()->create_viewport_entry(entity.lock());
+		get_session()->clif()->notify_viewport_add_entity(entry);
+	}
 }
 
 void Player::remove_entity_from_viewport(std::shared_ptr<Entity> entity, entity_viewport_notification_type type)
 {
-//	get_packet_handler()->Send_ZC_NOTIFY_VANISH(entity->get_guid(), type);
+	get_session()->clif()->notify_viewport_remove_entity(entity, type);
 }
 
 void Player::realize_entity_movement(std::weak_ptr<Entity> entity)
 {
-//	if (!entity.expired())
-//		get_packet_handler()->Send_ZC_NOTIFY_MOVEENTRY(create_viewport_entry(entity.lock()));
-}
-
-entity_viewport_entry Player::create_viewport_entry(std::shared_ptr<Entity> entity)
-{
-	entity_viewport_entry entry;
-	std::shared_ptr<Traits::Status> status = entity->status();
-//
-//	entry.guid = entity->get_guid();
-//	entry.unit_type = entity->get_type();
-//	entry.speed = status->get_movement_speed()->total();
-//	entry.body_state = 0;
-//	entry.health_state = 0;
-//	entry.effect_state = 0;
-//	entry.job_id = entity->get_job_id();
-//	entry.hair_style_id = status->get_hair_style()->get();
-//	entry.hair_color_id = status->get_hair_color()->get();
-//	entry.robe_id = status->get_robe_sprite()->get();
-//	entry.guild_id = 0;
-//	entry.guild_emblem_version = 0;
-//	entry.honor = 0;
-//	entry.virtue = 0;
-//	entry.in_pk_mode = 0;
-//	entry.gender = entity->get_gender();
-//	entry.current_x = entity->get_map_coords().x();
-//	entry.current_y = entity->get_map_coords().y();
-//	entry.current_dir = entity->get_direction();
-//
-//	if (entity->is_walking()) {
-//		entry.to_x = entity->get_dest_pos().x();
-//		entry.to_y = entity->get_dest_pos().y();
-//	}
-//
-//	entry.posture = entity->get_posture();
-//	entry.base_level = status->get_base_level()->total();
-//	entry.font = 1;
-//
-//	if (status->get_max_hp()->total() > 0)
-//		entry.max_hp = status->get_max_hp()->total();
-//
-//	if (status->get_current_hp()->total() > 0)
-//		entry.hp = status->get_current_hp()->total();
-//
-//	entry.is_boss = 0;
-//	entry.body_style_id = 0;
-//	std::strncpy(entry.name, entity->get_name().c_str(), entity->get_name().size());
-//
-//	switch (entry.unit_type)
-//	{
-//		case ENTITY_PLAYER:
-//			entry.character_id = entity->downcast<Player>()->get_char_model()->get_id();
-//			entry.x_size = entry.y_size = 0;
-//			break;
-//		case ENTITY_NPC:
-//		default:
-//			entry.x_size = entry.y_size = 0;
-//			break;
-//	}
-
-	return entry;
+	if (!entity.expired()) {
+		entity_viewport_entry entry = get_session()->clif()->create_viewport_entry(entity.lock());
+		get_session()->clif()->notify_viewport_moving_entity(entry);
+	}
 }
 
 bool Player::move_to_map(std::shared_ptr<Map> dest_map, MapCoords coords)

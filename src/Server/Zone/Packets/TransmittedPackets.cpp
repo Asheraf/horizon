@@ -2313,10 +2313,10 @@ ByteBuffer &ZC_BABYMSG::serialize()
 /**
  * ZC_NOTIFY_VANISH
  */
-void ZC_NOTIFY_VANISH::deliver(int32_t guid, int8_t type)
+void ZC_NOTIFY_VANISH::deliver(int32_t guid, entity_viewport_notification_type type)
 {
 	_guid = guid;
-	_type = type;
+	_type = (int8_t) type;
 
 	serialize();
 	transmit();
@@ -2383,10 +2383,55 @@ ByteBuffer &ZC_AUTOSPELLLIST::serialize()
 /**
  * ZC_NOTIFY_STANDENTRY11
  */
-void ZC_NOTIFY_STANDENTRY11::deliver() { }
+void ZC_NOTIFY_STANDENTRY11::deliver(entity_viewport_entry entry)
+{
+	_entry = entry;
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_NOTIFY_STANDENTRY11::serialize()
 {
+	char packed_pos[3]{0};
+	
+	buf() << _packet_id;
+	buf() << (int16_t) 104;
+	buf() << (int8_t) _entry.unit_type;
+	buf() << _entry.guid;
+	buf() << _entry.character_id;
+	buf() << _entry.speed;
+	buf() << _entry.body_state;
+	buf() <<_entry.health_state;
+	buf() << _entry.effect_state;
+	buf() << _entry.job_id;
+	buf() << _entry.hair_style_id;
+	buf() << _entry.weapon_id;
+	buf() << _entry.headgear_bottom_id;
+	buf() << _entry.headgear_top_id;
+	buf() << _entry.headgear_mid_id;
+	buf() << _entry.hair_color_id;
+	buf() << _entry.cloth_color_id;
+	buf() << (int16_t) _entry.head_direction;
+	buf() << _entry.robe_id;
+	buf() << _entry.guild_id;
+	buf() << _entry.guild_emblem_version;
+	buf() << _entry.honor;
+	buf() << _entry.virtue;
+	buf() << _entry.in_pk_mode;
+	buf() << _entry.gender;
+	PackPosition((int8_t *) packed_pos, _entry.current_x, _entry.current_y, _entry.current_dir);
+	buf().append(packed_pos, sizeof(packed_pos));
+	buf() << _entry.x_size;
+	buf() << _entry.y_size;
+	buf() << (int8_t) _entry.posture;
+	buf() << _entry.base_level;
+	buf() << _entry.font;
+	buf() << -1;
+	buf() << -1;
+	buf() << _entry.is_boss;
+	buf() << _entry.body_style_id;
+	buf().append(_entry.name, sizeof(_entry.name));
+	
 	return buf();
 }
 
@@ -5544,10 +5589,57 @@ ByteBuffer &ZC_NOTIFY_CLAN_CONNECTINFO::serialize()
 /**
  * ZC_NOTIFY_MOVEENTRY11
  */
-void ZC_NOTIFY_MOVEENTRY11::deliver() { }
+void ZC_NOTIFY_MOVEENTRY11::deliver(entity_viewport_entry entry)
+{
+	_entry = entry;
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_NOTIFY_MOVEENTRY11::serialize()
 {
+	char packed_pos[6]{0};
+	
+	_entry.move_start_time = (uint32_t) get_sys_time();
+	
+	buf() << _packet_id;
+	buf() << (int16_t) 110;
+	buf() << (int8_t) _entry.unit_type;
+	buf() << _entry.guid;
+	buf() << _entry.character_id;
+	buf() << _entry.speed;
+	buf() << _entry.body_state;
+	buf() << _entry.health_state;
+	buf() << _entry.effect_state;
+	buf() << _entry.job_id;
+	buf() << _entry.hair_style_id;
+	buf() << _entry.weapon_id;
+	buf() << _entry.headgear_bottom_id;
+	buf() << _entry.move_start_time;
+	buf() << _entry.headgear_top_id;
+	buf() << _entry.headgear_mid_id;
+	buf() << _entry.hair_color_id;
+	buf() << _entry.cloth_color_id;
+	buf() << (int16_t) _entry.head_direction;
+	buf() << _entry.robe_id;
+	buf() << _entry.guild_id;
+	buf() << _entry.guild_emblem_version;
+	buf() << _entry.honor;
+	buf() << _entry.virtue;
+	buf() << _entry.in_pk_mode;
+	buf() << _entry.gender;
+	PackPosition((int8_t *) packed_pos, _entry.current_x, _entry.current_y, _entry.to_x, _entry.to_y, 8, 8);
+	buf().append(packed_pos, sizeof(packed_pos));
+	buf() << _entry.x_size;
+	buf() << _entry.y_size;
+	buf() << _entry.base_level;
+	buf() << _entry.font;
+	buf() << -1;
+	buf() << -1;
+	buf() << _entry.is_boss;
+	buf() << _entry.body_style_id;
+	buf().append(_entry.name, sizeof(_entry.name));
+	
 	return buf();
 }
 

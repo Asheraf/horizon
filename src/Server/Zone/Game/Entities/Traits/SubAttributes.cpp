@@ -195,7 +195,7 @@ uint32_t WeaponATK::compute()
 	uint32_t str = 1, dex = 1;
 	using namespace Horizon::Zone::Entities;
 
-	if (get_entity() == nullptr || get_entity()->get_type() != ENTITY_PLAYER)
+	if (get_entity() == nullptr || get_entity()->type() != ENTITY_PLAYER)
 		return 0;
 
 	std::shared_ptr<Player> player = get_entity()->downcast<Player>();

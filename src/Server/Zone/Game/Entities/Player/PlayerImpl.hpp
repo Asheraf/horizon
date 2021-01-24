@@ -33,16 +33,4 @@
 #include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 
-template <typename ZC_PACKET_T>
-struct GridPlayerNotifier;
-
-template<typename ZC_PACKET_T>
-void Horizon::Zone::Entities::Player::notify_in_area(ZC_PACKET_T &pkt, player_notifier_type type, uint16_t range)
-{
-	GridPlayerNotifier<ZC_PACKET_T> notifier(pkt, static_cast<Entity *>(this)->shared_from_this(), type);
-	GridReferenceContainerVisitor<GridPlayerNotifier<ZC_PACKET_T>, GridReferenceContainer<AllEntityTypes>> container(notifier);
-
-	map()->visit_in_range(map_coords(), container, range);
-}
-
 #endif /* HORIZON_ZONE_GAME_ENTITIES_PLAYERIMPL_HPP */
