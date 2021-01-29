@@ -31,8 +31,6 @@
 #ifndef HORIZON_ZONE_GAME_SKILLDB_HPP
 #define HORIZON_ZONE_GAME_SKILLDB_HPP
 
-#include "Core/Multithreading/LockedLookupTable.hpp"
-
 #include <cstdlib>
 
 #include <sol.hpp>
@@ -43,7 +41,7 @@ namespace Zone
 {
 struct skill_config_data
 {
-
+	int _skill_id;
 };
 class SkillDatabase
 {

@@ -45,7 +45,6 @@ namespace Entities
 class Player;
 namespace Traits
 {
-	template <class T>
 	class Appearance
 	{
 	public:
@@ -68,7 +67,7 @@ namespace Traits
 		uint32_t _id{0};
 	};
 
-	class HairColor : public Appearance<HairColor>
+	class HairColor : public Appearance
 	{
 	public:
 		HairColor(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -77,7 +76,7 @@ namespace Traits
 		~HairColor() { }
 	};
 
-	class ClothColor : public Appearance<ClothColor>
+	class ClothColor : public Appearance
 	{
 	public:
 		ClothColor(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -86,7 +85,7 @@ namespace Traits
 		~ClothColor() { }
 	};
 
-	class WeaponSprite : public Appearance<WeaponSprite>
+	class WeaponSprite : public Appearance
 	{
 	public:
 		WeaponSprite(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -95,7 +94,7 @@ namespace Traits
 		~WeaponSprite() { }
 	};
 
-	class ShieldSprite : public Appearance<ShieldSprite>
+	class ShieldSprite : public Appearance
 	{
 	public:
 		ShieldSprite(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -104,7 +103,7 @@ namespace Traits
 		~ShieldSprite() { }
 	};
 
-	class RobeSprite : public Appearance<RobeSprite>
+	class RobeSprite : public Appearance
 	{
 	public:
 		RobeSprite(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -113,7 +112,7 @@ namespace Traits
 		~RobeSprite() { }
 	};
 
-	class HeadTopSprite : public Appearance<HeadTopSprite>
+	class HeadTopSprite : public Appearance
 	{
 	public:
 		HeadTopSprite(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -122,7 +121,7 @@ namespace Traits
 		~HeadTopSprite() { }
 	};
 
-	class HeadMidSprite : public Appearance<HeadMidSprite>
+	class HeadMidSprite : public Appearance
 	{
 	public:
 		HeadMidSprite(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -131,7 +130,7 @@ namespace Traits
 		~HeadMidSprite() { }
 	};
 
-	class HeadBottomSprite : public Appearance<HeadBottomSprite>
+	class HeadBottomSprite : public Appearance
 	{
 	public:
 		HeadBottomSprite(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -140,7 +139,7 @@ namespace Traits
 		~HeadBottomSprite() { }
 	};
 
-	class HairStyle : public Appearance<HairStyle>
+	class HairStyle : public Appearance
 	{
 	public:
 		HairStyle(std::weak_ptr<Entity> entity, uint32_t id = 0)
@@ -149,7 +148,7 @@ namespace Traits
 		~HairStyle() { }
 	};
 
-	class BodyStyle : public Appearance<BodyStyle>
+	class BodyStyle : public Appearance
 	{
 	public:
 		BodyStyle(std::weak_ptr<Entity> entity, uint32_t id = 0)

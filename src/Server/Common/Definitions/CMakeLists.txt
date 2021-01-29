@@ -27,6 +27,10 @@
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+set(COMMON_DEFINITION_SOURCES
+	${DIR}/LuaDefinitionSync.cpp
+	PARENT_SCOPE)
+	
 set(COMMON_DEFINITION_HEADERS
 	${DIR}/BattleDefinitions.hpp
 	${DIR}/Definitions.hpp

@@ -78,6 +78,7 @@ bool Entity::schedule_movement(MapCoords coords)
 		return false;
 	}
 
+	HLog(debug) << "Moving From : (" << source_coords.x << ", " << source_coords.y << ") to (" << dest_coords.x << ", " << dest_coords.y << ")";
 	// This method returns vector of coordinates from target to source.
 	auto path = map()->get_pathfinder().findPath(source_coords, dest_coords);
 
@@ -106,7 +107,7 @@ void Entity::move()
 	MapCoords my_coords = map_coords();
 	AStar::Vec2i c = _walk_path.at(0);
 
-	getScheduler().Schedule(Milliseconds(status()->get_movement_speed()->get_with_cost(c.move_cost)), ENTITY_SCHEDULE_WALK,
+	getScheduler().Schedule(Milliseconds(status()->movement_speed()->get_with_cost(c.move_cost)), ENTITY_SCHEDULE_WALK,
 		[this, c, my_coords] (TaskContext /*movement*/)
 		{
 			if (_instep_movement_stop)
@@ -118,6 +119,7 @@ void Entity::move()
 
 			notify_nearby_players_of_self(EVP_NOTIFY_OUT_OF_SIGHT);
 			set_map_coords(step_coords);
+			HLog(debug) << "step_coords: " << step_coords.x() << ", " << step_coords.y() << "."; 
 			notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 
 			_walk_path.erase(_walk_path.begin());

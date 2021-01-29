@@ -38,7 +38,6 @@
 #include "Server/Common/SQL/Character/Character.hpp"
 
 #include <memory>
-#include <atomic>
 
 #include <sol.hpp>
 
@@ -99,8 +98,7 @@ public:
 	void realize_entity_movement(std::weak_ptr<Entity> entity);
 	void remove_entity_from_viewport(std::shared_ptr<Entity> entity, entity_viewport_notification_type type);
 
-	template<typename ZC_PACKET_T>
-	void notify_in_area(ZC_PACKET_T &pkt, player_notifier_type type, uint16_t range = MAX_VIEW_RANGE);
+	void notify_in_area(ByteBuffer &buf, player_notifier_type type, uint16_t range = MAX_VIEW_RANGE);
 
 	/**
 	 * NPC / Script applications

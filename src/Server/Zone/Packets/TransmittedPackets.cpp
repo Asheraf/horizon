@@ -2175,10 +2175,42 @@ ByteBuffer &ZC_EQUIPWIN_MICROSCOPE::serialize()
 /**
  * ZC_SPRITE_CHANGE
  */
-void ZC_SPRITE_CHANGE::deliver() { }
+void ZC_SPRITE_CHANGE::deliver(int32_t guid, entity_appearance_type look_type, int32_t look_id, int32_t look_shield)
+{
+	_guid = guid;
+	_look_type = (int8_t) look_type;
+#if (CLIENT_TYPE == 'M' && PACKET_VERSION >= 20181121) \
+|| (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180704) \
+|| (CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20181114)
+	_look_id = (int32_t) look_id;
+	_shield_id = look_shield;
+#elif PACKET_VERSION >= 4
+	_look_id = (int16_t) look_id;
+	_shield_id = (int16_t) look_shield;
+#else
+	_look_id = (int8_t) look_id;
+#endif
+
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_SPRITE_CHANGE::serialize()
 {
+	buf() << _packet_id;
+	buf() << _guid;
+	buf() << _look_type;
+#if (CLIENT_TYPE == 'M' && PACKET_VERSION >= 20181121) \
+	|| (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180704) \
+	|| (CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20181114)
+		buf() << (int32_t) _look_id;
+	buf() << (int32_t) _shield_id;
+#elif PACKET_VERSION >= 4
+	buf() << (int16_t) _look_id;
+	buf() << (int16_t) _shield_id;
+#else
+	buf() << (int8_t) _look_id;
+#endif
 	return buf();
 }
 
@@ -3603,7 +3635,7 @@ ByteBuffer &ZC_NOTIFY_ENTRY_QUEUE_ADMISSION::serialize()
 /**
  * ZC_MAPPROPERTY_R2
  */
-void ZC_MAPPROPERTY_R2::deliver(properties p) 
+void ZC_MAPPROPERTY_R2::deliver(zc_map_properties p) 
 {
 	memcpy(&_p, &p, sizeof(int32_t));
 
@@ -5283,6 +5315,8 @@ void ZC_STATUS_CHANGE_ACK::deliver(status_point_type type, int8_t amount, bool s
 	_type = (int16_t) type;
 	_success = success ? 1 : 0;
 	_amount = amount;
+	serialize();
+	transmit();
 }
 
 ByteBuffer &ZC_STATUS_CHANGE_ACK::serialize()

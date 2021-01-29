@@ -62,6 +62,13 @@ target_precompile_headers(zone
 		<string>
 		<vector>
 		<memory>
+		${COMMON_HEADERS}
+		"../../Core/Multithreading/LockedLookupTable.hpp"
+		<cstdio>
+		<map>
+		<string>
+		<iostream>
+		<array>
 )
 
 target_link_libraries(zone

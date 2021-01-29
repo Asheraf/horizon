@@ -38,7 +38,6 @@
 #include <fstream>
 
 using namespace Horizon::Zone;
-using namespace Horizon::Zone::Game;
 
 #define MAP_WIDTH 268
 #define MAP_HEIGHT 300

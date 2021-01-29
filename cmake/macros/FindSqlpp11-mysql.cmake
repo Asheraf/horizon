@@ -37,13 +37,13 @@
 cmake_minimum_required(VERSION 3.2)
 
 # ensure cache entry
-set(SQLPP11_MYSQL_INCLUDE_DIR "${SQLPP11_MYSQL_INCLUDE_DIR}" CACHE PATH "Include directory of sqlpp11-connector-mysql library")
-set(SQLPP11_MYSQL_NOT_FOUND_MESSAGE "Could NOT find sqlpp11-connector-mysql. You should probably set SQLPP11_MYSQL_INCLUDE_DIR and SQLPP11_MYSQL_LIB_DIR.")
+set(SQLPP11_MYSQL_INCLUDE_DIR "${SQLPP11_MYSQL_INCLUDE_DIR}" CACHE PATH "Include directory of sqlpp11-mysql library")
+set(SQLPP11_MYSQL_NOT_FOUND_MESSAGE "Could NOT find sqlpp11-mysql. You should probably set SQLPP11_MYSQL_INCLUDE_DIR and SQLPP11_MYSQL_LIB_DIR.")
 
 find_file(SQLPP11_MYSQL_MAIN_HEADER
     sqlpp11/mysql/mysql.h
     HINTS
-        /usr/local/include
+        /usr/local/include/
       ${SQLPP11_MYSQL_INCLUDE_DIR}
 )
 mark_as_advanced(SQLPP11_MYSQL_MAIN_HEADER)
@@ -69,7 +69,7 @@ endif()
 find_file(SQLPP11_MYSQL_LIB_FILE
     libsqlpp-mysql.a
     HINTS
-        /usr/local/lib
+        /usr/local/lib/
       ${SQLPP11_MYSQL_LIB_DIR}
       ${SQLPP11_MYSQL_LIB_DIR}/src
 )
@@ -84,7 +84,7 @@ else()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(sqlpp11-connector-mysql
+find_package_handle_standard_args(sqlpp11-mysql
     REQUIRED_VARS SQLPP11_MYSQL_INCLUDE_DIR SQLPP11_MYSQL_LIBRARIES
     FAIL_MESSAGE ${SQLPP11_MYSQL_NOT_FOUND_MESSAGE}
 )

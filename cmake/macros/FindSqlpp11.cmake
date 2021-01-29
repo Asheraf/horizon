@@ -48,6 +48,7 @@ find_file(SQLPP11_MAIN_HEADER_INCLUDE_FOLDER
     sqlpp11/sqlpp11.h
     HINTS
       ${SQLPP11_ROOT_DIR}/include
+      /usr/local/include
 )
 mark_as_advanced(SQLPP11_MAIN_HEADER_INCLUDE_FOLDER)
 

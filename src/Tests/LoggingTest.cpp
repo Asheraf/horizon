@@ -70,8 +70,6 @@ void init()
         keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
         keywords::format = "[%TimeStamp%]: %Message%"                                 /*< log record format >*/
     );
-    
-    logging::add_console
 
     logging::core::get()->set_filter
     (

@@ -32,11 +32,17 @@
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
 #include "Server/Zone/Game/StaticDB/ExpDB.hpp"
 #include "Server/Zone/Game/Entities/Traits/Status.hpp"
+#include "Server/Common/Definitions/EntityDefinitions.hpp"
+#include "Server/Zone/Session/ZoneSession.hpp"
+#include "Server/Zone/Interface/ZoneClientInterface.hpp"
+#include "Server/Zone/Game/Entities/Traits/Attributes.hpp"
 #include "Core/Logging/Logger.hpp"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 
+using namespace Horizon::Zone;
 using namespace Horizon::Zone::Entities::Traits;
 
 template <class STATUS_COST_T, class STATUS_T>
@@ -91,7 +97,7 @@ void BaseLevel::on_observable_changed(std::weak_ptr<BaseExperience> wbexp)
 	if (get_base() >= MAX_LEVEL)
 		return;
 
-	if (bexp->get_base() == get_entity()->status()->get_next_base_experience()->get_base()) {
+	if (bexp->get_base() == get_entity()->status()->next_base_experience()->get_base()) {
 		add_base(1);
 		bexp->set_base(0);
 	}
@@ -104,7 +110,7 @@ void JobLevel::on_observable_changed(std::weak_ptr<JobExperience> wjexp)
 	if (get_entity() == nullptr || wjexp.expired())
 		return;
 
-	if (jexp->get_base() == get_entity()->status()->get_next_job_experience()->get_base()) {
+	if (jexp->get_base() == get_entity()->status()->next_job_experience()->get_base()) {
 		add_base(1);
 		jexp->set_base(0);
 	}
@@ -152,3 +158,4 @@ void SkillPoint::on_observable_changed(std::weak_ptr<JobLevel> wjlvl)
 
 	add_base(1);
 }
+

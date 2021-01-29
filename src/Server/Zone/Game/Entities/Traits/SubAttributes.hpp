@@ -53,7 +53,7 @@ namespace Traits
 	class EquipATK;
 
 	class MaxWeight
-	: public Attribute<MaxWeight, BasicAttributeNotifier<STATUS_MAX_WEIGHT, std::weak_ptr<MaxWeight>>>
+	: public Attribute<MaxWeight>
 	{
 	public:
 		MaxWeight(std::weak_ptr<Entity> entity, uint32_t base = 0, uint32_t equip = 0, uint32_t status = 0)
@@ -72,7 +72,7 @@ namespace Traits
 	};
 
 	class CurrentWeight
-	: public Attribute<CurrentWeight, BasicAttributeNotifier<STATUS_CURRENT_WEIGHT, std::weak_ptr<CurrentWeight>>>
+	: public Attribute<CurrentWeight>
 	{
 	public:
 		CurrentWeight(std::weak_ptr<Entity> entity, uint32_t base = 0, uint32_t equip = 0, uint32_t status = 0)
@@ -82,7 +82,7 @@ namespace Traits
 	};
 
 	class StatusATK
-	: public Attribute<StatusATK, BasicAttributeNotifier<STATUS_STATUS_ATK, std::weak_ptr<StatusATK>>>
+	: public Attribute<StatusATK>
 	{
 	public:
 		StatusATK(std::weak_ptr<Entity> entity)
@@ -111,14 +111,14 @@ namespace Traits
 		item_weapon_type _weapon_type;
 	};
 
-	class WeaponATK
-	: public Attribute<WeaponATK, BasicAttributeNotifier<STATUS_EQUIP_ATK, std::weak_ptr<WeaponATK>, std::weak_ptr<EquipATK>>>
+	class EquipATK
+	: public Attribute<EquipATK>
 	{
 	public:
-		WeaponATK(std::weak_ptr<Entity> entity)
+		EquipATK(std::weak_ptr<Entity> entity)
 		: Attribute(entity)
 		{ }
-		~WeaponATK() { }
+		~EquipATK() { }
 
 		void on_observable_changed(std::weak_ptr<Strength>) { set_base(compute()); }
 		void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
@@ -130,7 +130,7 @@ namespace Traits
 		uint32_t compute();
 		uint32_t compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dmg);
 
-		void notify_update() override { _notifier.notify_sum(); }
+		//void notify_update() override { _notifier.notify_sum(); }
 
 		uint32_t get_lhw_overupgrade() { return _lhw_overupgrade; }
 		uint32_t get_rhw_overupgrade() { return _rhw_overupgrade; }
@@ -144,24 +144,8 @@ namespace Traits
 		uint32_t _rhw_overupgrade{0};
 	};
 
-	class EquipATK
-	: public Attribute<WeaponATK, BasicAttributeNotifier<STATUS_EQUIP_ATK, std::weak_ptr<WeaponATK>, std::weak_ptr<EquipATK>>>
-	{
-	public:
-		EquipATK(std::weak_ptr<Entity> entity)
-		: Attribute(entity)
-		{ }
-		~EquipATK() { }
-
-		void on_equipments_changed() { set_base(compute()); }
-
-		uint32_t compute() { return 0; }
-
-		void notify_update() override { _notifier.notify_sum(); }
-	};
-
 	class StatusMATK
-	: public Attribute<StatusMATK, BasicAttributeNotifier<STATUS_STATUS_MATK, std::weak_ptr<StatusMATK>>>
+	: public Attribute<StatusMATK>
 	{
 	public:
 		StatusMATK(std::weak_ptr<Entity> entity)
@@ -189,7 +173,7 @@ namespace Traits
 	};
 
 	class SoftDEF
-	: public Attribute<SoftDEF, BasicAttributeNotifier<STATUS_SOFT_DEF, std::weak_ptr<SoftDEF>>>
+	: public Attribute<SoftDEF>
 	{
 	public:
 		SoftDEF(std::weak_ptr<Entity> entity)
@@ -208,7 +192,7 @@ namespace Traits
 	};
 
 	class SoftMDEF
-	: public Attribute<SoftMDEF, BasicAttributeNotifier<STATUS_SOFT_MDEF, std::weak_ptr<SoftMDEF>>>
+	: public Attribute<SoftMDEF>
 	{
 	public:
 		SoftMDEF(std::weak_ptr<Entity> entity)
@@ -236,7 +220,7 @@ namespace Traits
 	};
 
 	class HIT
-	: public Attribute<HIT, BasicAttributeNotifier<STATUS_HIT, std::weak_ptr<HIT>>>
+	: public Attribute<HIT>
 	{
 	public:
 		HIT(std::weak_ptr<Entity> entity)
@@ -261,7 +245,7 @@ namespace Traits
 	};
 
 	class CRIT
-	: public Attribute<CRIT, BasicAttributeNotifier<STATUS_CRITICAL, std::weak_ptr<CRIT>>>
+	: public Attribute<CRIT>
 	{
 	public:
 		CRIT(std::weak_ptr<Entity> entity)
@@ -280,7 +264,7 @@ namespace Traits
 	};
 
 	class FLEE
-	: public Attribute<FLEE, BasicAttributeNotifier<STATUS_FLEE, std::weak_ptr<FLEE>>>
+	: public Attribute<FLEE>
 	{
 	public:
 		FLEE(std::weak_ptr<Entity> entity)
@@ -303,6 +287,34 @@ namespace Traits
 		std::weak_ptr<BaseLevel> _blvl;
 		std::weak_ptr<Luck> _luk;
 	};
+
+	// class AttackSpeed
+	// : public Attribute<AttackSpeed>
+	// {
+	// public:
+	// 	FLEE(std::weak_ptr<Entity> entity)
+	// 	: Attribute(entity)
+	// 	{ }
+	// 	~FLEE() { }
+
+	// 	void on_observable_changed(std::weak_ptr<Agility>) { set_base(compute()); }
+	// 	void on_observable_changed(std::weak_ptr<BaseLevel>) { set_base(compute()); }
+	// 	void on_observable_changed(std::weak_ptr<Dexterity>) { set_base(compute()); }
+
+	// 	uint32_t compute();
+
+	// 	void set_agility(std::weak_ptr<Agility> agi) { _agi = agi; }
+	// 	void set_base_level(std::weak_ptr<BaseLevel> blvl) { _blvl = blvl; }
+	// 	void set_luck(std::weak_ptr<Dexterity> dex) { _dex = dex; }
+	// 	void set_weapon_type1(item_weapon_type type) { _weapon_type1 = type; set_base(compute()); }
+	// 	void set_weapon_type2(item_weapon_type type) { _weapon_type2 = type; set_base(compute()); }
+
+	// private:
+	// 	std::weak_ptr<Agility> _agi{1};
+	// 	std::weak_ptr<BaseLevel> _blvl{1};
+	// 	std::weak_ptr<Dexterity> _dex{1};
+	// 	item_weapon_type _weapon_type1{IT_WT_FIST}, _weapon_type2{IT_WT_FIST};
+	// };
 }
 }
 }

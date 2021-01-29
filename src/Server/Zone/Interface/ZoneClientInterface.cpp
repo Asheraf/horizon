@@ -40,7 +40,6 @@
 #include "Server/Zone/Game/Map/Map.hpp"
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/Map/MapContainerThread.hpp"
-#include "Server/Zone/Packets/TransmittedPackets.hpp"
 #include "Server/Zone/Session/ZoneSession.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
 #include "Server/Zone/Zone.hpp"
@@ -130,42 +129,6 @@ bool ZoneClientInterface::login(uint32_t account_id, uint32_t char_id, uint32_t 
 	return true;
 }
 
-void ZoneClientInterface::notify_status(std::shared_ptr<Entities::Traits::Status> status)
-{
-	ZC_STATUS zcs(get_session());
-	zc_status_data data;
-	
-	data.status_points = status->get_status_point()->get_base();
-	data.strength = status->get_strength()->get_base();
-	data.strength_req_stats = status->get_strength_cost()->get_base();
-	data.agility = status->get_agility()->get_base();
-	data.agility_req_stats = status->get_agility_cost()->get_base();
-	data.vitality = status->get_vitality()->get_base();
-	data.vitality_req_stats = status->get_vitality_cost()->get_base();
-	data.intelligence = status->get_intelligence()->get_base();
-	data.intelligence_req_stats = status->get_intelligence_cost()->get_base();
-	data.dexterity = status->get_dexterity()->get_base();
-	data.dexterity_req_stats = status->get_dexterity_cost()->get_base();
-	data.luck = status->get_luck()->get_base();
-	data.luck_req_stats = status->get_luck_cost()->get_base();
-	data.status_atk = status->get_status_atk()->total();
-	data.equip_atk = 0;
-	data.status_matk = status->get_status_matk()->total();
-	data.equip_matk = 0;
-	data.soft_def = status->get_soft_def()->total();
-	data.hard_def = 0;
-	data.soft_mdef = status->get_soft_mdef()->total();
-	data.hard_mdef = 0;
-	data.hit = status->get_hit()->total();
-	data.flee = status->get_flee()->total();
-	data.perfect_dodge = 0;
-	data.critical = status->get_crit()->total();
-	data.attack_speed = 0;
-	data.plus_aspd = 0;
-	
-	zcs.deliver(data);
-}
-
 bool ZoneClientInterface::restart(uint8_t type)
 {
 	ZC_RESTART_ACK rpkt(get_session());
@@ -236,14 +199,14 @@ entity_viewport_entry ZoneClientInterface::create_viewport_entry(std::shared_ptr
 	
 	entry.guid = entity->guid();
 	entry.unit_type = entity->type();
-	entry.speed = status->get_movement_speed()->total();
+	entry.speed = status->movement_speed()->total();
 	entry.body_state = 0;
 	entry.health_state = 0;
 	entry.effect_state = 0;
 	entry.job_id = entity->job_id();
-	entry.hair_style_id = status->get_hair_style()->get();
-	entry.hair_color_id = status->get_hair_color()->get();
-	entry.robe_id = status->get_robe_sprite()->get();
+	entry.hair_style_id = status->hair_style()->get();
+	entry.hair_color_id = status->hair_color()->get();
+	entry.robe_id = status->robe_sprite()->get();
 	entry.guild_id = 0;
 	entry.guild_emblem_version = 0;
 	entry.honor = 0;
@@ -259,14 +222,14 @@ entity_viewport_entry ZoneClientInterface::create_viewport_entry(std::shared_ptr
 	}
 	
 	entry.posture = entity->posture();
-	entry.base_level = status->get_base_level()->total();
+	entry.base_level = status->base_level()->total();
 	entry.font = 1;
 	
-	if (status->get_max_hp()->total() > 0)
-		entry.max_hp = status->get_max_hp()->total();
+	if (status->max_hp()->total() > 0)
+		entry.max_hp = status->max_hp()->total();
 	
-	if (status->get_current_hp()->total() > 0)
-		entry.hp = status->get_current_hp()->total();
+	if (status->current_hp()->total() > 0)
+		entry.hp = status->current_hp()->total();
 	
 	entry.is_boss = 0;
 	entry.body_style_id = 0;
@@ -327,6 +290,108 @@ bool ZoneClientInterface::notify_viewport_remove_entity(std::shared_ptr<Entity> 
 	return true;
 }
 
+void ZoneClientInterface::notify_initial_status(std::shared_ptr<Entities::Traits::Status> status)
+{
+	ZC_STATUS zcs(get_session());
+	zc_status_data data;
+	
+	data.status_points = status->status_point()->get_base();
+	data.strength = status->strength()->get_base();
+	data.strength_req_stats = status->strength_cost()->get_base();
+	data.agility = status->agility()->get_base();
+	data.agility_req_stats = status->agility_cost()->get_base();
+	data.vitality = status->vitality()->get_base();
+	data.vitality_req_stats = status->vitality_cost()->get_base();
+	data.intelligence = status->intelligence()->get_base();
+	data.intelligence_req_stats = status->intelligence_cost()->get_base();
+	data.dexterity = status->dexterity()->get_base();
+	data.dexterity_req_stats = status->dexterity_cost()->get_base();
+	data.luck = status->luck()->get_base();
+	data.luck_req_stats = status->luck_cost()->get_base();
+	data.status_atk = status->status_atk()->total();
+	data.equip_atk = 0;
+	data.status_matk = status->status_matk()->total();
+	data.equip_matk = 0;
+	data.soft_def = status->soft_def()->total();
+	data.hard_def = 0;
+	data.soft_mdef = status->soft_mdef()->total();
+	data.hard_mdef = 0;
+	data.hit = status->hit()->total();
+	data.flee = status->flee()->total();
+	data.perfect_dodge = 0;
+	data.critical = status->crit()->total();
+	data.attack_speed = 0;
+	data.plus_aspd = 0;
+	
+	zcs.deliver(data);
+}
+
+bool ZoneClientInterface::notify_appearance_update(entity_appearance_type type, int32_t id)
+{
+	ZC_SPRITE_CHANGE pkt(get_session());
+	pkt.deliver(get_session()->player()->guid(), type, id);
+	return true;
+}
+
+// 0x00b0
+bool ZoneClientInterface::notify_complex_attribute_update(status_point_type type, int32_t value)
+{
+	ZC_PAR_CHANGE pkt(get_session());
+	pkt.deliver(type, value);
+	return true;
+}
+
+// 0x00bc
+bool ZoneClientInterface::notify_status_attribute_update(status_point_type type, int32_t value, bool success)
+{
+	ZC_STATUS_CHANGE_ACK pkt(get_session());
+	pkt.deliver(type, value, success);
+	return true;
+}
+
+// 0x00be
+bool ZoneClientInterface::notify_required_attribute_update(status_point_type type, int32_t value)
+{
+	ZC_STATUS_CHANGE pkt(get_session());
+	pkt.deliver(type, value);
+	return true;
+}
+
+// 0x0121
+bool ZoneClientInterface::notify_cart_weight_update()
+{
+	return true;
+}
+
+// 0x013a
+bool ZoneClientInterface::notify_attack_range_update(int32_t value)
+{
+	ZC_ATTACK_RANGE pkt(get_session());
+	pkt.deliver(value);
+	return true;
+
+}
+
+// 0x0acb
+bool ZoneClientInterface::notify_experience_update(status_point_type type, int32_t value)
+{
+	notify_complex_attribute_update(type, value);
+	return true;
+}
+
+// 0x00b1
+bool ZoneClientInterface::notify_zeny_update()
+{
+	return true;
+}
+
+bool ZoneClientInterface::increase_status_point(status_point_type type, uint8_t amount)
+{
+	std::shared_ptr<Entities::Player> pl = get_session()->player();
+	pl->status()->increase_status_point(type, amount);
+	return true;
+}
+
 void ZoneClientInterface::notify_npc_dialog(uint32_t npc_guid, std::string dialog)
 {
 	
@@ -347,3 +412,54 @@ void ZoneClientInterface::notify_npc_menu_list(uint32_t npc_guid, std::string co
 	
 }
 
+
+bool ZoneClientInterface::notify_move_to_map(std::string map_name, int16_t x, int16_t y)
+{
+	ZC_NPCACK_MAPMOVE pkt(get_session());
+	pkt.deliver(map_name, x, y);
+	return true;
+}
+
+bool ZoneClientInterface::notify_chat(std::string message)
+{
+	ZC_NOTIFY_PLAYERCHAT pkt(get_session());
+	pkt.deliver(message);
+	return true;
+}
+
+void ZoneClientInterface::parse_chat_message(std::string message)
+{
+	ZC_NOTIFY_PLAYERCHAT notify_player_chat(get_session());
+	ZC_NOTIFY_CHAT notify_chat(get_session());
+
+	HLog(debug) << get_session()->player()->name() << ": " << message;
+
+	int guid = get_session()->player()->guid();
+	int msg_first_char = get_session()->player()->name().size() + 3;
+
+	if (message[msg_first_char] == '@') {
+		get_session()->player()->script_manager()->perform_command_from_player(get_session()->player(), &message[msg_first_char + 1]);
+		return;
+	}
+
+	ByteBuffer buf;
+
+	notify_chat._packet_length = 8 + message.size();
+	notify_chat._guid = guid;
+	notify_chat._message = message;
+	buf = notify_chat.serialize();
+	get_session()->player()->notify_in_area(buf, GRID_NOTIFY_AREA_WOS);
+	notify_player_chat.deliver(message);
+}
+
+void ZoneClientInterface::notify_map_enter()
+{
+	get_session()->player()->on_map_enter();
+}
+
+bool ZoneClientInterface::notify_map_properties(zc_map_properties p)
+{
+	ZC_MAPPROPERTY_R2 pkt(get_session());
+	pkt.deliver(p);
+	return true;
+}

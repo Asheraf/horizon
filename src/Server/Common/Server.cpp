@@ -195,8 +195,6 @@ void Server::finalize_core()
 	if (_cli_thread.joinable())
 		_cli_thread.join();
 
-	get_io_service().stop();
-
 	HLog(info) << "Shutdown global I/O thread pool of " << MAX_GLOBAL_IO_THREADS << " threads.";
 }
 

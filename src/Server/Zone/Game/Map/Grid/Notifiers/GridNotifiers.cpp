@@ -27,3 +27,32 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
+#include "GridNotifiers.hpp"
+
+#include "Server/Zone/Session/ZoneSession.hpp"
+#include "Server/Zone/Game/Map/Grid/GridRefManager.hpp"
+
+void GridPlayerNotifier::notify(GridRefManager<Horizon::Zone::Entities::Player> &m)
+{
+	using namespace Horizon::Zone::Entities;
+
+	std::shared_ptr<Player> pl = _entity.lock()->template downcast<Player>();
+
+	if (pl == nullptr)
+		return;
+
+	for (typename GridRefManager<Player>::iterator iter = m.begin(); iter != typename GridRefManager<Player>::iterator(nullptr); ++iter) {
+		if (iter->source() == nullptr)
+			continue;
+
+		switch (_type)
+		{
+			case GRID_NOTIFY_AREA_WOS:
+				if (iter->source()->guid() == pl->guid())
+					continue;
+			default:
+				break;
+		}
+		iter->source()->get_session()->transmit_buffer(_buf, _buf.active_length());
+	}
+}

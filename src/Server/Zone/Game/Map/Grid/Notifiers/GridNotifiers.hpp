@@ -30,7 +30,7 @@
 #ifndef HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERS_HPP
 #define HORIZON_ZONE_GAME_MAP_GRIDNOTIFIERS_HPP
 
-#include "Common/Definitions/EntityDefinitions.hpp"
+#include "Server/Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Game/Entities/Skill/Skill.hpp"
 #include "Server/Zone/Game/Entities/NPC/NPC.hpp"
@@ -128,6 +128,23 @@ struct GridNPCTrigger
 	void Visit(GridRefManager<NOT_INTERESTED> &) { }
 };
 
+struct GridPlayerNotifier
+{
+	std::weak_ptr<Horizon::Zone::Entity> _entity;
+	ByteBuffer _buf;
+	player_notifier_type _type;
+
+	GridPlayerNotifier(ByteBuffer &buf, std::weak_ptr<Horizon::Zone::Entity> entity, player_notifier_type type = GRID_NOTIFY_AREA)
+	: _entity(entity), _buf(buf), _type(type)
+	{ }
+
+	void notify(GridRefManager<entity_ns(Player)> &m);
+
+	void Visit(GridRefManager<entity_ns(Player)> &m) { notify(m); }
+
+	template<class NOT_INTERESTED>
+	void Visit(GridRefManager<NOT_INTERESTED> &) { }
+};
 #undef entity_ns
 
 #include "GridNotifiersImpl.hpp"

@@ -32,7 +32,6 @@
 #define HORIZON_ZONE_GAME_CONFIGURATION_EXPDB
 
 #include "Server/Common/Configuration/Horizon.hpp"
-#include "Core/Multithreading/LockedLookupTable.hpp"
 
 #include <string>
 #include <vector>

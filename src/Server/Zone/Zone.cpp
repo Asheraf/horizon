@@ -121,8 +121,12 @@ void ZoneServer::update(uint64_t diff)
 	 */
 	ClientSocktMgr->update_socket_sessions(diff);
 	
-	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
-	_update_timer.async_wait(std::bind(&ZoneServer::update, this, MAX_CORE_UPDATE_INTERVAL));
+	if (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
+		_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
+		_update_timer.async_wait(std::bind(&ZoneServer::update, this, MAX_CORE_UPDATE_INTERVAL));
+	} else {
+		get_io_service().stop();
+	}
 }
 
 /**
@@ -173,6 +177,8 @@ void ZoneServer::initialize_core()
 	
 	get_io_service().run();
 
+	HLog(info) << "Server shutdown initiated ...";
+	
 	MapMgr->finalize();
 
 	/**

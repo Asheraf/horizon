@@ -7713,10 +7713,14 @@ public:
 	{}
 	virtual ~ZC_SPRITE_CHANGE() {}
 
-	void deliver();
+	void deliver(int32_t guid, entity_appearance_type look_type, int32_t look_id, int32_t look_shield = 0);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int32_t _guid;
+	int8_t _look_type;
+	int32_t _look_id;
+	int32_t _shield_id;
 };
 
 enum {
@@ -13067,33 +13071,35 @@ enum {
 	ID_ZC_MAPPROPERTY_R2 = 0x099b
 #endif
 };
+
+struct zc_map_properties {
+	unsigned pvp : 1;
+	unsigned gvg : 1;
+	unsigned siege : 1;
+	unsigned no_effects : 1;
+	unsigned party_pvp : 1;
+	unsigned pvp_kill_counter : 1;
+	unsigned disallow_party : 1;
+	unsigned battleground : 1;
+	unsigned no_costume : 1;
+	unsigned allow_carts : 1;
+	unsigned stargladiator_miracles : 1;
+	unsigned spare_bits : 21;
+};
+
 /**
  * @brief Main object for the aegis packet: ZC_MAPPROPERTY_R2
  *
  */ 
 class ZC_MAPPROPERTY_R2 : public Base::NetworkPacketTransmitter<ZoneSession>
 {
-	struct properties {
-		unsigned pvp : 1;
-		unsigned gvg : 1;
-		unsigned siege : 1;
-		unsigned no_effects : 1;
-		unsigned party_pvp : 1;
-		unsigned pvp_kill_counter : 1;
-		unsigned disallow_party : 1;
-		unsigned battleground : 1;
-		unsigned no_costume : 1;
-		unsigned allow_carts : 1;
-		unsigned stargladiator_miracles : 1;
-		unsigned spare_bits : 21;
-	};
 public:
 	ZC_MAPPROPERTY_R2(std::shared_ptr<ZoneSession> s)
 	: NetworkPacketTransmitter<ZoneSession>(ID_ZC_MAPPROPERTY_R2, s)
 	{}
 	virtual ~ZC_MAPPROPERTY_R2() {}
 
-	void deliver(properties p);
+	void deliver(zc_map_properties p);
 	ByteBuffer &serialize();
 
 /* Structure */
@@ -25880,8 +25886,6 @@ enum {
 	PACKET_VERSION >= 20080124 || \
 	PACKET_VERSION >= 20080102
 	ID_ZC_PAR_CHANGE = 0x00b0
-#elif PACKET_VERSION >= 20170405
-	ID_ZC_PAR_CHANGE = 0x0acb
 #endif
 };
 /**

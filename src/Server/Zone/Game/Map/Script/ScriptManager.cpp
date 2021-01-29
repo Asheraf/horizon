@@ -41,6 +41,8 @@
 #include "Server/Zone/Game/Entities/Traits/Status.hpp"
 #include "Server/Zone/Game/Entities/Traits/Attributes.hpp"
 #include "Server/Zone/Game/Entities/Traits/Appearance.hpp"
+#include "Server/Zone/Interface/ZoneClientInterface.hpp"
+#include "Server/Zone/Session/ZoneSession.hpp"
 
 using namespace Horizon::Zone;
 using namespace Horizon::Zone::Entities;
@@ -90,6 +92,7 @@ void ScriptManager::initialize_state(sol::state &st)
 		"get_height", sol::readonly_property(&Map::get_height),
 		"has_obstruction_at", &Map::has_obstruction_at
 		);
+
 	st.set_function("get_map_by_name",
 		[] (std::string const &name)
 		{
@@ -267,8 +270,8 @@ void ScriptManager::initialize_state(sol::state &st)
 		);
 
 	st.new_usertype<NPC>("NPC",
-		"get_guid", &NPC::guid,
-		"get_name", &NPC::name,
+		"guid", &NPC::guid,
+		"name", &NPC::name,
 		"map_coords", &NPC::map_coords,
 		"get_nearby_entity", &NPC::get_nearby_entity,
 		"init", &NPC::initialize,
@@ -287,8 +290,8 @@ void ScriptManager::initialize_state(sol::state &st)
 		{
 			initialize_state(player->get_lua_state());
 		},
-		"get_guid", &Player::guid,
-		"get_map", &Player::map,
+		"guid", &Player::guid,
+		"map", &Player::map,
 		"map_coords", &Player::map_coords,
 		"get_nearby_entity", &Player::get_nearby_entity,
 //		"send_npc_dialog", &Player::send_npc_dialog,
@@ -299,41 +302,41 @@ void ScriptManager::initialize_state(sol::state &st)
 		"get_inventory", &Player::get_inventory,
 		"message", [] (std::shared_ptr<Player> player, std::string const &message)
 		{
-//			player->get_packet_handler()->Send_ZC_NOTIFY_PLAYERCHAT(message);
+			player->get_session()->clif()->notify_chat(message);
 		},
 		"get_status", &Player::status
 		);
 
 	st.new_usertype<Entities::Traits::Status>("Status",
-		"get_strength", &Entities::Traits::Status::get_strength,
-		"get_agility", &Entities::Traits::Status::get_agility,
-		"get_vitality", &Entities::Traits::Status::get_vitality,
-		"get_dexterity", &Entities::Traits::Status::get_dexterity,
-		"get_intelligence", &Entities::Traits::Status::get_intelligence,
-		"get_luck", &Entities::Traits::Status::get_luck,
-		"get_max_hp", &Entities::Traits::Status::get_max_hp,
-		"get_max_sp", &Entities::Traits::Status::get_max_sp,
-		"get_current_hp", &Entities::Traits::Status::get_current_hp,
-		"get_current_sp", &Entities::Traits::Status::get_current_sp,
-		"get_base_level", &Entities::Traits::Status::get_base_level,
-		"get_job_level", &Entities::Traits::Status::get_job_level,
-		"get_base_experience", &Entities::Traits::Status::get_base_experience,
-		"get_job_experience", &Entities::Traits::Status::get_job_experience,
-		"get_next_base_experience", &Entities::Traits::Status::get_next_base_experience,
-		"get_next_job_experience", &Entities::Traits::Status::get_next_job_experience,
-		"get_movement_speed", &Entities::Traits::Status::get_movement_speed,
-		"get_max_weight", &Entities::Traits::Status::get_max_weight,
-		"get_current_weight", &Entities::Traits::Status::get_current_weight,
-		"get_hair_color", &Entities::Traits::Status::get_hair_color,
-		"get_cloth_color", &Entities::Traits::Status::get_cloth_color,
-		"get_weapon_sprite", &Entities::Traits::Status::get_weapon_sprite,
-		"get_shield_sprite", &Entities::Traits::Status::get_shield_sprite,
-		"get_robe_sprite", &Entities::Traits::Status::get_robe_sprite,
-		"get_head_top_sprite", &Entities::Traits::Status::get_head_top_sprite,
-		"get_head_mid_sprite", &Entities::Traits::Status::get_head_mid_sprite,
-		"get_head_bottom_sprite", &Entities::Traits::Status::get_head_bottom_sprite,
-		"get_hair_style", &Entities::Traits::Status::get_hair_style,
-		"get_body_style", &Entities::Traits::Status::get_body_style
+		"strength", &Entities::Traits::Status::strength,
+		"agility", &Entities::Traits::Status::agility,
+		"vitality", &Entities::Traits::Status::vitality,
+		"dexterity", &Entities::Traits::Status::dexterity,
+		"intelligence", &Entities::Traits::Status::intelligence,
+		"luck", &Entities::Traits::Status::luck,
+		"max_hp", &Entities::Traits::Status::max_hp,
+		"max_sp", &Entities::Traits::Status::max_sp,
+		"current_hp", &Entities::Traits::Status::current_hp,
+		"current_sp", &Entities::Traits::Status::current_sp,
+		"base_level", &Entities::Traits::Status::base_level,
+		"job_level", &Entities::Traits::Status::job_level,
+		"base_experience", &Entities::Traits::Status::base_experience,
+		"job_experience", &Entities::Traits::Status::job_experience,
+		"next_base_experience", &Entities::Traits::Status::next_base_experience,
+		"next_job_experience", &Entities::Traits::Status::next_job_experience,
+		"movement_speed", &Entities::Traits::Status::movement_speed,
+		"max_weight", &Entities::Traits::Status::max_weight,
+		"current_weight", &Entities::Traits::Status::current_weight,
+		"hair_color", &Entities::Traits::Status::hair_color,
+		"cloth_color", &Entities::Traits::Status::cloth_color,
+		"weapon_sprite", &Entities::Traits::Status::weapon_sprite,
+		"shield_sprite", &Entities::Traits::Status::shield_sprite,
+		"robe_sprite", &Entities::Traits::Status::robe_sprite,
+		"head_top_sprite", &Entities::Traits::Status::head_top_sprite,
+		"head_mid_sprite", &Entities::Traits::Status::head_mid_sprite,
+		"head_bottom_sprite", &Entities::Traits::Status::head_bottom_sprite,
+		"hair_style", &Entities::Traits::Status::hair_style,
+		"body_style", &Entities::Traits::Status::body_style
 		);
 
 	st.new_usertype<Entities::Traits::BaseLevel>("BaseLevel",
@@ -349,16 +352,16 @@ void ScriptManager::initialize_state(sol::state &st)
 		"set", &Entities::Traits::JobLevel::set_base
 		);
 	st.new_usertype<Entities::Traits::MaxHP>("MaxHP",
-		"add_base", &Entities::Traits::MaxHP::add_base,
-		"sub_base", &Entities::Traits::MaxHP::sub_base,
-		"get_base", &Entities::Traits::MaxHP::get_base,
-		"set_base", &Entities::Traits::MaxHP::set_base
+		"add", &Entities::Traits::MaxHP::add_base,
+		"sub", &Entities::Traits::MaxHP::sub_base,
+		"get", &Entities::Traits::MaxHP::get_base,
+		"set", &Entities::Traits::MaxHP::set_base
 		);
 	st.new_usertype<Entities::Traits::MaxSP>("MaxSP",
-		"add_base", &Entities::Traits::MaxSP::add_base,
-		"sub_base", &Entities::Traits::MaxSP::sub_base,
-		"get_base", &Entities::Traits::MaxSP::get_base,
-		"set_base", &Entities::Traits::MaxSP::set_base
+		"add", &Entities::Traits::MaxSP::add_base,
+		"sub", &Entities::Traits::MaxSP::sub_base,
+		"get", &Entities::Traits::MaxSP::get_base,
+		"set", &Entities::Traits::MaxSP::set_base
 	   );
 	st.new_usertype<Entities::Traits::CurrentHP>("CurrentHP",
 		"add", &Entities::Traits::CurrentHP::add_base,
@@ -373,16 +376,16 @@ void ScriptManager::initialize_state(sol::state &st)
 		"set", &Entities::Traits::CurrentSP::set_base
 		);
 	st.new_usertype<Entities::Traits::MovementSpeed>("MovementSpeed",
-		"add_base", &Entities::Traits::MovementSpeed::add_base,
-		"sub_base", &Entities::Traits::MovementSpeed::sub_base,
-		"get_base", &Entities::Traits::MovementSpeed::get_base,
-		"set_base", &Entities::Traits::MovementSpeed::set_base
+		"add", &Entities::Traits::MovementSpeed::add_base,
+		"sub", &Entities::Traits::MovementSpeed::sub_base,
+		"get", &Entities::Traits::MovementSpeed::get_base,
+		"set", &Entities::Traits::MovementSpeed::set_base
 		);
 	st.new_usertype<Entities::Traits::MaxWeight>("MaxWeight",
-		"add_base", &Entities::Traits::MaxWeight::add_base,
-		"sub_base", &Entities::Traits::MaxWeight::sub_base,
-		"get_base", &Entities::Traits::MaxWeight::get_base,
-		"set_base", &Entities::Traits::MaxWeight::set_base
+		"add", &Entities::Traits::MaxWeight::add_base,
+		"sub", &Entities::Traits::MaxWeight::sub_base,
+		"get", &Entities::Traits::MaxWeight::get_base,
+		"set", &Entities::Traits::MaxWeight::set_base
 		);
 	st.new_usertype<Entities::Traits::CurrentWeight>("CurrentWeight",
 		"add", &Entities::Traits::CurrentWeight::add_base,
@@ -391,40 +394,40 @@ void ScriptManager::initialize_state(sol::state &st)
 		"set", &Entities::Traits::CurrentWeight::set_base
 		);
 	st.new_usertype<Entities::Traits::Strength>("Strength",
-		"add_base", &Entities::Traits::Strength::add_base,
-		"sub_base", &Entities::Traits::Strength::sub_base,
-		"get_base", &Entities::Traits::Strength::get_base,
-		"set_base", &Entities::Traits::Strength::set_base
+		"add", &Entities::Traits::Strength::add_base,
+		"sub", &Entities::Traits::Strength::sub_base,
+		"get", &Entities::Traits::Strength::get_base,
+		"set", &Entities::Traits::Strength::set_base
 		);
 	st.new_usertype<Entities::Traits::Agility>("Agility",
-		"add_base", &Entities::Traits::Agility::add_base,
-		"sub_base", &Entities::Traits::Agility::sub_base,
-		"get_base", &Entities::Traits::Agility::get_base,
-		"set_base", &Entities::Traits::Agility::set_base
+		"add", &Entities::Traits::Agility::add_base,
+		"sub", &Entities::Traits::Agility::sub_base,
+		"get", &Entities::Traits::Agility::get_base,
+		"set", &Entities::Traits::Agility::set_base
 		);
 	st.new_usertype<Entities::Traits::Vitality>("Vitality",
-		"add_base", &Entities::Traits::Vitality::add_base,
-		"sub_base", &Entities::Traits::Vitality::sub_base,
-		"get_base", &Entities::Traits::Vitality::get_base,
-		"set_base", &Entities::Traits::Vitality::set_base
+		"add", &Entities::Traits::Vitality::add_base,
+		"sub", &Entities::Traits::Vitality::sub_base,
+		"get", &Entities::Traits::Vitality::get_base,
+		"set", &Entities::Traits::Vitality::set_base
 		);
 	st.new_usertype<Entities::Traits::Intelligence>("Intelligence",
-		"add_base", &Entities::Traits::Intelligence::add_base,
-		"sub_base", &Entities::Traits::Intelligence::sub_base,
-		"get_base", &Entities::Traits::Intelligence::get_base,
-		"set_base", &Entities::Traits::Intelligence::set_base
+		"add", &Entities::Traits::Intelligence::add_base,
+		"sub", &Entities::Traits::Intelligence::sub_base,
+		"get", &Entities::Traits::Intelligence::get_base,
+		"set", &Entities::Traits::Intelligence::set_base
 		);
 	st.new_usertype<Entities::Traits::Dexterity>("Dexterity",
-		"add_base", &Entities::Traits::Dexterity::add_base,
-		"sub_base", &Entities::Traits::Dexterity::sub_base,
-		"get_base", &Entities::Traits::Dexterity::get_base,
-		"set_base", &Entities::Traits::Dexterity::set_base
+		"add", &Entities::Traits::Dexterity::add_base,
+		"sub", &Entities::Traits::Dexterity::sub_base,
+		"get", &Entities::Traits::Dexterity::get_base,
+		"set", &Entities::Traits::Dexterity::set_base
 		);
 	st.new_usertype<Entities::Traits::Luck>("Luck",
-		"add_base", &Entities::Traits::Luck::add_base,
-		"sub_base", &Entities::Traits::Luck::sub_base,
-		"get_base", &Entities::Traits::Luck::get_base,
-		"set_base", &Entities::Traits::Luck::set_base
+		"add", &Entities::Traits::Luck::add_base,
+		"sub", &Entities::Traits::Luck::sub_base,
+		"get", &Entities::Traits::Luck::get_base,
+		"set", &Entities::Traits::Luck::set_base
 		);
 	st.new_usertype<Entities::Traits::BaseExperience>("BaseExperience",
 		"add", &Entities::Traits::BaseExperience::add_base,

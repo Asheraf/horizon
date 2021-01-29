@@ -188,9 +188,9 @@ uint32_t FLEE::compute()
 	return 100 + blvl + agi + (luk / 5);
 }
 
-//! @brief Computes the WeaponATK property of physical attacks.
-//! WeaponATK = floor[((BaseWeaponDamage + Variance + StatBonus + RefinementBonus + OverUpgradeBonus) × SizePenaltyMultiplier]
-uint32_t WeaponATK::compute()
+//! @brief Computes the EquipATK property of physical attacks.
+//! EquipATK = floor[((BaseWeaponDamage + Variance + StatBonus + RefinementBonus + OverUpgradeBonus) × SizePenaltyMultiplier]
+uint32_t EquipATK::compute()
 {
 	uint32_t str = 1, dex = 1;
 	using namespace Horizon::Zone::Entities;
@@ -235,7 +235,7 @@ uint32_t WeaponATK::compute()
 	return _left_hand_val + _right_hand_val;
 }
 
-uint32_t WeaponATK::compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dmg)
+uint32_t EquipATK::compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dmg)
 {
 	using namespace Horizon::Zone::Entities;
 
@@ -243,3 +243,75 @@ uint32_t WeaponATK::compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dm
 
 	return floor(((rand() % 1000 + (-500)) / 10000.f) * weapon_lvl * base_weapon_dmg);
 }
+
+// uint32_t AttackSpeed::compute()
+// {
+// 	int amotion;
+// 	int classidx = pc_class2idx(get_entity()->job_id());
+
+// 	std::shared_ptr<const job_db_data> job = JobDB->get(get_entity()->job_id());
+
+// #ifdef RENEWAL_ASPD
+// 	int16 skill_lv, val = 0;
+// 	float temp_aspd = 0;
+
+// 	amotion = job->weapon_base_aspd[_weapon_type1]; // Single weapon
+	
+// 	EquippedItemsArray const &equipments = player->get_inventory()->get_equipments();
+
+// 	std::shared_ptr<const item_entry_data> lhw = equipments[IT_EQPI_HAND_L].second.lock();
+// 	std::shared_ptr<const item_entry_data> rhw = equipments[IT_EQPI_HAND_R].second.lock();
+
+// 	if (_weapon_type2 != W_FIST && lhw != rhw)
+// 		amotion += job_info[classidx].aspd_base[sd->weapontype2] / 4; // Dual-wield
+
+// 	switch(sd->status.weapon) {
+// 		case W_BOW:
+// 		case W_MUSICAL:
+// 		case W_WHIP:
+// 		case W_REVOLVER:
+// 		case W_RIFLE:
+// 		case W_GATLING:
+// 		case W_SHOTGUN:
+// 		case W_GRENADE:
+// 			temp_aspd = status->dex * status->dex / 7.0f + status->agi * status->agi * 0.5f;
+// 			break;
+// 		default:
+// 			temp_aspd = status->dex * status->dex / 5.0f + status->agi * status->agi * 0.5f;
+// 			break;
+// 	}
+// 	temp_aspd = (float)(sqrt(temp_aspd) * 0.25f) + 0xc4;
+// 	if ((skill_lv = pc_checkskill(sd,SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
+// 		val += (skill_lv - 1) / 2 + 1;
+// 	if ((skill_lv = pc_checkskill(sd, SG_DEVIL)) > 0 && ((sd->class_&MAPID_THIRDMASK) == MAPID_STAR_EMPEROR || pc_is_maxjoblv(sd)))
+// 		val += 1 + skill_lv;
+// 	if ((skill_lv = pc_checkskill(sd,GS_SINGLEACTION)) > 0 && (sd->status.weapon >= W_REVOLVER && sd->status.weapon <= W_GRENADE))
+// 		val += ((skill_lv + 1) / 2);
+// 	if ((skill_lv = pc_checkskill(sd, RG_PLAGIARISM)) > 0)
+// 		val += skill_lv;
+// 	if (pc_isriding(sd))
+// 		val -= 50 - 10 * pc_checkskill(sd, KN_CAVALIERMASTERY);
+// 	else if (pc_isridingdragon(sd))
+// 		val -= 25 - 5 * pc_checkskill(sd, RK_DRAGONTRAINING);
+// 	amotion = ((int)(temp_aspd + ((float)(status_calc_aspd(&sd->bl, &sd->sc, true) + val) * status->agi / 200)) - min(amotion, 200));
+// #else
+// 	// Angra Manyu disregards aspd_base and similar
+// 	if (pc_checkequip2(sd, ITEMID_ANGRA_MANYU, EQI_ACC_L, EQI_MAX))
+// 		return 0;
+
+// 	// Base weapon delay
+// 	amotion = (sd->status.weapon < MAX_WEAPON_TYPE)
+// 	 ? (job_info[classidx].aspd_base[sd->status.weapon]) // Single weapon
+// 	 : (job_info[classidx].aspd_base[sd->weapontype1] + job_info[classidx].aspd_base[sd->weapontype2]) * 7 / 10; // Dual-wield
+
+// 	// Percentual delay reduction from stats
+// 	amotion -= amotion * (4 * status->agi + status->dex) / 1000;
+
+// 	// Raw delay adjustment from bAspd bonus
+// 	amotion += sd->bonus.aspd_add;
+// #endif
+
+//  	return amotion;
+// }
+
+

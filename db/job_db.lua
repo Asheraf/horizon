@@ -851,7 +851,7 @@ job_db = {
 		},	-- 141 - 150
 	},
 	{
-		Name = "Star_Gladiator",
+		Name = "StarGladiator",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "StarGladiator",
 		Inherit = "Taekwon",
@@ -890,7 +890,7 @@ job_db = {
 		},	-- 141 - 150
 	},
 	{
-		Name = "Soul_Linker",
+		Name = "SoulLinker",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "SoulLinker",
 		Weight = 24000,
@@ -949,7 +949,7 @@ job_db = {
 			GrenadeLauncher = 100,
 			Shield = 6,
 		},
-		InheritHP = "Star_Gladiator",
+		InheritHP = "StarGladiator",
 		SPTable = {
 				  12,  15,  18,  21,  24,  27,  30,  33,  36,  39,	-- 1 - 10
 				  42,  45,  48,  51,  54,  57,  61,  64,  67,  70,	-- 11 - 20
@@ -979,7 +979,7 @@ job_db = {
 			FuumaShuriken = 55,
 			Shield = 6,
 		},
-		InheritHP = "Soul_Linker",
+		InheritHP = "SoulLinker",
 		SPTable = {
 				  14,  17,  20,  23,  26,  29,  32,  35,  38,  41,	-- 1 - 10
 				  44,  47,  50,  53,  56,  59,  62,  65,  68,  71,	-- 11 - 20
@@ -1044,21 +1044,21 @@ job_db = {
 		},			-- 91 - 99
 	},
 	{
-		Name = "Death_Knight",
+		Name = "DeathKnight",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "SecondClasses",
 		Weight = 36000,
 		Inherit = "Gangsi",
 	},
 	{
-		Name = "Dark_Collector",
+		Name = "DarkCollector",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "SecondClasses",
 		Weight = 40000,
 		Inherit = "Gangsi",
 	},
 	{
-		Name = "Rune_Knight",
+		Name = "RuneKnight",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Weight = 35000,
@@ -1217,7 +1217,7 @@ job_db = {
 		},							-- 171 - 175
 	},
 	{
-		Name = "Arch_Bishop",
+		Name = "ArchBishop",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Weight = 30000,
@@ -1325,7 +1325,7 @@ job_db = {
 		},									-- 171 - 175
 	},
 	{
-		Name = "Guillotine_Cross",
+		Name = "GuillotineCross",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Weight = 32000,
@@ -1382,7 +1382,7 @@ job_db = {
 		},							-- 171 - 175
 	},
 	{
-		Name = "Shadow_Chaser",
+		Name = "ShadowChaser",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Weight = 28000,
@@ -1433,7 +1433,7 @@ job_db = {
 		},							-- 171 - 175
 	},
 	{
-		Name = "Royal_Guard",
+		Name = "RoyalGuard",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		InheritSP = "Mechanic",
@@ -1575,7 +1575,7 @@ job_db = {
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Weight = 30000,
-		InheritSP = "Shadow_Chaser",
+		InheritSP = "ShadowChaser",
 		BaseASPD = {
 			Fist = 38,
 			Mace = 43,
@@ -1732,64 +1732,64 @@ job_db = {
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "ExtendedClasses",
 		Inherit = "Gunslinger",
-		InheritHP = "Soul_Linker"
+		InheritHP = "SoulLinker"
 	},
 	{
-		Name = "Novice_High",
+		Name = "NoviceHigh",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "HighNovice",
 		Inherit = "Novice",
 	},
 	{
-		Name = "Swordsman_High",
+		Name = "SwordsmanHigh",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedFirstClasses",
 		Inherit = "Swordsman",
 	},
 	{
-		Name = "Magician_High",
+		Name = "MagicianHigh",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedFirstClasses",
 		Inherit = "Magician",
 	},
 	{
-		Name = "Archer_High",
+		Name = "ArcherHigh",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedFirstClasses",
 		Inherit = "Archer",
 	},
 	{
-		Name = "Acolyte_High",
+		Name = "AcolyteHigh",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedFirstClasses",
 		Inherit = "Acolyte",
 	},
 	{
-		Name = "Merchant_High",
+		Name = "MerchantHigh",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedFirstClasses",
 		Inherit = "Merchant",
 	},
 	{
-		Name = "Thief_High",
+		Name = "ThiefHigh",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedFirstClasses",
 		Inherit = "Thief",
 	},
 	{
-		Name = "Lord_Knight",
+		Name = "LordKnight",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedSecondClasses",
 		Inherit = "Knight",
 	},
 	{
-		Name = "High_Priest",
+		Name = "HighPriest",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedSecondClasses",
 		Inherit = "Priest",
 	},
 	{
-		Name = "High_Wizard",
+		Name = "HighWizard",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedSecondClasses",
 		Inherit = "Wizard",
@@ -1807,7 +1807,7 @@ job_db = {
 		Inherit = "Hunter",
 	},
 	{
-		Name = "Assassin_Cross",
+		Name = "AssassinCross",
 		BaseExpGroup = "TranscendedClasses",
 		JobExpGroup = "TranscendedSecondClasses",
 		Inherit = "Assassin",
@@ -1855,301 +1855,301 @@ job_db = {
 		Inherit = "Dancer",
 	},
 	{
-		Name = "Baby_Novice",
+		Name = "BabyNovice",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "Novice",
 		Inherit = "Novice",
 	},
 	{
-		Name = "Baby_Swordsman",
+		Name = "BabySwordsman",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Swordsman",
 	},
 	{
-		Name = "Baby_Magician",
+		Name = "BabyMagician",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Magician",
 	},
 	{
-		Name = "Baby_Archer",
+		Name = "BabyArcher",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Archer",
 	},
 	{
-		Name = "Baby_Acolyte",
+		Name = "BabyAcolyte",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Acolyte",
 	},
 	{
-		Name = "Baby_Merchant",
+		Name = "BabyMerchant",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Merchant",
 	},
 	{
-		Name = "Baby_Thief",
+		Name = "BabyThief",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Thief",
 	},
 	{
-		Name = "Baby_Knight",
+		Name = "BabyKnight",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Knight",
 	},
 	{
-		Name = "Baby_Priest",
+		Name = "BabyPriest",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Priest",
 	},
 	{
-		Name = "Baby_Wizard",
+		Name = "BabyWizard",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Wizard",
 	},
 	{
-		Name = "Baby_Blacksmith",
+		Name = "BabyBlacksmith",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Blacksmith",
 	},
 	{
-		Name = "Baby_Hunter",
+		Name = "BabyHunter",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Hunter",
 	},
 	{
-		Name = "Baby_Assassin",
+		Name = "BabyAssassin",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Assassin",
 	},
 	{
-		Name = "Baby_Crusader",
+		Name = "BabyCrusader",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Crusader",
 	},
 	{
-		Name = "Baby_Monk",
+		Name = "BabyMonk",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Monk",
 	},
 	{
-		Name = "Baby_Sage",
+		Name = "BabySage",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Sage",
 	},
 	{
-		Name = "Baby_Rogue",
+		Name = "BabyRogue",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Rogue",
 	},
 	{
-		Name = "Baby_Alchemist",
+		Name = "BabyAlchemist",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Alchemist",
 	},
 	{
-		Name = "Baby_Bard",
+		Name = "BabyBard",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Bard",
 	},
 	{
-		Name = "Baby_Dancer",
+		Name = "BabyDancer",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Dancer",
 	},
 	{
-		Name = "Super_Baby",
+		Name = "SuperBaby",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "FirstClasses",
 		Inherit = "Novice",
 	},
 	{
-		Name = "Rune_Knight_Trans",
+		Name = "RuneKnightTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
-		Inherit = "Rune_Knight"
+		Inherit = "RuneKnight"
 	},
 	{
-		Name = "Warlock_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Warlock",
-	},
-	{
-		Name = "Ranger_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Ranger",
-	},
-	{
-		Name = "Arch_Bishop_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Arch_Bishop"
-	},
-	{
-		Name = "Mechanic_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Mechanic",
-	},
-	{
-		Name = "Guillotine_Cross_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Guillotine_Cross"
-	},
-	{
-		Name = "Royal_Guard_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Royal_Guard"
-	},
-	{
-		Name = "Sorcerer_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Sorcerer",
-	},
-	{
-		Name = "Minstrel_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Minstrel",
-	},
-	{
-		Name = "Wanderer_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Wanderer",
-	},
-	{
-		Name = "Sura_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Sura",
-	},
-	{
-		Name = "Genetic_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Genetic",
-	},
-	{
-		Name = "Shadow_Chaser_Trans",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Shadow_Chaser"
-	},
-	{
-		Name = "Baby_Rune_Knight",
-		BaseExpGroup = "ThirdClasses",
-		JobExpGroup = "ThirdClasses",
-		Inherit = "Rune_Knight"
-	},
-	{
-		Name = "Baby_Warlock",
+		Name = "WarlockTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Warlock",
 	},
 	{
-		Name = "Baby_Ranger",
+		Name = "RangerTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Ranger",
 	},
 	{
-		Name = "Baby_Arch_Bishop",
+		Name = "ArchBishopTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
-		Inherit = "Arch_Bishop"
+		Inherit = "ArchBishop"
 	},
 	{
-		Name = "Baby_Mechanic",
+		Name = "MechanicTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Mechanic",
 	},
 	{
-		Name = "Baby_Guillotine_Cross",
+		Name = "GuillotineCrossTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
-		Inherit = "Guillotine_Cross"
+		Inherit = "GuillotineCross"
 	},
 	{
-		Name = "Baby_Royal_Guard",
+		Name = "RoyalGuardTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
-		Inherit = "Royal_Guard"
+		Inherit = "RoyalGuard"
 	},
 	{
-		Name = "Baby_Sorcerer",
+		Name = "SorcererTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Sorcerer",
 	},
 	{
-		Name = "Baby_Minstrel",
+		Name = "MinstrelTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Minstrel",
 	},
 	{
-		Name = "Baby_Wanderer",
+		Name = "WandererTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Wanderer",
 	},
 	{
-		Name = "Baby_Sura",
+		Name = "SuraTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Sura",
 	},
 	{
-		Name = "Baby_Genetic",
+		Name = "GeneticTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
 		Inherit = "Genetic",
 	},
 	{
-		Name = "Baby_Shadow_Chaser",
+		Name = "ShadowChaserTrans",
 		BaseExpGroup = "ThirdClasses",
 		JobExpGroup = "ThirdClasses",
-		Inherit = "Shadow_Chaser"
+		Inherit = "ShadowChaser"
 	},
 	{
-		Name = "Super_Novice",
+		Name = "BabyRuneKnight",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "RuneKnight"
+	},
+	{
+		Name = "BabyWarlock",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Warlock",
+	},
+	{
+		Name = "BabyRanger",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Ranger",
+	},
+	{
+		Name = "BabyArchBishop",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "ArchBishop"
+	},
+	{
+		Name = "BabyMechanic",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Mechanic",
+	},
+	{
+		Name = "BabyGuillotineCross",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "GuillotineCross"
+	},
+	{
+		Name = "BabyRoyalGuard",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "RoyalGuard"
+	},
+	{
+		Name = "BabySorcerer",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Sorcerer",
+	},
+	{
+		Name = "BabyMinstrel",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Minstrel",
+	},
+	{
+		Name = "BabyWanderer",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Wanderer",
+	},
+	{
+		Name = "BabySura",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Sura",
+	},
+	{
+		Name = "BabyGenetic",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "Genetic",
+	},
+	{
+		Name = "BabyShadowChaser",
+		BaseExpGroup = "ThirdClasses",
+		JobExpGroup = "ThirdClasses",
+		Inherit = "ShadowChaser"
+	},
+	{
+		Name = "SuperNovice",
 		BaseExpGroup = "FirstClasses",
 		JobExpGroup = "SuperNovice",
 		Inherit = "Novice",
 	},
 	{
-		Name = "Expanded_Super_Novice",
+		Name = "ExpandedSuperNovice",
 		BaseExpGroup = "ExtendedClasses",
 		JobExpGroup = "ExtendedClasses",
 		Inherit = "Novice",
 	},
 	{
-		Name = "Expanded_Super_Baby",
+		Name = "ExpandedSuperBaby",
 		BaseExpGroup = "ExtendedClasses",
 		JobExpGroup = "ExtendedClasses",
 		Inherit = "Novice",

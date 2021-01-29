@@ -35,6 +35,7 @@
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Server/Zone/Game/StaticDB/ItemDB.hpp"
+#include "Server/Zone/Game/Entities/Entity.hpp"
 #include "Server/Zone/Game/Entities/Traits/Attributes.hpp"
 #include "Server/Zone/Game/Entities/Traits/Appearance.hpp"
 #include "Server/Zone/Game/Entities/Traits/Status.hpp"
@@ -80,9 +81,6 @@ void Player::initialize()
 	// Inventory.
 	_inventory = std::make_shared<Assets::Inventory>(downcast<Player>(), get_max_inventory_size());
 	_inventory->sync_from_model();
-
-	// Compute sub-statuses and notify the client.
-	status()->compute_and_notify();
 
 	// Ensure grid for entity.
 	map()->ensure_grid_for_entity(this, map_coords());
@@ -247,8 +245,7 @@ bool Player::move_to_map(std::shared_ptr<Map> dest_map, MapCoords coords)
 		set_map_coords(coords);
 	}
 
-//	get_packet_handler()->Send_ZC_NPCACK_MAPMOVE(map->get_name(), coords.x(), coords.y());
-	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
+	get_session()->clif()->notify_move_to_map(dest_map->get_name(), coords.x(), coords.y());
 	return true;
 }
 //
@@ -278,8 +275,8 @@ void Player::on_item_equip(std::shared_ptr<const item_entry_data> item)
 	std::shared_ptr<Traits::Status> s = status();
 
 	if (item->type == IT_TYPE_WEAPON) {
-		s->get_status_atk()->set_weapon_type(itemd->sub_type.weapon_t);
-		s->get_weapon_atk()->on_equipment_change();
+		s->status_atk()->set_weapon_type(itemd->sub_type.weapon_t);
+		s->equip_atk()->on_equipment_change();
 	}
 }
 
@@ -289,8 +286,8 @@ void Player::on_item_unequip(std::shared_ptr<const item_entry_data> item)
 	std::shared_ptr<Traits::Status> s = status();
 
 	if (item->type == IT_TYPE_WEAPON) {
-		s->get_status_atk()->set_weapon_type(IT_WT_FIST);
-		s->get_weapon_atk()->on_equipment_change();
+		s->status_atk()->set_weapon_type(IT_WT_FIST);
+		s->equip_atk()->on_equipment_change();
 	}
 }
 
@@ -298,14 +295,21 @@ void Player::on_map_enter()
 {
 	force_movement_stop(false);
 
+	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
+	
 //	get_packet_handler()->Send_ZC_MAPPROPERTY_R2(get_map());
 
 	get_inventory()->notify_all();
 	// Status Notifications.
-	status()->get_max_weight()->notify_update();
-	status()->get_current_weight()->notify_update();
-	status()->get_next_base_experience()->notify_update();
-	status()->get_base_experience()->notify_update();
 
 	update_viewport();
 }
+
+void Player::notify_in_area(ByteBuffer &buf, player_notifier_type type, uint16_t range)
+{
+	GridPlayerNotifier notifier(buf, static_cast<Entity *>(this)->shared_from_this(), type);
+	GridReferenceContainerVisitor<GridPlayerNotifier, GridReferenceContainer<AllEntityTypes>> container(notifier);
+
+	map()->visit_in_range(map_coords(), container, range);
+}
+

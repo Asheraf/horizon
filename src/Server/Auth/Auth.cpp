@@ -164,11 +164,17 @@ void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 void AuthServer::update(uint64_t diff)
 {
 	process_cli_commands();
+
 	_task_scheduler.Update();
+	
 	ClientSocktMgr->update_socket_sessions(diff);
 	
-	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
-	_update_timer.async_wait(std::bind(&AuthServer::update, this, MAX_CORE_UPDATE_INTERVAL));
+	if (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
+		_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
+		_update_timer.async_wait(std::bind(&AuthServer::update, this, MAX_CORE_UPDATE_INTERVAL));
+	} else {
+		get_io_service().stop();
+	}
 }
 
 void AuthServer::initialize_core()
@@ -195,18 +201,28 @@ void AuthServer::initialize_core()
 	_update_timer.async_wait(std::bind(&AuthServer::update, this, MAX_CORE_UPDATE_INTERVAL));
 
 	get_io_service().run();
+
+	HLog(info) << "Shutdown process initiated...";
 	
+	/**
+	 * Cancel all pending tasks.
+	 */
+	_task_scheduler.CancelAll();
+
 	/**
 	 * Server shutdown routine begins here...
 	 */
-	_task_scheduler.CancelAll();
-	ClientSocktMgr->stop_network();
 	Server::finalize_core();
 
-	set_shutdown_stage(SHUTDOWN_CLEANUP_COMPLETE);
+	/**
+	 * Stop all networks
+	 */
+	ClientSocktMgr->stop_network();
 
 	/* Cancel signal handling. */
 	signals.cancel();
+
+	set_shutdown_stage(SHUTDOWN_CLEANUP_COMPLETE);
 }
 
 /**

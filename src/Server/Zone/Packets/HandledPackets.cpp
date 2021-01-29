@@ -916,6 +916,7 @@ void CZ_REQ_DISCONNECT::deserialize(ByteBuffer &buf)
 void CZ_STATUS_CHANGE::handle(ByteBuffer &&buf) 
 {
 	deserialize(buf);
+	get_session()->clif()->increase_status_point((status_point_type) _type, _amount);
 }
 
 void CZ_STATUS_CHANGE::deserialize(ByteBuffer &buf)
@@ -1711,6 +1712,7 @@ void CZ_CANCEL_LOCKON::deserialize(ByteBuffer &buf) { }
 void CZ_REQUEST_CHAT::handle(ByteBuffer &&buf) 
 {
 	deserialize(buf);
+	get_session()->clif()->parse_chat_message(_message);
 }
 
 void CZ_REQUEST_CHAT::deserialize(ByteBuffer &buf)

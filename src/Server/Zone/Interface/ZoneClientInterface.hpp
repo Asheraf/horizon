@@ -32,6 +32,7 @@
 #include "Server/Common/Definitions/EntityDefinitions.hpp"
 #include "Server/Common/Interfaces/ClientInterface.hpp"
 #include "Server/Zone/Game/Map/Grid/GridDefinitions.hpp"
+#include "Server/Zone/Packets/TransmittedPackets.hpp"
 
 namespace Horizon
 {
@@ -80,7 +81,35 @@ public:
 	void notify_npc_close_dialog(uint32_t npc_guid);
 	void notify_npc_menu_list(uint32_t npc_guid, std::string const &menu);
 	
-	void notify_status(std::shared_ptr<Entities::Traits::Status> status);
+	/* Status */
+	void notify_initial_status(std::shared_ptr<Entities::Traits::Status> status);
+	bool notify_appearance_update(entity_appearance_type type, int32_t id);
+	// 0x00b0
+	bool notify_complex_attribute_update(status_point_type type, int32_t value);
+	// 0x00bc
+	bool notify_status_attribute_update(status_point_type type, int32_t value, bool success);
+	// 0x00be
+	bool notify_required_attribute_update(status_point_type type, int32_t value);
+	// 0x0121
+	bool notify_cart_weight_update();
+	// 0x013a
+	bool notify_attack_range_update(int32_t value);
+	// 0x0acb
+	bool notify_experience_update(status_point_type type, int32_t value);
+	// 0x00b1
+	bool notify_zeny_update();
+	
+	bool increase_status_point(status_point_type type, uint8_t amount);
+
+	bool notify_move_to_map(std::string map_name, int16_t x, int16_t y);
+
+	bool notify_chat(std::string message);
+
+	void parse_chat_message(std::string message);
+	
+	void notify_map_enter();
+
+	bool notify_map_properties(zc_map_properties properties);
 
 protected:
 	uint32_t _npc_contact_guid{0};

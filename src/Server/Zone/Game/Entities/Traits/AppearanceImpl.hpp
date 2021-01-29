@@ -30,16 +30,5 @@
 #ifndef HORIZON_ZONE_GAME_TRAITS_APPEARANCEIMPL_HPP
 #define HORIZON_ZONE_GAME_TRAITS_APPEARANCEIMPL_HPP
 
-#include "Appearance.hpp"
-#include "Server/Common/Definitions/EntityDefinitions.hpp"
-#include "Server/Zone/Game/Entities/Entity.hpp"
-#include "Server/Zone/Game/Entities/Player/Player.hpp"
-
-template <typename T>
-void Horizon::Zone::Entities::Traits::Appearance<T>::notify_update()
-{
-//	if (get_entity() != nullptr && get_entity()->get_type() == ENTITY_PLAYER)
-//		get_entity()->template downcast<Player>()->get_packet_handler()->Send_ZC_PAR_CHANGE(_type, total());
-}
 
 #endif /* HORIZON_ZONE_GAME_STATUS_APPEARANCEIMPL_HPP */
