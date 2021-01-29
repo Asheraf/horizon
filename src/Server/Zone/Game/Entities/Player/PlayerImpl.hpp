@@ -30,8 +30,6 @@
 #ifndef HORIZON_ZONE_GAME_ENTITIES_PLAYERIMPL_HPP
 #define HORIZON_ZONE_GAME_ENTITIES_PLAYERIMPL_HPP
 
-#include "Server/Zone/Game/Map/Grid/Notifiers/GridNotifiers.hpp"
-#include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 
 
 #endif /* HORIZON_ZONE_GAME_ENTITIES_PLAYERIMPL_HPP */

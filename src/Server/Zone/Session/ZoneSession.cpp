@@ -92,11 +92,11 @@ void ZoneSession::update(uint32_t /*diff*/)
  */
 void ZoneSession::perform_cleanup()
 {
-//	if (get_player() != nullptr) {
-//		std::shared_ptr<Player> player = get_player();
-//		player->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
-//		player->set_logged_in(false);
-//		player->sync_with_models();
-//		player->get_map_container()->remove_player(get_player());
-//	}
+	if (player() != nullptr) {
+		player()->set_logged_in(false);
+		player()->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
+		player()->remove_grid_reference();
+		player()->sync_with_models();
+		player()->map_container()->remove_player(player());
+	}
 }

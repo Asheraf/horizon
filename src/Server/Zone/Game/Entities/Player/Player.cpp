@@ -219,12 +219,16 @@ void Player::realize_entity_movement(std::weak_ptr<Entity> entity)
 	}
 }
 
+void Player::remove_from_grid()
+{
+	
+}
+
 bool Player::move_to_map(std::shared_ptr<Map> dest_map, MapCoords coords)
 {
 	if (dest_map == nullptr)
 		return false;
 
-	force_movement_stop(true);
 	getScheduler().CancelGroup(ENTITY_SCHEDULE_WALK);
 
 	std::shared_ptr<Player> myself = downcast<Player>();
@@ -293,16 +297,14 @@ void Player::on_item_unequip(std::shared_ptr<const item_entry_data> item)
 
 void Player::on_map_enter()
 {
-	force_movement_stop(false);
-
-	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
-	
 //	get_packet_handler()->Send_ZC_MAPPROPERTY_R2(get_map());
 
 	get_inventory()->notify_all();
 	// Status Notifications.
 
 	update_viewport();
+
+	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 }
 
 void Player::notify_in_area(ByteBuffer &buf, player_notifier_type type, uint16_t range)

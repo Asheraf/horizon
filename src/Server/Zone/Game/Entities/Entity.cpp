@@ -110,16 +110,15 @@ void Entity::move()
 	getScheduler().Schedule(Milliseconds(status()->movement_speed()->get_with_cost(c.move_cost)), ENTITY_SCHEDULE_WALK,
 		[this, c, my_coords] (TaskContext /*movement*/)
 		{
-			if (_instep_movement_stop)
-				return;
-
 			MapCoords step_coords(c.x, c.y);
 
 			set_direction((directions) my_coords.direction_to(step_coords));
 
 			notify_nearby_players_of_self(EVP_NOTIFY_OUT_OF_SIGHT);
 			set_map_coords(step_coords);
+
 			HLog(debug) << "step_coords: " << step_coords.x() << ", " << step_coords.y() << "."; 
+			
 			notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 
 			_walk_path.erase(_walk_path.begin());

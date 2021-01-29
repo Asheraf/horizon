@@ -99,18 +99,17 @@ void MapContainerThread::initialize()
 //! This method must not be called from within the thread itself! @see MapManager::finalize()
 void MapContainerThread::finalize()
 {
-	for (auto pi = _managed_players.begin(); pi != _managed_players.end();) {
+	std::map<int32_t, std::shared_ptr<Entities::Player>> pmap = _managed_players.get_map();
+	for (auto pi = pmap.begin(); pi != pmap.end();) {
 		std::shared_ptr<Entities::Player> player = pi->second;
-		pi = _managed_players.erase(pi);
 
-		if (!player || !player->get_session())
-			continue;
+		if (player && player->get_session())
+			player->sync_with_models();
 
-		// Sync with models / Save to DB
-		player->sync_with_models();
 		// Disconnect player.
 //		player->get_packet_handler()->Send_ZC_ACK_REQ_DISCONNECT(true);
-		pi = _managed_players.erase(pi);
+		_managed_players.erase(player->guid());
+		pi++;
 	}
 
 	// Clear anyone in the player buffer (You never know...)
@@ -177,14 +176,15 @@ void MapContainerThread::update(uint64_t diff)
 		if (pbuf->first) {
 			if (!player->is_initialized())
 				player->initialize();
-			_managed_players.emplace(player->guid(), player);
+			_managed_players.insert(player->guid(), player);
 		} else {
 			_managed_players.erase(player->guid());
 		}
 	}
 
 	// Update sessions
-	for (auto pi = _managed_players.begin(); pi != _managed_players.end();) {
+	std::map<int32_t, std::shared_ptr<Entities::Player>> pmap = _managed_players.get_map();
+	for (auto pi = pmap.begin(); pi != pmap.end();) {
 		std::shared_ptr<Entities::Player> player = pi->second;
 
 		if (!player
@@ -192,7 +192,8 @@ void MapContainerThread::update(uint64_t diff)
 			|| !player->get_session()->get_socket()
 			|| !player->character()._online
 			) {
-			pi = _managed_players.erase(pi);
+			_managed_players.erase(player->guid());
+			pi++;
 			continue;
 		}
 		// process packets

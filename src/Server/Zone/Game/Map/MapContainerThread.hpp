@@ -110,7 +110,7 @@ private:
 	std::thread _thread;
 	LockedLookupTable<std::string, std::shared_ptr<Map>> _managed_maps;                     ///< Thread-safe hash-table of managed maps.
 	ThreadSafeQueue<std::pair<bool, std::shared_ptr<Entities::Player>>> _player_buffer;     ///< Thread-safe queue of players to add to/remove from the container.
-	std::unordered_map<uint32_t, std::shared_ptr<Entities::Player>> _managed_players;       ///< Non-thread-safe hash table of managed players.
+	LockedLookupTable<int32_t, std::shared_ptr<Entities::Player>> _managed_players;        ///< Thread-safe hash table of managed players.
 	std::shared_ptr<ScriptManager> _script_mgr;                                             ///< Non-thread-safe shared pointer and owner of a script manager.
 };
 }

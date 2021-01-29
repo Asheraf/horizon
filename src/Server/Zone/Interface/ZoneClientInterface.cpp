@@ -129,6 +129,9 @@ bool ZoneClientInterface::login(uint32_t account_id, uint32_t char_id, uint32_t 
 	return true;
 }
 
+/**
+ * All cleanups are managed in ZoneSocket::perform_cleanup
+ */
 bool ZoneClientInterface::restart(uint8_t type)
 {
 	ZC_RESTART_ACK rpkt(get_session());
@@ -140,10 +143,6 @@ bool ZoneClientInterface::restart(uint8_t type)
 		default:
 			rpkt.deliver(type);
 			HLog(info) << "Character has moved to the character server.";
-			std::shared_ptr<Entities::Player> pl = get_session()->player();
-			pl->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
-			pl->character()._online = false;
-			pl->map_container()->remove_player(pl);
 			break;
 	}
 	
@@ -179,6 +178,9 @@ bool ZoneClientInterface::notify_entity_name(uint32_t guid)
 {
 	std::shared_ptr<Entity> entity = get_session()->player()->get_nearby_entity(guid);
 	
+	if (entity == nullptr)
+		return false;
+
 #if (CLIENT_TYPE == 'M' && PACKET_VERSION >= 20150225) \
 	|| (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20141126) \
 	|| (CLIENT_TYPE == 'Z')
@@ -195,8 +197,12 @@ bool ZoneClientInterface::notify_entity_name(uint32_t guid)
 entity_viewport_entry ZoneClientInterface::create_viewport_entry(std::shared_ptr<Entity> entity)
 {
 	entity_viewport_entry entry;
-	std::shared_ptr<Entities::Traits::Status> status = entity->status();
+
+	if (entity == nullptr)
+		return entry;
 	
+	std::shared_ptr<Entities::Traits::Status> status = entity->status();
+
 	entry.guid = entity->guid();
 	entry.unit_type = entity->type();
 	entry.speed = status->movement_speed()->total();
@@ -285,6 +291,9 @@ bool ZoneClientInterface::notify_viewport_moving_entity(entity_viewport_entry en
 
 bool ZoneClientInterface::notify_viewport_remove_entity(std::shared_ptr<Entity> entity, entity_viewport_notification_type type)
 {
+	if (entity == nullptr)
+		 return false;
+
 	ZC_NOTIFY_VANISH pkt(get_session());
 	pkt.deliver(entity->guid(), type);
 	return true;
@@ -292,6 +301,9 @@ bool ZoneClientInterface::notify_viewport_remove_entity(std::shared_ptr<Entity> 
 
 void ZoneClientInterface::notify_initial_status(std::shared_ptr<Entities::Traits::Status> status)
 {
+	if (status == nullptr)
+		return;
+
 	ZC_STATUS zcs(get_session());
 	zc_status_data data;
 	
@@ -388,6 +400,10 @@ bool ZoneClientInterface::notify_zeny_update()
 bool ZoneClientInterface::increase_status_point(status_point_type type, uint8_t amount)
 {
 	std::shared_ptr<Entities::Player> pl = get_session()->player();
+
+	if (pl == nullptr)
+		return false;
+
 	pl->status()->increase_status_point(type, amount);
 	return true;
 }
@@ -454,6 +470,9 @@ void ZoneClientInterface::parse_chat_message(std::string message)
 
 void ZoneClientInterface::notify_map_enter()
 {
+	if (get_session()->player() == nullptr)
+		return;
+
 	get_session()->player()->on_map_enter();
 }
 

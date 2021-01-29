@@ -67,6 +67,8 @@ void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 
 		bool is_in_range = tpl->is_in_range_of(src_entity);
 
+		HLog(debug) << "Source entity " << src_entity->name() << " within range check: " << is_in_range;
+
 		if (_notif_type <= EVP_NOTIFY_IN_SIGHT && is_in_range) {
 			if (src_entity->is_walking()) {
 				tpl->realize_entity_movement(src_entity);
