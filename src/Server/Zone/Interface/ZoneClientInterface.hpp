@@ -76,6 +76,7 @@ public:
 	bool notify_movement_stop(int32_t guid, int16_t x, int16_t y);
 	bool notify_viewport_moving_entity(entity_viewport_entry entry);
 	
+	void npc_contact(int32_t guid);
 	void notify_npc_dialog(uint32_t npc_guid, std::string dialog);
 	void notify_npc_next_dialog(uint32_t npc_guid);
 	void notify_npc_close_dialog(uint32_t npc_guid);
@@ -107,9 +108,11 @@ public:
 
 	void parse_chat_message(std::string message);
 	
-	void notify_map_enter();
+	void map_enter();
 
 	bool notify_map_properties(zc_map_properties properties);
+
+	void whisper_message(const char *name, int32_t name_length, const char *message, int32_t message_length);
 
 protected:
 	uint32_t _npc_contact_guid{0};

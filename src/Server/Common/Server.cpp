@@ -182,8 +182,6 @@ void Server::process_cli_commands()
 
 void Server::initialize_core()
 {
-	HLog(info) << "A global I/O thread pool of " << MAX_GLOBAL_IO_THREADS << " threads have been created.";
-
 	/**
 	 * Initialize Commandline Interface
 	 */
@@ -194,8 +192,6 @@ void Server::finalize_core()
 {
 	if (_cli_thread.joinable())
 		_cli_thread.join();
-
-	HLog(info) << "Shutdown global I/O thread pool of " << MAX_GLOBAL_IO_THREADS << " threads.";
 }
 
 boost::asio::io_service &Server::get_io_service()

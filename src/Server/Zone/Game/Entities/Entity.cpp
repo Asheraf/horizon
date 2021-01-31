@@ -110,6 +110,13 @@ void Entity::move()
 	getScheduler().Schedule(Milliseconds(status()->movement_speed()->get_with_cost(c.move_cost)), ENTITY_SCHEDULE_WALK,
 		[this, c, my_coords] (TaskContext /*movement*/)
 		{
+			// Force stop as the current coordinates might asynchronously update after map has changed 
+			// and co-ordinates are reset to something in a previous walk path.
+			// This force stop will return before changing co-ordinates and 
+			// prevent further movement updates after map has changed.
+			if (_jump_walk_stop == true)
+				return;
+
 			MapCoords step_coords(c.x, c.y);
 
 			set_direction((directions) my_coords.direction_to(step_coords));
@@ -117,7 +124,7 @@ void Entity::move()
 			notify_nearby_players_of_self(EVP_NOTIFY_OUT_OF_SIGHT);
 			set_map_coords(step_coords);
 
-			HLog(debug) << "step_coords: " << step_coords.x() << ", " << step_coords.y() << "."; 
+			HLog(debug) << "step_coords: " << step_coords.x() << ", " << step_coords.y() << ".";
 			
 			notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
 

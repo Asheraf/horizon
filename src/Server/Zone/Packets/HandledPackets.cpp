@@ -938,7 +938,8 @@ void CZ_CHANGE_GROUPEXPOPTION::deserialize(ByteBuffer &buf) { }
  */
 void CZ_NOTIFY_ACTORINIT::handle(ByteBuffer &&buf)
 {
-	
+	deserialize(buf);
+	get_session()->clif()->map_enter();
 }
 
 void CZ_NOTIFY_ACTORINIT::deserialize(ByteBuffer &buf) { }
@@ -1562,9 +1563,26 @@ void CZ_EXEC_EXCHANGE_ITEM::deserialize(ByteBuffer &buf) { }
 /**
  * CZ_WHISPER
  */
-void CZ_WHISPER::handle(ByteBuffer &&buf) { }
+void CZ_WHISPER::handle(ByteBuffer &&buf)
+{
+	deserialize(buf);
+	get_session()->clif()->whisper_message(
+		_name,
+		strnlen(_name, MAX_UNIT_NAME_LENGTH - 1),
+		_message,
+		strnlen(_message, _packet_length - 4 - MAX_UNIT_NAME_LENGTH)
+	);
+	delete[] _message;
+}
 
-void CZ_WHISPER::deserialize(ByteBuffer &buf) { }
+void CZ_WHISPER::deserialize(ByteBuffer &buf) 
+{
+	buf >> _packet_id;
+	buf >> _packet_length;
+	buf.read(_name, MAX_UNIT_NAME_LENGTH);
+	_message = new char[_packet_length - 4 - MAX_UNIT_NAME_LENGTH];
+	buf.read(_message, _packet_length - 4 - MAX_UNIT_NAME_LENGTH);
+}
 
 /**
  * CZ_REQ_RANKING
@@ -2030,9 +2048,18 @@ void CZ_PARTY_RECRUIT_SHOW_EQUIPMENT::deserialize(ByteBuffer &buf) { }
 /**
  * CZ_CONTACTNPC
  */
-void CZ_CONTACTNPC::handle(ByteBuffer &&buf) { }
+void CZ_CONTACTNPC::handle(ByteBuffer &&buf)
+{
+	deserialize(buf);
+	get_session()->clif()->npc_contact(_guid);
+}
 
-void CZ_CONTACTNPC::deserialize(ByteBuffer &buf) { }
+void CZ_CONTACTNPC::deserialize(ByteBuffer &buf) 
+{
+	buf >> _packet_id;
+	buf >> _guid;
+	buf >> _type;
+}
 
 /**
  * CZ_OPEN_SIMPLE_CASHSHOP_ITEMLIST

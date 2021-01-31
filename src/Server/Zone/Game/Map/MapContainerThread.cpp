@@ -87,6 +87,26 @@ void MapContainerThread::remove_player(std::shared_ptr<Entities::Player> p)
 	_player_buffer.push(std::make_pair(false, p));
 }
 
+std::shared_ptr<Entities::Player> MapContainerThread::get_player(std::string const &name)
+{
+	std::map<int32_t, std::shared_ptr<Entities::Player>> player_map = _managed_players.get_map();
+	for (auto it = player_map.begin(); it != player_map.end(); it++)
+		if (it->second->name() == name)
+			return it->second;
+
+	return nullptr;
+}
+
+std::shared_ptr<Entities::Player> MapContainerThread::get_player(int guid)
+{
+	std::map<int32_t, std::shared_ptr<Entities::Player>> player_map = _managed_players.get_map();
+	for (auto it = player_map.begin(); it != player_map.end(); it++)
+		if (it->second->guid() == guid)
+			return it->second;
+
+	return nullptr;
+}
+
 //! @brief Responsible for initialization of the container and is called externally.
 //! This is mainly for members that can't be initialized from the constructor method.
 void MapContainerThread::initialize()

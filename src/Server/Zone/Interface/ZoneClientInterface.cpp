@@ -53,6 +53,7 @@
 #include <memory>
 
 using namespace Horizon::Zone;
+using namespace Horizon::Zone::Entities;
 
 ZoneClientInterface::ZoneClientInterface(std::shared_ptr<ZoneSession> s)
 : ClientInterface(s)
@@ -96,7 +97,7 @@ bool ZoneClientInterface::login(uint32_t account_id, uint32_t char_id, uint32_t 
 	
 	MapCoords mcoords(res3.front().current_x, res3.front().current_y);
 	std::shared_ptr<Map> map = MapMgr->get_map(res3.front().current_map);
-	std::shared_ptr<Entities::Player> pl = std::make_shared<Entities::Player>(get_session(), account_id, map, mcoords);
+	std::shared_ptr<Player> pl = std::make_shared<Player>(get_session(), account_id, map, mcoords);
 	
 	/* Initialize Player Model */
 	pl->character()._character_id = res3.front().id;
@@ -104,6 +105,7 @@ bool ZoneClientInterface::login(uint32_t account_id, uint32_t char_id, uint32_t 
 	pl->character()._slot = res3.front().slot;
 	pl->set_name(res3.front().name);
 	pl->set_posture(POSTURE_STANDING);
+	pl->set_group_id(res2.front().group_id);
 	
 	std::string acc_gender = res2.front().gender;
 	std::string char_gender = res3.front().gender;
@@ -155,7 +157,7 @@ bool ZoneClientInterface::disconnect(uint8_t type)
 	
 	ard.deliver(0); // 0 => Quit, 1 => Wait for 10 seconds
 	
-	std::shared_ptr<Entities::Player> pl = get_session()->player();
+	std::shared_ptr<Player> pl = get_session()->player();
 	pl->map_container()->remove_player(pl);
 	return true;
 }
@@ -201,7 +203,7 @@ entity_viewport_entry ZoneClientInterface::create_viewport_entry(std::shared_ptr
 	if (entity == nullptr)
 		return entry;
 	
-	std::shared_ptr<Entities::Traits::Status> status = entity->status();
+	std::shared_ptr<Traits::Status> status = entity->status();
 
 	entry.guid = entity->guid();
 	entry.unit_type = entity->type();
@@ -244,9 +246,9 @@ entity_viewport_entry ZoneClientInterface::create_viewport_entry(std::shared_ptr
 	switch (entry.unit_type)
 	{
 		case ENTITY_PLAYER:
-			entry.character_id = entity->downcast<Entities::Player>()->character()._character_id;
+			entry.character_id = entity->downcast<Player>()->character()._character_id;
 			entry.x_size = entry.y_size = 0;
-			entry.gender = entity->downcast<Entities::Player>()->character()._gender;
+			entry.gender = entity->downcast<Player>()->character()._gender;
 			break;
 		case ENTITY_NPC:
 		default:
@@ -299,7 +301,7 @@ bool ZoneClientInterface::notify_viewport_remove_entity(std::shared_ptr<Entity> 
 	return true;
 }
 
-void ZoneClientInterface::notify_initial_status(std::shared_ptr<Entities::Traits::Status> status)
+void ZoneClientInterface::notify_initial_status(std::shared_ptr<Traits::Status> status)
 {
 	if (status == nullptr)
 		return;
@@ -399,7 +401,7 @@ bool ZoneClientInterface::notify_zeny_update()
 
 bool ZoneClientInterface::increase_status_point(status_point_type type, uint8_t amount)
 {
-	std::shared_ptr<Entities::Player> pl = get_session()->player();
+	std::shared_ptr<Player> pl = get_session()->player();
 
 	if (pl == nullptr)
 		return false;
@@ -408,26 +410,34 @@ bool ZoneClientInterface::increase_status_point(status_point_type type, uint8_t 
 	return true;
 }
 
+void ZoneClientInterface::npc_contact(int32_t guid)
+{
+
+}
+
 void ZoneClientInterface::notify_npc_dialog(uint32_t npc_guid, std::string dialog)
 {
+	uint32_t current_npc_guid = get_session()->player()->npc_contact_guid();
 	
 }
 
 void ZoneClientInterface::notify_npc_next_dialog(uint32_t npc_guid)
 {
-	
+	ZC_WAIT_DIALOG pkt(get_session());
+	pkt.deliver(npc_guid);
 }
 
-void ZoneClientInterface::ZoneClientInterface::notify_npc_close_dialog(uint32_t npc_guid)
+void ZoneClientInterface::notify_npc_close_dialog(uint32_t npc_guid)
 {
-	
+	ZC_CLOSE_DIALOG pkt(get_session());
+	pkt.deliver(npc_guid);
 }
 
 void ZoneClientInterface::notify_npc_menu_list(uint32_t npc_guid, std::string const &menu)
 {
-	
+	ZC_MENU_LIST pkt(get_session());
+	pkt.deliver(npc_guid, menu);
 }
-
 
 bool ZoneClientInterface::notify_move_to_map(std::string map_name, int16_t x, int16_t y)
 {
@@ -468,11 +478,8 @@ void ZoneClientInterface::parse_chat_message(std::string message)
 	notify_player_chat.deliver(message);
 }
 
-void ZoneClientInterface::notify_map_enter()
+void ZoneClientInterface::map_enter()
 {
-	if (get_session()->player() == nullptr)
-		return;
-
 	get_session()->player()->on_map_enter();
 }
 
@@ -481,4 +488,33 @@ bool ZoneClientInterface::notify_map_properties(zc_map_properties p)
 	ZC_MAPPROPERTY_R2 pkt(get_session());
 	pkt.deliver(p);
 	return true;
+}
+
+void ZoneClientInterface::whisper_message(const char *name, int32_t name_length, const char *message, int32_t message_length)
+{
+	// validate name
+	// only restriction is that the name must be zero-terminated
+	if (name[name_length] != '\0') {
+		HLog(warning) << "ZoneClientInterface::whisper_message: Player '" << get_session()->player()->name() << "' sent an unterminated name!\n";
+		return;
+	}
+	// validate name
+	// only restriction is that the name must be zero-terminated
+	if (message[message_length] != '\0') {
+		HLog(warning) << "ZoneClientInterface::whisper_message: Player '" << get_session()->player()->name() << "' sent an unterminated message!\n";
+		return;
+	}
+
+	HLog(debug) << name << " : " << message;
+
+	std::shared_ptr<Player> player = MapMgr->find_player(name);
+
+	ZC_ACK_WHISPER02 pkt(get_session());
+	if (player != nullptr)
+		pkt.deliver(WRT_SUCCESS, player->character()._character_id);
+	else
+		pkt.deliver(WRT_RECIPIENT_OFFLINE, 0);
+
+	ZC_WHISPER pkt2(player->get_session());
+	pkt2.deliver(get_session()->player()->name(), message, player->group_id() >= 99 ? true : false);
 }

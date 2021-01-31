@@ -294,10 +294,10 @@ void ScriptManager::initialize_state(sol::state &st)
 		"map", &Player::map,
 		"map_coords", &Player::map_coords,
 		"get_nearby_entity", &Player::get_nearby_entity,
-//		"send_npc_dialog", &Player::send_npc_dialog,
-//		"send_npc_next_dialog", &Player::send_npc_next_dialog,
-//		"send_npc_close_dialog", &Player::send_npc_close_dialog,
-//		"send_npc_menu_list", &Player::send_npc_menu_list,
+		"send_npc_dialog", &Player::send_npc_dialog,
+		"send_npc_next_dialog", &Player::send_npc_next_dialog,
+		"send_npc_close_dialog", &Player::send_npc_close_dialog,
+		"send_npc_menu_list", &Player::send_npc_menu_list,
 		"move_to_map", &Player::move_to_map,
 		"get_inventory", &Player::get_inventory,
 		"message", [] (std::shared_ptr<Player> player, std::string const &message)
@@ -504,15 +504,19 @@ void ScriptManager::load_scripts()
 
 		sol::table scripts = _lua_state["definitions"];
 
-		scripts.for_each([this, &file_path](sol::object const &/*key*/, sol::object const& value) {
+		int count = 0;
+		scripts.for_each([this, &count, &file_path](sol::object const &/*key*/, sol::object const& value) {
 			std::string script_file = value.as<std::string>();
 			sol::protected_function fn = _lua_state.load_file(script_file);
 			sol::protected_function_result result = fn();
 			if (!result.valid()) {
 				sol::error error = result;
 				HLog(warning) << "Failed to load file '" << script_file << "' from '" << file_path << "', reason: " << error.what();
+				return;
 			}
+			count++;
 		});
+		HLog(info) << "Read " << count << " NPC scripts from '" << file_path << "' for map container " << (void *)_container.lock().get() << ".";
 	} catch (sol::error &e) {
 		HLog(warning) << "Failed to load included script files from '" << file_path << "', reason: " << e.what();
 	}
@@ -534,8 +538,8 @@ void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint3
 {
 	npc_db_data const &nd = _npc_db.at(npc_guid);
 
-//	if (nd.script_is_file)
-//		player->set_npc_contact_guid(npc_guid);
+	if (nd.script_is_file)
+		player->set_npc_contact_guid(npc_guid);
 
 	try {
 		sol::state &pl_lua = player->get_lua_state();

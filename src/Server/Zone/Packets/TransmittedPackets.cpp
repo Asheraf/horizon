@@ -2285,10 +2285,19 @@ ByteBuffer &ZC_NOTIFY_LOBBY_ADMISSION::serialize()
 /**
  * ZC_ACK_WHISPER02
  */
-void ZC_ACK_WHISPER02::deliver() { }
+void ZC_ACK_WHISPER02::deliver(zc_whisper_result_type result, int32_t recipient_char_id)
+{
+	_result = (int8_t) result;
+	_recipient_char_id = recipient_char_id;	
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_ACK_WHISPER02::serialize()
 {
+	buf() << _packet_id;
+	buf() << _result;
+	buf() << _recipient_char_id;
 	return buf();
 }
 
@@ -2325,10 +2334,27 @@ ByteBuffer &ZC_BATTLE_JOIN_NOTI_DEFER::serialize()
 /**
  * ZC_WHISPER
  */
-void ZC_WHISPER::deliver() { }
+void ZC_WHISPER::deliver(std::string name, std::string message, bool is_admin)
+{
+	strncpy(_name, name.c_str(), MAX_UNIT_NAME_LENGTH);
+	_message = new char[message.size()];
+	strncpy(_message, message.c_str(), message.size());
+	_is_admin = (int32_t) is_admin;
+	_packet_length = 8 + MAX_UNIT_NAME_LENGTH + message.size();
+
+	serialize();
+	transmit();
+	
+	delete[] _message;
+}
 
 ByteBuffer &ZC_WHISPER::serialize()
 {
+	buf() << _packet_id;
+	buf() << _packet_length;
+	buf().append(_name, MAX_UNIT_NAME_LENGTH);
+	buf() << _is_admin;
+	buf().append(_message, _packet_length - 8 - MAX_UNIT_NAME_LENGTH);
 	return buf();
 }
 
@@ -2974,10 +3000,10 @@ ByteBuffer &ZC_CLEAR_DIALOG::serialize()
 /**
  * ZC_MENU_LIST
  */
-void ZC_MENU_LIST::deliver(int32_t guid, std::string &items)
+void ZC_MENU_LIST::deliver(int32_t guid, std::string const &menu)
 {
-	_menu_items = items;
-	_packet_length = items.size() + 8;
+	_menu_items = menu;
+	_packet_length = menu.size() + 8;
 	_guid = guid;
 
 	serialize();

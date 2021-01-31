@@ -41,10 +41,11 @@ set(SQLPP11_MYSQL_INCLUDE_DIR "${SQLPP11_MYSQL_INCLUDE_DIR}" CACHE PATH "Include
 set(SQLPP11_MYSQL_NOT_FOUND_MESSAGE "Could NOT find sqlpp11-mysql. You should probably set SQLPP11_MYSQL_INCLUDE_DIR and SQLPP11_MYSQL_LIB_DIR.")
 
 find_file(SQLPP11_MYSQL_MAIN_HEADER
-    sqlpp11/mysql/mysql.h
+    NAMES mysql.h
+    PATH_SUFFIXES mysql
     HINTS
-        /usr/local/include/
-      ${SQLPP11_MYSQL_INCLUDE_DIR}
+        /usr/local/include/sqlpp11
+        ${SQLPP11_MYSQL_INCLUDE_DIR}
 )
 mark_as_advanced(SQLPP11_MYSQL_MAIN_HEADER)
 
@@ -60,31 +61,30 @@ if (SQLPP11_MYSQL_MAIN_HEADER)
         unset(SQLPP11_MYSQL_INCLUDE_DIR CACHE)
     else()
         # Check succeeded, create target
-        set(SQLPP11_MYSQL_INCLUDE_DIR ${SQLPP11_MYSQL_INCLUDE_DIR})
-        mark_as_advanced(SQLPP11_MYSQL_INCLUDE_DIR)
-        set(SQLPP11_MYSQL_INCLUDE_DIR "${SQLPP11_MYSQL_INCLUDE_DIR}")
+        set(SQLPP11_MYSQL_INCLUDE_DIR "${SQLPP11_MYSQL_MAIN_HEADER}")
     endif()
+else()
+    unset(SQLPP11_MYSQL_INCLUDE_DIR CACHE)
 endif()
 
 find_file(SQLPP11_MYSQL_LIB_FILE
     libsqlpp-mysql.a
     HINTS
         /usr/local/lib/
-      ${SQLPP11_MYSQL_LIB_DIR}
-      ${SQLPP11_MYSQL_LIB_DIR}/src
+        ${SQLPP11_MYSQL_LIB_DIR}
 )
 mark_as_advanced(SQLPP11_MYSQL_LIB_FILE)
 
 if (SQLPP11_MYSQL_LIB_FILE)
     get_filename_component(SQLPP11_MYSQL_LIB_DIR "${SQLPP11_MYSQL_LIB_FILE}" DIRECTORY CACHE)
-    mark_as_advanced(SQLPP11_MYSQL_LIB_DIR)
     set(SQLPP11_MYSQL_LIBRARIES "${SQLPP11_MYSQL_LIB_FILE}")
+    mark_as_advanced(SQLPP11_MYSQL_LIBRARIES)
 else()
     unset(SQLPP11_MYSQL_LIBRARIES CACHE)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(sqlpp11-mysql
+find_package_handle_standard_args(sqlpp11-connector-mysql
     REQUIRED_VARS SQLPP11_MYSQL_INCLUDE_DIR SQLPP11_MYSQL_LIBRARIES
     FAIL_MESSAGE ${SQLPP11_MYSQL_NOT_FOUND_MESSAGE}
 )

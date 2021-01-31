@@ -109,7 +109,7 @@ public:
 	std::shared_ptr<Entities::Traits::Status> status() { return _status; }
 	void set_status(std::shared_ptr<Entities::Traits::Status> st) { _status = st; }
 
-	void force_movement_stop(bool stop = false) { _instep_movement_stop = stop; }
+	void force_movement_stop_internal(bool stop = false) { _jump_walk_stop = stop; }
 	/**
 	 * Map & Map Container
 	 */
@@ -152,7 +152,7 @@ public:
 	std::shared_ptr<Entity> get_nearby_entity(uint32_t guid);
 
 private:
-	bool _is_initialized{false}, _instep_movement_stop{false};
+	bool _is_initialized{false}, _jump_walk_stop{false};
 	uint32_t _guid{0};
 	entity_type _type{ENTITY_UNKNOWN};
 	std::weak_ptr<Map> _map;

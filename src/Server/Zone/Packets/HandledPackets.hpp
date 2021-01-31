@@ -21969,12 +21969,16 @@ public:
 	CZ_WHISPER(std::shared_ptr<ZoneSession> s)
 	: NetworkPacketHandler<ZoneSession>(ID_CZ_WHISPER, s)
 	{}
-	virtual ~CZ_WHISPER() {}
+	virtual ~CZ_WHISPER() { }
 
 	void handle(ByteBuffer &&buf);
 	void deserialize(ByteBuffer &buf);
 
 /* Structure */
+/// 0096 <packet len>.W <nick>.24B <message>.?B
+	uint16_t _packet_length{28};
+	char _name[MAX_UNIT_NAME_LENGTH]{'\0'};
+	char *_message{nullptr};
 };
 
 enum {
@@ -27927,6 +27931,8 @@ public:
 	void deserialize(ByteBuffer &buf);
 
 /* Structure */
+	int32_t _guid{0};
+	int8_t _type{0};
 };
 
 enum {

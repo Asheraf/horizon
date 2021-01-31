@@ -161,10 +161,9 @@ find_package(ZLIB REQUIRED)
 #################
 # Find Zlib
 #################
-set(SQLPP11_FIND_REQUIRED true)
 include(FindMySQL)
 find_package(sqlpp11 REQUIRED)
-find_package(sqlpp11-mysql REQUIRED)
+find_package(sqlpp11-connector-mysql REQUIRED)
 
 #################
 # Find Argon2

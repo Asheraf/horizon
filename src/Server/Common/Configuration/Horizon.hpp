@@ -61,6 +61,15 @@
 #define MAX_STORAGE_SIZE 600
 #define MAX_ITEM_STACK_SIZE 30000
 
+// Network Threads
+#define MAX_NETWORK_THREADS 1
+
+// Time in Microseconds (µs)
+#define MAX_CORE_UPDATE_INTERVAL 500
+
+// Map Thread Containers
+#define MAX_MAP_CONTAINER_THREADS 2
+
 static_assert(MAX_LEVEL > 0,
               "MAX_LEVEL should be greater than 0.");
 static_assert(MAX_ITEM_STACK_SIZE > 0,
@@ -78,23 +87,8 @@ static_assert(MIN_INVENTORY_SIZE > 0 && MAX_INVENTORY_SIZE > MIN_INVENTORY_SIZE,
 static_assert(MIN_STORAGE_SIZE > 0 && MAX_STORAGE_SIZE >= MIN_STORAGE_SIZE,
               "Max storage should be greater than minimum storage size of 1.");
 
-// Network Threads
-#define MAX_NETWORK_THREADS 1
-
-#define MAX_GLOBAL_IO_THREADS 1
-
-// Time in Microseconds (µs)
-#define MAX_CORE_UPDATE_INTERVAL 500
-
-// Map Thread Containers
-#define MAX_MAP_CONTAINER_THREADS 2
-
-
 static_assert(MAX_NETWORK_THREADS > 0,
               "MAX_NETWORK_THREADS cannot be less than or equal to 0");
-
-static_assert(MAX_GLOBAL_IO_THREADS > 0,
-            "MAX_GLOBAL_IO_THREADS cannot be less than or equal to 0");
 
 static_assert(MAX_CORE_UPDATE_INTERVAL >= 500 && MAX_CORE_UPDATE_INTERVAL <= 4000,
             "MAX_CORE_UPDATE_INTERVAL recommended setting is 4000µs.");

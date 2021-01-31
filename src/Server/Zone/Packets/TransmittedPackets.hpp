@@ -7967,6 +7967,12 @@ enum {
  * @brief Main object for the aegis packet: ZC_ACK_WHISPER02
  *
  */ 
+enum zc_whisper_result_type {
+	WRT_SUCCESS               = 0,
+	WRT_RECIPIENT_OFFLINE     = 1,
+	WRT_RECIPIENT_IGNORE      = 2,
+	WRT_RECIPIENT_IGNORE_ALL  = 3
+};
 class ZC_ACK_WHISPER02 : public Base::NetworkPacketTransmitter<ZoneSession>
 {
 public:
@@ -7975,10 +7981,17 @@ public:
 	{}
 	virtual ~ZC_ACK_WHISPER02() {}
 
-	void deliver();
+	void deliver(zc_whisper_result_type result, int32_t recipient_char_id);
 	ByteBuffer &serialize();
 
 /* Structure */
+/// result:
+///     0 = success to send wisper
+///     1 = target character is not loged in
+///     2 = ignored by target
+///     3 = everyone ignored by target
+	int8_t _result;
+	int32_t _recipient_char_id;
 };
 
 enum {
@@ -8121,10 +8134,14 @@ public:
 	{}
 	virtual ~ZC_WHISPER() {}
 
-	void deliver();
+	void deliver(std::string name, std::string message, bool is_admin);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int16_t _packet_length{4};
+	char _name[MAX_UNIT_NAME_LENGTH]{'\0'};
+	int32_t _is_admin{0};
+	char *_message;
 };
 
 enum {
@@ -10633,7 +10650,7 @@ public:
 	{}
 	virtual ~ZC_MENU_LIST() {}
 
-	void deliver(int32_t guid, std::string &items);
+	void deliver(int32_t guid, std::string const &menu);
 	ByteBuffer &serialize();
 
 /* Structure */

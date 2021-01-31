@@ -74,13 +74,14 @@ public:
 
 	std::shared_ptr<Map> get_map(std::string map_name)
 	{
-		std::lock_guard<std::mutex> lock(_map_lookup_mtx);
+		std::map<int32_t, std::shared_ptr<MapContainerThread>> container_map = _map_containers.get_map();
 		
-		for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
-			if (*i == nullptr)
+		for (auto it = container_map.begin(); it != container_map.end(); ++it) {
+			if (it->second == nullptr)
 				return std::shared_ptr<Map>();
-			std::shared_ptr<Map> map = (*i)->get_map(map_name);
-			if (map) return map;
+			std::shared_ptr<Map> map = it->second->get_map(map_name);
+			if (map) 
+				return map;
 		}
 
 		return std::shared_ptr<Map>();
@@ -88,10 +89,21 @@ public:
 
 	TaskScheduler &getScheduler() { return _scheduler; }
 
+	std::shared_ptr<Entities::Player> find_player(std::string name)
+	{
+		std::map<int32_t, std::shared_ptr<MapContainerThread>> map_containers = _map_containers.get_map();
+		for (auto it = map_containers.begin(); it != map_containers.end(); it++) {
+			std::shared_ptr<Entities::Player> player = it->second->get_player(name);
+			if (player != nullptr)
+				return player;
+		}
+
+		return nullptr;
+	}
+
 private:
-	std::mutex _map_lookup_mtx;
 	TaskScheduler _scheduler;
-	std::vector<std::shared_ptr<MapContainerThread>> _map_containers;
+	LockedLookupTable<int32_t, std::shared_ptr<MapContainerThread>> _map_containers;
 };
 }
 }

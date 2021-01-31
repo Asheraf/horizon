@@ -80,6 +80,10 @@ public:
 	//! list of managed players by this container on the next update.
 	void remove_player(std::shared_ptr<Entities::Player> p);
 
+	//! @brief Returns a player if found, nullptr otherwise.
+	std::shared_ptr<Entities::Player> get_player(std::string const &name);
+	std::shared_ptr<Entities::Player> get_player(int32_t guid);
+
 	//! @brief Responsible for initialization of the container and is called externally.
 	//! This is mainly for members that can't be initialized from the constructor method.
 	void initialize();
@@ -110,7 +114,7 @@ private:
 	std::thread _thread;
 	LockedLookupTable<std::string, std::shared_ptr<Map>> _managed_maps;                     ///< Thread-safe hash-table of managed maps.
 	ThreadSafeQueue<std::pair<bool, std::shared_ptr<Entities::Player>>> _player_buffer;     ///< Thread-safe queue of players to add to/remove from the container.
-	LockedLookupTable<int32_t, std::shared_ptr<Entities::Player>> _managed_players;        ///< Thread-safe hash table of managed players.
+	LockedLookupTable<int32_t, std::shared_ptr<Entities::Player>> _managed_players;         ///< Thread-safe hash table of managed players.
 	std::shared_ptr<ScriptManager> _script_mgr;                                             ///< Non-thread-safe shared pointer and owner of a script manager.
 };
 }

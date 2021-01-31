@@ -28,14 +28,15 @@
 find_path(ARGON2_INCLUDE_DIR 
     NAMES argon2.h
     HINTS
-        /usr/include
+        ${ARGON2_INCLUDE_DIR}
     )
+mark_as_advanced(ARGON2_INCLUDE_DIR)
 find_library(ARGON2_LIBRARIES 
     NAMES argon2
     HINTS
-        /usr/lib)
+        ${ARGON2_LIBRARY_DIR})
 
-mark_as_advanced(ARGON2_LIBRARIES ARGON2_INCLUDE_DIR)
+mark_as_advanced(ARGON2_LIBRARIES)
 
 if (ARGON2_INCLUDE_DIR STREQUAL "ARGON2_INCLUDE_DIR-NOTFOUND")
     message(FATAL_ERROR "Argon2 header is required but not found.")
@@ -44,4 +45,6 @@ else()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Argon2 DEFAULT_MSG ARGON2_LIBRARIES ARGON2_INCLUDE_DIR)
+find_package_handle_standard_args(Argon2 
+	REQUIRED_VARS ARGON2_LIBRARIES ARGON2_INCLUDE_DIR
+	FAIL_MESSAGE "Argon2 Libraries weren't found - Please provide ARGON2_INCLUDE_DIR and ARGON2_LIBRARY_DIR explicitly.")

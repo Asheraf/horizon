@@ -219,16 +219,12 @@ void Player::realize_entity_movement(std::weak_ptr<Entity> entity)
 	}
 }
 
-void Player::remove_from_grid()
-{
-	
-}
-
 bool Player::move_to_map(std::shared_ptr<Map> dest_map, MapCoords coords)
 {
 	if (dest_map == nullptr)
 		return false;
 
+	force_movement_stop_internal(true);
 	getScheduler().CancelGroup(ENTITY_SCHEDULE_WALK);
 
 	std::shared_ptr<Player> myself = downcast<Player>();
@@ -252,26 +248,26 @@ bool Player::move_to_map(std::shared_ptr<Map> dest_map, MapCoords coords)
 	get_session()->clif()->notify_move_to_map(dest_map->get_name(), coords.x(), coords.y());
 	return true;
 }
-//
-//void Player::send_npc_dialog(uint32_t npc_guid, std::string HLog)
-//{
-////	get_packet_handler()->Send_ZC_SAY_HLog(npc_guid, HLog);
-//}
-//
-//void Player::send_npc_next_dialog(uint32_t npc_guid)
-//{
-////	get_packet_handler()->Send_ZC_WAIT_HLog(npc_guid);
-//}
-//
-//void Player::send_npc_close_dialog(uint32_t npc_guid)
-//{
-////	get_packet_handler()->Send_ZC_CLOSE_HLog(npc_guid);
-//}
-//
-//void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)
-//{
-////	get_packet_handler()->Send_ZC_MENU_LIST(npc_guid, menu);
-//}
+
+void Player::send_npc_dialog(uint32_t npc_guid, std::string dialog)
+{
+	get_session()->clif()->notify_npc_dialog(npc_guid, dialog);
+}
+
+void Player::send_npc_next_dialog(uint32_t npc_guid)
+{
+	get_session()->clif()->notify_npc_next_dialog(npc_guid);
+}
+
+void Player::send_npc_close_dialog(uint32_t npc_guid)
+{
+	get_session()->clif()->notify_npc_close_dialog(npc_guid);
+}
+
+void Player::send_npc_menu_list(uint32_t npc_guid, std::string const &menu)
+{
+	get_session()->clif()->notify_npc_menu_list(npc_guid, menu);
+}
 
 void Player::on_item_equip(std::shared_ptr<const item_entry_data> item)
 {
@@ -297,6 +293,7 @@ void Player::on_item_unequip(std::shared_ptr<const item_entry_data> item)
 
 void Player::on_map_enter()
 {
+	force_movement_stop_internal(false);
 //	get_packet_handler()->Send_ZC_MAPPROPERTY_R2(get_map());
 
 	get_inventory()->notify_all();

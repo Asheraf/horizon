@@ -52,8 +52,9 @@ bool MapManager::initialize()
 
 bool MapManager::finalize()
 {
-	for (auto &cont : _map_containers) {
-		cont->finalize();
+	std::map<int32_t, std::shared_ptr<MapContainerThread>> container_map = _map_containers.get_map();
+	for (auto &cont : container_map) {
+		cont.second->finalize();
 	}
 
 	return true;
@@ -103,19 +104,20 @@ bool MapManager::LoadMapCache()
 	HLog(info) << "Initializing " << MAX_MAP_CONTAINER_THREADS << " map containers with " << container_max << " maps per container for a total of " << mcache_size << " maps...";
 
 	for (int i = 0; i < MAX_MAP_CONTAINER_THREADS; i++)
-		_map_containers.push_back(std::make_shared<MapContainerThread>());
+		_map_containers.insert(i, std::make_shared<MapContainerThread>());
 
 	for (auto &i : m.getMCache()->maps) {
-		std::shared_ptr<Map> map = std::make_shared<Map>(_map_containers[container_idx], i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
-		_map_containers[container_idx]->add_map(std::move(map));
+		std::shared_ptr<Map> map = std::make_shared<Map>(_map_containers.at(container_idx), i.second.name(), i.second.width(), i.second.height(), i.second.getCells());
+		(_map_containers.at(container_idx))->add_map(std::move(map));
 		map_counter++;
 		total_maps++;
 
 		if (container_max == map_counter || total_maps == mcache_size) {
-			HLog(info) << "Initializing " << map_counter << " maps in map container " << (void *) _map_containers[container_idx].get() << "...";
-			_map_containers[container_idx]->initialize();
-			_map_containers[container_idx++]->start();
+			HLog(info) << "Initializing " << map_counter << " maps in map container " << (void *) _map_containers.at(container_idx).get() << "...";
+			(_map_containers.at(container_idx))->initialize();
+			(_map_containers.at(container_idx))->start();
 			map_counter = 0;
+			container_idx++;
 		}
 	}
 
@@ -126,11 +128,14 @@ bool MapManager::LoadMapCache()
 
 std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::shared_ptr<Entities::Player> p)
 {
-	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
-		std::shared_ptr<Map> map = (*i)->get_map(map_name);
-		if (map) {
-			(*i)->add_player(p);
+	std::map<int32_t, std::shared_ptr<MapContainerThread>> container_map = _map_containers.get_map();
+	for (auto i = container_map.begin(); i != container_map.end(); i++) {
+		std::shared_ptr<Map> map = i->second->get_map(map_name);
+		if (map != nullptr) {
+			i->second->add_player(p);
 			return map;
+		} else {
+			return nullptr;
 		}
 	}
 
@@ -139,9 +144,10 @@ std::shared_ptr<Map> MapManager::add_player_to_map(std::string map_name, std::sh
 
 bool MapManager::remove_player_from_map(std::string map_name, std::shared_ptr<Entities::Player> p)
 {
-	for (auto i = _map_containers.begin(); i != _map_containers.end(); i++) {
-		if ((*i)->get_map(map_name) != nullptr) {
-			(*i)->remove_player(p);
+	std::map<int32_t, std::shared_ptr<MapContainerThread>> container_map = _map_containers.get_map();
+	for (auto i = container_map.begin(); i != container_map.end(); i++) {
+		if (i->second->get_map(map_name) != nullptr) {
+			i->second->remove_player(p);
 			return true;
 		}
 	}
