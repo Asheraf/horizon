@@ -34,54 +34,23 @@
 # You should set SQLPP11_MYSQL_INCLUDE_DIR and SQLPP11_MYSQL_LIB_DIR
 #
 
-cmake_minimum_required(VERSION 3.2)
-
-# ensure cache entry
-set(SQLPP11_MYSQL_INCLUDE_DIR "${SQLPP11_MYSQL_INCLUDE_DIR}" CACHE PATH "Include directory of sqlpp11-mysql library")
-set(SQLPP11_MYSQL_NOT_FOUND_MESSAGE "Could NOT find sqlpp11-mysql. You should probably set SQLPP11_MYSQL_INCLUDE_DIR and SQLPP11_MYSQL_LIB_DIR.")
-
-find_file(SQLPP11_MYSQL_MAIN_HEADER
+find_file(SQLPP11_MYSQL_INCLUDE_DIR
     NAMES mysql.h
     PATH_SUFFIXES mysql
-    HINTS
+    PATHS
         /usr/local/include/sqlpp11
-        ${SQLPP11_MYSQL_INCLUDE_DIR}
+        ${_VCPKG_INSTALLED_DIR}/x${PLATFORM}-windows/include/sqlpp11
 )
-mark_as_advanced(SQLPP11_MYSQL_MAIN_HEADER)
+mark_as_advanced(SQLPP11_MYSQL_INCLUDE_DIR)
 
-if (SQLPP11_MYSQL_MAIN_HEADER)
-    # Validate that we found the correct file
-    file(STRINGS ${SQLPP11_MYSQL_MAIN_HEADER} check_result
-        LIMIT_COUNT 1
-        REGEX "^.*Copyright \\(c\\) 2013.*Roland Bock.*$"
-    )
-
-    if("${check_result}" STREQUAL "")
-        string(APPEND SQLPP11_NOT_FOUND_MESSAGE "\nRejecting found '${SQLPP11_MYSQL_MAIN_HEADER}', it seems to be invalid.")
-        unset(SQLPP11_MYSQL_INCLUDE_DIR CACHE)
-    else()
-        # Check succeeded, create target
-        set(SQLPP11_MYSQL_INCLUDE_DIR "${SQLPP11_MYSQL_MAIN_HEADER}")
-    endif()
-else()
-    unset(SQLPP11_MYSQL_INCLUDE_DIR CACHE)
-endif()
-
-find_file(SQLPP11_MYSQL_LIB_FILE
-    libsqlpp-mysql.a
-    HINTS
+find_file(SQLPP11_MYSQL_LIBRARIES
+    NAMES sqlpp-mysql sqlpp-mysql.lib
+    PATHS
         /usr/local/lib/
         ${SQLPP11_MYSQL_LIB_DIR}
+        ${_VCPKG_INSTALLED_DIR}/x${PLATFORM}-windows/lib
 )
-mark_as_advanced(SQLPP11_MYSQL_LIB_FILE)
-
-if (SQLPP11_MYSQL_LIB_FILE)
-    get_filename_component(SQLPP11_MYSQL_LIB_DIR "${SQLPP11_MYSQL_LIB_FILE}" DIRECTORY CACHE)
-    set(SQLPP11_MYSQL_LIBRARIES "${SQLPP11_MYSQL_LIB_FILE}")
-    mark_as_advanced(SQLPP11_MYSQL_LIBRARIES)
-else()
-    unset(SQLPP11_MYSQL_LIBRARIES CACHE)
-endif()
+mark_as_advanced(SQLPP11_MYSQL_LIBRARIES)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(sqlpp11-connector-mysql

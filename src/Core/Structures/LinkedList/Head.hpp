@@ -6,6 +6,7 @@
 #include <iterator>
 
 #include "Element.hpp"
+#include <cstdint>
 
 namespace Horizon
 {
@@ -31,7 +32,7 @@ public:
 
 	bool is_empty() const { return(!_first._next->is_in_list()); }
 
-	Element *first()       { return (is_empty() ? nullptr : _first._next); }
+	Element *first()      { return (is_empty() ? nullptr : _first._next); }
 	Element const *first() const { return (is_empty() ? nullptr : _first._next); }
 
 	Element *last()       { return(is_empty() ? nullptr : _last._prev); }

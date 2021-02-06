@@ -49,13 +49,6 @@ message(STATUS "Project ${PROJECT_NAME} initiated configuring in ${CMAKE_BUILD_T
 #################################
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache) # Less useful to do it for linking, see edit2
-    message(STATUS "CCache was found.")
-endif(CCACHE_FOUND)
-
 #################################
 # Find revision ID and hash of the sourcetree
 #################################
@@ -85,6 +78,10 @@ include(AutoCollect)
 set(CMAKE_DISABLE_SOURCE_CHANGES OFF)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD OFF)
 include(cmake/genversion/genversion.cmake)
+
+#################################
+# Disable in-source builds and changes
+#################################
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
@@ -92,12 +89,6 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 # print out the results before continuing
 #################################
 include(cmake/showoptions.cmake)
-
-#################################
-# Disable in-source builds and changes
-#################################
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 include (CheckCXXSourceCompiles)
 
@@ -120,20 +111,7 @@ endif()
 
 message(STATUS "Boost Components: ${BOOST_COMPONENTS}")
 
-find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED ${BOOST_COMPONENTS})
-
-add_library(boost INTERFACE)
-
-target_link_libraries(boost
-				INTERFACE
-				${Boost_LIBRARIES}
-)
-
-target_include_directories(boost
-				INTERFACE
-				${Boost_INCLUDE_DIRS})
-
-ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED COMPONENTS locale filesystem log unit_test_framework)
 
 #################
 # Readline Library
@@ -144,8 +122,8 @@ include(FindReadline)
 ###############
 # LuaJit
 ###############
-set(LUAJIT_FIND_REQUIRED true)
-include(FindLuaJit)
+set(LUA_FIND_REQUIRED true)
+include(FindLua)
 
 ###############
 # Sol2
@@ -156,14 +134,16 @@ include(FindSol2)
 #################
 # Find ZLIB
 #################
+if (WITH_TOOLS)
 find_package(ZLIB REQUIRED)
+endif()
 
 #################
 # Find Zlib
 #################
 include(FindMySQL)
 find_package(sqlpp11 REQUIRED)
-find_package(sqlpp11-connector-mysql REQUIRED)
+include(FindSqlpp11-connector-mysql REQUIRED)
 
 #################
 # Find Argon2

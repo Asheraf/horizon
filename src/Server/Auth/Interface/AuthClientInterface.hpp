@@ -29,6 +29,7 @@
 #define HORIZON_AUTHCLIENTINTERFACE_HPP
 
 #include "Server/Common/Interfaces/ClientInterface.hpp"
+#include <string>
 
 namespace Horizon
 {

@@ -27,11 +27,20 @@
 
 find_path(SOL2_INCLUDE_DIR
 	NAMES sol.hpp
-	HINTS
-		/usr/local/include/sol
-		/usr/local/opt/include/sol
-		C:/sol2
-		C:/sol
+	PATH_SUFFIXES sol sol2
+	PATHS
+		/usr/local/include/
+		/usr/local/opt/include/
+		C:/
+		~/Library/Frameworks
+		/Library/Frameworks
+		/sw # Fink
+		/opt/local # DarwinPorts
+		/opt/csw # Blastwave
+		/opt
+		/usr
+		/usr/local
+		${_VCPKG_INSTALLED_DIR}/x${PLATFORM}-windows/include
 	)
 
 if (SOL2_INCLUDE_DIR STREQUAL "SOL2_INCLUDE_DIR-NOTFOUND")

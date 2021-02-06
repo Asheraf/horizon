@@ -125,7 +125,7 @@ public:
      * @brief Asynchronous read operation with callback handler
      * @thread NetworkThread
      */
-	void async_read_with_callback(ByteBuffer &buf, void (Socket<SocketType>::*/*callback*/)(boost::system::error_code, std::size_t))
+	void async_read_with_callback(ByteBuffer &buf, void (Socket<SocketType>::*)(boost::system::error_code, std::size_t))
 	{
 		if (!is_open())
 			return;

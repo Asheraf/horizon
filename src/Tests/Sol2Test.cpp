@@ -36,12 +36,7 @@
 #include <fstream>
 #include <iostream>
 
-#if (((defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(_MSC_VER)) \
-	&& !defined(SOL_EXCEPTIONS_SAFE_PROPAGATION))
-#define SOL_EXCEPTIONS_SAFE_PROPAGATION
-#endif
-
-#include <sol.hpp>
+#include <sol/sol.hpp>
 
 BOOST_AUTO_TEST_CASE(Sol2Test)
 {
@@ -50,7 +45,7 @@ BOOST_AUTO_TEST_CASE(Sol2Test)
 	sol::state lua;
 	std::vector<sol::coroutine> tasks;
 
-	lua.open_libraries(sol::lib::base, sol::lib::coroutine);
+	lua.open_libraries(sol::lib::base, sol::lib::coroutine, sol::lib::jit, sol::lib::math);
 
 	sol::thread runner_thread = sol::thread::create(lua);
 

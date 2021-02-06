@@ -33,65 +33,18 @@
 # You should set SQLPP11_ROOT_DIR as hint to the location of the library.
 #
 
-# ensure cache entry
-set(SQLPP11_ROOT_DIR "${SQLPP11_ROOT_DIR}" CACHE PATH "Root directory of sqlpp11 library")
-set(SQLPP11_NOT_FOUND_MESSAGE "Could NOT find sqlpp11. You should probably set SQLPP11_ROOT_DIR.")
-
-find_file(SQLPP11_MAIN_HEADER_ROOT_FOLDER
-    sqlpp11/sqlpp11.h
-    HINTS
-      ${SQLPP11_ROOT_DIR}
+find_file(SQLPP11_INCLUDE_DIR
+    NAMES sqlpp11.h
+    PATH_SUFFIXES sqlpp11
+    PATHS 
+        ${SQLPP11_ROOT_DIR}/include
+        /usr/local/include
+        ${_VCPKG_INSTALLED_DIR}/x${PLATFORM}-windows/include
 )
-mark_as_advanced(SQLPP11_MAIN_HEADER_ROOT_FOLDER)
-
-find_file(SQLPP11_MAIN_HEADER_INCLUDE_FOLDER
-    sqlpp11/sqlpp11.h
-    HINTS
-      ${SQLPP11_ROOT_DIR}/include
-      /usr/local/include
-)
-mark_as_advanced(SQLPP11_MAIN_HEADER_INCLUDE_FOLDER)
-
-if (SQLPP11_MAIN_HEADER_ROOT_FOLDER)
-    # Validate that we found the correct file
-    file(STRINGS ${SQLPP11_MAIN_HEADER_ROOT_FOLDER} check_result
-        LIMIT_COUNT 1
-        REGEX "^.*Copyright \\(c\\) 2013.*Roland Bock.*$"
-    )
-
-    if("${check_result}" STREQUAL "")
-        string(APPEND SQLPP11_NOT_FOUND_MESSAGE "\nRejecting found '${SQLPP11_MAIN_HEADER_ROOT_FOLDER}', it seems to be invalid.")
-        unset(SQLPP11_MAIN_HEADER_ROOT_FOLDER CACHE)
-    else()
-        # Check succeeded, create target
-        set(SQLPP11_INCLUDE_DIR ${SQLPP11_ROOT_DIR})
-        mark_as_advanced(SQLPP11_INCLUDE_DIR)
-        set(SQLPP11_ROOT_DIR "${SQLPP11_INCLUDE_DIR}")
-        unset(SQLPP11_NOT_FOUND_MESSAGE)
-    endif()
-endif()
-
-if (SQLPP11_MAIN_HEADER_INCLUDE_FOLDER)
-    # Validate that we found the correct file
-    file(STRINGS ${SQLPP11_MAIN_HEADER_INCLUDE_FOLDER} check_result
-        LIMIT_COUNT 1
-        REGEX "^.*Copyright \\(c\\) 2013.*Roland Bock.*$"
-    )
-
-    if("${check_result}" STREQUAL "")
-        string(APPEND SQLPP11_NOT_FOUND_MESSAGE "\nRejecting found '${SQLPP11_MAIN_HEADER_INCLUDE_FOLDER}', it seems to be invalid.")
-        unset(SQLPP11_MAIN_HEADER_INCLUDE_FOLDER CACHE)
-    else()
-        # Check succeeded, create target
-        set(SQLPP11_INCLUDE_DIR ${SQLPP11_ROOT_DIR}/include)
-        mark_as_advanced(SQLPP11_INCLUDE_DIR)
-        set(SQLPP11_ROOT_DIR "${SQLPP11_INCLUDE_DIR}")
-        unset(SQLPP11_NOT_FOUND_MESSAGE)
-    endif()
-endif()
+mark_as_advanced(SQLPP11_INCLUDE_DIR)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(sqlpp11
-    REQUIRED_VARS SQLPP11_ROOT_DIR SQLPP11_INCLUDE_DIR
+    REQUIRED_VARS SQLPP11_INCLUDE_DIR
     FAIL_MESSAGE ${SQLPP11_NOT_FOUND_MESSAGE}
 )

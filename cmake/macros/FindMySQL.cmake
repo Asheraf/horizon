@@ -56,19 +56,20 @@ if (NOT DEFINED MSVC)
 else()
 	find_path(MYSQL_INCLUDE_DIR
 		NAMES mysql.h
-		PATH_SUFFIXES include
-		PATHS "$ENV{SystemDrive}/Program Files/mariadb-connector-c/include/mariadb"
-					"$ENV{SystemDrive}/Program Files (x86)/mariadb-connector-c/include/mariadb"
+		PATH_SUFFIXES mysql
+		PATHS 
+			"$ENV{SystemDrive}/Program Files/mariadb-connector-c/include/mariadb"
+			"$ENV{SystemDrive}/Program Files (x86)/mariadb-connector-c/include/mariadb"
+			C:/vcpkg/installed/x${PLATFORM}-windows/include
 		)
-	MESSAGE("INCLUDE_DIR: ${MYSQL_INCLUDE_DIR}")
 
 	find_library(MYSQL_LIBRARY
 		NAMES libmariadb
-		PATH_SUFFIXES lib
-		PATHS "$ENV{SystemDrive}/Program Files/mariadb-connector-c/lib/mariadb"
-					"$ENV{SystemDrive}/Program Files (x86)/mariadb-connector-c/lib/mariadb"
+		PATHS 
+  			C:/vcpkg/installed/x${PLATFORM}-windows/lib
+  			"$ENV{SystemDrive}/Program Files/mariadb-connector-c/lib/mariadb"
+			"$ENV{SystemDrive}/Program Files (x86)/mariadb-connector-c/lib/mariadb"
 		)
-	MESSAGE("LIB: ${MYSQL_LIBRARY}")
 endif()
 
 include(FindPackageHandleStandardArgs)
