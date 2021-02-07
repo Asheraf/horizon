@@ -78,7 +78,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 			${Boost_INCLUDE_DIRS}
 			${ADD_INCLUDE_DIRS})
 
-	# LuaJit linker flags on macOS to avoid crashes.
+	# Sol2 LUA linker flags on macOS to avoid crashes.
 	# @see http://luajit.org/install.html
 	if (APPLE AND TEST_NAME STREQUAL "Sol2Test")
 		set_target_properties(${TEST_NAME}

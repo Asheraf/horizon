@@ -279,10 +279,7 @@ void ScriptManager::initialize_state(sol::state &st)
 		);
 
 	st.new_usertype<Assets::Inventory>("Inventory",
-		"get_item_by_id", &Assets::Inventory::get_item_by_id,
-		"get_item_at_index", &Assets::Inventory::get_item_at_index,
-		"add_item", &Assets::Inventory::add_item,
-		"get_all_items", &Assets::Inventory::get_item_store
+		"add_item", &Assets::Inventory::add_item
 		);
 
 	st.new_usertype<Player>("Player",
@@ -299,7 +296,7 @@ void ScriptManager::initialize_state(sol::state &st)
 		"send_npc_close_dialog", &Player::send_npc_close_dialog,
 		"send_npc_menu_list", &Player::send_npc_menu_list,
 		"move_to_map", &Player::move_to_map,
-		"get_inventory", &Player::get_inventory,
+		"inventory", &Player::inventory,
 		"message", [] (std::shared_ptr<Player> player, std::string const &message)
 		{
 			player->get_session()->clif()->notify_chat(message);

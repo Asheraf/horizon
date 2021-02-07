@@ -20,7 +20,7 @@ if(WITH_CORE_DEBUG)
   message(STATUS "Clang: Debug-flags set (-g3)")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG=1")
 
 if (WITH_COVERAGE)

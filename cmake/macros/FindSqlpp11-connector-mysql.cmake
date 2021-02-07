@@ -44,7 +44,7 @@ find_file(SQLPP11_MYSQL_INCLUDE_DIR
 mark_as_advanced(SQLPP11_MYSQL_INCLUDE_DIR)
 
 find_file(SQLPP11_MYSQL_LIBRARIES
-    NAMES sqlpp-mysql sqlpp-mysql.lib
+    NAMES sqlpp-mysql libsqlpp-mysql.a
     PATHS
         /usr/local/lib/
         ${SQLPP11_MYSQL_LIB_DIR}

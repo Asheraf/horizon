@@ -126,7 +126,7 @@ public:
 	void set_last_unique_id(uint64_t last_unique_id) { character()._last_unique_id = last_unique_id; }
 	uint64_t last_unique_id() { return character()._last_unique_id; }
 	
-	std::shared_ptr<Assets::Inventory> get_inventory() { return _inventory; }
+	std::shared_ptr<Assets::Inventory> inventory() { return _inventory; }
 	
 	uint32_t get_max_inventory_size() { return character()._max_inventory_size; }
 	void set_max_inventory_size(uint32_t size) { character()._max_inventory_size = size; }

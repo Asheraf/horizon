@@ -205,7 +205,7 @@ uint32_t EquipATK::compute()
 	if (sstr) str = sstr->total();
 	if (sdex) dex = sdex->total();
 
-	EquippedItemsArray const &equipments = player->get_inventory()->get_equipments();
+	EquipmentListType const &equipments = player->inventory()->equipments();
 
 	std::shared_ptr<const item_entry_data> lhw = equipments[IT_EQPI_HAND_L].second.lock();
 	std::shared_ptr<const item_entry_data> rhw = equipments[IT_EQPI_HAND_R].second.lock();
@@ -257,7 +257,7 @@ uint32_t EquipATK::compute_variance(uint8_t weapon_lvl, uint32_t base_weapon_dmg
 
 // 	amotion = job->weapon_base_aspd[_weapon_type1]; // Single weapon
 	
-// 	EquippedItemsArray const &equipments = player->get_inventory()->get_equipments();
+// 	EquipmentListType const &equipments = player->inventory()->get_equipments();
 
 // 	std::shared_ptr<const item_entry_data> lhw = equipments[IT_EQPI_HAND_L].second.lock();
 // 	std::shared_ptr<const item_entry_data> rhw = equipments[IT_EQPI_HAND_R].second.lock();

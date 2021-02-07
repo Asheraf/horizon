@@ -1312,10 +1312,40 @@ ByteBuffer &ZC_SIMPLE_CASHSHOP_POINT_ITEMLIST::serialize()
 /**
  * ZC_INVENTORY_ITEMLIST_NORMAL_V5
  */
-void ZC_INVENTORY_ITEMLIST_NORMAL_V5::deliver() { }
+void ZC_INVENTORY_ITEMLIST_NORMAL_V5::deliver(std::vector<std::shared_ptr<const item_entry_data>> const &items)
+{
+	_items = items;
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_INVENTORY_ITEMLIST_NORMAL_V5::serialize()
 {
+	int size = 4;
+	
+	buf() << _packet_id;
+	buf() << (int16_t) ((_items.size() * 24) + 4);
+
+	for (auto it = _items.begin(); it != _items.end(); it++) {
+		std::shared_ptr<const item_entry_data> id = *it;
+		uint8_t config = 0;
+
+		buf() << id->inventory_index;
+		buf() << ((uint16_t) id->item_id);
+		buf() << ((uint8_t) id->type);
+		buf() << id->amount;
+		buf() << id->current_equip_location_mask; // 11
+
+		for (int i = 0; i < MAX_ITEM_SLOTS; i++)
+			buf() << (uint16_t) id->slot_item_id[i]; // 4 * 2
+
+		buf() << id->hire_expire_date; // 23
+
+		config |= id->info.is_identified;
+		config |= id->info.is_favorite << 1;
+		buf() << config; // 24
+	}
+
 	return buf();
 }
 
@@ -1352,10 +1382,24 @@ ByteBuffer &ZC_MEMORIALDUNGEON_SUBSCRIPTION_INFO::serialize()
 /**
  * ZC_REQ_WEAR_EQUIP_ACK2
  */
-void ZC_REQ_WEAR_EQUIP_ACK2::deliver() { }
+void ZC_REQ_WEAR_EQUIP_ACK2::deliver(int16_t inventory_index, int32_t equip_location_mask, int16_t sprite_id, item_equip_result_type result)
+{
+	_inventory_index = inventory_index;
+	_equip_location_mask = equip_location_mask;
+	_sprite_id = sprite_id;
+	_result = (int8_t) result;
+
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_REQ_WEAR_EQUIP_ACK2::serialize()
 {
+	buf() << _packet_id;
+	buf() << _inventory_index;
+	buf() << _equip_location_mask;
+	buf() << _sprite_id;
+	buf() << _result;
 	return buf();
 }
 
@@ -2105,10 +2149,47 @@ ByteBuffer &ZC_ACK_PVPPOINT::serialize()
 /**
  * ZC_INVENTORY_ITEMLIST_EQUIP_V6
  */
-void ZC_INVENTORY_ITEMLIST_EQUIP_V6::deliver() { }
+void ZC_INVENTORY_ITEMLIST_EQUIP_V6::deliver(std::vector<std::shared_ptr<const item_entry_data>> const &items)
+{
+	_items = items;
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_INVENTORY_ITEMLIST_EQUIP_V6::serialize()
 {
+	buf() << _packet_id;
+	buf() << (int16_t) ((65 * _items.size()) + 4);
+
+	for (auto it = _items.begin(); it != _items.end(); it++) {
+		std::shared_ptr<const item_entry_data> id = *it;
+		uint8_t config = 0;
+		buf() << id->inventory_index;
+		buf() << ((uint16_t) id->item_id);
+		buf() << ((uint8_t) id->type);
+		buf() << id->actual_equip_location_mask;
+		buf() << id->current_equip_location_mask;
+		buf() << id->refine_level; //14
+		for (int i = 0; i < MAX_ITEM_SLOTS; i++)
+			buf() << (uint16_t) id->slot_item_id[i]; // 30
+		buf() << id->hire_expire_date;
+		buf() << (uint16_t) id->bind_type; // 36
+		buf() << id->sprite_id; // 38
+
+		buf() << id->option_count; // 39
+
+		for (int i = 0; i < MAX_ITEM_OPTIONS; i++) {
+			buf() << id->option_data[i].index;
+			buf() << id->option_data[i].value;
+			buf() << id->option_data[i].param;
+		} // 39 + 25 = 64
+
+		config |= id->info.is_identified;
+		config |= id->info.is_broken << 1;
+		config |= id->info.is_favorite << 2;
+		buf() << config; // 65
+	}
+
 	return buf();
 }
 
@@ -4353,10 +4434,22 @@ ByteBuffer &ZC_SKILL_POSTDELAY::serialize()
 /**
  * ZC_REQ_TAKEOFF_EQUIP_ACK2
  */
-void ZC_REQ_TAKEOFF_EQUIP_ACK2::deliver() { }
+void ZC_REQ_TAKEOFF_EQUIP_ACK2::deliver(int16_t inventory_index, int32_t equip_location_mask, item_unequip_result_type result)
+{
+	_inventory_index = inventory_index;
+	_equip_location_mask = equip_location_mask;
+	_result = (int8_t) result;
+
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_REQ_TAKEOFF_EQUIP_ACK2::serialize()
 {
+	buf() << _packet_id;
+	buf() << _inventory_index;
+	buf() << _equip_location_mask;
+	buf() << _result;
 	return buf();
 }
 
@@ -5794,10 +5887,17 @@ ByteBuffer &ZC_PARTY_RECRUIT_ACK_REGISTER::serialize()
 /**
  * ZC_ACTION_FAILURE
  */
-void ZC_ACTION_FAILURE::deliver() { }
+void ZC_ACTION_FAILURE::deliver(int16_t message_type)
+{
+	_message_type = message_type;
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_ACTION_FAILURE::serialize()
 {
+	buf() << _packet_id;
+	buf() << _message_type;
 	return buf();
 }
 

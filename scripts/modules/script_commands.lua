@@ -15,9 +15,9 @@ end
 
 function script_commands:init(player, npc)
 	self.player = player
-	self.player_guid = player:get_guid()
+	self.player_guid = player:guid()
 	self.npc = npc
-	self.npc_guid = npc:get_guid()
+	self.npc_guid = npc:guid()
 end
 
 function script_commands:mes(m)
@@ -43,7 +43,7 @@ function script_commands:item_count(item_id)
 	if item_id == nil or type(item_id) ~= "number" or item_id <= 0 then
 		error("script_commands:item_count: item_id must be non-negative non-zero number.")
 	end
-	local items = self.player:get_inventory():get_all_items()
+	local items = self.player:inventory():get_all_items()
 	for k=1, #items do
 		local v = items[k]
 		if v.item_id == item_id then
@@ -54,7 +54,7 @@ function script_commands:item_count(item_id)
 end
 
 function script_commands:item_add(item_id, amount)
-	return self.player:get_inventory():add_item(item_id, amount)
+	return self.player:inventory():add_item(item_id, amount)
 end
 
 function script_commands:move_to_map(map_name, x, y)

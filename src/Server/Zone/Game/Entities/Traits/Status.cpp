@@ -155,6 +155,31 @@ void Status::initialize_player(std::shared_ptr<Entity> entity)
 	initialize_observable_statuses();
 
 	pl->get_session()->clif()->notify_initial_status(shared_from_this());
+
+	// notify other statuses.
+	max_weight()->set_base(max_weight()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_MAX_WEIGHT, max_weight()->get_base() + max_weight()->get_equip());
+
+	status_atk()->set_base(status_atk()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_STATUS_ATK, status_atk()->get_base());
+
+	status_matk()->set_base(status_matk()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_STATUS_MATK, status_matk()->get_base());
+
+	soft_def()->set_base(soft_def()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_SOFT_MDEF, soft_mdef()->get_base());
+
+	soft_mdef()->set_base(soft_mdef()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_SOFT_MDEF, soft_mdef()->get_base());
+
+	hit()->set_base(hit()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_HIT, hit()->get_base());
+
+	crit()->set_base(crit()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_CRITICAL, crit()->get_base());
+
+	flee()->set_base(flee()->compute());
+	pl->get_session()->clif()->notify_complex_attribute_update(STATUS_FLEE, flee()->get_base());
 }
 
 void Status::initialize_sub_attributes(std::shared_ptr<const job_db_data> job)
@@ -212,20 +237,6 @@ void Status::initialize_sub_attributes(std::shared_ptr<const job_db_data> job)
 	flee->set_base_level(base_level());
 	flee->set_agility(agility());
 	flee->set_luck(luck());
-}
-
-//! Compute and notify client of sub-statuses
-void Status::compute_and_notify()
-{
-	max_weight()->set_base(max_weight()->compute());
-	status_atk()->set_base(status_atk()->compute());
-	equip_atk()->set_base(equip_atk()->compute());
-	status_matk()->set_base(status_matk()->compute());
-	soft_def()->set_base(soft_def()->compute());
-	soft_mdef()->set_base(soft_mdef()->compute());
-	hit()->set_base(hit()->compute());
-	crit()->set_base(crit()->compute());
-	flee()->set_base(flee()->compute());
 }
 
 //! @brief Registers status observers for observable statuses.

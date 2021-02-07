@@ -9,7 +9,7 @@
 
 find_path(LUA_INCLUDE_DIR 
   NAMES lua.h
-  PATH_SUFFIXES include
+  PATH_SUFFIXES lua
   PATHS
   ~/Library/Frameworks
   /Library/Frameworks
@@ -18,7 +18,7 @@ find_path(LUA_INCLUDE_DIR
   /opt/csw # Blastwave
   /opt
   /usr
-  /usr/local
+  /usr/local/include
   ${_VCPKG_INSTALLED_DIR}/x${PLATFORM}-windows/include
 )
 

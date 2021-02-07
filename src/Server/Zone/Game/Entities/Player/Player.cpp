@@ -296,7 +296,7 @@ void Player::on_map_enter()
 	force_movement_stop_internal(false);
 //	get_packet_handler()->Send_ZC_MAPPROPERTY_R2(get_map());
 
-	get_inventory()->notify_all();
+	inventory()->notify_all();
 	// Status Notifications.
 
 	update_viewport();

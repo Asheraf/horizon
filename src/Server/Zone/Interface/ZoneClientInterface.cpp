@@ -28,13 +28,14 @@
 #include "CharClientInterface.hpp"
 
 #include "Libraries/Argon2/Argon2.hpp"
+#include "Server/Common/Definitions/ItemDefinitions.hpp"
 #include "Server/Common/SQL/GameAccount.hpp"
 #include "Server/Common/SQL/SessionData.hpp"
 #include "Server/Common/SQL/Character/Character.hpp"
 #include "Server/Common/SQL/Character/Status.hpp"
-#include "Server/Common/SQL/Character/Inventory.hpp"
 #include "Server/Common/SQL/GameAccount.hpp"
 
+#include "Server/Zone/Game/Entities/Player/Assets/Inventory.hpp"
 #include "Server/Zone/Game/Entities/Player/Player.hpp"
 #include "Server/Zone/Game/Entities/Traits/Status.hpp"
 #include "Server/Zone/Game/Map/Map.hpp"
@@ -518,3 +519,105 @@ void ZoneClientInterface::whisper_message(const char *name, int32_t name_length,
 	ZC_WHISPER pkt2(player->get_session());
 	pkt2.deliver(get_session()->player()->name(), message, player->group_id() >= 99 ? true : false);
 }
+
+void ZoneClientInterface::use_item(int16_t inventory_index, int32_t guid)
+{
+	get_session()->player()->inventory()->use_item(inventory_index, guid);
+}
+
+void ZoneClientInterface::equip_item(int16_t inventory_index, int16_t equip_location_mask)
+{
+	get_session()->player()->inventory()->equip_item(inventory_index, equip_location_mask);
+}
+
+void ZoneClientInterface::unequip_item(int16_t inventory_index)
+{
+	get_session()->player()->inventory()->unequip_item(inventory_index);
+}
+
+bool ZoneClientInterface::notify_pickup_item(item_entry_data id, int16_t amount, item_inventory_addition_notif_type result)
+{
+	ZC_ITEM_PICKUP_ACK_V7 pkt(get_session());
+	pkt.deliver(id, amount, result);
+	return true;
+}
+
+bool ZoneClientInterface::notify_normal_item_list(std::vector<std::shared_ptr<const item_entry_data>> const &items)
+{
+	ZC_INVENTORY_ITEMLIST_NORMAL_V5 pkt(get_session());
+	pkt.deliver(items);
+	return true;
+}
+
+bool ZoneClientInterface::notify_equipment_item_list(std::vector<std::shared_ptr<const item_entry_data>> const &items)
+{
+	ZC_INVENTORY_ITEMLIST_EQUIP_V6 pkt(get_session());
+	pkt.deliver(items);
+	return true;
+}
+
+bool ZoneClientInterface::notify_throw_item(int16_t inventory_index, int16_t amount)
+{
+	ZC_ITEM_THROW_ACK pkt(get_session());
+	pkt.deliver(inventory_index, amount);
+	return true;
+}
+
+bool ZoneClientInterface::notify_inventory_move_failed(int16_t inventory_index, bool silent)
+{
+	ZC_INVENTORY_MOVE_FAILED pkt(get_session());
+	pkt.deliver(inventory_index, silent);
+	return true;
+}
+
+bool ZoneClientInterface::notify_delete_item(int16_t inventory_index, int16_t amount, item_deletion_reason_type reason)
+{
+	ZC_DELETE_ITEM_FROM_BODY pkt(get_session());
+	pkt.deliver(inventory_index, amount, reason);
+	return true;
+}
+
+bool ZoneClientInterface::notify_bind_on_equip(int16_t inventory_index)
+{
+	ZC_NOTIFY_BIND_ON_EQUIP pkt(get_session());
+	pkt.deliver(inventory_index);
+	return true;
+}
+
+bool ZoneClientInterface::notify_use_item(std::shared_ptr<item_entry_data> inv_item, bool success)
+{
+	ZC_USE_ITEM_ACK pkt(get_session());
+	pkt.deliver(inv_item->inventory_index, inv_item->amount, success);
+	return true;
+}
+
+bool ZoneClientInterface::notify_equip_item(std::shared_ptr<const item_entry_data> item, item_equip_result_type result)
+{
+	ZC_REQ_WEAR_EQUIP_ACK2 pkt(get_session());
+	pkt.deliver(item->inventory_index, item->current_equip_location_mask, item->sprite_id, result);
+	return true;
+}
+
+bool ZoneClientInterface::notify_unequip_item(std::shared_ptr<const item_entry_data> item, item_unequip_result_type result)
+{
+	ZC_REQ_TAKEOFF_EQUIP_ACK2 pkt(get_session());
+	pkt.deliver(item->inventory_index, item->current_equip_location_mask, result);
+	return true;
+}
+
+bool ZoneClientInterface::notify_equip_arrow(std::shared_ptr<const item_entry_data> item)
+{
+	ZC_EQUIP_ARROW pkt(get_session());
+	pkt.deliver(item->inventory_index);
+	return true;
+}
+
+bool ZoneClientInterface::notify_action_failure(int16_t message_type)
+{
+	ZC_ACTION_FAILURE pkt(get_session());
+	pkt.deliver(message_type);
+	return true;
+}
+
+
+

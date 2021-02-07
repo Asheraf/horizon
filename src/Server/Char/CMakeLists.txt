@@ -41,7 +41,7 @@ add_executable(char
 
 target_link_libraries(char
 	PUBLIC
-        boost
+        ${Boost_LIBRARIES}
         networking
 	    -lpthread
         ${Readline_LIBRARY}

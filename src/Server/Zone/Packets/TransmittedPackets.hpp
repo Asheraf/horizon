@@ -4597,10 +4597,12 @@ public:
 	{}
 	virtual ~ZC_INVENTORY_ITEMLIST_NORMAL_V5() {}
 
-	void deliver();
+	void deliver(std::vector<std::shared_ptr<const item_entry_data>> const &items);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int16_t _packet_length{0};
+	std::vector<std::shared_ptr<const item_entry_data>> _items;
 };
 
 enum {
@@ -4739,10 +4741,14 @@ public:
 	{}
 	virtual ~ZC_REQ_WEAR_EQUIP_ACK2() {}
 
-	void deliver();
+	void deliver(int16_t inventory_index, int32_t equip_location_mask, int16_t sprite_id, item_equip_result_type result);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int16_t _inventory_index{0};
+	int32_t _equip_location_mask{0};
+	int16_t _sprite_id{0};
+	int8_t _result{0};
 };
 
 enum {
@@ -7469,10 +7475,11 @@ public:
 	{}
 	virtual ~ZC_INVENTORY_ITEMLIST_EQUIP_V6() {}
 
-	void deliver();
+	void deliver(std::vector<std::shared_ptr<const item_entry_data>> const &items);
 	ByteBuffer &serialize();
 
 /* Structure */
+	std::vector<std::shared_ptr<const item_entry_data>> _items;
 };
 
 enum {
@@ -15820,10 +15827,13 @@ public:
 	{}
 	virtual ~ZC_REQ_TAKEOFF_EQUIP_ACK2() {}
 
-	void deliver();
+	void deliver(int16_t inventory_index, int32_t equip_location_mask, item_unequip_result_type result);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int16_t _inventory_index{0};
+	int32_t _equip_location_mask{0};
+	int8_t _result{0};
 };
 
 enum {
@@ -20585,10 +20595,18 @@ public:
 	{}
 	virtual ~ZC_ACTION_FAILURE() {}
 
-	void deliver();
+	void deliver(int16_t message_type);
 	ByteBuffer &serialize();
 
 /* Structure */
+	/// type:
+	///     0 = MsgStringTable[242]="Please equip the proper ammunition first."
+	///     1 = MsgStringTable[243]="You can't Attack or use Skills because your Weight Limit has been exceeded."
+	///     2 = MsgStringTable[244]="You can't use Skills because Weight Limit has been exceeded."
+	///     3 = assassin, baby_assassin, assassin_cross => MsgStringTable[1040]="You have equipped throwing daggers."
+	///         gunslinger => MsgStringTable[1175]="Bullets have been equipped."
+	///         NOT ninja => MsgStringTable[245]="Ammunition has been equipped."
+	int16_t _message_type{0};
 };
 
 enum {

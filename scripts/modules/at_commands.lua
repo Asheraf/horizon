@@ -33,7 +33,7 @@ local function mapmove(player, args)
 end
 
 local function item(player, args)
-	local inventory = player:get_inventory()
+	local inventory = player:inventory()
 	local item_id, amount = tonumber(args[2]), tonumber(args[3])
 	if item_id == nil or amount == nil or item_id <= 0 then
 		player:message("Usage: @item <item_id> <amount>")

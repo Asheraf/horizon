@@ -74,7 +74,7 @@ target_precompile_headers(zone
 
 target_link_libraries(zone
 	PUBLIC
-		boost
+        ${Boost_LIBRARIES}
 		networking
 		-lpthread
 		mcache
@@ -108,9 +108,10 @@ target_include_directories(zone
 
 # LuaJit linker flags for macOS to avoid crashes.
 if (APPLE)
+	set(${LUAJIT_LINK_FLAGS} "-pagezero_size 10000 -image_base 100000000")
 	set_target_properties(zone
 			PROPERTIES
-			LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
+			LINK_FLAGS "${LUAJIT_LINK_FLAGS}"
 	)
 endif()
 

@@ -45,7 +45,7 @@ add_executable(auth
 
 target_link_libraries(auth
 	PUBLIC
-        boost
+        ${Boost_LIBRARIES}
         networking
 	    -lpthread
         ${Readline_LIBRARY}

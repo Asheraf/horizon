@@ -485,6 +485,7 @@ void CZ_ES_CANCEL::deserialize(ByteBuffer &buf) { }
 void CZ_REQ_TAKEOFF_EQUIP::handle(ByteBuffer &&buf) 
 {
 	deserialize(buf);
+	get_session()->clif()->unequip_item(_inventory_index);
 }
 
 void CZ_REQ_TAKEOFF_EQUIP::deserialize(ByteBuffer &buf) 
@@ -555,6 +556,7 @@ void CZ_PARTY_RECRUIT_REQ_UPDATE::deserialize(ByteBuffer &buf) { }
 void CZ_REQ_WEAR_EQUIP::handle(ByteBuffer &&buf) 
 {
 	deserialize(buf);
+	get_session()->clif()->equip_item(_inventory_index, _equip_location_mask);
 }
 
 void CZ_REQ_WEAR_EQUIP::deserialize(ByteBuffer &buf) 
@@ -864,6 +866,7 @@ void CZ_AGREE_STARPLACE::deserialize(ByteBuffer &buf) { }
 void CZ_USE_ITEM2::handle(ByteBuffer &&buf)
 {
 	deserialize(buf);
+	get_session()->clif()->use_item(_inventory_index, _guid);
 }
 
 void CZ_USE_ITEM2::deserialize(ByteBuffer &buf)
@@ -2074,6 +2077,7 @@ void CZ_OPEN_SIMPLE_CASHSHOP_ITEMLIST::deserialize(ByteBuffer &buf) { }
 void CZ_REQ_WEAR_EQUIP_V5::handle(ByteBuffer &&buf) 
 {
 	deserialize(buf);
+	get_session()->clif()->equip_item(_inventory_index, _equip_location_mask);
 }
 
 void CZ_REQ_WEAR_EQUIP_V5::deserialize(ByteBuffer &buf) 
@@ -2419,6 +2423,7 @@ void CZ_HACKSH_CPX_MSG::deserialize(ByteBuffer &buf) { }
 void CZ_USE_ITEM::handle(ByteBuffer &&buf)
 {
 	deserialize(buf);
+	get_session()->clif()->use_item(_inventory_index, _guid);
 }
 
 void CZ_USE_ITEM::deserialize(ByteBuffer &buf)
