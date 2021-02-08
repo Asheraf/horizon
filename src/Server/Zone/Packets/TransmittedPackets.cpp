@@ -406,10 +406,24 @@ ByteBuffer &ZC_CARTOFF::serialize()
 /**
  * ZC_ACK_WEAR_EQUIP_V5
  */
-void ZC_ACK_WEAR_EQUIP_V5::deliver() { }
+void ZC_ACK_WEAR_EQUIP_V5::deliver(int16_t inventory_index, int32_t location, int16_t look, int8_t result)
+{
+	_inventory_index = inventory_index;
+	_equip_location = location;
+	_look = look;
+	_result = result;
+
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_ACK_WEAR_EQUIP_V5::serialize()
 {
+	buf() << _packet_id;
+	buf() << _inventory_index;
+	buf() << _equip_location;
+	buf() << _look;
+	buf() << _result;
 	return buf();
 }
 
@@ -2565,8 +2579,8 @@ ByteBuffer &ZC_NOTIFY_STANDENTRY11::serialize()
 	buf() << (int8_t) _entry.posture;
 	buf() << _entry.base_level;
 	buf() << _entry.font;
-	buf() << -1;
-	buf() << -1;
+	buf() << _entry.max_hp;
+	buf() << _entry.hp;
 	buf() << _entry.is_boss;
 	buf() << _entry.body_style_id;
 	buf().append(_entry.name, sizeof(_entry.name));
@@ -3041,10 +3055,22 @@ ByteBuffer &ZC_ACK_REQ_JOIN_GROUP::serialize()
 /**
  * ZC_ACK_TAKEOFF_EQUIP_V5
  */
-void ZC_ACK_TAKEOFF_EQUIP_V5::deliver() { }
+void ZC_ACK_TAKEOFF_EQUIP_V5::deliver(int16_t inventory_index, int32_t equip_location_mask, item_unequip_result_type result) 
+{
+	_inventory_index = inventory_index;
+	_equip_location_mask = equip_location_mask;
+	_result = (int8_t) result;
+
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_ACK_TAKEOFF_EQUIP_V5::serialize()
 {
+	buf() << _packet_id;
+	buf() << _inventory_index;
+	buf() << _equip_location_mask;
+	buf() << _result;
 	return buf();
 }
 
@@ -4809,10 +4835,68 @@ ByteBuffer &ZC_NOTIFY_SKILL_POSITION::serialize()
 /**
  * ZC_NOTIFY_NEWENTRY11
  */
-void ZC_NOTIFY_NEWENTRY11::deliver() { }
+void ZC_NOTIFY_NEWENTRY11::deliver(entity_viewport_entry entry)
+{
+	_entry = entry;
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_NOTIFY_NEWENTRY11::serialize()
 {
+#if (CLIENT_TYPE == 'M' && PACKET_VERSION >= 20181121) \
+|| (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180704) \
+|| (CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20181114)
+	_packet_length = 107;
+#else
+	_packet_length = 103;
+#endif
+
+	buf() << _packet_id;
+	buf() << _packet_length;
+	buf() << (int8_t) _entry.unit_type;
+	buf() << _entry.guid;
+	buf() << _entry.character_id;
+	buf() << _entry.speed;
+	buf() << _entry.body_state;
+	buf() << _entry.health_state;
+	buf() << _entry.effect_state;
+	buf() << _entry.job_id;
+	buf() << _entry.hair_style_id;
+	buf() << _entry.weapon_id;
+#if (CLIENT_TYPE == 'M' && PACKET_VERSION >= 20181121) \
+|| (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180704) \
+|| (CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20181114)
+	buf() << _entry.shield_id;
+#endif
+	buf() << _entry.headgear_bottom_id;
+	buf() << _entry.headgear_top_id;
+	buf() << _entry.headgear_mid_id;
+	buf() << _entry.hair_color_id;
+	buf() << _entry.cloth_color_id;
+	buf() << (int16_t)_entry.head_direction;
+	buf() << _entry.robe_id;
+	buf() << _entry.guild_id;
+	buf() << _entry.guild_emblem_version;
+	buf() << _entry.honor;
+	buf() << _entry.virtue;
+	buf() << _entry.in_pk_mode;
+	buf() << _entry.gender;
+
+	char packed_pos[3]{0};
+	PackPosition((int8_t *) packed_pos, _entry.current_x, _entry.current_y, _entry.current_dir);
+
+	buf().append(packed_pos, sizeof(packed_pos));
+	buf() << _entry.x_size;
+	buf() << _entry.y_size;
+	buf() << _entry.base_level;
+	buf() << _entry.font;
+	buf() << _entry.max_hp;
+	buf() << _entry.hp;
+	buf() << _entry.is_boss;
+	buf() << _entry.body_style_id;
+	buf().append(_entry.name, MAX_UNIT_NAME_LENGTH);
+
 	return buf();
 }
 

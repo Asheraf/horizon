@@ -97,6 +97,7 @@ public:
 	void add_entity_to_viewport(std::weak_ptr<Entity> entity);
 	void realize_entity_movement(std::weak_ptr<Entity> entity);
 	void remove_entity_from_viewport(std::shared_ptr<Entity> entity, entity_viewport_notification_type type);
+	void spawn_entity_in_viewport(std::weak_ptr<Entity> entity);
 
 	void notify_in_area(ByteBuffer &buf, player_notifier_type type, uint16_t range = MAX_VIEW_RANGE);
 

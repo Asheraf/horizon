@@ -42,8 +42,8 @@ namespace Char
 {
 	typedef std::shared_ptr<Base::NetworkPacketHandler<CharSession>> HPacketStructPtrType;
 	typedef std::shared_ptr<Base::NetworkPacketTransmitter<CharSession>> TPacketStructPtrType;
-	typedef std::pair<uint16_t, HPacketStructPtrType> HPacketTablePairType;
-	typedef std::pair<uint16_t, TPacketStructPtrType> TPacketTablePairType;
+	typedef std::pair<int16_t, HPacketStructPtrType> HPacketTablePairType;
+	typedef std::pair<int16_t, TPacketStructPtrType> TPacketTablePairType;
 
 /**
  * @brief Packet Length Table object that stores

@@ -42,8 +42,8 @@ namespace Auth
 {
 	typedef std::shared_ptr<Base::NetworkPacketHandler<AuthSession>> HPacketStructPtrType;
 	typedef std::shared_ptr<Base::NetworkPacketTransmitter<AuthSession>> TPacketStructPtrType;
-	typedef std::pair<uint16_t, HPacketStructPtrType> HPacketTablePairType;
-	typedef std::pair<uint16_t, TPacketStructPtrType> TPacketTablePairType;
+	typedef std::pair<int16_t, HPacketStructPtrType> HPacketTablePairType;
+	typedef std::pair<int16_t, TPacketStructPtrType> TPacketTablePairType;
 
 /**
  * @brief Packet Length Table object that stores

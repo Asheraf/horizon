@@ -27982,8 +27982,8 @@ public:
 	void deserialize(ByteBuffer &buf);
 
 /* Structure */
-	uint16_t _inventory_index{0};
-	uint16_t _equip_location_mask{0};
+	int16_t _inventory_index{0};
+	int32_t _equip_location_mask{0};
 };
 
 enum {

@@ -43,6 +43,7 @@
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 #include "Server/Zone/Zone.hpp"
 
+#include "version.hpp"
 
 using namespace Horizon::Zone;
 using namespace Horizon::Zone::Entities;
@@ -72,9 +73,6 @@ void Player::initialize()
 {
 	Entity::initialize();
 
-	// Initialize Script States.
-	script_manager()->initialize_state(get_lua_state());
-
 	// Initialize Status.
 	status()->initialize_player(shared_from_this());
 
@@ -84,12 +82,29 @@ void Player::initialize()
 
 	// Ensure grid for entity.
 	map()->ensure_grid_for_entity(this, map_coords());
+
 	// Update current viewport.
 	update_viewport();
+	
 	// On map entry processing.
 	on_map_enter();
 	
 	notify_nearby_players_of_self(EVP_NOTIFY_IN_SIGHT);
+
+	// Initialize Script States.
+	script_manager()->initialize_state(get_lua_state());
+
+	try {
+		sol::state &pl_lua = get_lua_state();
+		sol::load_result fx = pl_lua.load_file("scripts/internal/on_login_event.lua");
+		sol::protected_function_result result = fx(shared_from_this()->downcast<Player>(), VER_PRODUCTVERSION_STR);
+		if (!result.valid()) {
+			sol::error err = result;
+			HLog(error) << "Player::initialize: " << err.what();
+		}
+	} catch (sol::error &e) {
+		HLog(error) << "Player::initialize: " << e.what();
+	}
 }
 
 void Player::stop_movement()
@@ -217,6 +232,15 @@ void Player::realize_entity_movement(std::weak_ptr<Entity> entity)
 		entity_viewport_entry entry = get_session()->clif()->create_viewport_entry(entity.lock());
 		get_session()->clif()->notify_viewport_moving_entity(entry);
 	}
+}
+
+void Player::spawn_entity_in_viewport(std::weak_ptr<Entity> entity)
+{
+	if (entity.expired())
+		return;
+
+	entity_viewport_entry entry = get_session()->clif()->create_viewport_entry(entity.lock());
+	get_session()->clif()->notify_viewport_spawn_entity(entry);
 }
 
 bool Player::move_to_map(std::shared_ptr<Map> dest_map, MapCoords coords)

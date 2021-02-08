@@ -79,6 +79,13 @@ bool ZoneClientInterface::login(uint32_t account_id, uint32_t char_id, uint32_t 
 		HLog(error) << "Login error! Session data for game account " << account_id << " and authentication code " << auth_code << " does not exist.";
 		return false;
 	}
+
+	std::string current_server = res.front().current_server;
+	if (current_server.compare("Z") == 0) {
+		ZC_REFUSE_ENTER pkt(get_session());
+		pkt.deliver(ZONE_SERV_ERROR_REJECT);
+		return false;
+	}
 	
 	auto res2 = (*conn)(select(all_of(tga)).from(tga).where(tga.id == account_id));
 	
@@ -233,12 +240,10 @@ entity_viewport_entry ZoneClientInterface::create_viewport_entry(std::shared_ptr
 	entry.posture = entity->posture();
 	entry.base_level = status->base_level()->total();
 	entry.font = 1;
-	
-	if (status->max_hp()->total() > 0)
-		entry.max_hp = status->max_hp()->total();
-	
-	if (status->current_hp()->total() > 0)
-		entry.hp = status->current_hp()->total();
+
+	// @TODO Add config opting to show hp bars.
+	entry.max_hp = -1;
+	entry.hp = -1;
 	
 	entry.is_boss = 0;
 	entry.body_style_id = 0;
@@ -280,6 +285,13 @@ bool ZoneClientInterface::notify_viewport_add_entity(entity_viewport_entry entry
 	ZC_NOTIFY_STANDENTRY11 pkt(get_session());
 	pkt.deliver(entry);
 #endif
+	return true;
+}
+
+bool ZoneClientInterface::notify_viewport_spawn_entity(entity_viewport_entry entry)
+{
+	ZC_NOTIFY_NEWENTRY11 pkt(get_session());
+	pkt.deliver(entry);
 	return true;
 }
 
@@ -593,14 +605,14 @@ bool ZoneClientInterface::notify_use_item(std::shared_ptr<item_entry_data> inv_i
 
 bool ZoneClientInterface::notify_equip_item(std::shared_ptr<const item_entry_data> item, item_equip_result_type result)
 {
-	ZC_REQ_WEAR_EQUIP_ACK2 pkt(get_session());
+	ZC_ACK_WEAR_EQUIP_V5 pkt(get_session());
 	pkt.deliver(item->inventory_index, item->current_equip_location_mask, item->sprite_id, result);
 	return true;
 }
 
 bool ZoneClientInterface::notify_unequip_item(std::shared_ptr<const item_entry_data> item, item_unequip_result_type result)
 {
-	ZC_REQ_TAKEOFF_EQUIP_ACK2 pkt(get_session());
+	ZC_ACK_TAKEOFF_EQUIP_V5 pkt(get_session());
 	pkt.deliver(item->inventory_index, item->current_equip_location_mask, result);
 	return true;
 }

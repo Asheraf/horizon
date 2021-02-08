@@ -56,6 +56,24 @@ void CharSession::transmit_buffer(ByteBuffer _buffer, std::size_t size)
 		return;
 	
 	if (!_buffer.is_empty()) {
+		uint16_t packet_id = 0x0;
+		int16_t packet_len = 0;
+		
+		memcpy(&packet_id, _buffer.get_read_pointer(), sizeof(int16_t));
+		
+		TPacketTablePairType p = _pkt_tbl->get_tpacket_info(packet_id);
+
+		if (p.first == -1) {
+			memcpy(&packet_len, _buffer.get_read_pointer() + 2, sizeof(int16_t));
+		} else {
+			packet_len = p.first;
+		}
+
+		if (packet_len != _buffer.active_length()) {
+			HLog(warning) << "Packet 0x" << std::hex << packet_id << " has length len " << std::dec << packet_len << " but buffer has " << _buffer.active_length() << " bytes... ignoring.";
+			return;
+		}
+
 		get_socket()->queue_buffer(std::move(_buffer));
 	}
 }

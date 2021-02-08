@@ -42,8 +42,8 @@ namespace Zone
 {
 	typedef std::shared_ptr<Base::NetworkPacketHandler<ZoneSession>> HPacketStructPtrType;
 	typedef std::shared_ptr<Base::NetworkPacketTransmitter<ZoneSession>> TPacketStructPtrType;
-	typedef std::pair<uint16_t, HPacketStructPtrType> HPacketTablePairType;
-	typedef std::pair<uint16_t, TPacketStructPtrType> TPacketTablePairType;
+	typedef std::pair<int16_t, HPacketStructPtrType> HPacketTablePairType;
+	typedef std::pair<int16_t, TPacketStructPtrType> TPacketTablePairType;
 
 /**
  * @brief Packet Length Table object that stores
@@ -714,7 +714,7 @@ public:
 		ADD_TPKT(0x02d4, 39, ZC_ITEM_PICKUP_ACK3);
 		ADD_TPKT(0x0990, 41, ZC_ITEM_PICKUP_ACK_V5);
 		ADD_TPKT(0x0a0c, 66, ZC_ITEM_PICKUP_ACK_V6);
-		ADD_TPKT(0x0a37, 69, ZC_ITEM_PICKUP_ACK_V7);
+		ADD_TPKT(0x0a37, 59, ZC_ITEM_PICKUP_ACK_V7);
 		ADD_TPKT(0x02b8, 32, ZC_ITEM_PICKUP_PARTY);
 		ADD_TPKT(0x0b13, 48, ZC_ITEM_PREVIEW);
 		ADD_TPKT(0x00af, 6, ZC_ITEM_THROW_ACK);
@@ -898,7 +898,7 @@ public:
 		ADD_TPKT(0x0971, 6, ZC_PARTY_RECRUIT_REFUSE_VOLUNTEER_TO_PM);
 		ADD_TPKT(0x090c, 30, ZC_PARTY_RECRUIT_SUB_FILTERLINGLIST);
 		ADD_TPKT(0x08f2, 36, ZC_PARTY_RECRUIT_VOLUNTEER_INFO);
-		ADD_TPKT(0x0acb, 12, ZC_PAR_CHANGE);
+		ADD_TPKT(0x00b0, 8, ZC_PAR_CHANGE);
 		ADD_TPKT(0x01ab, 12, ZC_PAR_CHANGE_USER);
 		ADD_TPKT(0x027b, 14, ZC_PCBANG_EFFECT);
 		ADD_TPKT(0x0287, -1, ZC_PC_CASH_POINT_ITEMLIST);

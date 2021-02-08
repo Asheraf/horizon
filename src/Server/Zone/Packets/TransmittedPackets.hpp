@@ -1356,10 +1356,17 @@ public:
 	{}
 	virtual ~ZC_ACK_WEAR_EQUIP_V5() {}
 
-	void deliver();
+	void deliver(int16_t inventory_index, int32_t location, int16_t look, int8_t result);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int16_t _inventory_index{0};
+	int32_t _equip_location{0};
+	int16_t _look{0};
+///     0 = failure
+///     1 = success
+///     2 = failure due to low level
+	int8_t _result{0};
 };
 
 enum {
@@ -10516,10 +10523,13 @@ public:
 	{}
 	virtual ~ZC_ACK_TAKEOFF_EQUIP_V5() {}
 
-	void deliver();
+	void deliver(int16_t inventory_index, int32_t equip_location_mask, item_unequip_result_type result);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int16_t _inventory_index{0};
+	int32_t _equip_location_mask{0};
+	int8_t _result{0};
 };
 
 enum {
@@ -14979,14 +14989,7 @@ public:
 };
 
 enum {
-#if PACKET_VERSION >= 20181121 || \
-	PACKET_VERSION >= 20181114 || \
-	PACKET_VERSION >= 20180704 || \
-	PACKET_VERSION >= 20180103 || \
-	PACKET_VERSION >= 20160921 || \
-	PACKET_VERSION >= 20160106 || \
-	PACKET_VERSION >= 20141126 || \
-	PACKET_VERSION >= 0
+#if PACKET_VERSION >= 0
 	ID_ZC_ITEM_PICKUP_ACK_V7 = 0x0a37
 #endif
 };
@@ -16887,8 +16890,7 @@ public:
 };
 
 enum {
-#if PACKET_VERSION >= 20140122 || \
-	PACKET_VERSION >= 0
+#if PACKET_VERSION >= 0
 	ID_ZC_NOTIFY_NEWENTRY11 = 0x09fe
 #endif
 };
@@ -16904,10 +16906,12 @@ public:
 	{}
 	virtual ~ZC_NOTIFY_NEWENTRY11() {}
 
-	void deliver();
+	void deliver(entity_viewport_entry entry);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int16_t _packet_length;
+	entity_viewport_entry _entry;
 };
 
 enum {

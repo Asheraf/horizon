@@ -137,7 +137,12 @@ item_equip_result_type Inventory::equip_item(uint32_t inventory_index, uint16_t 
 		player()->get_session()->clif()->notify_action_failure(3);
 	} else {
 		HLog(debug) << "Inventory Item " << inv_item->inventory_index << " - " << inv_item->item_id << "worn.";
+		
 		player()->get_session()->clif()->notify_equip_item(inv_item, IT_EQUIP_SUCCESS);
+		
+		player()->on_item_equip(inv_item);
+		
+		print_inventory();
 	}
 
 	return IT_EQUIP_SUCCESS;
@@ -162,31 +167,31 @@ item_unequip_result_type Inventory::unequip_item(uint32_t inventory_index)
 	player()->get_session()->clif()->notify_unequip_item(inv_item, IT_UNEQUIP_SUCCESS);
 
 	remove_from_equipment_list(inv_item);
+
+	player()->on_item_unequip(inv_item);
+
+	print_inventory();
 	return IT_UNEQUIP_SUCCESS;
 }
 
 void Inventory::add_to_equipment_list(std::shared_ptr<item_entry_data> item)
 {
-	for (int i = 0; i < IT_EQPI_MAX; i++) {
+	for (int i = 0; i < (item_equip_location_index) IT_EQPI_MAX; i++) {
 		auto &equip = equipments()[i];
-		std::shared_ptr<const item_entry_data> id = equip.second.lock();
+		std::shared_ptr<item_entry_data> id = equip.second.lock();
 
+		// Unequip the existing item and wear the new item.
 		if ((item->current_equip_location_mask & equip.first)) {
-			if (!equip.second.expired())
-				unequip_item(id->inventory_index);
+			if (!equip.second.expired() && unequip_item(id->inventory_index) == IT_UNEQUIP_FAIL)
+				return;
 			equip.second = item;
 		}
-
-		if (id != nullptr)
-			HLog(debug) << "Equipment List: " << id->item_id << ", " << id->current_equip_location_mask << ", " << id->inventory_index;
 	}
-
-	player()->on_item_equip(item);
 }
 
 void Inventory::remove_from_equipment_list(std::shared_ptr<item_entry_data> item)
 {
-	for (int i = 0; i < IT_EQPI_MAX; i++) {
+	for (int i = 0; i < (item_equip_location_index)  IT_EQPI_MAX; i++) {
 		auto &equip = equipments()[i];
 		std::shared_ptr<const item_entry_data> id = equip.second.lock();
 
@@ -194,12 +199,7 @@ void Inventory::remove_from_equipment_list(std::shared_ptr<item_entry_data> item
 			item->current_equip_location_mask &= ~equip.first;
 			equip.second.reset();
 		}
-
-		if (id != nullptr)
-			HLog(debug) << "Equipment List: " << id->item_id << ", " << id->current_equip_location_mask << ", " << id->inventory_index;
 	}
-
-	player()->on_item_unequip(item);
 }
 
 uint32_t Inventory::calculate_current_equip_location_mask(std::shared_ptr<const item_config_data> item)
@@ -231,6 +231,22 @@ uint32_t Inventory::calculate_current_equip_location_mask(std::shared_ptr<const 
 		current_equip_location_mask = equipments()[IT_EQPI_SHADOW_WEAPON].second.expired() ? IT_EQPM_SHADOW_WEAPON : IT_EQPM_SHADOW_SHIELD;
 
 	return current_equip_location_mask;
+}
+
+void Inventory::print_inventory()
+{
+	HLog(debug) << " -- Inventory List --";
+	for (auto i : _inventory_items)
+		HLog(debug) << "Idx: " << i->inventory_index << " ItemID: " << i->item_id << " Amount: " << i->amount;
+
+
+	HLog(debug) << " -- Equipments List --";
+	for (int i = 0; i < IT_EQPI_MAX; i++) {
+		auto &equip = equipments()[i];
+		std::shared_ptr<const item_entry_data> id = equip.second.lock();
+		if (id != nullptr)
+			HLog(debug) << "Loc:" << std::hex << id->current_equip_location_mask << " Loc2: " << id->actual_equip_location_mask << " Idx: " << std::dec << id->inventory_index << " ItemID: " << id->item_id << " Amount: " << id->amount;
+	}
 }
 
 
@@ -308,12 +324,13 @@ inventory_addition_result_type Inventory::add_item(uint32_t item_id, uint16_t am
 	if (data.is_stackable()) {
 		// Check if item exists in inventory.
 		auto invitem = std::find_if(_inventory_items.begin(), _inventory_items.end(), 
-			[&data] (std::shared_ptr<item_entry_data> invit) { return *invit == data; }
+			[&data] (std::shared_ptr<item_entry_data> invit) { return (invit->amount < MAX_ITEM_STACK_SIZE && *invit == data); }
 		);
 		// If item was found in inventory...
 		if (invitem != _inventory_items.end()) {
 			// Check if amount exeeds stack size.
 			if ((*invitem)->amount + amount > MAX_ITEM_STACK_SIZE) {
+				// Add appropriately
 				int left_amt = (*invitem)->amount - MAX_ITEM_STACK_SIZE;
 				(*invitem)->amount += left_amt;
 				amount -= left_amt;

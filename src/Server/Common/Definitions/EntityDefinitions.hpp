@@ -579,6 +579,27 @@ enum job_class_mask : uint64_t
 	JMASK_ALL                     = 0xFFFFFFFFFFFFFFFF,
 };
 
+enum entity_look_types {
+	LOOK_BASE            =  0,
+	LOOK_HAIR            =  1,
+	LOOK_WEAPON          =  2,
+	LOOK_HEAD_BOTTOM     =  3,
+	LOOK_HEAD_TOP        =  4,
+	LOOK_HEAD_MID        =  5,
+	LOOK_HAIR_COLOR      =  6,
+	LOOK_CLOTHES_COLOR   =  7,
+	LOOK_SHIELD          =  8,
+	LOOK_SHOES           =  9,
+	LOOK_BODY            = 10,
+	LOOK_FLOOR           = 11,
+	LOOK_ROBE            = 12,
+	LOOK_BODY2           = 13,
+
+#ifndef LOOK_MAX
+	LOOK_MAX
+#endif
+};
+
 enum entity_viewport_notification_type
 {
 	EVP_NOTIFY_IN_SIGHT          = -1,
@@ -645,17 +666,17 @@ struct entity_viewport_entry
 	int16_t job_id{0};
 	int16_t hair_style_id{0};
 	int32_t weapon_id{0};
-	int16_t headgear_bottom_id{0};
 #if (CLIENT_TYPE == 'M' && PACKET_VERSION >= 20181121) \
 || (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180704) \
 || (CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20181114)
-	int32_t shield{0};
+	int32_t shield_id{0};
 #endif
+	int16_t headgear_bottom_id{0};
 	int16_t headgear_top_id{0};
 	int16_t headgear_mid_id{0};
 	int16_t hair_color_id{0};
 	int16_t cloth_color_id{0};
-	directions head_direction{DIR_SOUTH};
+	directions head_direction{DIR_SOUTH}; // int16_t
 	int16_t robe_id{0};
 	int32_t guild_id{0};
 	int16_t guild_emblem_version{0};

@@ -42,8 +42,8 @@ namespace Zone
 {
 	typedef std::shared_ptr<Base::NetworkPacketHandler<ZoneSession>> HPacketStructPtrType;
 	typedef std::shared_ptr<Base::NetworkPacketTransmitter<ZoneSession>> TPacketStructPtrType;
-	typedef std::pair<uint16_t, HPacketStructPtrType> HPacketTablePairType;
-	typedef std::pair<uint16_t, TPacketStructPtrType> TPacketTablePairType;
+	typedef std::pair<int16_t, HPacketStructPtrType> HPacketTablePairType;
+	typedef std::pair<int16_t, TPacketStructPtrType> TPacketTablePairType;
 
 /**
  * @brief Packet Length Table object that stores

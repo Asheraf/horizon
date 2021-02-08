@@ -71,6 +71,7 @@ public:
 	bool notify_viewport_remove_entity(std::shared_ptr<Entity> entity, entity_viewport_notification_type type);
 	bool notify_movement_stop(int32_t guid, int16_t x, int16_t y);
 	bool notify_viewport_moving_entity(entity_viewport_entry entry);
+	bool notify_viewport_spawn_entity(entity_viewport_entry entry);
 	
 	/**
 	 * NPC

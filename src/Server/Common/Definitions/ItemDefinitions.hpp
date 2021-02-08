@@ -459,6 +459,6 @@ struct item_entry_data
 	uint64_t unique_id{0};
 };
 
-typedef std::array<std::pair<item_equip_location_mask, std::weak_ptr<const item_entry_data>>, IT_EQPI_MAX> EquipmentListType;
+typedef std::array<std::pair<item_equip_location_mask, std::weak_ptr<item_entry_data>>, IT_EQPI_MAX> EquipmentListType;
 
 #endif /* HORIZON_ZONE_GAME_ITEM_DEFINITIONS */

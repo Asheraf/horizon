@@ -98,6 +98,8 @@ public:
 	void set_max_storage(uint32_t max_storage) { _max_storage = max_storage; }
 	uint32_t max_storage() { return _max_storage; }
 
+	void print_inventory();
+
 protected:
 	uint32_t calculate_current_equip_location_mask(std::shared_ptr<const item_config_data> item);
 private:

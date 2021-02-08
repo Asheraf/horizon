@@ -72,8 +72,10 @@ void GridEntityExistenceNotifier::notify(GridRefManager<T> &m)
 		if (_notif_type <= EVP_NOTIFY_IN_SIGHT && is_in_range) {
 			if (src_entity->is_walking()) {
 				tpl->realize_entity_movement(src_entity);
-			} else {
+			} else if (tpl->is_walking()) {
 				tpl->add_entity_to_viewport(src_entity);
+			} else {
+				tpl->spawn_entity_in_viewport(src_entity);
 			}
 		} else if (_notif_type > EVP_NOTIFY_OUT_OF_SIGHT || (_notif_type == EVP_NOTIFY_OUT_OF_SIGHT && !is_in_range)) {
 			if (src_entity->type() == ENTITY_PLAYER) {

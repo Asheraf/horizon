@@ -56,9 +56,9 @@ public:
 	void contact_npc_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void continue_npc_script_for_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, uint32_t select_idx = 0);
 
-	void send_HLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string const &HLog);
-	void send_next_HLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
-	void send_close_HLog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid, std::string const &HLog);
+	void send_next_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
+	void send_close_dialog_to_player(std::shared_ptr<Entities::Player> player, uint32_t npc_guid);
 	void perform_command_from_player(std::shared_ptr<Entities::Player> player, std::string const &cmd);
 	void initialize_state(sol::state &st);
 
