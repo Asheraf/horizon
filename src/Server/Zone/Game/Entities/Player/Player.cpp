@@ -35,6 +35,7 @@
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainer.hpp"
 #include "Server/Zone/Game/Map/Grid/Container/GridReferenceContainerVisitor.hpp"
 #include "Server/Zone/Game/StaticDB/ItemDB.hpp"
+#include "Server/Zone/Game/StaticDB/JobDB.hpp"
 #include "Server/Zone/Game/Entities/Entity.hpp"
 #include "Server/Zone/Game/Entities/Traits/Attributes.hpp"
 #include "Server/Zone/Game/Entities/Traits/Appearance.hpp"
@@ -334,5 +335,22 @@ void Player::notify_in_area(ByteBuffer &buf, player_notifier_type type, uint16_t
 	GridReferenceContainerVisitor<GridPlayerNotifier, GridReferenceContainer<AllEntityTypes>> container(notifier);
 
 	map()->visit_in_range(map_coords(), container, range);
+}
+
+
+bool Player::job_change(int32_t job_id)
+{
+	std::shared_ptr<const job_db_data> job = JobDB->get(job_id);
+
+	if (job == nullptr) {
+		HLog(error) << "Player::job_change: Invalid job_id " << job_id << " provided, job was not found or not supported.";
+		return false;
+	}
+
+	set_job_id(job_id);
+	status()->base_appearance()->set(job_id);
+	status()->base_appearance()->notify_update();
+
+	return true;
 }
 

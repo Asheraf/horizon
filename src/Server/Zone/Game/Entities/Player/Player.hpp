@@ -77,40 +77,27 @@ public:
 	virtual void initialize() override;
 
 	/**
-	 * Movement
-	 */
-	void stop_movement() override;
-	void on_movement_begin() override;
-	void on_movement_step() override;
-	void on_movement_end() override;
-
-	/**
-	 * Equipments
-	 */
-	void on_item_equip(std::shared_ptr<const item_entry_data> item);
-	void on_item_unequip(std::shared_ptr<const item_entry_data> item);
-
-	/**
 	 * Grid applications
 	 */
 	void update_viewport();
+
 	void add_entity_to_viewport(std::weak_ptr<Entity> entity);
 	void realize_entity_movement(std::weak_ptr<Entity> entity);
 	void remove_entity_from_viewport(std::shared_ptr<Entity> entity, entity_viewport_notification_type type);
 	void spawn_entity_in_viewport(std::weak_ptr<Entity> entity);
 
 	void notify_in_area(ByteBuffer &buf, player_notifier_type type, uint16_t range = MAX_VIEW_RANGE);
+	bool move_to_map(std::shared_ptr<Map> map, MapCoords coords = { 0, 0 });
+	void on_map_enter();
 
-	/**
-	 * NPC / Script applications
-	 */
-	sol::state &get_lua_state() { return _lua_state; }
+	void stop_movement() override;
+	void on_movement_begin() override;
+	void on_movement_step() override;
+	void on_movement_end() override;
 
 	/**
 	 * Player applications.
 	 */
-	void on_map_enter();
-	bool move_to_map(std::shared_ptr<Map> map, MapCoords coords = { 0, 0 });
 	void update(uint64_t diff) override;
 	void sync_with_models() override;
 
@@ -120,18 +107,27 @@ public:
 	bool set_logged_in(bool logged_in) { return _is_logged_in.exchange(logged_in); }
 
 	s_char_data &character() { return _char; }
+
+	int32_t group_id() { return _group_id; }
+	void set_group_id(int32_t group_id) { _group_id = group_id; }
+
+	bool job_change(int32_t job_id);
 	
 	/**
 	 * Item Stores
 	 */
 	void set_last_unique_id(uint64_t last_unique_id) { character()._last_unique_id = last_unique_id; }
 	uint64_t last_unique_id() { return character()._last_unique_id; }
-	
-	std::shared_ptr<Assets::Inventory> inventory() { return _inventory; }
-	
 	uint32_t get_max_inventory_size() { return character()._max_inventory_size; }
 	void set_max_inventory_size(uint32_t size) { character()._max_inventory_size = size; }
+	void on_item_equip(std::shared_ptr<const item_entry_data> item);
+	void on_item_unequip(std::shared_ptr<const item_entry_data> item);
+	std::shared_ptr<Assets::Inventory> inventory() { return _inventory; }
 
+	/**
+	 * NPC / Script applications
+	 */
+	sol::state &get_lua_state() { return _lua_state; }
 	void send_npc_dialog(uint32_t npc_guid, std::string dialog);
 	void send_npc_next_dialog(uint32_t npc_guid);
 	void send_npc_close_dialog(uint32_t npc_guid);
@@ -139,8 +135,6 @@ public:
 	int32_t npc_contact_guid() { return _npc_contact_guid; }
 	void set_npc_contact_guid(int32_t guid) { _npc_contact_guid = guid; }
 
-	int32_t group_id() { return _group_id; }
-	void set_group_id(int32_t group_id) { _group_id = group_id; }
 private:
 	std::shared_ptr<ZoneSession> _session;
 	sol::state _lua_state;
@@ -154,7 +148,5 @@ private:
 }
 }
 }
-
-#include "PlayerImpl.hpp"
 
 #endif /* HORIZON_ZONE_GAME_ENTITIES_PLAYER_HPP */

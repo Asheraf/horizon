@@ -5574,10 +5574,24 @@ ByteBuffer &ZC_AIRSHIP_MAPMOVE::serialize()
 /**
  * ZC_SPRITE_CHANGE2
  */
-void ZC_SPRITE_CHANGE2::deliver() { }
+void ZC_SPRITE_CHANGE2::deliver(int32_t guid, entity_appearance_type look_type, int32_t value, int32_t value2)
+{
+	_guid = guid;
+	_look_type = (int8_t) look_type;
+	_value = value;
+	_value2 = value2;
+
+	serialize();
+	transmit();
+}
 
 ByteBuffer &ZC_SPRITE_CHANGE2::serialize()
 {
+	buf() << _packet_id;
+	buf() << _guid;
+	buf() << _look_type;
+	buf() << _value;
+	buf() << _value2;
 	return buf();
 }
 

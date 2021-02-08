@@ -19205,10 +19205,22 @@ public:
 	{}
 	virtual ~ZC_SPRITE_CHANGE2() {}
 
-	void deliver();
+	void deliver(int32_t guid, entity_appearance_type look_type, int32_t value, int32_t value2);
 	ByteBuffer &serialize();
 
 /* Structure */
+	int32_t _guid{0};
+	int8_t _look_type{0};
+
+#if ((CLIENT_TYPE == 'M' && PACKET_VERSION >= 20181121) \
+	|| (CLIENT_TYPE == 'R' && PACKET_VERSION >= 20180704) \
+	|| (CLIENT_TYPE == 'Z' && PACKET_VERSION >= 20181114))
+	int32_t _value{0};
+	int32_t _value2{0};
+#else
+	int16_t _value{0};
+	int16_t _value2{0};
+#endif
 };
 
 enum {

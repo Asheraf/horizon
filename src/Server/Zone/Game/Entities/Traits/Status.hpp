@@ -178,6 +178,9 @@ public:
 	/**
 	 * Appearance
 	 */
+	std::shared_ptr<BaseAppearance> base_appearance() { return _base_appearance; }
+	void set_base_appearance(std::shared_ptr<BaseAppearance> ba) { _base_appearance = ba; }
+
 	std::shared_ptr<HairColor> hair_color() { return _hair_color; }
 	void set_hair_color(std::shared_ptr<HairColor> hc) { _hair_color = hc; }
 
@@ -251,6 +254,7 @@ private:
 	std::shared_ptr<CRIT> _crit;
 	std::shared_ptr<FLEE> _flee;
 	/* Appearance */
+	std::shared_ptr<BaseAppearance> _base_appearance;
 	std::shared_ptr<HairColor> _hair_color;
 	std::shared_ptr<ClothColor> _cloth_color;
 	std::shared_ptr<WeaponSprite> _weapon_sprite;

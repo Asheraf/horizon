@@ -39,5 +39,5 @@ using namespace Horizon::Zone::Entities::Traits;
 void Appearance::notify_update()
 {
 	if (get_entity() != nullptr && get_entity()->type() == ENTITY_PLAYER)
-		get_entity()->template downcast<Player>()->get_session()->clif()->notify_appearance_update(_type, get());
+		get_entity()->template downcast<Player>()->get_session()->clif()->notify_appearance_update(_type, get(), 0);
 }

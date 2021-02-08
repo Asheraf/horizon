@@ -353,10 +353,10 @@ void ZoneClientInterface::notify_initial_status(std::shared_ptr<Traits::Status> 
 	zcs.deliver(data);
 }
 
-bool ZoneClientInterface::notify_appearance_update(entity_appearance_type type, int32_t id)
+bool ZoneClientInterface::notify_appearance_update(entity_appearance_type type, int32_t value, int32_t value2)
 {
-	ZC_SPRITE_CHANGE pkt(get_session());
-	pkt.deliver(get_session()->player()->guid(), type, id);
+	ZC_SPRITE_CHANGE2 pkt(get_session());
+	pkt.deliver(get_session()->player()->guid(), type, value, value2);
 	return true;
 }
 

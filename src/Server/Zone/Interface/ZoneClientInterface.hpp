@@ -81,7 +81,6 @@ public:
 	void notify_npc_next_dialog(uint32_t npc_guid);
 	void notify_npc_close_dialog(uint32_t npc_guid);
 	void notify_npc_menu_list(uint32_t npc_guid, std::string const &menu);
-
 	uint32_t get_npc_contact_guid() { return _npc_contact_guid; }
 	void set_npc_contact_guid(uint32_t guid) { _npc_contact_guid = guid; }
 	
@@ -89,7 +88,7 @@ public:
 	 * Status
 	 */
 	void notify_initial_status(std::shared_ptr<Entities::Traits::Status> status);
-	bool notify_appearance_update(entity_appearance_type type, int32_t id);
+	bool notify_appearance_update(entity_appearance_type type, int32_t value, int32_t value2);
 	bool notify_complex_attribute_update(status_point_type type, int32_t value);
 	bool notify_status_attribute_update(status_point_type type, int32_t value, bool success);
 	bool notify_required_attribute_update(status_point_type type, int32_t value);
@@ -98,7 +97,6 @@ public:
 	bool notify_experience_update(status_point_type type, int32_t value);
 	bool notify_zeny_update();
 	bool increase_status_point(status_point_type type, uint8_t amount);
-
 	/**
 	 * Map
 	 */

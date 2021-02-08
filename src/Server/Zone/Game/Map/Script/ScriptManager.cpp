@@ -301,7 +301,8 @@ void ScriptManager::initialize_state(sol::state &st)
 		{
 			player->get_session()->clif()->notify_chat(message);
 		},
-		"get_status", &Player::status
+		"status", &Player::status,
+		"job_change", &Player::job_change
 		);
 
 	st.new_usertype<Entities::Traits::Status>("Status",

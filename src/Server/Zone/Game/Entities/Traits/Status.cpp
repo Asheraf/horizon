@@ -59,6 +59,7 @@ void Status::initialize()
 	set_max_hp(std::make_shared<MaxHP>(_entity, 1));
 	set_max_sp(std::make_shared<MaxSP>(_entity, 1));
 
+	set_base_appearance(std::make_shared<BaseAppearance>(_entity, 0));
 	set_hair_color(std::make_shared<HairColor>(_entity, 0));
 	set_cloth_color(std::make_shared<ClothColor>(_entity, 0));
 	set_head_top_sprite(std::make_shared<HeadTopSprite>(_entity, 0));
@@ -139,6 +140,7 @@ void Status::initialize_player(std::shared_ptr<Entity> entity)
 	set_next_job_experience(std::make_shared<NextJobExperience>(_entity, bexpg->exp[job_level - 1]));
 	set_movement_speed(std::make_shared<MovementSpeed>(_entity, DEFAULT_MOVEMENT_SPEED));
 
+	set_base_appearance(std::make_shared<BaseAppearance>(_entity, job_id));
 	set_hair_color(std::make_shared<HairColor>(_entity, uint32_t(res.front().hair_color_id)));
 	set_cloth_color(std::make_shared<ClothColor>(_entity, uint32_t(res.front().cloth_color_id)));
 	set_head_top_sprite(std::make_shared<HeadTopSprite>(_entity, uint32_t(res.front().head_top_view_id)));

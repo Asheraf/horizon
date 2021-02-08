@@ -67,6 +67,15 @@ namespace Traits
 		uint32_t _id{0};
 	};
 
+	class BaseAppearance : public Appearance
+	{
+	public:
+		BaseAppearance(std::weak_ptr<Entity> entity, uint32_t id = 0)
+		: Appearance(entity, EAT_BASE, id)
+		{ }
+		~BaseAppearance() { }
+	};
+
 	class HairColor : public Appearance
 	{
 	public:

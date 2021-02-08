@@ -69,17 +69,17 @@ enum player_notifier_type
 
 enum entity_type : char
 {
-	ENTITY_PLAYER      = 0x0,
-	ENTITY_NPC         = 0x1,
-	ENTITY_ITEM        = 0x2,
-	ENTITY_SKILL       = 0x3,
-	ENTITY_UNKNOWN     = 0x4,
-	ENTITY_MONSTER     = 0x5,
-	ENTITY_EVENT       = 0x6,
-	ENTITY_PET         = 0x7,
-	ENTITY_HOMUNCULUS  = 0x8,
-	ENTITY_MERCENARY   = 0x9,
-	ENTITY_ELEMENTAL   = 0xA,
+	ENTITY_PLAYER      = 0x00,
+	ENTITY_NPC         = 0x01,
+	ENTITY_ITEM        = 0x02,
+	ENTITY_SKILL       = 0x03,
+	ENTITY_UNKNOWN     = 0x04,
+	ENTITY_MONSTER     = 0x05,
+	ENTITY_EVENT       = 0x06,
+	ENTITY_PET         = 0x07,
+	ENTITY_HOMUNCULUS  = 0x08,
+	ENTITY_MERCENARY   = 0x09,
+	ENTITY_ELEMENTAL   = 0x0A,
 };
 
 enum entity_type_mask
@@ -577,27 +577,6 @@ enum job_class_mask : uint64_t
 	JMASK_KAGEROUOBORO            = JMASK_EXPANDED_2_1 | JMASK_NINJA,
 
 	JMASK_ALL                     = 0xFFFFFFFFFFFFFFFF,
-};
-
-enum entity_look_types {
-	LOOK_BASE            =  0,
-	LOOK_HAIR            =  1,
-	LOOK_WEAPON          =  2,
-	LOOK_HEAD_BOTTOM     =  3,
-	LOOK_HEAD_TOP        =  4,
-	LOOK_HEAD_MID        =  5,
-	LOOK_HAIR_COLOR      =  6,
-	LOOK_CLOTHES_COLOR   =  7,
-	LOOK_SHIELD          =  8,
-	LOOK_SHOES           =  9,
-	LOOK_BODY            = 10,
-	LOOK_FLOOR           = 11,
-	LOOK_ROBE            = 12,
-	LOOK_BODY2           = 13,
-
-#ifndef LOOK_MAX
-	LOOK_MAX
-#endif
 };
 
 enum entity_viewport_notification_type
