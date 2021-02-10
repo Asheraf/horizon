@@ -800,9 +800,17 @@ void CZ_RECALL::deserialize(ByteBuffer &buf) { }
 /**
  * CZ_CLIENT_VERSION
  */
-void CZ_CLIENT_VERSION::handle(ByteBuffer &&buf) { }
+void CZ_CLIENT_VERSION::handle(ByteBuffer &&buf)
+{
+	deserialize(buf);
+	get_session()->clif()->update_session(_account_id);
+}
 
-void CZ_CLIENT_VERSION::deserialize(ByteBuffer &buf) { }
+void CZ_CLIENT_VERSION::deserialize(ByteBuffer &buf)
+{
+	buf >> _packet_id;
+	buf >> _account_id;
+}
 
 /**
  * CZ_CHECK_RECEIVE_CHARACTER_NAME

@@ -542,7 +542,7 @@ void ScriptManager::contact_npc_for_player(std::shared_ptr<Player> player, uint3
 	try {
 		sol::state &pl_lua = player->get_lua_state();
 		sol::protected_function fx = pl_lua.load_file("scripts/internal/script_command_main.lua");
-		sol::protected_function_result result = fx(std::move(player), std::move(nd._npc), nd.script, nd.script_is_file);
+		sol::protected_function_result result = fx(player, nd._npc, nd.script, nd.script_is_file);
 		if (!result.valid()) {
 			sol::error err = result;
 			HLog(error) << "ScriptManager::contact_npc_for_player: " << err.what();
@@ -574,7 +574,7 @@ void ScriptManager::perform_command_from_player(std::shared_ptr<Entities::Player
 	try {
 		sol::state &pl_lua = player->get_lua_state();
 		sol::load_result fx = pl_lua.load_file("scripts/internal/at_command_main.lua");
-		sol::protected_function_result result = fx(std::move(player), cmd);
+		sol::protected_function_result result = fx(player, cmd);
 		if (!result.valid()) {
 			sol::error err = result;
 			HLog(error) << "ScriptManager::perform_command_from_player: " << err.what();

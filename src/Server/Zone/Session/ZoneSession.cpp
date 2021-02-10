@@ -34,6 +34,8 @@
 #include "Server/Zone/Socket/ZoneSocket.hpp"
 #include "Server/Zone/Zone.hpp"
 
+#include <sqlpp11/sqlpp11.h>
+
 using namespace Horizon::Zone;
 using namespace Horizon::Zone::Entities;
 
@@ -111,6 +113,7 @@ void ZoneSession::update(uint32_t /*diff*/)
 void ZoneSession::perform_cleanup()
 {
 	if (player() != nullptr) {
+
 		player()->set_logged_in(false);
 		player()->notify_nearby_players_of_self(EVP_NOTIFY_LOGGED_OUT);
 		player()->remove_grid_reference();

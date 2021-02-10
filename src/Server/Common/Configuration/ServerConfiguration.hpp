@@ -68,6 +68,9 @@ struct general_server_configuration
     
     const uint16_t &get_db_port() const { return _db_port; }
     void set_db_port(uint16_t port) { _db_port = port; }
+    
+    std::time_t session_max_timeout() { return _session_max_timeout; }
+    void set_session_max_timeout(std::time_t timeout) { _session_max_timeout = timeout; }
 
     boost::filesystem::path _config_file_path{""};
 	
@@ -78,6 +81,8 @@ struct general_server_configuration
     
     std::string _db_host, _db_user, _db_pass, _db_database;
     uint16_t _db_port{3306};
+    
+    std::time_t _session_max_timeout;
 };
 
 #endif //HORIZON_SERVERCONFIGURATION_H

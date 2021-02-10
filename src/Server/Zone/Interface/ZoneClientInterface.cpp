@@ -159,14 +159,46 @@ bool ZoneClientInterface::restart(uint8_t type)
 	return true;
 }
 
-bool ZoneClientInterface::disconnect(uint8_t type)
+bool ZoneClientInterface::disconnect(int8_t type)
 {
-	ZC_ACK_REQ_DISCONNECT ard(get_session());
+	ZC_ACK_REQ_DISCONNECT pkt(get_session());
 	
-	ard.deliver(0); // 0 => Quit, 1 => Wait for 10 seconds
+	HLog(debug) << "ZoneClientInterface::disconnect: Type :" << type;
+
+	pkt.deliver(type); // 0 => Quit, 1 => Wait for 10 seconds
 	
 	std::shared_ptr<Player> pl = get_session()->player();
 	pl->map_container()->remove_player(pl);
+
+	return true;
+}
+
+bool ZoneClientInterface::update_session(int32_t account_id)
+{
+	SQL::TableSessionData tsd;
+	std::shared_ptr<sqlpp::mysql::connection> conn = sZone->get_db_connection();
+
+	HLog(debug) << "Updating session from I.P. address " << get_session()->get_socket()->remote_ip_address();
+	
+	auto sres = (*conn)(select(all_of(tsd)).from(tsd).where(tsd.game_account_id == account_id));
+
+	if (sres.empty()) {
+		ZC_ACK_REQ_DISCONNECT pkt(get_session());
+		HLog(warning) << "Invalid connection for account with ID " << account_id << ", session wasn't found.";
+		pkt.deliver(0);
+		return false;
+	}
+
+	std::string current_server = sres.front().current_server;
+
+	if (current_server.compare("C") != 0) {
+		ZC_ACK_REQ_DISCONNECT pkt(get_session());
+		HLog(warning) << "Invalid connection for account with ID " << account_id << ", session wasn't found.";
+		pkt.deliver(0);
+		return false;
+	}
+
+	(*conn)(update(tsd).where(tsd.game_account_id == account_id).set(tsd.last_update = std::time(nullptr)));
 	return true;
 }
 

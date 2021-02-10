@@ -43,16 +43,16 @@ class CharSession;
 class HC_ACCOUNT_ID : public Base::NetworkPacketTransmitter<CharSession>
 {
 public:
-	HC_ACCOUNT_ID(uint32_t account_id, std::shared_ptr<CharSession> s) 
-	: NetworkPacketTransmitter(account_id, s)
+	HC_ACCOUNT_ID(std::shared_ptr<CharSession> s) 
+	: NetworkPacketTransmitter(0, s)
 	{ }
 	virtual ~HC_ACCOUNT_ID() { }
 
-	void deliver();
+	void deliver(int32_t account_id);
 	ByteBuffer &serialize();
 	
 protected:
-	uint32_t _account_id;
+	int32_t _account_id;
 };
 
 enum {

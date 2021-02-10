@@ -77,7 +77,6 @@ void ZoneSocket::on_close()
 
 void ZoneSocket::on_error()
 {
-
 }
 
 /**

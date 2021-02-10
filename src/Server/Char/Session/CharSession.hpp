@@ -305,6 +305,8 @@ public:
 
 	void initialize();
 	void update(uint32_t diff);
+
+	void perform_cleanup();
 	
 	std::unique_ptr<CharClientInterface> &clif() { return _clif; }
 	std::unique_ptr<ClientPacketLengthTable> &pkt_tbl() { return _pkt_tbl; }
@@ -314,11 +316,13 @@ public:
 	
 	void transmit_buffer(ByteBuffer _buffer, std::size_t size);
 	
+
 protected:
 	std::unique_ptr<CharClientInterface> _clif;
 	std::unique_ptr<ClientPacketLengthTable> _pkt_tbl;
 	s_session_data _session_data;
 	std::mutex _sd_mutex;
+	bool _first_packet_sent{false};
 };
 }
 }

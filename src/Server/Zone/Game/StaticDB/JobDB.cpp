@@ -167,7 +167,7 @@ bool JobDatabase::load()
 
 	int total_entries = 0;
 	std::string tmp_string;
-	std::string file_path = sZone->zone_config().get_static_db_path().string() + "job_db.lua";
+	std::string file_path = sZone->config().get_static_db_path().string() + "job_db.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {

@@ -115,7 +115,6 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 			return true;
 		}
 		
-		HLog(info) << "Account '" << username << "' already exists. Please login without specifying '_m' or '_f' at the end.";
 		acrl.deliver(login_error_codes::ERR_SESSION_CONNECTED, block_date, 0);
 		return false;
 	}
@@ -141,14 +140,16 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 		return false;
 	}
 	
-	acal.deliver(aid, aid, group_id, gender);
-	
 	SQL::TableSessionData tsd;
 	auto res2 = (*conn)(select(all_of(tsd)).from(tsd).where(tsd.game_account_id == aid));
-	if (!res2.empty())
-		(*conn)(update(tsd).set(tsd.connect_time = std::chrono::system_clock::now(), tsd.current_server = "A").where(tsd.auth_code == aid));
-	else
+	if (!res2.empty()) {
+		acrl.deliver(login_error_codes::ERR_SESSION_CONNECTED, block_date, 0);
+		return false;
+	} else {
 		(*conn)(insert_into(tsd).set(tsd.auth_code = aid, tsd.game_account_id = aid, tsd.client_version = PACKET_VERSION, tsd.client_type = client_type, tsd.character_slots = 3, tsd.group_id = 0, tsd.connect_time = std::chrono::system_clock::now(), tsd.current_server = "A"));
+	}
+	
+	acal.deliver(aid, aid, group_id, gender);
 	
 	HLog(info) << "Request for authorization of account '" << username << "' has been granted.";
 	return true;

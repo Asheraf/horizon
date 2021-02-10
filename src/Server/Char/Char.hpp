@@ -89,7 +89,7 @@ struct character_server_configuration
 	
 	int8_t get_pincode_retry() { return _pincode_retry; }
 	void set_pincode_retry(uint8_t retry) { _pincode_retry = retry; }
-	
+
 private:
 	std::string _start_map{"new_1-1"};
 	uint16_t _start_x{53}, _start_y{111};
@@ -123,6 +123,8 @@ public:
 	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
 
 	void update(uint64_t diff);
+
+	void verify_connected_sessions();
 	
 private:
 	character_server_configuration _char_server_config;

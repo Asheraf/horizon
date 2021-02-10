@@ -12305,6 +12305,7 @@ public:
 	void deserialize(ByteBuffer &buf);
 
 /* Structure */
+	int32_t _account_id;
 };
 
 enum {

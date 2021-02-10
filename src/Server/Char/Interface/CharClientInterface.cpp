@@ -61,8 +61,6 @@ CharClientInterface::~CharClientInterface()
 {
 }
 
-std::string CharClientInterface::ip_addr() { return get_session()->get_socket()->remote_ip_address(); }
-
 bool CharClientInterface::authorize_new_connection(uint32_t account_id, uint32_t auth_code, uint32_t account_level, uint8_t gender)
 {
 	SQL::TableSessionData tsd;
@@ -70,32 +68,40 @@ bool CharClientInterface::authorize_new_connection(uint32_t account_id, uint32_t
 	
 	std::shared_ptr<sqlpp::mysql::connection> conn = sChar->get_db_connection();
 	
-	HLog(warning) << "A new connection has been established from I.P. " << ip_addr();
+	HLog(warning) << "A new connection has been established from I.P. " << get_session()->get_socket()->remote_ip_address();
 	
 	auto sres = (*conn)(select(all_of(tsd)).from(tsd).where(tsd.game_account_id == account_id));
 
+	HC_ACCOUNT_ID hcad(get_session()); // first packet sent no matter what.
+	hcad.deliver(account_id);
+
 	if (sres.empty()) {
-		HC_REFUSE_ENTER hcre(get_session());
+		HC_REFUSE_ENTER pkt(get_session());
 		HLog(warning) << "Invalid connection for account with ID " << account_id << ", session wasn't found.";
-		hcre.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
+		pkt.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
 		return false;
 	}
 	
+	std::string current_server = sres.front().current_server;
+	if (current_server.compare("C") == 0) { // already online.
+		HC_REFUSE_ENTER pkt(get_session());
+		pkt.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
+		return false;
+	}
+
 	auto gres = (*conn)(select(all_of(tga)).from(tga).where(tga.id == account_id));
 	
 	if (gres.empty()) {
-		HC_REFUSE_ENTER hcre(get_session());
+		HC_REFUSE_ENTER pkt(get_session());
 		HLog(error) << "Game Account with ID " << account_id << " does not exist.";
-		hcre.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
+		pkt.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
 		return false;
 	}
 	
-	HC_ACCOUNT_ID hcad(account_id, get_session());
 	HC_ACCEPT_ENTER2 hcae2(get_session());
 	HC_ACCEPT_ENTER hcae(get_session());
 	HC_BLOCK_CHARACTER hcbc(get_session());
 	
-	hcad.deliver();
 	hcae2.deliver(gres.front().character_slots, MAX_CHARACTER_SLOTS - gres.front().character_slots);
 	hcae.prepare_and_deliver(account_id, MAX_CHARACTER_SLOTS, gres.front().character_slots, MAX_CHARACTER_SLOTS - gres.front().character_slots);
 	hcbc.deliver();
@@ -143,7 +149,7 @@ bool CharClientInterface::make_new_character(std::string name, uint8_t slot, uin
 
 	if (!res.empty()) {
 		hcref.deliver(HC_CREATE_ERROR_ALREADY_EXISTS);
-		HLog(info) << "Character creation denied for already existing character '" << name << "'. (Endpoint: " << ip_addr() << ")";
+		HLog(info) << "Character creation denied for already existing character '" << name << "'. (Endpoint: " << get_session()->get_socket()->remote_ip_address() << ")";
 		return false;
 	}
 	
@@ -176,7 +182,7 @@ bool CharClientInterface::make_new_character(std::string name, uint8_t slot, uin
 	HC_ACCEPT_MAKECHAR am(get_session());
 	am.deliver(c_last_insert_id, start_zeny, new_map, name, slot, hair_color, hair_style, job_class, gender);
 	
-	HLog(info) << "New character '" << name << "' has been created. (Endpoint: " << ip_addr() << ")";
+	HLog(info) << "New character '" << name << "' has been created. (Endpoint: " << get_session()->get_socket()->remote_ip_address() << ")";
 	return true;
 }
 
@@ -451,6 +457,7 @@ bool CharClientInterface::pincode_verify(uint32_t account_id, char *pincode)
 bool CharClientInterface::select_character(uint8_t slot)
 {
 	SQL::TableCharacters tch;
+	SQL::TableSessionData tsd;
 	
 	std::shared_ptr<sqlpp::mysql::connection> conn = sChar->get_db_connection();
 	
@@ -462,9 +469,38 @@ bool CharClientInterface::select_character(uint8_t slot)
 		hre.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
 		return false;
 	}
-	
+
 	HC_NOTIFY_ZONESVR hnz(get_session());
 	hnz.deliver(res.front().id, std::string(res.front().current_map).append(".gat"), inet_addr(sChar->config().get_zone_server_ip().c_str()), sChar->config().get_zone_server_port());
 	
+	return true;
+}
+
+bool CharClientInterface::update_session(int32_t account_id)
+{
+	SQL::TableSessionData tsd;
+	std::shared_ptr<sqlpp::mysql::connection> conn = sChar->get_db_connection();
+	
+	HLog(debug) << "Updating session from I.P. address " << get_session()->get_socket()->remote_ip_address();
+	
+	auto sres = (*conn)(select(all_of(tsd)).from(tsd).where(tsd.game_account_id == account_id));
+
+	if (sres.empty()) {
+		HC_REFUSE_ENTER pkt(get_session());
+		HLog(warning) << "Invalid connection for account with ID " << account_id << ", session wasn't found.";
+		pkt.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
+		return false;
+	}
+
+	std::string current_server = sres.front().current_server;
+
+	if (current_server.compare("C") != 0) {
+		HC_REFUSE_ENTER pkt(get_session());
+		HLog(warning) << "Invalid connection for account with ID " << account_id << ", session wasn't found.";
+		pkt.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
+		return false;
+	}
+
+	(*conn)(update(tsd).where(tsd.game_account_id == account_id).set(tsd.last_update = std::time(nullptr)));
 	return true;
 }

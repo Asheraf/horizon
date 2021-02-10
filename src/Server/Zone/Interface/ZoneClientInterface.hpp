@@ -55,7 +55,8 @@ public:
 	
 	bool login(uint32_t account_id, uint32_t char_id, uint32_t auth_code, uint32_t client_time, uint8_t gender);
 	bool restart(uint8_t type);
-	bool disconnect(uint8_t type);
+	bool disconnect(int8_t type);
+	bool update_session(int32_t account_id);
 	
 	bool walk_to_coordinates(uint16_t x, uint16_t y, uint8_t dir);
 	

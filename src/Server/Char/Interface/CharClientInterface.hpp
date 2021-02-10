@@ -43,7 +43,6 @@ public:
 	CharClientInterface(std::shared_ptr<CharSession> s);
 	~CharClientInterface();
 	
-	std::string ip_addr();
 	bool authorize_new_connection(uint32_t account_id, uint32_t auth_code, uint32_t account_level, uint8_t gender);
 	
 	bool make_new_character(std::string name, uint8_t slot, uint32_t hair_color, uint32_t hair_style, uint32_t job_class, uint8_t gender);
@@ -61,6 +60,8 @@ public:
 	void pincode_decrypt(uint32_t seed, char *input, char *output);
 	
 	bool select_character(uint8_t slot);
+
+	bool update_session(int32_t account_id);
 	
 protected:
 	char _pincode_confirm[MAX_PINCODE_STRING_LENGTH];

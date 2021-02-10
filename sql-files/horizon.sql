@@ -132,6 +132,7 @@ CREATE TABLE `session_data` (
   `group_id` int(11) unsigned NOT NULL DEFAULT '0',
   `connect_time` datetime DEFAULT NULL,
   `current_server` enum('A','C','Z') NOT NULL,
+  `last_update` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`auth_code`),
   KEY `game_account_id` (`game_account_id`),
   CONSTRAINT FOREIGN KEY (game_account_id) REFERENCES game_accounts(id)

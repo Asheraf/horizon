@@ -140,6 +140,10 @@ bool Server::parse_common_configs(sol::table &tbl)
 		return false;
 	}
 
+	general_conf().set_session_max_timeout(tbl.get<int32_t>("session_max_timeout"));
+
+	HLog(info) << "Session maximum timeout set to '" << general_conf().session_max_timeout() << "'.";
+
 	return true;
 }
 

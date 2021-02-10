@@ -42,8 +42,9 @@ using namespace Horizon::Char;
 /**
  * HC_ACCOUNT_ID
  */
-void HC_ACCOUNT_ID::deliver()
+void HC_ACCOUNT_ID::deliver(int32_t account_id)
 {
+	_account_id = account_id;
 	serialize();
 	transmit();
 }

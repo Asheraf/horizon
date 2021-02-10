@@ -78,7 +78,7 @@ bool ItemDatabase::load()
 
 	int total_entries = 0;
 
-	std::string file_path = sZone->zone_config().get_static_db_path().string() + "item_db.lua";
+	std::string file_path = sZone->config().get_static_db_path().string() + "item_db.lua";
 
 	sol::protected_function_result safe_res = lua.safe_script_file(file_path);
 	
@@ -417,7 +417,7 @@ bool ItemDatabase::load_refine_db()
 
 	int total_entries = 0;
 
-	std::string file_path = sZone->zone_config().get_static_db_path().string() + "refine_db.lua";
+	std::string file_path = sZone->config().get_static_db_path().string() + "refine_db.lua";
 
 	try {
 		lua.script_file(file_path);
@@ -503,7 +503,7 @@ bool ItemDatabase::load_weapon_target_size_modifiers_db()
 
 	int total_entries = 0;
 
-	std::string file_path = sZone->zone_config().get_static_db_path().string() + "weapon_target_size_modifiers.lua";
+	std::string file_path = sZone->config().get_static_db_path().string() + "weapon_target_size_modifiers.lua";
 
 	try {
 		lua.script_file(file_path);
@@ -545,7 +545,7 @@ bool ItemDatabase::load_weapon_attribute_modifiers_db()
 	
 	int total_entries = 0;
 
-	std::string file_path = sZone->zone_config().get_static_db_path().string() + "weapon_attribute_modifiers.lua";
+	std::string file_path = sZone->config().get_static_db_path().string() + "weapon_attribute_modifiers.lua";
 
 	try {
 		lua.script_file(file_path);

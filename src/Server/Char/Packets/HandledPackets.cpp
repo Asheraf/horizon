@@ -141,6 +141,7 @@ void CH_ENTER2::deserialize(ByteBuffer &buf) { }
 void CH_UNKNOWN_PING::handle(ByteBuffer &&buf)
 {
 	deserialize(buf);
+	get_session()->clif()->update_session(_account_id);
 }
 
 void CH_UNKNOWN_PING::deserialize(ByteBuffer &buf)

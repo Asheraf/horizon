@@ -83,9 +83,10 @@ public:
 	bool read_config();
 	void initialize_core();
 	void initialize_cli_commands();
+	void verify_connected_sessions();
 	void update(uint64_t diff);
 
-	s_zone_server_configuration &zone_config() { return _zone_server_config; }
+	s_zone_server_configuration &config() { return _zone_server_config; }
 
 	TaskScheduler &get_task_scheduler() { return _task_scheduler; }
 

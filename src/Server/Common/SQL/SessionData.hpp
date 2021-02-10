@@ -229,11 +229,34 @@ struct current_server
 	};
 	using _traits = sqlpp::make_traits<sqlpp::char_>;
 };
+
+struct last_update
+{
+	struct _alias_t
+	{
+		static constexpr const char _literal[] = "last_update";
+		using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+		template <typename T>
+		struct _member_t
+		{
+			T last_update;
+			T& operator()()
+			{
+				return last_update;
+			}
+			const T& operator()() const
+			{
+				return last_update;
+			}
+		};
+	};
+	using _traits = sqlpp::make_traits<sqlpp::integer>;
+};
 }
 
 struct TableSessionData : sqlpp::table_t<TableSessionData,
 TableSessionData_::auth_code, TableSessionData_::game_account_id, TableSessionData_::client_version, TableSessionData_::client_type, TableSessionData_::character_slots,
-TableSessionData_::group_id, TableSessionData_::connect_time, TableSessionData_::current_server>
+TableSessionData_::group_id, TableSessionData_::connect_time, TableSessionData_::current_server, TableSessionData_::last_update>
 {
 	struct _alias_t
 	{

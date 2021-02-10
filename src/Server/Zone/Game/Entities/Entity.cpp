@@ -56,7 +56,7 @@ void Entity::initialize()
 	_status = std::make_shared<Entities::Traits::Status>(shared_from_this());
 
 //	if (get_type() == ENTITY_PLAYER)
-//		getScheduler().Schedule(Milliseconds(sZone->zone_config().get_entity_save_interval()), ENTITY_SCHEDULE_SAVE,
+//		getScheduler().Schedule(Milliseconds(sZone->config().get_entity_save_interval()), ENTITY_SCHEDULE_SAVE,
 //			[this] (TaskContext context) {
 //				sync_with_models();
 //				context.Repeat();

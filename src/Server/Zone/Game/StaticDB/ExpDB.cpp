@@ -39,7 +39,7 @@ bool ExpDatabase::load()
 	sol::state lua;
 	int total_entries[2] = { 0, 0 };
 	std::string tmp_string;
-	std::string file_path = sZone->zone_config().get_static_db_path().string() + "exp_group_db.lua";
+	std::string file_path = sZone->config().get_static_db_path().string() + "exp_group_db.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {
@@ -107,7 +107,7 @@ bool ExpDatabase::load_status_point_table()
 	sol::state lua;
 	int total_entries = 0;
 	std::string tmp_string;
-	std::string file_path = sZone->zone_config().get_static_db_path().string() + "status_points.lua";
+	std::string file_path = sZone->config().get_static_db_path().string() + "status_points.lua";
 
 	// Read the file. If there is an error, report it and exit.
 	try {

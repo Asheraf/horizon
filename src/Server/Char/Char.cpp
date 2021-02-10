@@ -29,6 +29,7 @@
 
 #include "Char.hpp"
 
+#include "Server/Common/SQL/SessionData.hpp"
 #include "Core/Logging/Logger.hpp"
 #include "Server/Char/SocketMgr/ClientSocketMgr.hpp"
 
@@ -37,6 +38,7 @@
 #include <iostream>
 
 #include <sol.hpp>
+#include <sqlpp11/sqlpp11.h>
 
 using namespace Horizon::Char;
 
@@ -110,6 +112,7 @@ bool CharServer::read_config()
 	config().set_pincode_expiry(tbl.get<uint32_t>("pincode_expiry"));
 	
 	config().set_pincode_retry(tbl.get<uint8_t>("pincode_max_retry"));
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -142,12 +145,27 @@ void SignalHandler(const boost::system::error_code &error, int /*signal*/)
 	}
 }
 
+void CharServer::verify_connected_sessions()
+{
+	SQL::TableSessionData tsd;
+	std::shared_ptr<sqlpp::mysql::connection> conn = sChar->get_db_connection();
+	
+	(*conn)(remove_from(tsd).where(tsd.current_server == "C" and
+		tsd.last_update < std::time(nullptr) - general_conf().session_max_timeout()));
+
+	auto sres = (*conn)(select(count(tsd.game_account_id)).from(tsd).where(tsd.current_server == "C"));
+
+	int32_t count = sres.front().count;
+
+	HLog(info) << count << " connected session(s).";
+}
+
 void CharServer::update(uint64_t diff)
 {
 	process_cli_commands();
 	
-	_task_scheduler.Update();
-	
+	_task_scheduler.Update(diff);
+
 	ClientSocktMgr->update_socket_sessions(MAX_CORE_UPDATE_INTERVAL);
 	
 	if (get_shutdown_stage() == SHUTDOWN_NOT_STARTED && !general_conf().is_test_run()) {
@@ -171,6 +189,11 @@ void CharServer::initialize_core()
 						  MAX_NETWORK_THREADS);
 
 	Server::initialize_core();
+
+	_task_scheduler.Schedule(Seconds(60), [this] (TaskContext context) {
+		verify_connected_sessions();
+		context.Repeat();
+	});
 
 	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
 	_update_timer.async_wait(std::bind(&CharServer::update, this, MAX_CORE_UPDATE_INTERVAL));

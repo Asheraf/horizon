@@ -63,10 +63,10 @@ bool MapManager::finalize()
 bool MapManager::LoadMapCache()
 {
 	Horizon::Libraries::MapCache m;
-	std::string db_path = sZone->zone_config().get_static_db_path().string();
+	std::string db_path = sZone->config().get_static_db_path().string();
 
 	m.setMapListPath(db_path + "map_list.lua");
-	m.setMapCachePath(sZone->zone_config().get_mapcache_path().string());
+	m.setMapCachePath(sZone->config().get_mapcache_path().string());
 
 	if (m.ReadMapListConfig() != MCACHE_CONFIG_OK) {
 		HLog(error) <<"Could not read map config file '" << m.getMapListPath().string() << "'.";

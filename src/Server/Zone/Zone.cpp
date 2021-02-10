@@ -29,8 +29,8 @@
 
 #include "Zone.hpp"
 
+#include "Server/Common/SQL/SessionData.hpp"
 #include "Server/Zone/SocketMgr/ClientSocketMgr.hpp"
-
 #include "Server/Zone/Game/Map/MapManager.hpp"
 #include "Server/Zone/Game/StaticDB/ExpDB.hpp"
 #include "Server/Zone/Game/StaticDB/JobDB.hpp"
@@ -40,6 +40,7 @@
 #include <boost/make_shared.hpp>
 #include <chrono>
 #include <signal.h>
+#include <sqlpp11/sqlpp11.h>
 
 #include <sol.hpp>
 
@@ -61,7 +62,7 @@ ZoneServer::~ZoneServer()
 {
 }
 
-#define zone_config_error(setting_name, default) \
+#define config_error(setting_name, default) \
 	HLog(error) << "No setting for '" << setting_name << "' in configuration file, defaulting to '" << default << "'.";
 
 /**
@@ -85,14 +86,14 @@ bool ZoneServer::read_config()
 
 	sol::table tbl = lua["horizon_config"];
 
-	zone_config().set_static_db_path(tbl.get_or("static_db_path", std::string("db/")));
-	HLog(info) << "Static database path set to " << zone_config().get_static_db_path() << "";
+	config().set_static_db_path(tbl.get_or("static_db_path", std::string("db/")));
+	HLog(info) << "Static database path set to " << config().get_static_db_path() << "";
 
-	zone_config().set_mapcache_path(tbl.get_or("map_cache_file_path", std::string("db/maps.dat")));
-	HLog(info) << "Mapcache file name is set to " << zone_config().get_mapcache_path() << ", it will be read while initializing maps.";
+	config().set_mapcache_path(tbl.get_or("map_cache_file_path", std::string("db/maps.dat")));
+	HLog(info) << "Mapcache file name is set to " << config().get_mapcache_path() << ", it will be read while initializing maps.";
 
-//	zone_config().set_entity_save_interval(tbl.get_or("entity_save_interval", 180000));
-//	HLog(info) << "Entity data will be saved to the database every " << duration_cast<minutes>(std::chrono::milliseconds(zone_config().get_entity_save_interval())).count() << " minutes and " << duration_cast<seconds>(std::chrono::milliseconds(zone_config().get_entity_save_interval())).count() << " seconds.";
+//	config().set_entity_save_interval(tbl.get_or("entity_save_interval", 180000));
+//	HLog(info) << "Entity data will be saved to the database every " << duration_cast<minutes>(std::chrono::milliseconds(config().get_entity_save_interval())).count() << " minutes and " << duration_cast<seconds>(std::chrono::milliseconds(config().get_entity_save_interval())).count() << " seconds.";
 	
 	HLog(info) << "Maps will be managed by '" << MAX_MAP_CONTAINER_THREADS << "' thread containers.";
 
@@ -105,6 +106,21 @@ bool ZoneServer::read_config()
 	HLog(info) << "Done reading server configurations from '" << file_path << "'.";
 
 	return true;
+}
+
+void ZoneServer::verify_connected_sessions()
+{
+	SQL::TableSessionData tsd;
+	std::shared_ptr<sqlpp::mysql::connection> conn = sZone->get_db_connection();
+	
+	(*conn)(remove_from(tsd).where(tsd.current_server == "Z" and
+		tsd.last_update < std::time(nullptr) - general_conf().session_max_timeout()));
+
+	auto sres = (*conn)(select(count(tsd.game_account_id)).from(tsd).where(tsd.current_server == "Z"));
+
+	int32_t count = sres.front().count;
+
+	HLog(info) << count << " connected session(s).";
 }
 
 void ZoneServer::update(uint64_t diff)
@@ -171,6 +187,11 @@ void ZoneServer::initialize_core()
 						  MAX_NETWORK_THREADS);
 
 	Server::initialize_core();
+
+	_task_scheduler.Schedule(Seconds(60), [this] (TaskContext context) {
+		verify_connected_sessions();
+		context.Repeat();
+	});
 	
 	_update_timer.expires_from_now(boost::posix_time::milliseconds(MAX_CORE_UPDATE_INTERVAL));
 	_update_timer.async_wait(std::bind(&ZoneServer::update, this, MAX_CORE_UPDATE_INTERVAL));
