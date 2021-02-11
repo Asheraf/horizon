@@ -43,7 +43,7 @@
 
 BOOST_AUTO_TEST_CASE(Argon2Test)
 {
-    Argon2 argon2 = Argon2();
+    Argon2 argon2;
     std::string hash1 = argon2.gen_hash("password", "horizon-123");
     
 	std::cout << hash1 << std::endl;

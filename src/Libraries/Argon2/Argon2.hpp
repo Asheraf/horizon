@@ -30,13 +30,10 @@
 #include "argon2.h"
 
 #include <string>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <vector>
 
 #define HASHLEN 32
 #define SALTLEN 16
+#define ENCODED_LEN 108
 #define PWD "password"
 
 class Argon2Exception : public std::exception
@@ -63,7 +60,17 @@ public:
         if (salt.size() > SALTLEN)
             throw Argon2Exception("Salt size exceeds default size of bytes.");
 
-        int rc = argon2i_hash_raw(_t_cost, _m_cost, _parallelism, pwd.c_str(), pwd.size(), salt.c_str(), SALTLEN, _hash1, HASHLEN);
+        //
+        // ARGON2_PUBLIC int argon2_hash(const uint32_t t_cost, const uint32_t m_cost,
+                              // const uint32_t parallelism, const void *pwd,
+                              // const size_t pwdlen, const void *salt,
+                              // const size_t saltlen, void *hash,
+                              // const size_t hashlen, char *encoded,
+                              // const size_t encodedlen, argon2_type type,
+                              // const uint32_t version);
+        int rc = argon2_hash(_t_cost, _m_cost, _parallelism, pwd.c_str(),
+             pwd.size(), salt.c_str(), SALTLEN, _hash1, HASHLEN,
+             _encoded, ENCODED_LEN, Argon2_i, ARGON2_VERSION_10);
         
         if (rc != ARGON2_OK)
             throw Argon2Exception("Argon2 hash was not created successfully.");
@@ -92,8 +99,9 @@ public:
     }
     
 private:
-    uint8_t _hash1[HASHLEN]{0};
+    uint8_t _hash1[HASHLEN]{ '\0' };
     uint32_t _t_cost{2},    // 1-pass computation
-        _m_cost{(1<<16)},   // 64 mebibytes memory usage
-        _parallelism{1};    // number of threads and lanes
+        _m_cost{(1<<16)},   // 64 megabytes memory usage
+        _parallelism{1};    // number of threads and lanes 
+    char _encoded[ENCODED_LEN]{ '\0' };
 };

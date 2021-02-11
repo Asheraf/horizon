@@ -108,7 +108,7 @@ target_include_directories(zone
 
 # LuaJit linker flags for macOS to avoid crashes.
 if (APPLE)
-	set(${LUAJIT_LINK_FLAGS} "-pagezero_size 10000 -image_base 100000000")
+	set(LUAJIT_LINK_FLAGS "-pagezero_size 10000 -image_base 100000000")
 	set_target_properties(zone
 			PROPERTIES
 			LINK_FLAGS "${LUAJIT_LINK_FLAGS}"

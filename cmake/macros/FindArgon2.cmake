@@ -34,21 +34,19 @@ mark_as_advanced(ARGON2_INCLUDE_DIR)
 
 if (NOT DEFINED MSVC)
 find_library(ARGON2_LIBRARIES 
-    NAMES argon2 
+    NAMES argon2
     HINTS
         ${ARGON2_LIBRARY_DIR})
 else()
 
 find_library(ARGON2_LIBRARIES 
-    NAMES Argon2
+    NAMES Argon2Ref.lib
     HINTS
         ${ARGON2_LIBRARY_DIR})
 
 endif()
 
 mark_as_advanced(ARGON2_LIBRARIES)
-
-message(STATUS ${ARGON2_LIBRARIES})
 
 if (ARGON2_INCLUDE_DIR STREQUAL "ARGON2_INCLUDE_DIR-NOTFOUND")
     message(FATAL_ERROR "Argon2 header is required but not found.")

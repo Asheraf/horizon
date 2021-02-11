@@ -44,7 +44,7 @@ find_file(SQLPP11_MYSQL_INCLUDE_DIR
 mark_as_advanced(SQLPP11_MYSQL_INCLUDE_DIR)
 
 find_file(SQLPP11_MYSQL_LIBRARIES
-    NAMES sqlpp-mysql libsqlpp-mysql.a
+    NAMES sqlpp-mysql libsqlpp-mysql.a sqlpp-mysql.lib
     PATHS
         /usr/local/lib/
         ${SQLPP11_MYSQL_LIB_DIR}
@@ -55,5 +55,5 @@ mark_as_advanced(SQLPP11_MYSQL_LIBRARIES)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(sqlpp11-connector-mysql
     REQUIRED_VARS SQLPP11_MYSQL_INCLUDE_DIR SQLPP11_MYSQL_LIBRARIES
-    FAIL_MESSAGE ${SQLPP11_MYSQL_NOT_FOUND_MESSAGE}
+    FAIL_MESSAGE "Could NOT find sqlpp11-connector-mysql. You should probably set SQLPP11_MYSQL_INCLUDE_DIR and SQLPP11_MYSQL_LIB_DIR."
 )
