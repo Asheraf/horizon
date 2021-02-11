@@ -87,8 +87,6 @@ bool AuthServer::read_config()
 		HLog(error) << "Horizon::ReadConfig: '" << error.what() << "'.";
 		return false;
 	}
-    
-    get_auth_config()._password_salt_mix = tbl.get_or<std::string>("password_salt_mix", "horizon-123");
 	
 	try {
 		sol::table char_servers = tbl.get<sol::table>("character_servers");

@@ -146,13 +146,6 @@ find_package(sqlpp11 REQUIRED)
 include(FindSqlpp11-connector-mysql REQUIRED)
 
 #################
-# Find Argon2
-#################
-if (WITH_TESTS AND NOT WITHOUT_SERVERS)
-	find_package(Argon2 REQUIRED)
-endif()
-
-#################
 # Horizon Project Source
 #################
 add_subdirectory(src)

@@ -526,6 +526,4 @@ namespace Traits
 }
 }
 
-#include "AttributesImpl.hpp"
-
 #endif /* HORIZON_ZONE_GAME_STATUS_ATTRIBUTES_HPP */

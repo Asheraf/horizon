@@ -40,7 +40,6 @@ add_executable(auth
 	${COMMON_HEADERS}
     ${CORE_SOURCES}
     ${UTILITY_SOURCES}
-    ${ARGON2PP_SOURCES}
 )
 
 target_link_libraries(auth
@@ -52,7 +51,6 @@ target_link_libraries(auth
 		${LUA_LIBRARIES}
 		${SQLPP11_MYSQL_LIBRARIES}
 		${MYSQL_LIBRARY}
-		${ARGON2_LIBRARIES}
 )
 
 set(INCLUDE_DIRS
@@ -82,7 +80,6 @@ target_include_directories(auth
 		${SQLPP11_INCLUDE_DIR}
 		${SQLPP11_MYSQL_INCLUDE_DIR}
 		${MYSQL_INCLUDE_DIR}
-		${ARGON2_INCLUDE_DIR}
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 )

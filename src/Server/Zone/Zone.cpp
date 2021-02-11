@@ -97,6 +97,11 @@ bool ZoneServer::read_config()
 	
 	HLog(info) << "Maps will be managed by '" << MAX_MAP_CONTAINER_THREADS << "' thread containers.";
 
+
+	config().set_session_max_timeout(tbl.get<int32_t>("session_max_timeout"));
+
+	HLog(info) << "Session maximum timeout set to '" << config().session_max_timeout() << "'.";
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -114,7 +119,7 @@ void ZoneServer::verify_connected_sessions()
 	std::shared_ptr<sqlpp::mysql::connection> conn = sZone->get_db_connection();
 	
 	(*conn)(remove_from(tsd).where(tsd.current_server == "Z" and
-		tsd.last_update < std::time(nullptr) - general_conf().session_max_timeout()));
+		tsd.last_update < std::time(nullptr) - config().session_max_timeout()));
 
 	auto sres = (*conn)(select(count(tsd.game_account_id)).from(tsd).where(tsd.current_server == "Z"));
 

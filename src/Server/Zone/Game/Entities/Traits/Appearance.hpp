@@ -170,5 +170,4 @@ namespace Traits
 }
 }
 
-#include "AppearanceImpl.hpp"
 #endif /* HORIZON_ZONE_GAME_STATUS_APPEARANCE_HPP */

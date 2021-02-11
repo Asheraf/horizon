@@ -113,6 +113,10 @@ bool CharServer::read_config()
 	
 	config().set_pincode_retry(tbl.get<uint8_t>("pincode_max_retry"));
 
+	config().set_session_max_timeout(tbl.get<int32_t>("session_max_timeout"));
+
+	HLog(info) << "Session maximum timeout set to '" << config().session_max_timeout() << "'.";
+
 	/**
 	 * Process Configuration that is common between servers.
 	 */
@@ -151,7 +155,7 @@ void CharServer::verify_connected_sessions()
 	std::shared_ptr<sqlpp::mysql::connection> conn = sChar->get_db_connection();
 	
 	(*conn)(remove_from(tsd).where(tsd.current_server == "C" and
-		tsd.last_update < std::time(nullptr) - general_conf().session_max_timeout()));
+		tsd.last_update < std::time(nullptr) - config().session_max_timeout()));
 
 	auto sres = (*conn)(select(count(tsd.game_account_id)).from(tsd).where(tsd.current_server == "C"));
 

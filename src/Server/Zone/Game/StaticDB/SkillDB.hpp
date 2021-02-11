@@ -27,7 +27,6 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  **************************************************/
 
-#pragma once
 #ifndef HORIZON_ZONE_GAME_SKILLDB_HPP
 #define HORIZON_ZONE_GAME_SKILLDB_HPP
 

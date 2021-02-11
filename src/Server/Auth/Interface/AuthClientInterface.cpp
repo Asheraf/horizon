@@ -27,7 +27,6 @@
 
 #include "AuthClientInterface.hpp"
 
-#include "Libraries/Argon2/Argon2.hpp"
 #include "Server/Common/SQL/GameAccount.hpp"
 #include "Server/Common/SQL/SessionData.hpp"
 
@@ -54,7 +53,6 @@ AuthClientInterface::~AuthClientInterface()
 
 bool AuthClientInterface::process_login(std::string username, std::string password, uint16_t version, uint16_t client_type)
 {
-	Argon2 argon2;
 	SQL::TableGameAccounts tga;
 	AC_ACCEPT_LOGIN acal(get_session());
 	AC_REFUSE_LOGIN acrl(get_session());
@@ -73,8 +71,8 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 			gender = ACCOUNT_GENDER_FEMALE;
 		}
 		
-		std::string salt = sAuth->get_auth_config()._password_salt_mix.c_str();
-		std::string hash = argon2.gen_hash(password, salt);
+		//std::string salt = sAuth->get_auth_config()._password_salt_mix.c_str();
+		//std::string hash = argon2.gen_hash(password, salt);
 		
 		std::shared_ptr<sqlpp::mysql::connection> conn = sAuth->get_db_connection();
 		
@@ -87,13 +85,13 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 			
 			HLog(info) << "Creating a new account for user '" << username << "' with password '" << password << "'.";
 			
-			std::string salt = sAuth->get_auth_config()._password_salt_mix.c_str();
-			std::string hash = argon2.gen_hash(password, salt);
+			// std::string salt = sAuth->get_auth_config()._password_salt_mix.c_str();
+			// std::string hash = argon2.gen_hash(password, salt);
 			
-			HLog(debug) << "Argon2 hash created:" << std::hex << hash;
+			// HLog(debug) << "Argon2 hash created:" << std::hex << hash;
 			
 			try {
-				auto last_insert_id = (*conn)(insert_into(tga).set(tga.username = username, tga.hash = hash, tga.salt = salt, tga.gender = (gender == (int) ACCOUNT_GENDER_FEMALE ? "F" : "M"),
+				auto last_insert_id = (*conn)(insert_into(tga).set(tga.username = username, tga.hash = password, tga.salt = "", tga.gender = (gender == (int) ACCOUNT_GENDER_FEMALE ? "F" : "M"),
 											 tga.group_id = 0, tga.state = (int) ACCOUNT_STATE_NONE, tga.login_count = 1, tga.last_login = std::chrono::system_clock::now(),
 											 tga.last_ip = get_session()->get_socket()->remote_ip_address(), tga.character_slots = 3));
 				uint32_t aid = last_insert_id;
@@ -128,13 +126,13 @@ bool AuthClientInterface::process_login(std::string username, std::string passwo
 	}
 	
 	std::string hash = res.front().hash;
-	std::string salt = res.front().salt;
+	// std::string salt = res.front().salt;
 	
 	uint32_t aid = res.front().id;
 	uint32_t group_id = res.front().group_id;
 	uint32_t gender = res.front().gender == "M" ? 0 : 1;
 	
-	if (argon2.verify(hash, password, salt) == false) {
+	if (password.compare(hash) != 0) {
 		HLog(info) << "Incorrect password for account '" << username << "' with password '" << password << "'.";
 		acrl.deliver(login_error_codes::ERR_INCORRECT_PASSWORD, block_date, 0);
 		return false;

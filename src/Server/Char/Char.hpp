@@ -89,6 +89,9 @@ struct character_server_configuration
 	
 	int8_t get_pincode_retry() { return _pincode_retry; }
 	void set_pincode_retry(uint8_t retry) { _pincode_retry = retry; }
+	
+    std::time_t session_max_timeout() { return _session_max_timeout; }
+    void set_session_max_timeout(std::time_t timeout) { _session_max_timeout = timeout; }
 
 private:
 	std::string _start_map{"new_1-1"};
@@ -101,6 +104,7 @@ private:
 	bool _char_hard_delete;
 	uint32_t _pincode_expiry;
 	uint8_t _pincode_retry;
+    std::time_t _session_max_timeout;
 };
 	
 public:

@@ -64,8 +64,12 @@ struct s_zone_server_configuration
 	boost::filesystem::path &get_static_db_path() { return _static_db_path; }
 	void set_static_db_path(boost::filesystem::path p) { _static_db_path = p; }
 	
+    std::time_t session_max_timeout() { return _session_max_timeout; }
+    void set_session_max_timeout(std::time_t timeout) { _session_max_timeout = timeout; }
+	
 	boost::filesystem::path _static_db_path;
 	boost::filesystem::path _mapcache_path;
+    std::time_t _session_max_timeout;
 };
 
 class ZoneServer : public Server

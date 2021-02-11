@@ -26,6 +26,3 @@
 ###################################################
 add_subdirectory(GRF)
 add_subdirectory(MapCache)
-add_subdirectory(Argon2)
-
-set(ARGON2PP_SOURCES ${ARGON2PP_SOURCES} PARENT_SCOPE)

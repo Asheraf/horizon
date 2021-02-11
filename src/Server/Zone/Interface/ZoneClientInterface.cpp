@@ -27,7 +27,6 @@
 
 #include "CharClientInterface.hpp"
 
-#include "Libraries/Argon2/Argon2.hpp"
 #include "Server/Common/Definitions/ItemDefinitions.hpp"
 #include "Server/Common/SQL/GameAccount.hpp"
 #include "Server/Common/SQL/SessionData.hpp"
