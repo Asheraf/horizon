@@ -11,7 +11,7 @@ script_commands:init(player, npc)
 if is_file == true then
 	main_script = loadfile(script)
 else
-	main_script = loadstring("local s = ...\n" .. script .. "\nreturn")
+	main_script = load("local s = ...\n" .. script .. "\nreturn")
 end
 
 assert(main_script)

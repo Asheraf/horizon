@@ -151,6 +151,9 @@ bool ZoneClientInterface::restart(uint8_t type)
 			HLog(info) << "Character is being respawned.";
 			break;
 		default:
+			SQL::TableSessionData tsd;
+			std::shared_ptr<sqlpp::mysql::connection> conn = sZone->get_db_connection();
+			(*conn)(update(tsd).where(tsd.game_account_id == get_session()->player()->character()._account_id).set(tsd.current_server = "C", tsd.last_update = std::time(nullptr)));
 			rpkt.deliver(type);
 			HLog(info) << "Character has moved to the character server.";
 			break;

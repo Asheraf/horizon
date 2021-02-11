@@ -81,13 +81,6 @@ bool CharClientInterface::authorize_new_connection(uint32_t account_id, uint32_t
 		pkt.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
 		return false;
 	}
-	
-	std::string current_server = sres.front().current_server;
-	if (current_server.compare("C") == 0) { // already online.
-		HC_REFUSE_ENTER pkt(get_session());
-		pkt.deliver(CHAR_ERR_REJECTED_FROM_SERVER);
-		return false;
-	}
 
 	auto gres = (*conn)(select(all_of(tga)).from(tga).where(tga.id == account_id));
 	
