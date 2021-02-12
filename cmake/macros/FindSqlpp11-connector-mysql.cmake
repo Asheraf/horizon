@@ -48,7 +48,11 @@ find_file(SQLPP11_MYSQL_LIBRARIES
     PATHS
         /usr/local/lib/
         ${SQLPP11_MYSQL_LIB_DIR}
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        ${_VCPKG_INSTALLED_DIR}/x${PLATFORM}-windows/debug/lib
+    else()
         ${_VCPKG_INSTALLED_DIR}/x${PLATFORM}-windows/lib
+    endif()
 )
 mark_as_advanced(SQLPP11_MYSQL_LIBRARIES)
 

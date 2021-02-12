@@ -404,7 +404,7 @@ bool HC_ACCEPT_ENTER::prepare_and_deliver(uint32_t account_id, uint8_t max_char_
 		strncpy(c._map_name,  current_map.c_str(), MAP_NAME_LENGTH_EXT);///< 114
 #endif
 #if PACKET_VERSION >= 20100803
-		std::chrono::system_clock::time_point tp = i->left.deleted_at;             ///< 130
+		std::chrono::system_clock::time_point tp{ i->left.deleted_at.value() };             ///< 130
 		std::chrono::system_clock::duration dn = tp.time_since_epoch();
 		c._deleted_at = dn.count() * std::chrono::system_clock::period::num / std::chrono::system_clock::period::den;
 #endif
@@ -595,7 +595,7 @@ void HC_ACK_CHARINFO_PER_PAGE::prepare_and_deliver()
 		strncpy(c._map_name,  current_map.c_str(), MAP_NAME_LENGTH_EXT);///< 114
 #endif
 #if PACKET_VERSION >= 20100803
-		std::chrono::system_clock::time_point tp = i->left.deleted_at;             ///< 130
+		std::chrono::system_clock::time_point tp{ i->left.deleted_at.value() };             ///< 130
 		std::chrono::system_clock::duration dn = tp.time_since_epoch();
 		c._deleted_at = dn.count() * std::chrono::system_clock::period::num / std::chrono::system_clock::period::den;
 #endif

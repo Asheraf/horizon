@@ -134,9 +134,7 @@ include(FindSol2)
 #################
 # Find ZLIB
 #################
-if (WITH_TOOLS)
 find_package(ZLIB REQUIRED)
-endif()
 
 #################
 # Find Zlib

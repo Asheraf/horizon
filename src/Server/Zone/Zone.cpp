@@ -156,7 +156,11 @@ void ZoneServer::update(uint64_t diff)
  */
 void SignalHandler(int signal)
 {
-	if (signal == SIGINT || signal == SIGTERM || signal == SIGQUIT) {
+	if (signal == SIGINT || signal == SIGTERM
+#ifndef WIN32
+		|| signal == SIGQUIT
+#endif
+		) {
 		sZone->set_shutdown_stage(SHUTDOWN_INITIATED);
 		sZone->set_shutdown_signal(signal);
 	}
@@ -166,7 +170,9 @@ void ZoneServer::initialize_core()
 {
 	// Install a signal handler
 	signal(SIGINT, SignalHandler);
+#ifndef WIN32
 	signal(SIGQUIT, SignalHandler);
+#endif
 	signal(SIGTERM, SignalHandler);
 	
 	/**
